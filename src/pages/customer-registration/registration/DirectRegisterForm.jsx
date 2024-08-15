@@ -544,6 +544,8 @@ function DirectRegisterForm({
       }
     }
 
+    
+
     if (editMode) {
       await putUpdateClientAttachments({
         id: selectedRowData?.id,
