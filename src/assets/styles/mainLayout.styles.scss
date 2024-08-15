@@ -1,0 +1,33 @@
+.mainLayout {
+  display: flex;
+  height: 100dvh;
+  width: 100vw;
+  background-color: #fdfdfd;
+
+  &__headerAndContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    margin: 0 50px;
+
+    @media (max-width: 768px) {
+      margin: 0 10px;
+    }
+
+    // @media (max-width: 1024px) {
+    //   margin: 0 50px;
+    // }
+
+    &__content {
+      display: flex;
+      flex: 1;
+      // margin: 20px 0;
+      margin-bottom: 20px;
+
+      @media (max-width: 768px) {
+        margin: 0;
+      }
+    }
+  }
+}

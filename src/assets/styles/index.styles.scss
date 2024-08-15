@@ -1,0 +1,112 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+@import "./colors.module.scss";
+
+// $primary: #544d91;
+// $primary-light: #eae9f4;
+// $primary-light-active: #dcd9e9;
+// $primary-red: #ab4a49aa;
+// $primary-green: #5e7c64cc;
+// $secondary: #243448;
+// $secondary-hover: #1c2a38;
+// $accent: #766bb9;
+// $tertiary: #008080;
+// $error: #bb0000;
+// $success: #009c7a;
+// $warning: #d89c00;
+// $notification: #f30737;
+// $required: #f3f1ff;
+
+:root {
+  font-family: Montserrat, sans-serif;
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    // background: #243448;
+    background: #766bb9;
+  }
+
+  /* On hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* On active (click) */
+  ::-webkit-scrollbar-thumb:active {
+    background: #777;
+  }
+
+  scrollbar-width: thin;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+// #map {
+//   width: 600px;
+//   height: 400px;
+// }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.notifications {
+  background-color: $notification;
+  border-radius: 50%;
+  min-width: 20px;
+  max-width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.notificationsLarge {
+  background-color: $notification;
+  border-radius: 50%;
+  // width: 22px;
+  // height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.disclaimer {
+  position: absolute;
+  font-size: 0.9rem;
+  bottom: -47px;
+  font-style: italic;
+
+  @media print {
+    bottom: -40px;
+  }
+}
+
+.tourHelper {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

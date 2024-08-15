@@ -1,0 +1,146 @@
+@import "./index.styles.scss";
+
+.sidebarWrapper {
+  width: 321px;
+  transition: 0.3s all ease-in-out;
+  box-shadow: 7px 7px 100px #dedede, -7px -7px 100px #e2e2e2;
+  background: white;
+  position: relative;
+  overflow: hidden;
+  // overflow-y: overlay;
+  // overflow-x: hidden;
+
+  @media (max-width: 1024px) {
+    position: fixed;
+    left: 0;
+    z-index: 2000;
+    height: 100dvh;
+  }
+}
+
+.sidebar {
+  width: 321px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  // overflow: hidden;
+  // position: relative;
+  // background: white;
+  // box-shadow: 7px 7px 100px #dedede, -7px -7px 100px #e2e2e2;
+  // transition: 0.3s all ease-in-out;
+  // overflow: auto;
+
+  .toggled {
+    width: 0px;
+  }
+
+  & &__toggleRemove {
+    color: $secondary;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+
+    @media (min-width: 1025px) {
+      display: none;
+    }
+  }
+
+  // @media (max-width: 1024px) {
+  //   // display: none;
+  //   position: fixed;
+  //   height: 100dvh;
+  //   left: 0;
+  //   width: 88px;
+  //   z-index: 2000;
+  // }
+
+  &__logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    height: 180px;
+
+    &.left {
+      justify-content: flex-start;
+    }
+
+    & img {
+      // @media (max-width: 1024px) {
+      //   width: 100px;
+      // }
+      transition: transform 0.4s, left 0.4s;
+      width: 150px;
+      position: absolute;
+      // right: 65px;
+      left: 90px;
+
+      &.small {
+        transform: scale(0.5);
+        left: -30px;
+      }
+    }
+  }
+
+  &__navigation {
+    position: relative;
+    // overflow-x: hidden;
+    overflow: auto;
+    height: 100%;
+    margin-bottom: 30px;
+    // overflow: hidden;
+
+    // @media (max-width: 1024px) {
+    //   white-space: nowrap;
+    // }
+
+    & &__button {
+      color: $secondary;
+      border-radius: 10px;
+
+      &__icon {
+        color: $secondary;
+      }
+    }
+
+    & &__button.active {
+      background-color: $primary;
+    }
+
+    & &__subButton {
+      color: $secondary;
+      border-radius: 10px;
+      margin-left: 20px;
+
+      // @media (max-width: 1024px) {
+      //   margin-left: 0;
+      // }
+
+      &__icon {
+        color: $secondary;
+      }
+    }
+
+    & &__subButton.active {
+      background-color: $secondary;
+    }
+
+    & .active {
+      color: white;
+    }
+  }
+}
+
+.overlaySidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background-color: rgba(0, 0, 0, 0.5);
+  // display: none; /* Initially hidden */
+  z-index: 1000; /* Make sure it's above the sidebar */
+  pointer-events: none;
+}
