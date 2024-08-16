@@ -472,8 +472,8 @@ function SpecialDiscount() {
 										const newValue = e.value === "" ? null : Number(e.value);
 										onChange(newValue);
 
-										if (newValue != null && newValue > 15) {
-											alert("Special Discount cannot be more than 15%");
+										if (newValue != null && newValue > 100) {
+											alert("Special Discount cannot be more than 100%");
 										}
 									}}
 									onBlur={onBlur}
@@ -486,9 +486,9 @@ function SpecialDiscount() {
 									isAllowed={(values) => {
 										const { floatValue } = values;
 										// Check if the floatValue is greater than 10 and show a snackbar
-										if (floatValue != null && floatValue > 15) {
+										if (floatValue != null && floatValue > 100) {
 											snackbar({
-												message: "Value should be between 1% and 15%",
+												message: "Value should be between 1% and 100%",
 												variant: "error",
 											});
 											return false;

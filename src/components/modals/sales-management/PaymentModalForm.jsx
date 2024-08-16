@@ -105,10 +105,10 @@ function PaymentModalForm({
 			};
 		} else if (data.paymentMethod.label === "Withholding") {
 			transformedData = {
-        paymentMethod: data.paymentMethod,
-        paymentAmount: data.paymentAmount,
-        withholdingAttachment: data.attachment,
-      }
+				paymentMethod: data.paymentMethod,
+				paymentAmount: data.paymentAmount,
+				attachment: data.attachment,
+			};
 		} else {
 			transformedData = {
 				paymentMethod: data.paymentMethod,

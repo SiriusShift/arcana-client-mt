@@ -107,32 +107,53 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 
 	//Functions
 	const onSubmit = async (data) => {
-		const transformData = {
-			...data,
-			payments: data.payments.map((payment, index) => {
-				if (payment.paymentMethod.label === "Withholding") {
-					return {
-						...payment,
-						paymentMethod: payment.paymentMethod.value,
-						totalAmountReceived: payment.paymentAmount,
-						withholdingAttachment: payment.attachment,
-					};
-				} else {
-					return {
-						...payment,
-						paymentMethod: payment.paymentMethod.value,
-						totalAmountReceived: payment.paymentAmount,
-						// .toUpperCase(),
-					};
-				}
-			}),
-		};
+		console.log(data);
+		const formData = new FormData();
+
+		data.transactionId.map((id, index) =>
+			formData.append(`transactionIds.[${index}]`, id)
+		);
+
+		data.payments.map((payment, index) => {
+			const { paymentMethod, ...others } = payment;
+			formData.append(
+				`payments[${index}].paymentMethod`,
+				payment.paymentMethod.value
+			);
+			formData.append(`payments[${index}].paymentAmount`, payment.paymentAmount);
+			// IF PAYMENT METHOD IS CHEQUE
+			payment.payee && formData.append(`payments[${index}].payee`, payment.payee);
+			payment.chequeDate &&
+				formData.append(
+					`payments[${index}].chequeDate`,
+					moment(payment.chequeDate).format("YYYY-MM-DD")
+				);
+			payment.bankName &&
+				formData.append(`payments[${index}].bankName`, payment.bankName);
+			payment.chequeNo &&
+				formData.append(`payments[${index}].chequeNo`, payment.chequeNo);
+			payment.dateReceived &&
+				formData.append(
+					`payments[${index}].dateReceived`,
+					moment(payment.dateReceived).format("YYYY-MM-DD")
+				);
+			// IF PAYMENT METHOD IS ONLINE
+			payment.accountName &&
+				formData.append(`payments[${index}].accountName`, payment.accountName);
+			payment.accountNo &&
+				formData.append(`payments[${index}].accountNo`, payment.accountNo);
+			payment.referenceNo &&
+				formData.append(`payments[${index}].referenceNo`, payment.referenceNo);
+			// IF PAYMENT METHOD IS WITHHOLDING
+			payment.attachment &&
+				formData.append(`payments[${index}].attachment`, payment.attachment);
+		});
 
 		try {
 			await confirm({
 				children: "Are you sure you want to submit payment transaction?",
 				question: true,
-				callback: () => createPaymentTransaction(transformData).unwrap(),
+				callback: () => createPaymentTransaction(formData).unwrap(),
 			});
 
 			handleReset();
