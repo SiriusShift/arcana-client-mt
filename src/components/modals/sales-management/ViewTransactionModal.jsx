@@ -138,7 +138,7 @@ function ViewTransactionModal({ ...props }) {
 								<Typography fontWeight="700" textTransform="uppercase">
 									Tin No:{" "}
 								</Typography>
-								<Typography>{data?.invoiceNo}</Typography>
+								<Typography>{data?.tin}</Typography>
 							</Box>
 						</Box>
 					</Box>

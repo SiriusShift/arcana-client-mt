@@ -289,7 +289,7 @@ function PaymentModalForm({
 										setValue("remarks", "");
 									}
 
-									if (value.label !== "Withholding Tax") {
+									if (value.label !== "Withholding") {
 										setValue("attachment", "");
 									}
 									return value;
@@ -627,6 +627,8 @@ function PaymentModalForm({
 										type="file"
 										size="small"
 										label="Attachment"
+										helperText={errors?.attachment?.message}
+										error={errors?.attachment}
 										InputLabelProps={{ shrink: true }}
 										InputProps={{
 											endAdornment: watch("attachment") && (

@@ -12,194 +12,196 @@ import useDisclosure from "../../hooks/useDisclosure";
 import { AssignmentReturnedOutlined, Autorenew } from "@mui/icons-material";
 
 function Clearing() {
-  const [tabViewing, setTabViewing] = useState(1);
-  const [clearingStatus, setClearingStatus] = useState("For Clearing");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [clearingModalMode, setClearingModalMode] = useState("Viewing");
+	const [tabViewing, setTabViewing] = useState(1);
+	const [clearingStatus, setClearingStatus] = useState("For Clearing");
+	const [search, setSearch] = useState("");
+	const [page, setPage] = useState(0);
+	const [rowsPerPage, setRowsPerPage] = useState(5);
+	const [clearingModalMode, setClearingModalMode] = useState("Viewing");
 
-  const [checkedArray, setCheckedArray] = useState([]);
+	const [checkedArray, setCheckedArray] = useState([]);
 
-  //Hooks
-  const { notifications, isNotificationFetching } = useContext(AppContext);
+	//Hooks
+	const { notifications, isNotificationFetching } = useContext(AppContext);
 
-  // Disclosures
-  const {
-    isOpen: isClearingModalOpen,
-    onOpen: onClearingModalOpen,
-    onClose: onClearingModalClose,
-  } = useDisclosure();
+	// Disclosures
+	const {
+		isOpen: isClearingModalOpen,
+		onOpen: onClearingModalOpen,
+		onClose: onClearingModalClose,
+	} = useDisclosure();
 
-  //Constants
-  const tabsList = useMemo(() => {
-    return [
-      {
-        case: 1,
-        name: "For A-Tag",
-        clearingStatus: "For Clearing",
-        badge: notifications["forClearing"],
-      },
-      {
-        case: 2,
-        name: "For Filing",
-        clearingStatus: "For Filing",
-        badge: notifications["forFiling"],
-      },
-      {
-        case: 3,
-        name: "Filed",
-        clearingStatus: "Cleared",
-        badge: notifications["cleared"],
-      },
-      {
-        case: 4,
-        name: "Voided",
-        clearingStatus: "Voided",
-        badge: notifications["voided"],
-      },
-    ];
-  }, [notifications]);
+	//Constants
+	const tabsList = useMemo(() => {
+		return [
+			{
+				case: 1,
+				name: "For A-Tag",
+				clearingStatus: "For Clearing",
+				badge: notifications["forClearing"],
+			},
+			{
+				case: 2,
+				name: "For Filing",
+				clearingStatus: "For Filing",
+				badge: notifications["forFiling"],
+			},
+			{
+				case: 3,
+				name: "Filed",
+				clearingStatus: "Cleared",
+				badge: notifications["cleared"],
+			},
+			{
+				case: 4,
+				name: "Voided",
+				clearingStatus: "Voided",
+				badge: notifications["voided"],
+			},
+		];
+	}, [notifications]);
 
-  const tableHeads = [
-    "Date",
-    "Payment Channel",
-    "Payment Method",
-    "Reference No",
-    "Total Payment Amount",
-    "A-Tag",
-    ...(clearingStatus === "For Clearing" ? ["Status"] : []),
-  ];
+	const tableHeads = [
+		"Date",
+		"Customer Name",
+		"Payment Channel",
+		"Payment Method",
+		"Reference No",
+		"Total Payment Amount",
+		"A-Tag",
+		...(clearingStatus === "For Clearing" ? ["Status"] : []),
+	];
 
-  const customOrderKeys = [
-    "date",
-    "paymentChannel",
-    "paymentMethod",
-    "referenceNo",
-    "totalPaymentAmount",
-    "aTag",
-    ...(clearingStatus === "For Clearing" ? ["reason"] : []),
-  ];
+	const customOrderKeys = [
+		"date",
+		"customerName",
+		"paymentChannel",
+		"paymentMethod",
+		"referenceNo",
+		"totalPaymentAmount",
+		"aTag",
+		...(clearingStatus === "For Clearing" ? ["reason"] : []),
+	];
 
-  const pesoArray = ["totalPaymentAmount"];
-  const dateTimeArray = ["date"];
+	const pesoArray = ["totalPaymentAmount"];
+	const dateTimeArray = ["date"];
 
-  const valueDisplayOptions = [
-    {
-      keyName: "reason",
-      displayOptions: {
-        noValue: (
-          <Chip
-            icon={<Autorenew sx={{ fontSize: "1rem" }} />}
-            label="New"
-            color="success"
-            variant="outlined"
-          />
-        ),
-        hasValue: (
-          <Chip
-            icon={<AssignmentReturnedOutlined sx={{ fontSize: "1rem" }} />}
-            label="Returned"
-            variant="outlined"
-            color="error"
-          />
-        ),
-      },
-    },
-  ];
+	const valueDisplayOptions = [
+		{
+			keyName: "reason",
+			displayOptions: {
+				noValue: (
+					<Chip
+						icon={<Autorenew sx={{ fontSize: "1rem" }} />}
+						label="New"
+						color="success"
+						variant="outlined"
+					/>
+				),
+				hasValue: (
+					<Chip
+						icon={<AssignmentReturnedOutlined sx={{ fontSize: "1rem" }} />}
+						label="Returned"
+						variant="outlined"
+						color="error"
+					/>
+				),
+			},
+		},
+	];
 
-  //RTK Query
-  const [patchReadNotification] = usePatchReadNotificationMutation();
+	//RTK Query
+	const [patchReadNotification] = usePatchReadNotificationMutation();
 
-  const { data: clearingData, isFetching: isClearingFetching } =
-    useGetAllClearingTransactionQuery({
-      Search: search,
-      PageNumber: page + 1,
-      PageSize: rowsPerPage,
-      Status: clearingStatus,
-    });
+	const { data: clearingData, isFetching: isClearingFetching } =
+		useGetAllClearingTransactionQuery({
+			Search: search,
+			PageNumber: page + 1,
+			PageSize: rowsPerPage,
+			Status: clearingStatus,
+		});
 
-  // Functions
-  const onInspect = () => {
-    if (clearingStatus === "For Clearing") {
-      setClearingModalMode("Clearing");
-    } else if (clearingStatus === "For Filing") {
-      setClearingModalMode("Filing");
-    } else if (clearingStatus === "Cleared") {
-      setClearingModalMode("Viewing");
-    } else if (clearingStatus === "Voided") {
-      setClearingModalMode("VoidedViewing");
-    }
-    onClearingModalOpen();
-  };
+	// Functions
+	const onInspect = () => {
+		if (clearingStatus === "For Clearing") {
+			setClearingModalMode("Clearing");
+		} else if (clearingStatus === "For Filing") {
+			setClearingModalMode("Filing");
+		} else if (clearingStatus === "Cleared") {
+			setClearingModalMode("Viewing");
+		} else if (clearingStatus === "Voided") {
+			setClearingModalMode("VoidedViewing");
+		}
+		onClearingModalOpen();
+	};
 
-  // UseEffect
-  useEffect(() => {
-    const foundItem = tabsList.find((item) => item.case === tabViewing);
+	// UseEffect
+	useEffect(() => {
+		const foundItem = tabsList.find((item) => item.case === tabViewing);
 
-    setClearingStatus(foundItem?.clearingStatus);
-  }, [tabViewing, tabsList]);
+		setClearingStatus(foundItem?.clearingStatus);
+	}, [tabViewing, tabsList]);
 
-  useEffect(() => {
-    if (notifications["forClearing"] > 0 && clearingStatus === "For Clearing") {
-      patchReadNotification({ Tab: "For Clearing" });
-    }
-  }, [clearingStatus, patchReadNotification, notifications]);
+	useEffect(() => {
+		if (notifications["forClearing"] > 0 && clearingStatus === "For Clearing") {
+			patchReadNotification({ Tab: "For Clearing" });
+		}
+	}, [clearingStatus, patchReadNotification, notifications]);
 
-  useEffect(() => {
-    setPage(0);
-  }, [search, rowsPerPage, tabViewing]);
+	useEffect(() => {
+		setPage(0);
+	}, [search, rowsPerPage, tabViewing]);
 
-  return (
-    <>
-      <ClearingModal
-        open={isClearingModalOpen}
-        onClose={onClearingModalClose}
-        mode={clearingModalMode}
-      />
+	return (
+		<>
+			<ClearingModal
+				open={isClearingModalOpen}
+				onClose={onClearingModalClose}
+				mode={clearingModalMode}
+			/>
 
-      <Box className="commonPageLayout">
-        <PageHeaderTabs
-          // wide
-          small
-          pageTitle="Remittance"
-          tabsList={tabsList}
-          tabViewing={tabViewing}
-          setTabViewing={setTabViewing}
-          isNotificationFetching={isNotificationFetching}
-        />
+			<Box className="commonPageLayout">
+				<PageHeaderTabs
+					// wide
+					small
+					pageTitle="Remittance"
+					tabsList={tabsList}
+					tabViewing={tabViewing}
+					setTabViewing={setTabViewing}
+					isNotificationFetching={isNotificationFetching}
+				/>
 
-        <SearchActionMixin setSearch={setSearch} removeAction />
+				<SearchActionMixin setSearch={setSearch} removeAction />
 
-        {isClearingFetching ? (
-          <CommonTableSkeleton lowerCompact />
-        ) : (
-          <CommonTable
-            // actionsHead={{ onClear: onClear }}
-            // mapData={paymentData?.transactions}
-            customOrderKeys={customOrderKeys}
-            tableHeads={tableHeads}
-            mapData={clearingData?.transactions}
-            pesoArray={pesoArray}
-            dateTimeArray={dateTimeArray}
-            valueDisplayOptions={valueDisplayOptions}
-            page={page}
-            setPage={setPage}
-            rowsPerPage={rowsPerPage}
-            setRowsPerPage={setRowsPerPage}
-            count={clearingData?.totalCount}
-            lowerCompact
-            checkboxSelection={clearingStatus === "For Filing"}
-            includeActions
-            onView={onInspect}
-            checkedArray={checkedArray}
-            setCheckedArray={setCheckedArray}
-            moveNoDataUp
-          />
-        )}
-      </Box>
-    </>
-  );
+				{isClearingFetching ? (
+					<CommonTableSkeleton lowerCompact />
+				) : (
+					<CommonTable
+						// actionsHead={{ onClear: onClear }}
+						// mapData={paymentData?.transactions}
+						customOrderKeys={customOrderKeys}
+						tableHeads={tableHeads}
+						mapData={clearingData?.transactions}
+						pesoArray={pesoArray}
+						dateTimeArray={dateTimeArray}
+						valueDisplayOptions={valueDisplayOptions}
+						page={page}
+						setPage={setPage}
+						rowsPerPage={rowsPerPage}
+						setRowsPerPage={setRowsPerPage}
+						count={clearingData?.totalCount}
+						lowerCompact
+						checkboxSelection={clearingStatus === "For Filing"}
+						includeActions
+						onView={onInspect}
+						checkedArray={checkedArray}
+						setCheckedArray={setCheckedArray}
+						moveNoDataUp
+					/>
+				)}
+			</Box>
+		</>
+	);
 }
 
 export default Clearing;

@@ -107,46 +107,49 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 
 	//Functions
 	const onSubmit = async (data) => {
-		console.log(data);
+		console.log("data", data);
 		const formData = new FormData();
 
 		data.transactionId.map((id, index) =>
-			formData.append(`transactionIds.[${index}]`, id)
+			formData.append(`transactionId`, id)
 		);
 
 		data.payments.map((payment, index) => {
 			const { paymentMethod, ...others } = payment;
 			formData.append(
-				`payments[${index}].paymentMethod`,
+				`Payments[${index}].paymentMethod`,
 				payment.paymentMethod.value
 			);
-			formData.append(`payments[${index}].paymentAmount`, payment.paymentAmount);
+			formData.append(`Payments[${index}].paymentAmount`, payment.paymentAmount);
 			// IF PAYMENT METHOD IS CHEQUE
-			payment.payee && formData.append(`payments[${index}].payee`, payment.payee);
+			payment.payee && formData.append(`Payments[${index}].payee`, payment.payee);
 			payment.chequeDate &&
 				formData.append(
-					`payments[${index}].chequeDate`,
+					`Payments[${index}].chequeDate`,
 					moment(payment.chequeDate).format("YYYY-MM-DD")
 				);
 			payment.bankName &&
-				formData.append(`payments[${index}].bankName`, payment.bankName);
+				formData.append(`Payments[${index}].bankName`, payment.bankName);
 			payment.chequeNo &&
-				formData.append(`payments[${index}].chequeNo`, payment.chequeNo);
+				formData.append(`Payments[${index}].chequeNo`, payment.chequeNo);
 			payment.dateReceived &&
 				formData.append(
-					`payments[${index}].dateReceived`,
+					`Payments[${index}].dateReceived`,
 					moment(payment.dateReceived).format("YYYY-MM-DD")
 				);
 			// IF PAYMENT METHOD IS ONLINE
 			payment.accountName &&
-				formData.append(`payments[${index}].accountName`, payment.accountName);
+				formData.append(`Payments[${index}].accountName`, payment.accountName);
 			payment.accountNo &&
-				formData.append(`payments[${index}].accountNo`, payment.accountNo);
+				formData.append(`Payments[${index}].accountNo`, payment.accountNo);
 			payment.referenceNo &&
-				formData.append(`payments[${index}].referenceNo`, payment.referenceNo);
+				formData.append(`Payments[${index}].referenceNo`, payment.referenceNo);
 			// IF PAYMENT METHOD IS WITHHOLDING
 			payment.attachment &&
-				formData.append(`payments[${index}].attachment`, payment.attachment);
+				formData.append(
+					`Payments[${index}].withholdingAttachment`,
+					payment.attachment
+				);
 		});
 
 		try {
