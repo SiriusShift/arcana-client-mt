@@ -2136,6 +2136,21 @@
 				}
 			}
 
+			&__attachment {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+
+				& &__label {
+					font-size: 1.1rem;
+					// font-weight: 600;
+				}
+
+				& &__value {
+					font-size: 1.1rem;
+				}
+			}
+
 			&__paymentTypes {
 				display: flex;
 				gap: 5px;

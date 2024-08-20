@@ -11,13 +11,18 @@ import {
 } from "@mui/material";
 import CommonModal from "../../CommonModal";
 import moment from "moment";
-import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
+import {
+	KeyboardArrowDown,
+	KeyboardArrowUp,
+	Visibility,
+} from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { paymentTypes } from "../../../utils/Constants";
 import { getIconElement } from "../../GetIconElement";
 import { formatPesoAmount } from "../../../utils/CustomFunctions";
 import { useLazyGetAllPaymentHistoriesQuery } from "../../../features/sales-management/api/paymentTransactionApi";
 import { useSelector } from "react-redux";
+import useDisclosure from "../../../hooks/useDisclosure";
 
 function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
 	const { open } = props;
@@ -25,6 +30,12 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
 	const selectedRowData = useSelector((state) => state.selectedRow.value);
 
 	const [expandedPaymentType, setExpandedPaymentType] = useState({});
+
+	const {
+		isOpen: isViewOpen,
+		onOpen: onViewOpen,
+		onClose: onViewClose,
+	} = useDisclosure();
 
 	const [
 		triggerHistories,
@@ -41,6 +52,20 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
 	};
 
 	const handlePaymentDropdown = (itemId, newState) => {
+		setExpandedPaymentType((prevStates) => {
+			// Create a new object to hold the updated states
+			const updatedStates = {};
+
+			// Loop through previous states to set all to false except the clicked one
+			Object.keys(prevStates).forEach((key) => {
+				updatedStates[key] = key == itemId ? newState : false;
+			});
+
+			return updatedStates;
+		});
+	};
+
+	const handlePaymentReceipt = (itemId, newState) => {
 		setExpandedPaymentType((prevStates) => {
 			// Create a new object to hold the updated states
 			const updatedStates = {};
@@ -122,6 +147,25 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
 
 											<Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__total__value">
 												{formatPesoAmount(paymentRecord.totalPayment)}
+											</Typography>
+										</Box>
+
+										<Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment">
+											<Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__label">
+												Receipt:
+											</Typography>
+
+											<Typography
+												className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__value"
+												onClick={() => {}}
+											>
+												<IconButton
+													sx={{ color: "secondary.main", p: 0 }}
+													onClick={onViewOpen}
+												>
+													<Visibility />
+												</IconButton>
+												{/* {formatPesoAmount(paymentRecord.totalPayment)} */}
 											</Typography>
 										</Box>
 
