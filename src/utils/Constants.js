@@ -48,6 +48,12 @@ export const paymentTypes = [
     uppercase: "WITHHOLDING",
     icon: "AccountBalance",
   },
+  {
+    label: "Others",
+    value: "Others",
+    uppercase: "OTHERS",
+    icon: "MoreHoriz",
+  }
 ];
 
 export const paymentTypesAdvPayment = [

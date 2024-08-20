@@ -110,9 +110,7 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 		console.log("data", data);
 		const formData = new FormData();
 
-		data.transactionId.map((id, index) =>
-			formData.append(`transactionId`, id)
-		);
+		data.transactionId.map((id, index) => formData.append(`transactionId`, id));
 
 		data.payments.map((payment, index) => {
 			const { paymentMethod, ...others } = payment;
@@ -482,9 +480,19 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 														{item.invoiceNo}
 													</Typography>
 												</Box>
+
+												<Box className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
+													<Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
+														Invoice Type:
+													</Typography>
+
+													<Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
+														{item.invoiceNo}
+													</Typography>
+												</Box>
 											</Box>
 
-											<Divider variant="inset" />
+											<Divider />
 
 											<Box className="paymentPage__body__transactions__transactionsList__item__numbers">
 												<Box className="paymentPage__body__transactions__transactionsList__item__numbers__discount">

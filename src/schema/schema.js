@@ -790,6 +790,7 @@ export const paymentSchema = {
 	schema: yup.object({
 		paymentMethod: yup.object().required("Payment Type is required"),
 		paymentAmount: yup.number().required("Amount is required"),
+		paymentReceipt: yup.mixed().required("Payment Receipt is required"),
 
 		//Cheque Validations
 		payee: yup.string().when("paymentMethod.label", {
@@ -869,6 +870,7 @@ export const paymentSchema = {
 		accountNo: "",
 		referenceNo: "",
 		remarks: "",
+		paymentReceipt: null,
 		attachment: null,
 	},
 };

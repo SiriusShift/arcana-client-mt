@@ -1,384 +1,390 @@
 @import "./index.styles.scss";
 
 .paymentPage {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 
-  * {
-    box-sizing: border-box;
-  }
+	* {
+		box-sizing: border-box;
+	}
 
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    // overflow: auto;
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20px;
+		// overflow: auto;
 
-    &__left {
-      display: flex;
-      // gap: 20px;
-      gap: 10px;
-      align-items: center;
+		&__left {
+			display: flex;
+			// gap: 20px;
+			gap: 10px;
+			align-items: center;
 
-      & &__title {
-        font-weight: 700;
-        font-size: 1.6rem;
-        // font-size: 2rem;
-      }
-    }
+			& &__title {
+				font-weight: 700;
+				font-size: 1.6rem;
+				// font-size: 2rem;
+			}
+		}
 
-    &__right {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-  }
+		&__right {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+		}
+	}
 
-  &__filters {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 5px 0;
+	&__filters {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin: 5px 0;
 
-    &__right {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      height: 100%;
-    }
-  }
+		&__right {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+			height: 100%;
+		}
+	}
 
-  &__body {
-    // flex: 1;
-    display: flex;
-    // height: calc(100dvh - 270px);
-    height: calc(100dvh - 240px);
-    gap: 10px;
+	&__body {
+		// flex: 1;
+		display: flex;
+		// height: calc(100dvh - 270px);
+		height: calc(100dvh - 240px);
+		gap: 10px;
 
-    &__transactions {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 4px 12px -4px hsla(0, 0%, 8%, 0.1),
-        0 4px 6px -5px hsla(0, 0%, 8%, 0.05);
-      border: 1px solid #dee2e6;
-      background-color: white;
-      padding: 10px;
-      border-radius: 5px;
-      height: 100%;
+		&__transactions {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			box-shadow: 0 4px 12px -4px hsla(0, 0%, 8%, 0.1),
+				0 4px 6px -5px hsla(0, 0%, 8%, 0.05);
+			border: 1px solid #dee2e6;
+			background-color: white;
+			padding: 10px;
+			border-radius: 5px;
+			height: 100%;
 
-      & &__selectClientFirst {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        font-size: 2.5rem;
-        font-weight: 600;
-        color: gray;
-        position: relative;
-        bottom: 5%;
-      }
+			& &__selectClientFirst {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				font-size: 2.5rem;
+				font-weight: 600;
+				color: gray;
+				position: relative;
+				bottom: 5%;
+			}
 
-      // &__selectClientFirst {
-      //   flex: 1;
-      //   display: flex;
-      //   align-items: center;
-      //   justify-content: center;
+			// &__selectClientFirst {
+			//   flex: 1;
+			//   display: flex;
+			//   align-items: center;
+			//   justify-content: center;
 
-      //   & img {
-      //     width: 16vw;
-      //   }
-      // }
+			//   & img {
+			//     width: 16vw;
+			//   }
+			// }
 
-      &__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+			&__header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
 
-        &__checkAll {
-          display: flex;
-          gap: 5px;
-          align-items: center;
+				&__checkAll {
+					display: flex;
+					gap: 5px;
+					align-items: center;
 
-          & &__label {
-            font-size: 1.05rem;
-            font-weight: 400;
-          }
-        }
+					& &__label {
+						font-size: 1.05rem;
+						font-weight: 400;
+					}
+				}
 
-        &__totalAmount {
-          display: flex;
-          align-items: center;
-          gap: 10px;
+				&__totalAmount {
+					display: flex;
+					align-items: center;
+					gap: 10px;
 
-          & &__label {
-            font-size: 1.1rem;
-          }
+					& &__label {
+						font-size: 1.1rem;
+					}
 
-          & &__value {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: $primary;
-          }
-        }
-      }
+					& &__value {
+						font-size: 1.3rem;
+						font-weight: 600;
+						color: $primary;
+					}
+				}
+			}
 
-      &__transactionsList {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-        grid-auto-rows: 180px;
-        gap: 10px;
-        overflow: auto;
-        // height: calc(100% - 30px);
-        height: 100%;
-        padding-bottom: 1px;
+			&__transactionsList {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+				grid-auto-rows: 180px;
+				gap: 10px;
+				overflow: auto;
+				// height: calc(100% - 30px);
+				height: 100%;
+				padding-bottom: 1px;
 
-        &__item {
-          padding: 10px;
-          min-height: 180px;
-          height: 180px;
-          cursor: pointer;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          border: 1px solid darken(#dee2e6, 10%);
-          background-color: white;
-          border-radius: 5px;
+				&__item {
+					padding: 10px;
+					min-height: 180px;
+					height: 180px;
+					cursor: pointer;
+					display: flex;
+					flex-direction: column;
+					justify-content: space-between;
+					border: 1px solid darken(#dee2e6, 10%);
+					background-color: white;
+					border-radius: 5px;
 
-          &:hover {
-            background-color: $primary-light;
-          }
+					&:hover {
+						background-color: $primary-light;
+					}
 
-          & &__date {
-            font-weight: 400;
-            color: gray;
-          }
+					& &__date {
+						font-weight: 400;
+						color: gray;
+					}
 
-          &__identifiers {
-            display: flex;
-            flex-direction: column;
+					&__identifiers {
+						display: flex;
+						flex-direction: column;
 
-            &__transactionNumber {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
+						&__transactionNumber {
+							display: flex;
+							justify-content: space-between;
+							align-items: center;
 
-              & &__label {
-                font-weight: 500;
-              }
+							& &__label {
+								font-weight: 500;
+							}
 
-              & &__value {
-                font-size: 1.2rem;
-                font-weight: 500;
-              }
-            }
+							& &__value {
+								font-size: 1.2rem;
+								font-weight: 500;
+							}
+						}
 
-            &__invoiceNumber {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            }
-          }
+						&__invoiceNumber {
+							display: flex;
+							justify-content: space-between;
+							align-items: center;
+						}
 
-          &__numbers {
-            display: flex;
-            flex-direction: column;
+						&__invoiceType {
+							display: flex;
+							justify-content: space-between;
+							align-items: center;
+						}
+					}
 
-            &__discount {
-              display: flex;
-              gap: 5px;
-              align-items: center;
-              justify-content: space-between;
-            }
+					&__numbers {
+						display: flex;
+						flex-direction: column;
 
-            &__amount {
-              display: flex;
-              gap: 5px;
-              align-items: center;
-              justify-content: space-between;
+						&__discount {
+							display: flex;
+							gap: 5px;
+							align-items: center;
+							justify-content: space-between;
+						}
 
-              & &__value {
-                font-size: 1.2rem;
-                font-weight: 600;
-                color: $primary;
-              }
-            }
-          }
-        }
-      }
+						&__amount {
+							display: flex;
+							gap: 5px;
+							align-items: center;
+							justify-content: space-between;
 
-      &__actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        height: 30px;
-        align-items: center;
-      }
-    }
+							& &__value {
+								font-size: 1.2rem;
+								font-weight: 600;
+								color: $primary;
+							}
+						}
+					}
+				}
+			}
 
-    &__payments {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 4px 12px -4px hsla(0, 0%, 8%, 0.1),
-        0 4px 6px -5px hsla(0, 0%, 8%, 0.05);
-      border: 1px solid #dee2e6;
-      background-color: white;
-      border-radius: 5px;
-      padding: 10px;
-      height: 100%;
-      width: 400px;
+			&__actions {
+				display: flex;
+				gap: 10px;
+				justify-content: flex-end;
+				height: 30px;
+				align-items: center;
+			}
+		}
 
-      &__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+		&__payments {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			box-shadow: 0 4px 12px -4px hsla(0, 0%, 8%, 0.1),
+				0 4px 6px -5px hsla(0, 0%, 8%, 0.05);
+			border: 1px solid #dee2e6;
+			background-color: white;
+			border-radius: 5px;
+			padding: 10px;
+			height: 100%;
+			width: 400px;
 
-        & &__title {
-          font-size: 1.1rem;
-          font-weight: 600;
-        }
-      }
+			&__header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
 
-      &__totalAmount {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+				& &__title {
+					font-size: 1.1rem;
+					font-weight: 600;
+				}
+			}
 
-        & &__label {
-          font-size: 1.1rem;
-        }
+			&__totalAmount {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
 
-        & &__value {
-          font-size: 1.3rem;
-          font-weight: 600;
-          color: $primary;
-        }
-      }
+				& &__label {
+					font-size: 1.1rem;
+				}
 
-      &__paymentsList {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        overflow: auto;
+				& &__value {
+					font-size: 1.3rem;
+					font-weight: 600;
+					color: $primary;
+				}
+			}
 
-        &__item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 10px;
+			&__paymentsList {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+				overflow: auto;
 
-          &__info {
-            display: flex;
-            flex-direction: column;
+				&__item {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					gap: 10px;
 
-            &__paymentType {
-              display: flex;
-              gap: 5px;
-              align-items: center;
+					&__info {
+						display: flex;
+						flex-direction: column;
 
-              & &__label {
-                font-weight: 400;
-                color: gray;
-              }
+						&__paymentType {
+							display: flex;
+							gap: 5px;
+							align-items: center;
 
-              & &__icon {
-                font-size: 1rem;
-                color: gray;
-              }
-            }
+							& &__label {
+								font-weight: 400;
+								color: gray;
+							}
 
-            & &__amount {
-              font-weight: 600;
-              font-size: 1.02rem;
-            }
-          }
+							& &__icon {
+								font-size: 1rem;
+								color: gray;
+							}
+						}
 
-          &__actions {
-            display: flex;
-          }
-        }
-      }
+						& &__amount {
+							font-weight: 600;
+							font-size: 1.02rem;
+						}
+					}
 
-      &__footer {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+					&__actions {
+						display: flex;
+					}
+				}
+			}
 
-        &__paymentsInfo {
-          display: flex;
-          flex-direction: column;
+			&__footer {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
 
-          &__paymentTotal {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+				&__paymentsInfo {
+					display: flex;
+					flex-direction: column;
 
-            & &__label {
-              font-size: 1.1rem;
-            }
+					&__paymentTotal {
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
 
-            & &__value {
-              font-size: 1.2rem;
-              font-weight: 600;
-              color: $primary;
-            }
-          }
+						& &__label {
+							font-size: 1.1rem;
+						}
 
-          &__paymentBalance {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+						& &__value {
+							font-size: 1.2rem;
+							font-weight: 600;
+							color: $primary;
+						}
+					}
 
-            & &__label {
-              font-size: 1rem;
-              color: darken(gray, 15%);
-            }
+					&__paymentBalance {
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
 
-            & &__valueAdvance {
-              font-size: 1.1rem;
-              font-weight: 600;
-              color: $primary-green;
-            }
+						& &__label {
+							font-size: 1rem;
+							color: darken(gray, 15%);
+						}
 
-            & &__valueBalance {
-              font-size: 1.1rem;
-              font-weight: 600;
-              color: $primary-red;
-            }
+						& &__valueAdvance {
+							font-size: 1.1rem;
+							font-weight: 600;
+							color: $primary-green;
+						}
 
-            & &__valueZero {
-              font-size: 1.1rem;
-              font-weight: 600;
-              color: lighten($primary, 30%);
-            }
+						& &__valueBalance {
+							font-size: 1.1rem;
+							font-weight: 600;
+							color: $primary-red;
+						}
 
-            // & &__value {
-            //   font-size: 1.1rem;
-            //   font-weight: 600;
-            //   // color: $primary;
-            //   color: lighten($primary, 30%);
-            // }
-          }
+						& &__valueZero {
+							font-size: 1.1rem;
+							font-weight: 600;
+							color: lighten($primary, 30%);
+						}
 
-          & &__paymentBalanceNote {
-            font-size: 0.8rem;
-            color: gray;
-          }
-        }
-      }
-    }
-  }
+						// & &__value {
+						//   font-size: 1.1rem;
+						//   font-weight: 600;
+						//   // color: $primary;
+						//   color: lighten($primary, 30%);
+						// }
+					}
+
+					& &__paymentBalanceNote {
+						font-size: 0.8rem;
+						color: gray;
+					}
+				}
+			}
+		}
+	}
 }
 
 .paymentTransactionOverlay {
-  background: lighten(gray, 46%);
-  pointer-events: none;
-  z-index: 2;
-  filter: grayscale(1);
+	background: lighten(gray, 46%);
+	pointer-events: none;
+	z-index: 2;
+	filter: grayscale(1);
 }

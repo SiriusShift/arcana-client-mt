@@ -25,6 +25,7 @@ import { InfoOutlined, Visibility } from "@mui/icons-material";
 import ViewPhotoModal from "../ViewPhotoModal";
 import useDisclosure from "../../../hooks/useDisclosure";
 import { useLazyGetListingFeeBalanceByIdQuery } from "../../../features/listing-fee/api/listingFeeApi";
+import ReceiptInput from "./ReceiptInput";
 
 function PaymentModalForm({
 	editMode,
@@ -81,6 +82,7 @@ function PaymentModalForm({
 
 	//Functions
 	const onSubmit = async (data) => {
+		console.log(data);
 		let transformedData;
 
 		if (data.paymentMethod.label === "Cheque") {
@@ -113,6 +115,7 @@ function PaymentModalForm({
 			transformedData = {
 				paymentMethod: data.paymentMethod,
 				paymentAmount: data.paymentAmount,
+				paymentReceipt: data.paymentReceipt,
 			};
 		}
 
@@ -362,288 +365,287 @@ function PaymentModalForm({
 								)}
 							/>
 						</Box>
+						{/* {watch("paymentMethod").label != "Cheque" &&
+							watch("paymentMethod").label != "Online" &&
+							watch("paymentMethod").label != "Withholding" && (
+								<ReceiptInput control={control} errors={errors} watch={watch} />
+							)} */}
 					</Box>
 
-					{watch("paymentMethod")?.label === "Cheque" && (
-						<Box className="paymentTransactionModal__otherFields">
-							<Controller
-								name="payee"
-								control={control}
-								defaultValue=""
-								render={({ field }) => (
-									<TextField
-										label="Payee"
-										size="small"
-										autoComplete="off"
-										{...field}
-										onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-										helperText={errors?.payee?.message}
-										error={errors?.payee}
-									/>
-								)}
-							/>
+					<Box className="paymentTransactionModal__otherFields">
+						{watch("paymentMethod")?.label !== "Advance Payment" &&
+							watch("paymentMethod")?.label !== "Listing Fee" &&
+							watch("paymentMethod")?.label !== "Offset" && (
+								<ReceiptInput
+									onViewPhotoOpen={onViewPhotoOpen}
+									control={control}
+									errors={errors}
+									watch={watch}
+								/>
+							)}
 
-							<Controller
-								name="chequeDate"
-								control={control}
-								render={({ field }) => (
-									<LocalizationProvider dateAdapter={AdapterMoment}>
-										<DatePicker
+						{watch("paymentMethod")?.label === "Cheque" && (
+							<>
+								<Controller
+									name="payee"
+									control={control}
+									defaultValue=""
+									render={({ field }) => (
+										<TextField
+											label="Payee"
+											size="small"
+											autoComplete="off"
 											{...field}
-											label="Cheque Date"
-											slotProps={{
-												textField: { size: "small" },
-											}}
-											renderInput={(params) => (
-												<TextField
-													{...params}
-													helperText={errors?.chequeDate?.message}
-													error={errors?.chequeDate}
-												/>
-											)}
+											onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+											helperText={errors?.payee?.message}
+											error={errors?.payee}
 										/>
-									</LocalizationProvider>
-								)}
-							/>
+									)}
+								/>
 
-							<Controller
-								name="bankName"
-								control={control}
-								defaultValue=""
-								render={({ field }) => (
-									<TextField
-										label="Bank Name"
-										size="small"
-										autoComplete="off"
-										{...field}
-										onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-										helperText={errors?.bankName?.message}
-										error={errors?.bankName}
-									/>
-								)}
-							/>
+								<Controller
+									name="chequeDate"
+									control={control}
+									render={({ field }) => (
+										<LocalizationProvider dateAdapter={AdapterMoment}>
+											<DatePicker
+												{...field}
+												label="Cheque Date"
+												slotProps={{
+													textField: { size: "small" },
+												}}
+												renderInput={(params) => (
+													<TextField
+														{...params}
+														helperText={errors?.chequeDate?.message}
+														error={errors?.chequeDate}
+													/>
+												)}
+											/>
+										</LocalizationProvider>
+									)}
+								/>
 
-							<Controller
-								name="chequeNo"
-								control={control}
-								defaultValue=""
-								render={({ field }) => (
-									<TextField
-										label="Cheque No."
-										size="small"
-										autoComplete="off"
-										{...field}
-										helperText={errors?.chequeNo?.message}
-										error={errors?.chequeNo}
-										type="number"
-									/>
-								)}
-							/>
-
-							<Controller
-								name="dateReceived"
-								control={control}
-								render={({ field }) => (
-									<LocalizationProvider dateAdapter={AdapterMoment}>
-										<DatePicker
+								<Controller
+									name="bankName"
+									control={control}
+									defaultValue=""
+									render={({ field }) => (
+										<TextField
+											label="Bank Name"
+											size="small"
+											autoComplete="off"
 											{...field}
-											label="Date Received"
-											slotProps={{
-												textField: { size: "small" },
-											}}
-											renderInput={(params) => (
-												<TextField
-													{...params}
-													helperText={errors?.dateReceived?.message}
-													error={errors?.dateReceived}
-												/>
-											)}
+											onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+											helperText={errors?.bankName?.message}
+											error={errors?.bankName}
 										/>
-									</LocalizationProvider>
-								)}
-							/>
+									)}
+								/>
 
-							{/* <Controller
-              control={control}
-              name="chequeAmount"
-              render={({ field: { onChange, onBlur, value, ref } }) => (
-                <NumericFormat
-                  label="Cheque Amount"
-                  type="text"
-                  size="small"
-                  customInput={TextField}
-                  autoComplete="off"
-                  onValueChange={(e) => {
-                    onChange(e.value === "" ? null : Number(e.value));
-                  }}
-                  onBlur={onBlur}
-                  inputRef={ref}
-                  value={value || ""}
-                  thousandSeparator=","
-                  allowNegative={false}
-                  allowLeadingZeros={false}
-                  prefix="₱"
-                  decimalScale={2}
-                />
-              )}
-            /> */}
-						</Box>
-					)}
+								<Controller
+									name="chequeNo"
+									control={control}
+									defaultValue=""
+									render={({ field }) => (
+										<TextField
+											label="Cheque No."
+											size="small"
+											autoComplete="off"
+											{...field}
+											helperText={errors?.chequeNo?.message}
+											error={errors?.chequeNo}
+											type="number"
+										/>
+									)}
+								/>
 
-					{watch("paymentMethod")?.label === "Online" && (
-						<Box className="paymentTransactionModal__otherFields">
-							<Controller
-								name="accountName"
-								control={control}
-								defaultValue=""
-								render={({ field }) => (
-									<TextField
-										label="Account Name"
-										size="small"
-										autoComplete="off"
-										{...field}
-										onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-										helperText={errors?.accountName?.message}
-										error={errors?.accountName}
-									/>
-								)}
-							/>
+								<Controller
+									name="dateReceived"
+									control={control}
+									render={({ field }) => (
+										<LocalizationProvider dateAdapter={AdapterMoment}>
+											<DatePicker
+												{...field}
+												label="Date Received"
+												slotProps={{
+													textField: { size: "small" },
+												}}
+												renderInput={(params) => (
+													<TextField
+														{...params}
+														helperText={errors?.dateReceived?.message}
+														error={errors?.dateReceived}
+													/>
+												)}
+											/>
+										</LocalizationProvider>
+									)}
+								/>
+							</>
+						)}
 
-							<Controller
-								name="accountNo"
-								control={control}
-								defaultValue=""
-								render={({ field }) => (
-									<TextField
-										label="Account Number"
-										size="small"
-										autoComplete="off"
-										{...field}
-										helperText={errors?.accountNo?.message}
-										error={errors?.accountNo}
-										type="number"
-									/>
-								)}
-							/>
+						{watch("paymentMethod")?.label === "Online" && (
+							<>
+								<Controller
+									name="accountName"
+									control={control}
+									defaultValue=""
+									render={({ field }) => (
+										<TextField
+											label="Account Name"
+											size="small"
+											autoComplete="off"
+											{...field}
+											onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+											helperText={errors?.accountName?.message}
+											error={errors?.accountName}
+										/>
+									)}
+								/>
 
-							<Controller
-								name="referenceNo"
-								control={control}
-								defaultValue=""
-								render={({ field }) => (
-									<TextField
-										label="Reference Number"
-										size="small"
-										autoComplete="off"
-										{...field}
-										helperText={errors?.referenceNo?.message}
-										error={errors?.referenceNo}
-										type="number"
-									/>
-								)}
-							/>
-						</Box>
-					)}
+								<Controller
+									name="accountNo"
+									control={control}
+									defaultValue=""
+									render={({ field }) => (
+										<TextField
+											label="Account Number"
+											size="small"
+											autoComplete="off"
+											{...field}
+											helperText={errors?.accountNo?.message}
+											error={errors?.accountNo}
+											type="number"
+										/>
+									)}
+								/>
 
-					{watch("paymentMethod")?.label === "Listing Fee" && (
-						<Box className="paymentTransactionModal__footer">
-							<Box className="paymentTransactionModal__footer__label">
-								<Typography className="paymentTransactionModal__footer__label__top">
-									Listing Fee
-								</Typography>
+								<Controller
+									name="referenceNo"
+									control={control}
+									defaultValue=""
+									render={({ field }) => (
+										<TextField
+											label="Reference Number"
+											size="small"
+											autoComplete="off"
+											{...field}
+											helperText={errors?.referenceNo?.message}
+											error={errors?.referenceNo}
+											type="number"
+										/>
+									)}
+								/>
+							</>
+						)}
 
-								<Typography className="paymentTransactionModal__footer__label__bottom">
-									(Current Balance)
+						{watch("paymentMethod")?.label === "Withholding" && (
+							<>
+								<Controller
+									name="attachment"
+									control={control}
+									render={({ field: { value, onChange, ...field } }) => (
+										<TextField
+											{...field}
+											value={value?.fileName}
+											onChange={(e) => {
+												onChange(e.target.files[0]);
+											}}
+											type="file"
+											size="small"
+											label="Attachment"
+											helperText={errors?.attachment?.message}
+											error={errors?.attachment}
+											InputLabelProps={{ shrink: true }}
+											InputProps={{
+												endAdornment: watch("attachment") && (
+													<InputAdornment position="end">
+														<IconButton onClick={onViewPhotoOpen}>
+															<Visibility />
+														</IconButton>
+													</InputAdornment>
+												),
+											}}
+										/>
+									)}
+								/>
+							</>
+						)}
+
+						{watch("paymentMethod")?.label === "Listing Fee" && (
+							<Box className="paymentTransactionModal__footer">
+								<Box className="paymentTransactionModal__footer__label">
+									<Typography className="paymentTransactionModal__footer__label__top">
+										Listing Fee
+									</Typography>
+
+									<Typography className="paymentTransactionModal__footer__label__bottom">
+										(Current Balance)
+									</Typography>
+								</Box>
+
+								<Typography className="paymentTransactionModal__footer__value">
+									₱
+									{listingFeeBalanceData?.totalBalance?.toLocaleString(undefined, {
+										minimumFractionDigits: 2,
+										maximumFractionDigits: 2,
+									})}
 								</Typography>
 							</Box>
+						)}
 
-							<Typography className="paymentTransactionModal__footer__value">
-								₱
-								{listingFeeBalanceData?.totalBalance?.toLocaleString(undefined, {
-									minimumFractionDigits: 2,
-									maximumFractionDigits: 2,
-								})}
-							</Typography>
-						</Box>
-					)}
+						{watch("paymentMethod")?.label === "Offset" && (
+							<Box className="paymentTransactionModal__otherFields">
+								<Controller
+									name="remarks"
+									control={control}
+									defaultValue=""
+									render={({ field }) => (
+										<TextField
+											label="Remarks"
+											size="small"
+											autoComplete="off"
+											multiline
+											maxRows={3}
+											{...field}
+											onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+											helperText={errors?.remarks?.message}
+											error={errors?.remarks}
+										/>
+									)}
+								/>
+							</Box>
+						)}
 
-					{watch("paymentMethod")?.label === "Offset" && (
-						<Box className="paymentTransactionModal__otherFields">
-							<Controller
-								name="remarks"
-								control={control}
-								defaultValue=""
-								render={({ field }) => (
-									<TextField
-										label="Remarks"
-										size="small"
-										autoComplete="off"
-										multiline
-										maxRows={3}
-										{...field}
-										onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-										helperText={errors?.remarks?.message}
-										error={errors?.remarks}
-									/>
-								)}
-							/>
-						</Box>
-					)}
+						{watch("paymentMethod")?.label === "Advance Payment" && (
+							<Box className="paymentTransactionModal__footer">
+								<Box className="paymentTransactionModal__footer__label">
+									<Typography className="paymentTransactionModal__footer__label__top">
+										Advance Payment
+									</Typography>
 
-					{watch("paymentMethod")?.label === "Advance Payment" && (
-						<Box className="paymentTransactionModal__footer">
-							<Box className="paymentTransactionModal__footer__label">
-								<Typography className="paymentTransactionModal__footer__label__top">
-									Advance Payment
-								</Typography>
+									<Typography className="paymentTransactionModal__footer__label__bottom">
+										(Current Balance)
+									</Typography>
+								</Box>
 
-								<Typography className="paymentTransactionModal__footer__label__bottom">
-									(Current Balance)
+								<Typography className="paymentTransactionModal__footer__value">
+									₱
+									{advancePaymentData?.remainingBalance?.toLocaleString(undefined, {
+										minimumFractionDigits: 2,
+										maximumFractionDigits: 2,
+									})}
 								</Typography>
 							</Box>
-
-							<Typography className="paymentTransactionModal__footer__value">
-								₱
-								{advancePaymentData?.remainingBalance?.toLocaleString(undefined, {
-									minimumFractionDigits: 2,
-									maximumFractionDigits: 2,
-								})}
-							</Typography>
-						</Box>
-					)}
-
-					{watch("paymentMethod")?.label === "Withholding" && (
-						<Box className="paymentTransactionModal__otherFields">
-							<Controller
-								name="attachment"
-								control={control}
-								render={({ field: { value, onChange, ...field } }) => (
-									<TextField
-										{...field}
-										value={value?.fileName}
-										onChange={(e) => {
-											onChange(e.target.files[0]);
-										}}
-										type="file"
-										size="small"
-										label="Attachment"
-										helperText={errors?.attachment?.message}
-										error={errors?.attachment}
-										InputLabelProps={{ shrink: true }}
-										InputProps={{
-											endAdornment: watch("attachment") && (
-												<InputAdornment position="end">
-													<IconButton onClick={onViewPhotoOpen}>
-														<Visibility />
-													</IconButton>
-												</InputAdornment>
-											),
-										}}
-									/>
-								)}
-							/>
-						</Box>
-					)}
+						)}
+						{/* 
+						{watch("paymentMethod")?.label === "Others" && (
+							<Box className="paymentTransactionModal__otherFields">
+								<Controller name="remarks" control={control} defaultValue="" />
+							</Box>
+						)} */}
+					</Box>
 				</Box>
 			</CommonModalForm>
 
