@@ -10,7 +10,7 @@ export default function ReceiptInput({
 }) {
 	return (
 		<Controller
-			name="paymentReceipt"
+			name="invoiceAttachment"
 			control={control}
 			render={({ field: { value, onChange, ...field } }) => (
 				<TextField
@@ -22,11 +22,11 @@ export default function ReceiptInput({
 					type="file"
 					size="small"
 					label="Receipt"
-					helperText={errors?.paymentReceipt?.message}
-					error={errors?.paymentReceipt}
+					helperText={errors?.invoiceAttachment?.message}
+					error={errors?.invoiceAttachment}
 					InputLabelProps={{ shrink: true }}
 					InputProps={{
-						endAdornment: watch("paymentReceipt") && (
+						endAdornment: watch("invoiceAttachment") && (
 							<InputAdornment position="end">
 								<IconButton onClick={onViewPhotoOpen}>
 									<Visibility />

@@ -89,6 +89,7 @@ function PaymentModalForm({
 			transformedData = {
 				paymentMethod: data.paymentMethod,
 				paymentAmount: data.paymentAmount,
+				invoiceAttachment: data.invoiceAttachment,
 				// chequeAmount: data.paymentAmount,
 				payee: data.payee,
 				chequeDate: data.chequeDate,
@@ -101,6 +102,7 @@ function PaymentModalForm({
 			transformedData = {
 				paymentMethod: data.paymentMethod,
 				paymentAmount: data.paymentAmount,
+				invoiceAttachment: data.invoiceAttachment,
 				accountName: data.accountName,
 				accountNo: data.accountNo,
 				referenceNo: data.referenceNo,
@@ -109,13 +111,14 @@ function PaymentModalForm({
 			transformedData = {
 				paymentMethod: data.paymentMethod,
 				paymentAmount: data.paymentAmount,
+				invoiceAttachment: data.invoiceAttachment,
 				attachment: data.attachment,
 			};
 		} else {
 			transformedData = {
 				paymentMethod: data.paymentMethod,
 				paymentAmount: data.paymentAmount,
-				paymentReceipt: data.paymentReceipt,
+				invoiceAttachment: data.invoiceAttachment,
 			};
 		}
 

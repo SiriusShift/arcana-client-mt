@@ -114,11 +114,14 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 
 		data.payments.map((payment, index) => {
 			const { paymentMethod, ...others } = payment;
+			console.log("others", payment);
 			formData.append(
 				`Payments[${index}].paymentMethod`,
 				payment.paymentMethod.value
 			);
 			formData.append(`Payments[${index}].paymentAmount`, payment.paymentAmount);
+			formData.append(`Payments[${index}].invoiceAttachment`, payment.invoiceAttachment);
+
 			// IF PAYMENT METHOD IS CHEQUE
 			payment.payee && formData.append(`Payments[${index}].payee`, payment.payee);
 			payment.chequeDate &&
@@ -487,7 +490,7 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 													</Typography>
 
 													<Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
-														{item.invoiceNo}
+														{item.invoiceType}
 													</Typography>
 												</Box>
 											</Box>

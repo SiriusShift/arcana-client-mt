@@ -63,7 +63,7 @@ function Clearing() {
 
 	const tableHeads = [
 		"Date",
-		"Customer Name",
+		"Business Name",
 		"Payment Channel",
 		"Payment Method",
 		"Reference No",
@@ -74,7 +74,7 @@ function Clearing() {
 
 	const customOrderKeys = [
 		"date",
-		"customerName",
+		"businessName",
 		"paymentChannel",
 		"paymentMethod",
 		"referenceNo",
