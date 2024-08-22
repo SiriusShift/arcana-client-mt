@@ -237,38 +237,39 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
                                       )}
                                     </Typography>
                                   </Box>
+                                  {paymentTransaction.invoiceAttachment && (
+                                    <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment">
+                                      <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__label">
+                                        {selectedRowData?.invoiceType === "Sales" ? "Collection" : "Acknowledgment"} Receipt:
+                                      </Typography>
 
-                                  <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment">
-                                    <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__label">
-                                      {selectedRowData?.invoiceType} Receipt:
-                                    </Typography>
-
-                                    <Typography
-                                      className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__value"
-                                      onClick={() =>
-                                        setReceiptImage(
-                                          paymentTransaction.invoiceAttachment
-                                        )
-                                      }
-                                    >
-                                      <IconButton
-                                        sx={{ color: "secondary.main", p: 0 }}
-                                        onClick={onViewOpenReceipt}
+                                      <Typography
+                                        className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__value"
+                                        onClick={() =>
+                                          setReceiptImage(
+                                            paymentTransaction.invoiceAttachment
+                                          )
+                                        }
                                       >
-                                        <Visibility />
-                                      </IconButton>
-                                      {/* {formatPesoAmount(paymentRecord.totalPayment)} */}
-                                    </Typography>
-                                  </Box>
+                                        <IconButton
+                                          sx={{ color: "secondary.main", p: 0 }}
+                                          onClick={onViewOpenReceipt}
+                                        >
+                                          <Visibility />
+                                        </IconButton>
+                                        {/* {formatPesoAmount(paymentRecord.totalPayment)} */}
+                                      </Typography>
+                                    </Box>
+                                  )}
 
                                   {/* Withholding Fields */}
-                                  {paymentTransaction.paymentMethod ===
-                                    "Withholding" && (
-                                      <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment">
+                                  {(paymentTransaction.paymentMethod ===
+                                    "Withholding" && paymentTransaction.withholdingAttachment) && (
+                                    <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment">
                                       <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__label">
                                         Attachment:
                                       </Typography>
-  
+
                                       <Typography
                                         className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__value"
                                         onClick={() =>

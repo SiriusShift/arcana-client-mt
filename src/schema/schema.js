@@ -779,10 +779,12 @@ export const paymentTransactionSchema = {
 			.array()
 			.of(yup.object())
 			.min(1, "At least one payment is required"),
+		invoiceNo: yup.array().of(yup.number()),
 	}),
 	defaultValues: {
 		transactionId: [],
 		payments: [],
+		invoiceNo: [],
 	},
 };
 

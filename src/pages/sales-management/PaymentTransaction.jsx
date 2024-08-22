@@ -38,6 +38,7 @@ function PaymentTransaction() {
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  console.log(selectedRowData);
 
   //Disclosures
   const {
@@ -204,6 +205,7 @@ function PaymentTransaction() {
             setPaymentMode={setPaymentMode}
             clientFromInvoicePage={clientFromInvoicePage}
             invoiceId={selectedRowData?.transactionNo}
+            invoiceNo={selectedRowData?.invoiceNo}
           />
         ) : (
           <>

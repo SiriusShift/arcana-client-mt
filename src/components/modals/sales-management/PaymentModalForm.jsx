@@ -11,6 +11,7 @@ import {
 	TextField,
 	Tooltip,
 	Typography,
+	Chip
 } from "@mui/material";
 import { paymentTypes } from "../../../utils/Constants";
 import { NumericFormat } from "react-number-format";
@@ -21,7 +22,7 @@ import { handleCatchErrorMessage } from "../../../utils/CustomFunctions";
 import useConfirm from "../../../hooks/useConfirm";
 import moment from "moment";
 import { useLazyGetAdvancePaymentBalanceQuery } from "../../../features/sales-management/api/advancePaymentApi";
-import { InfoOutlined, Visibility } from "@mui/icons-material";
+import { InfoOutlined, Visibility, ReceiptLong } from "@mui/icons-material";
 import ViewPhotoModal from "../ViewPhotoModal";
 import useDisclosure from "../../../hooks/useDisclosure";
 import { useLazyGetListingFeeBalanceByIdQuery } from "../../../features/listing-fee/api/listingFeeApi";
@@ -35,6 +36,7 @@ function PaymentModalForm({
 	selectedPayment,
 	paymentFields,
 	client,
+	invoice,
 	...props
 }) {
 	const { open, onClose } = props;
@@ -214,6 +216,11 @@ function PaymentModalForm({
 				height="450px"
 			>
 				<Box className="paymentTransactionModal">
+					<Box className="paymentTransactionModal__invoice">
+						{invoice.map((invoice, index) => (
+							<Chip key={index} color="primary" icon={<ReceiptLong/>} label={invoice} variant="outlined" />
+						))}
+					</Box>
 					<Box className="paymentTransactionModal__header">
 						<Box className="paymentTransactionModal__header__item">
 							<Typography>Payment Type</Typography>
@@ -642,10 +649,25 @@ function PaymentModalForm({
 								</Typography>
 							</Box>
 						)}
-						{/* 
-						{watch("paymentMethod")?.label === "Others" && (
-							<Box className="paymentTransactionModal__otherFields">
-								<Controller name="remarks" control={control} defaultValue="" />
+						{/* {watch("paymentMethod")?.label === "Others" && (
+							<Box className="paymentTransactionModal__footer">
+								<Box className="paymentTransactionModal__footer__label">
+									<Typography className="paymentTransactionModal__footer__label__top">
+										Others
+									</Typography>
+
+									<Typography className="paymentTransactionModal__footer__label__bottom">
+										(Current Balance)
+									</Typography>
+								</Box>
+
+								<Typography className="paymentTransactionModal__footer__value">
+									₱
+									{advancePaymentData?.remainingBalance?.toLocaleString(undefined, {
+										minimumFractionDigits: 2,
+										maximumFractionDigits: 2,
+									})}
+								</Typography>
 							</Box>
 						)} */}
 					</Box>

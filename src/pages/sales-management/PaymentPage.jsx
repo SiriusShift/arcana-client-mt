@@ -39,7 +39,7 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useLazyGetAllSalesTransactionQuery } from "../../features/sales-management/api/salesTransactionApi";
 import moment from "moment";
 
-function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
+function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId, invoiceNo }) {
 	const [client, setClient] = useState(null);
 	const [editMode, setEditMode] = useState(false);
 	const [selectedPayment, setSelectedPayment] = useState({});
@@ -62,6 +62,7 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 		onOpen: onPaymentHistoriesOpen,
 		onClose: onPaymentHistoriesClose,
 	} = useDisclosure();
+
 
 	//React Hook Form
 	const {
@@ -89,6 +90,7 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 
 	//Watch Constants
 	const watchTransactionIds = watch("transactionId");
+	const watchInvoiceNo = watch("invoiceNo");
 
 	//RTK Query
 	const [
@@ -205,6 +207,7 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 	};
 
 	const handleAddOpen = () => {
+		console.log(watch());
 		setEditMode(false);
 		onModalFormOpen();
 	};
@@ -214,18 +217,25 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 		onModalFormOpen();
 	};
 
-	const handleTransactionClick = (transactionId) => {
+	const handleTransactionClick = (transactionId, invoiceNo) => {
 		const currentTransactionIds = watch("transactionId") || [];
+		const currentInvoiceNos = watch("invoiceNo") || [];
 		const transactionIndex = currentTransactionIds.indexOf(transactionId);
+		const invoiceIndex = currentInvoiceNos.indexOf(invoiceNo);
 
-		if (transactionIndex === -1) {
+		if (transactionIndex === -1 && invoiceIndex === -1) {
 			// If not already selected, add it to the array
 			setValue("transactionId", [...currentTransactionIds, transactionId]);
+			setValue("invoiceNo", [...currentInvoiceNos, invoiceNo]);
 		} else {
 			// If already selected, remove it from the array
 			setValue(
 				"transactionId",
 				currentTransactionIds.filter((id) => id !== transactionId)
+			);
+			setValue(
+				"invoiceNo",
+				currentInvoiceNos.filter((id) => id !== invoiceNo)
 			);
 		}
 	};
@@ -237,9 +247,14 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 			(transaction) => transaction.transactionNo
 		);
 
+		const allInvoiceNo = transactionsData?.transactions?.map(
+			(transaction) => transaction.invoiceNo
+		);
+
 		if (checked) {
 			// If checkbox is checked, select all transaction IDs
 			setValue("transactionId", allTransactionIds);
+			setValue("invoiceNo", allInvoiceNo);
 		} else {
 			// If checkbox is unchecked, deselect all transaction IDs
 			setValue("transactionId", []);
@@ -306,10 +321,12 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 	useEffect(() => {
 		if (invoiceId && client) {
 			setValue("transactionId", [invoiceId]);
+			setValue("invoiceNo", [invoiceNo]);
 		}
 
 		return () => {
 			setValue("transactionId", []);
+			setValue("invoiceNo", []);
 		};
 	}, [invoiceId, client, setValue]);
 
@@ -447,7 +464,7 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 										<Box
 											key={item.transactionNo}
 											className="paymentPage__body__transactions__transactionsList__item"
-											onClick={() => handleTransactionClick(item.transactionNo)}
+											onClick={() => handleTransactionClick(item.transactionNo, item.invoiceNo)}
 											sx={{
 												bgcolor: watch("transactionId")?.includes(item.transactionNo)
 													? "primary.lightActive"
@@ -654,6 +671,7 @@ function PaymentPage({ setPaymentMode, clientFromInvoicePage, invoiceId }) {
 				selectedPayment={selectedPayment}
 				paymentFields={paymentFields}
 				client={client}
+				invoice={watchInvoiceNo}
 			/>
 
 			<PaymentHistoriesModal

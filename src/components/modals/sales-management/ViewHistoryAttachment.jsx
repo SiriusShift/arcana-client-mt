@@ -43,24 +43,28 @@ function ViewHistoriesAttachment({ image, title, ...props }) {
 							className="viewHistoryAttachments__canvas"
 						>
 							
-							{currentAttachment ? (
+							{currentAttachment && (
 								<img
 									src={
 										currentAttachment
 									}
 									alt="attachment-preview"
 									style={{
-										width: "75%",
+										borderRadius: "5px",
+										maxWidth: "100%",
+										maxHeight: "100%",
 									}}
 								/>
-							) : (
-								<>
-                                    <img src={NoData} alt="no-data" style={{maxWidth: "50%", maxHeight: "100%"}}/>
-									<Typography fontWeight="500" color="#333333A8" fontSize="1.1rem">
-										No receipt found
-									</Typography>
-								</>
-							)}
+							) 
+							// : (
+							// 	<>
+                            //         <img src={NoData} alt="no-data" style={{maxWidth: "50%", maxHeight: "100%"}}/>
+							// 		<Typography fontWeight="500" color="#333333A8" fontSize="1.1rem">
+							// 			No receipt found
+							// 		</Typography>
+							// 	</>
+							// )
+							}
 						</Box>
 					</span>
 				</Tooltip>
