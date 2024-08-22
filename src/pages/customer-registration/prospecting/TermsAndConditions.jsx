@@ -252,8 +252,6 @@ function TermsAndConditions({ direct, editMode, storeType }) {
       : signature;
   };
 
-  console.log(ownersRequirements, "ownersRequirements");
-
   return (
     <Box className="terms">
       <Box className="terms__column">
@@ -439,6 +437,216 @@ function TermsAndConditions({ direct, editMode, storeType }) {
             />
           </RadioGroup>
         </Box>
+
+        <Box className="terms__column__item">
+          <Box className="terms__column__item__title">
+            <Typography>Withholding Options</Typography>
+          </Box>
+          <RadioGroup
+            row
+            className="terms__column__item__choices"
+            value={termsAndConditions["withholdingIssuance"]}
+            onChange={(e) => {
+              dispatch(
+                setTermsAndConditions({
+                  property: "withholdingIssuance",
+                  value: e.target.value,
+                })
+              );
+            }}
+          >
+            <Box>
+                <FormControlLabel
+                  value={"Monthly"}
+                  control={<Radio />}
+                  label="Monthly"
+                />
+                <FormControlLabel
+                  value={"Quarterly"}
+                  control={<Radio />}
+                  label="Quarterly"
+                />
+              <Box className="terms__column__item__choicesNoSpace">
+                  <FormControlLabel
+                    value={"Semi-Annual"}
+                    control={<Radio />}
+                    label="Semi-Annual"
+                  />
+                    <FormControlLabel
+                    value={"Annual"}
+                    control={<Radio />}
+                    label="Annual"
+                  />
+              </Box>
+            </Box>
+          </RadioGroup>
+        </Box>
+
+        {/* <Box className="terms__column__item">
+          <Box className="terms__column__item__title">
+            <Typography>Terms</Typography>
+          </Box>
+          <RadioGroup
+            value={termsAndConditions["terms"]}
+            onChange={(e) => {
+              dispatch(
+                setTermsAndConditions({
+                  property: "terms",
+                  value: parseInt(e.target.value),
+                })
+              );
+            }}
+          >
+            <Box className="terms__column__item__choices">
+              <FormControlLabel
+                value={1}
+                control={<Radio data-testid="radio-cod" />}
+                label="COD"
+              />
+              <FormControlLabel
+                value={2}
+                control={<Radio />}
+                label="1 up 1 down"
+              />
+
+              {termsAndConditions["terms"] === 2 && (
+                // && termDaysData
+                <Autocomplete
+                  selectOnFocus
+                  clearOnBlur
+                  handleHomeEndKeys
+                  options={termDaysData?.termDays ?? []}
+                  loading={isTermDaysLoading}
+                  getOptionLabel={(option) => option.days?.toString() ?? ""}
+                  isOptionEqualToValue={() => true}
+                  disableClearable
+                  value={termsAndConditions["termDaysId"] ?? ""}
+                  defaultValue={termsAndConditions["termDaysId"] ?? ""}
+                  className="termsAndConditionsFirstSelect"
+                  sx={{
+                    width: "100px",
+                    // position: "absolute",
+                    // right: "-65px",
+                    // top: "10px",
+                    "& .MuiInputBase-root": {
+                      height: "30px",
+                    },
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      className="terms__select"
+                      label="Term Days"
+                      InputLabelProps={{ shrink: true }}
+                      sx={{
+                        "& input": {
+                          height: 0,
+                        },
+                      }}
+                    />
+                  )}
+                  onChange={(_, value) => {
+                    dispatch(
+                      setTermsAndConditions({
+                        property: "termDaysId",
+                        value,
+                      })
+                    );
+                  }}
+                />
+              )}
+            </Box>
+
+            <Box className="terms__column__item__choicesNoSpace">
+              <FormControlLabel
+                className="terms__column__item__choicesNoSpace__creditLimit"
+                // sx={{ ml: "28px" }}
+                value={3}
+                control={<Radio />}
+                label="Credit Limit"
+              />
+
+              {termsAndConditions["terms"] === 3 && (
+                <>
+                  <NumericFormat
+                    className="termsAndConditionsCreditLimit"
+                    customInput={TextField}
+                    sx={{
+                      width: "120px",
+                      "& .MuiInputBase-root": {
+                        height: "30px",
+                      },
+                    }}
+                    type="text"
+                    value={
+                      termsAndConditions["creditLimit"] != null
+                        ? termsAndConditions["creditLimit"].toString()
+                        : ""
+                    }
+                    onValueChange={(e) => {
+                      handleCreditLimitChange(e);
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment
+                          position="start"
+                          style={{ marginLeft: -3 }}
+                        >
+                          ₱
+                        </InputAdornment>
+                      ),
+                    }}
+                    thousandSeparator=","
+                  />
+
+                  <Autocomplete
+                    selectOnFocus
+                    clearOnBlur
+                    handleHomeEndKeys
+                    options={termDaysData?.termDays ?? []}
+                    isOptionEqualToValue={() => true}
+                    loading={isTermDaysLoading}
+                    getOptionLabel={(option) => option.days?.toString() ?? ""}
+                    disableClearable
+                    value={termsAndConditions["termDaysId"] ?? ""}
+                    defaultValue={termsAndConditions["termDaysId"] ?? ""}
+                    className="termsAndConditionsSecondSelect"
+                    sx={{
+                      width: "100px",
+                      position: "absolute",
+                      right: "-80px",
+                      top: "6px",
+                      "& .MuiInputBase-root": {
+                        height: "30px",
+                      },
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        className="terms__select"
+                        label="Term Days"
+                        InputLabelProps={{ shrink: true }}
+                        sx={{
+                          "& input": {
+                            height: 0,
+                          },
+                        }}
+                      />
+                    )}
+                    onChange={(_, value) => {
+                      dispatch(
+                        setTermsAndConditions({
+                          property: "termDaysId",
+                          value,
+                        })
+                      );
+                    }}
+                  />
+                </>
+              )}
+            </Box>
+          </RadioGroup>
+        </Box> */}
       </Box>
 
       <Box className="terms__column">

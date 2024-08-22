@@ -240,7 +240,7 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
                                   {paymentTransaction.invoiceAttachment && (
                                     <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment">
                                       <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__label">
-                                        {selectedRowData?.invoiceType === "Sales" ? "Collection" : "Acknowledgment"} Receipt:
+                                        {selectedRowData?.invoiceType === "Sales" ? "Acknowledgment" : "Collection"} Receipt:
                                       </Typography>
 
                                       <Typography

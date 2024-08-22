@@ -11,6 +11,8 @@ function TermsAndConditionsTab() {
     id: selectedRowData?.id,
   });
 
+  console.log("data", data);
+
   return (
     <Box className="viewRegistrationModal__termsAndConditions">
       <Box className="viewRegistrationModal__termsAndConditions__header">
@@ -61,6 +63,15 @@ function TermsAndConditionsTab() {
               </Typography>
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
                 {data?.bookingCoverage}
+              </Typography>
+            </Box>
+
+            <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
+              <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__label">
+                Withholding Issuance:
+              </Typography>
+              <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
+                {data?.withholdingIssuance ? data?.withholdingIssuance : "N/A"}
               </Typography>
             </Box>
 

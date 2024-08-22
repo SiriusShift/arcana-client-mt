@@ -265,6 +265,14 @@
           margin-left: 20px;
         }
 
+        &__annual{
+          margin-left: 28px;
+
+          @media (max-width: 999px) {
+            margin-left: 0;
+          }
+        }
+
         &__creditLimit {
           margin-left: 28px;
 

@@ -649,7 +649,7 @@ function PaymentModalForm({
 								</Typography>
 							</Box>
 						)}
-						{/* {watch("paymentMethod")?.label === "Others" && (
+						{watch("paymentMethod")?.label === "Others" && (
 							<Box className="paymentTransactionModal__footer">
 								<Box className="paymentTransactionModal__footer__label">
 									<Typography className="paymentTransactionModal__footer__label__top">
@@ -669,7 +669,7 @@ function PaymentModalForm({
 									})}
 								</Typography>
 							</Box>
-						)} */}
+						)}
 					</Box>
 				</Box>
 			</CommonModalForm>

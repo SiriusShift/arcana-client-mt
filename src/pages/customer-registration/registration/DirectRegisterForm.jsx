@@ -338,7 +338,7 @@ function DirectRegisterForm({
 
       const { terms, freezer, freezerAssetTag, ...noTerms } =
         termsAndConditions;
-
+        console.log(termsAndConditions)
       const transformedData = {
         ...data,
         dateOfBirth: moment(data?.dateOfBirth).format("YYYY-MM-DD"),
@@ -350,7 +350,6 @@ function DirectRegisterForm({
 
       const transformedTermsAndConditions = {
         ...noTerms,
-
         termDaysId: termsAndConditions?.termDaysId?.id,
         termsId: termsAndConditions?.terms,
         freezer: freezer ? freezerAssetTag : null,
@@ -934,6 +933,7 @@ function DirectRegisterForm({
             termsData?.bookingCoverage.substring(1),
             10
           ),
+          withholdingIssuance: termsData?.withholdingIssuance,
           // terms: termsData?.termId,
           terms: termsData?.termId,
           termDaysId: termDaysData?.termDays?.find(
