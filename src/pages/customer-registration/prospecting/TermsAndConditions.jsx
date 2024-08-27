@@ -55,6 +55,11 @@ function TermsAndConditions({ direct, editMode, storeType }) {
     // ownersRequirementsIsLink,
   } = useContext(AttachmentsContext);
 
+  console.log(requirementsMode)
+  console.log(ownersRequirements)
+  console.log(representativeRequirements)
+
+
   const requirementsModeToSelect =
     requirementsMode === "owner"
       ? ownersRequirements

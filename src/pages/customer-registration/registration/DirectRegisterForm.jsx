@@ -105,6 +105,7 @@ function DirectRegisterForm({
     setRepresentativeRequirementsIsLink,
     setRequirementsMode,
   } = useContext(AttachmentsContext);
+  
 
   const snackbar = useSnackbar();
 
@@ -112,6 +113,8 @@ function DirectRegisterForm({
   const [sameAsOwnersAddress, setSameAsOwnersAddress] = useState(false);
   const [includeAuthorizedRepresentative, setIncludeAuthorizedRepresentative] =
     useState(false);
+
+  console.log(includeAuthorizedRepresentative);
   const [isAllApiLoading, setIsAllApiLoading] = useState(false);
 
   const { ownersRequirements, representativeRequirements, requirementsMode } =
@@ -319,6 +322,8 @@ function DirectRegisterForm({
     triggerAttachments,
     { data: attachmentsData, isLoading: isAttachmentsDataLoading },
   ] = useLazyGetAttachmentsByClientIdQuery();
+
+  console.log(attachmentsData);
   const [
     triggerListingFee,
     { data: listingFeeData, isLoading: isListingFeeLoading },
@@ -960,7 +965,64 @@ function DirectRegisterForm({
 
       // Attachments
       // API Version
-      if (attachmentsData?.attachments?.length > 4) {
+      if(attachmentsData?.attachments?.length === 1){
+        if (includeAuthorizedRepresentative) {
+          setRequirementsMode("representative");
+
+          setRepresentativeRequirements({
+            signature: attachmentsData?.attachments?.find(
+              (item) => item.documentType === "Signature"
+            )?.documentLink,
+            // storePhoto: attachmentsData?.attachments?.find(
+            //   (item) => item.documentType === "Store Photo"
+            // )?.documentLink,
+            // businessPermit: attachmentsData?.attachments?.find(
+            //   (item) => item.documentType === "Business Permit"
+            // )?.documentLink,
+            // photoIdOwner: attachmentsData?.attachments?.find(
+            //   (item) => item.documentType === "Photo ID Owner"
+            // )?.documentLink,
+            // photoIdRepresentative: attachmentsData?.attachments?.find(
+            //   (item) => item.documentType === "Photo ID Representative"
+            // )?.documentLink,
+            // authorizationLetter: attachmentsData?.attachments?.find(
+            //   (item) => item.documentType === "Authorization Letter"
+            // )?.documentLink,
+          });
+          setRepresentativeRequirementsIsLink({
+            signature: true,
+            // storePhoto: true,
+            // businessPermit: true,
+            // photoIdOwner: true,
+            // photoIdRepresentative: true,
+            // authorizationLetter: true,
+          });
+        } else {
+          setRequirementsMode("owner");
+
+          setOwnersRequirements({
+            signature: attachmentsData?.attachments?.find(
+              (item) => item.documentType === "Signature"
+            )?.documentLink,
+            // storePhoto: attachmentsData?.attachments?.find(
+            //   (item) => item.documentType === "Store Photo"
+            // )?.documentLink,
+            // businessPermit: attachmentsData?.attachments?.find(
+            //   (item) => item.documentType === "Business Permit"
+            // )?.documentLink,
+            // photoIdOwner: attachmentsData?.attachments?.find(
+            //   (item) => item.documentType === "Photo ID Owner"
+            // )?.documentLink,
+          });
+          setOwnersRequirementsIsLink({
+            signature: true,  
+            // storePhoto: true,
+            // businessPermit: true,
+            // photoIdOwner: true,
+          });
+        }
+      }
+      else if (attachmentsData?.attachments?.length > 4) {
         if (includeAuthorizedRepresentative) {
           setRequirementsMode("representative");
         } else {
