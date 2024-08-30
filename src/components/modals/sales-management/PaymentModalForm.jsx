@@ -13,7 +13,7 @@ import {
   Typography,
   Chip,
 } from "@mui/material";
-import { paymentTypes, expensesType } from "../../../utils/Constants";
+import { paymentTypes } from "../../../utils/Constants";
 import { NumericFormat } from "react-number-format";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
@@ -27,7 +27,8 @@ import ViewPhotoModal from "../ViewPhotoModal";
 import useDisclosure from "../../../hooks/useDisclosure";
 import { useLazyGetListingFeeBalanceByIdQuery } from "../../../features/listing-fee/api/listingFeeApi";
 import { useLazyGetOtherExpensesByClientIdQuery } from "../../../features/registration/api/registrationApi";
-import ReceiptInput from "./ReceiptInput";
+import { useLazyGetOtherExpensesBalanceByClientIdQuery } from "../../../features/otherExpenses/api/otherExpensesRegApi";
+import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
 
 function PaymentModalForm({
   editMode,
@@ -42,7 +43,7 @@ function PaymentModalForm({
   ...props
 }) {
   const { open, onClose } = props;
-
+  console.log(expensesFields);
   const [initialEditAmount, setInitialEditAmount] = useState(0);
   //Hooks
   const confirm = useConfirm();
@@ -70,21 +71,30 @@ function PaymentModalForm({
   });
 
   //Watch Constants
-  // const watchPaymentMethod = watch("paymentMethod");
+  const otherExpenseType = watch("otherExpense");
 
   //RTK Query
+  const { data: expensesData, isLoading: isExpensesLoading } =
+  useGetAllOtherExpensesQuery({ Status: true, page: 1, pageSize: 1000 });
+
+  const expensesArray = expensesData?.otherExpenses;
   const [triggerAdvancePaymentBalance, { data: advancePaymentData }] =
     useLazyGetAdvancePaymentBalanceQuery();
   const [triggerListingFeeBalance, { data: listingFeeBalanceData }] =
     useLazyGetListingFeeBalanceByIdQuery();
   const [triggerOtherExpenses, { data: otherExpensesData }] =
     useLazyGetOtherExpensesByClientIdQuery();
-
+  const [triggerOtherExpensesBalance, {data: otherExpensesBalanceData}] = useLazyGetOtherExpensesBalanceByClientIdQuery();
+  console.log(otherExpensesBalanceData);
+  
   const remainingAdvancePayment = parseFloat(
     advancePaymentData?.remainingBalance
   );
   const remainingListingFee = parseFloat(listingFeeBalanceData?.totalBalance);
   const remainingOtherExpenses = parseFloat(otherExpensesData?.totalBalance);
+  const remainingOtherExpensesBalance = parseFloat(otherExpensesBalanceData?.totalBalance);
+
+  console.log(watch());
 
   //Functions
   const onSubmit = async (data) => {
@@ -219,10 +229,18 @@ function PaymentModalForm({
     triggerAdvancePaymentBalance,
     triggerListingFeeBalance,
     triggerOtherExpenses,
+    triggerOtherExpensesBalance,
     client,
   ]);
 
-  console.log(watch());
+  // console.log(expensesType.findIndex((e) => e.label === watch("otherExpense").label));
+
+  useEffect(() => {
+    if (otherExpenseType) {
+      triggerOtherExpensesBalance({ClientId: client.id, OtherExpenseId: otherExpenseType.id});
+    }
+  }, [otherExpenseType, triggerOtherExpensesBalance, client]);
+
   return (
     <>
       <CommonModalForm
@@ -701,13 +719,13 @@ function PaymentModalForm({
                 <ControlledAutocomplete
                   name="otherExpense"
                   control={control}
-                  options={expensesType.filter(
+                  options={expensesArray.filter(
                     (type) =>
                       !expensesFields?.some(
-                        (field) => field.otherExpense.label === type.label
+                        (field) => field.otherExpense.expenseType === type.expenseType
                       )
                   )}
-                  getOptionLabel={(option) => option.label.toUpperCase()}
+                  getOptionLabel={(option) => option.expenseType.toUpperCase()}
                   // renderOption={(props, option) => {
                   // 	const notifIcon = (
                   // 		<InfoOutlined
@@ -780,7 +798,7 @@ function PaymentModalForm({
 				<Box className="paymentTransactionModal__footer">
 				<Box className="paymentTransactionModal__footer__label">
 					<Typography className="paymentTransactionModal__footer__label__top">
-					{watch("otherExpense")?.label ?? "Others"}
+					{watch("otherExpense")?.expenseType ?? "Others"}
 					</Typography>
 
 					<Typography className="paymentTransactionModal__footer__label__bottom">
@@ -790,13 +808,13 @@ function PaymentModalForm({
 
 				<Typography className="paymentTransactionModal__footer__value">
 					₱
-					{remainingOtherExpenses?.remainingBalance?.toLocaleString(
+					{otherExpensesBalanceData ? otherExpensesBalanceData?.totalBalance?.toLocaleString(
 					undefined,
 					{
 						minimumFractionDigits: 2,
 						maximumFractionDigits: 2,
 					}
-					)}
+					) : "N/A"}
 				</Typography>
 				</Box>
               </>

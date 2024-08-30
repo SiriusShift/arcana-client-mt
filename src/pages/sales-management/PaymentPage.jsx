@@ -171,7 +171,7 @@ function PaymentPage({
       payment.otherExpense && 
         formData.append(
           `Payments[${index}].othersPayment`,
-          payment.otherExpense.value
+          payment.otherExpense.expenseType
         )
     });
 

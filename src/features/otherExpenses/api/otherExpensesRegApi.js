@@ -36,6 +36,17 @@ const otherExpensesRegApi = api
         invalidatesTags: ["Expenses", "Notification"],
       }),
 
+      getOtherExpensesBalanceByClientId: builder.query({
+        query: ({...params}) => ({
+          params: params,
+          url: `/other-expenses-client`,
+          method: "GET",
+        }),
+        providesTags: ["OtherExpensesById"],
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
+      }),
+
       putRejectExpenses: builder.mutation({
         query: ({ id, ...body }) => ({
           url: `/Expenses/RejectExpenseRequest/${id}`,
@@ -77,6 +88,8 @@ const otherExpensesRegApi = api
 export const {
   useGetAllExpensesQuery,
   usePostExpensesMutation,
+  useGetOtherExpensesBalanceByClientIdQuery,
+  useLazyGetOtherExpensesBalanceByClientIdQuery,
   usePutApproveExpensesMutation,
   usePutRejectExpensesMutation,
   usePutUpdateExpensesMutation,
