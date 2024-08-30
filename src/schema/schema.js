@@ -780,11 +780,15 @@ export const paymentTransactionSchema = {
 			.of(yup.object())
 			.min(1, "At least one payment is required"),
 		invoiceNo: yup.array().of(yup.number()),
+		receiptNo: yup.number().required("Receipt number is required"),
+		receiptAttachment: yup.mixed().required("Receipt attachment is required"),
 	}),
 	defaultValues: {
 		transactionId: [],
 		payments: [],
 		invoiceNo: [],
+		receiptAttachment: null,
+		receiptNo: null
 	},
 };
 
@@ -792,7 +796,7 @@ export const paymentSchema = {
 	schema: yup.object({
 		paymentMethod: yup.object().required("Payment Type is required"),
 		paymentAmount: yup.number().required("Amount is required"),
-		invoiceAttachment: yup.mixed().required("Invoice Attachment is required"),
+		// invoiceAttachment: yup.mixed().required("Invoice Attachment is required"),
 
 		//Cheque Validations
 		payee: yup.string().when("paymentMethod.label", {
@@ -858,6 +862,13 @@ export const paymentSchema = {
 			then: (schema) => schema.required("Attachment  is required"),
 			otherwise: (schema) => schema.nullable(),
 		}),
+
+		//Others
+		otherExpense: yup.object().when("paymentMethod.label", {
+			is: "Others",
+			then: (schema) => schema.required("Other expense is required"),
+			otherwise: (schema) => schema.nullable(),
+		})
 	}),
 	defaultValues: {
 		paymentMethod: null,
@@ -872,8 +883,9 @@ export const paymentSchema = {
 		accountNo: "",
 		referenceNo: "",
 		remarks: "",
-		invoiceAttachment: null,
+		// invoiceAttachment: null,
 		attachment: null,
+		otherExpense: null
 	},
 };
 

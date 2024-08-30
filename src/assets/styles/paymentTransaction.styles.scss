@@ -239,6 +239,25 @@
 			height: 100%;
 			width: 400px;
 
+			&__receipt{
+				display: grid;
+				grid-template-columns: auto auto;
+				gap: 10px;
+
+				&__canvas {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					padding: 5px;
+					//Gray
+					border: $secondary 1px solid;
+					border-radius: 4px;
+					gap: 5px;
+					cursor: pointer;
+					object-fit: cover;
+				}
+			}
+
 			&__header {
 				display: flex;
 				justify-content: space-between;

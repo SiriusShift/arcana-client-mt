@@ -27,7 +27,7 @@ const otherExpensesRegApi = api
         transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
       }),
-
+      
       putApproveExpenses: builder.mutation({
         query: ({ id }) => ({
           url: `/Expenses/ApproveExpense/${id}`,

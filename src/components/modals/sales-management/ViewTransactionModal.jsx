@@ -116,6 +116,12 @@ function ViewTransactionModal({ ...props }) {
 											: ""
 									}`}
 								</Typography>
+							</Box>	
+							<Box className="viewTransactionSlipModal__details__left__row">
+								<Typography fontWeight="700" textTransform="uppercase">
+									Remarks:{" "}
+								</Typography>
+								<Typography>{data?.remarks ? data?.remarks : "N/A"}</Typography>
 							</Box>
 						</Box>
 
@@ -138,7 +144,7 @@ function ViewTransactionModal({ ...props }) {
 								<Typography fontWeight="700" textTransform="uppercase">
 									Tin No:{" "}
 								</Typography>
-								<Typography>{data?.tin}</Typography>
+								<Typography>{data?.tin ? data?.tin : "N/A"}</Typography>
 							</Box>
 						</Box>
 					</Box>

@@ -56,6 +56,27 @@ export const paymentTypes = [
 	},
 ];
 
+export const expensesType = [
+	{
+		label: "Electricity",
+		value: "Electricity",
+		uppercase: "ELECTRICITY",
+		icon: "ElectricBolt"
+	},
+	{
+		label: "Merchandising Allowance",
+		value: "Merchandising Allowance",
+		uppercase: "MERCHANDISING ALLOWANCE",
+		icon: "LocalMall"
+	},
+	{
+		label: "Withholding Tax",
+		value: "Withholding Tax",
+		uppercase: "WITHHOLDING TAX",
+		icon: "AccountBalance"
+	}
+]
+
 export const paymentTypesAdvPayment = [
   {
     label: "Cheque",

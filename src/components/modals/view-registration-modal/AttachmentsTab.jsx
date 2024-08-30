@@ -93,9 +93,10 @@ function AttachmentsTab() {
               <Box className="viewRegistrationModal__attachments__content__fields">
                 <Box className="viewRegistrationModal__attachments__content__fields__item">
                   <Typography className="viewRegistrationModal__attachments__content__fields__item__label">
-                    {isRepresentativeRequirements
+                    Signature
+                    {/* {isRepresentativeRequirements
                       ? "Representative's Signature:"
-                      : "Owner's Signature:"}
+                      : "Owner's Signature:"} */}
                   </Typography>
                   <SecondaryButton
                     onClick={() => {

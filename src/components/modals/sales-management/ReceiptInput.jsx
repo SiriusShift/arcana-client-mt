@@ -1,6 +1,7 @@
 import { Controller } from "react-hook-form";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
 import { Visibility } from "@mui/icons-material";
+import SecondaryButton from "../../SecondaryButton";
 
 export default function ReceiptInput({
 	control,
@@ -13,7 +14,14 @@ export default function ReceiptInput({
 			name="invoiceAttachment"
 			control={control}
 			render={({ field: { value, onChange, ...field } }) => (
-				<TextField
+				<SecondaryButton outlined>
+
+        Upload Receipt
+        <input type="file" hidden onChange={(e) => {
+			onChange(e.target.files[0]);
+		}} />
+
+					{/* <TextField
 					{...field}
 					value={value?.fileName}
 					onChange={(e) => {
@@ -34,7 +42,8 @@ export default function ReceiptInput({
 							</InputAdornment>
 						),
 					}}
-				/>
+				/> */}
+				</SecondaryButton>
 			)}
 		/>
 	);

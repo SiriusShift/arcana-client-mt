@@ -114,7 +114,7 @@ function DirectRegisterForm({
   const [includeAuthorizedRepresentative, setIncludeAuthorizedRepresentative] =
     useState(false);
 
-  console.log(includeAuthorizedRepresentative);
+  // console.log(includeAuthorizedRepresentative);
   const [isAllApiLoading, setIsAllApiLoading] = useState(false);
 
   const { ownersRequirements, representativeRequirements, requirementsMode } =
@@ -131,6 +131,8 @@ function DirectRegisterForm({
   const termsAndConditions = useSelector(
     (state) => state.regularRegistration.value.termsAndConditions
   );
+
+  // console.log(termsAndConditions);
   const freebiesDirect = useSelector(
     (state) => state.regularRegistration.value.directFreebie.freebies
   );
@@ -229,6 +231,10 @@ function DirectRegisterForm({
             if (termsAndConditions[key]?.length === 0) {
               return false;
             }
+            return true;
+          }
+          
+          if(key === "withholdingIssuance"){
             return true;
           }
 
@@ -343,7 +349,6 @@ function DirectRegisterForm({
 
       const { terms, freezer, freezerAssetTag, ...noTerms } =
         termsAndConditions;
-        console.log(termsAndConditions)
       const transformedData = {
         ...data,
         dateOfBirth: moment(data?.dateOfBirth).format("YYYY-MM-DD"),

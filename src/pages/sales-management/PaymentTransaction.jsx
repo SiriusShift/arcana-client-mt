@@ -20,6 +20,7 @@ import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import moment from "moment";
 import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
+import ViewTransactionModal from "../../components/modals/sales-management/ViewTransactionModal";
 
 function PaymentTransaction() {
   const [paymentMode, setPaymentMode] = useState(false);
@@ -46,6 +47,13 @@ function PaymentTransaction() {
     onOpen: onPaymentHistoriesOpen,
     onClose: onPaymentHistoriesClose,
   } = useDisclosure();
+
+  const {
+    isOpen: isViewOpen,
+    onOpen: onViewOpen,
+    onClose: onViewClose,
+  } = useDisclosure();
+
 
   //RTK Query
   const { data: transactionData, isFetching: isTransactionFetching } =
@@ -270,6 +278,7 @@ function PaymentTransaction() {
                   // ) &&
                   onVoid
                 }
+                onView={transactionStatus === "Paid" && onViewOpen}
                 onPaymentHistories={onPaymentHistoriesOpen}
                 onPay={transactionStatus === "Pending" && onPay}
               />
@@ -282,6 +291,9 @@ function PaymentTransaction() {
         open={isPaymentHistoriesOpen}
         onClose={onPaymentHistoriesClose}
       />
+
+      <ViewTransactionModal open={isViewOpen} onClose={onViewClose} />
+
     </>
   );
 }

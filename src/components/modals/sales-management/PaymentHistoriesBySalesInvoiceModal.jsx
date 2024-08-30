@@ -101,7 +101,6 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
     }
   }, [paymentHistoriesData, open]);
 
-  console.log(expandedPaymentType);
 
   useEffect(() => {
     if (open) {
@@ -117,7 +116,6 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
     }
   }, [open, triggerHistories, selectedRowData]);
 
-  console.log(paymentHistoriesData);
 
   return (
     <>

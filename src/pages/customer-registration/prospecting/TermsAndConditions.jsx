@@ -9,8 +9,10 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
+import CreateIcon from "@mui/icons-material/Create";
 import { useContext, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -22,7 +24,7 @@ import useSnackbar from "../../../hooks/useSnackbar";
 import SecondaryButton from "../../../components/SecondaryButton";
 import useDisclosure from "../../../hooks/useDisclosure";
 import FreebieForm from "./FreebieForm";
-import { Cancel, Edit } from "@mui/icons-material";
+import { Cancel, Edit, Watch } from "@mui/icons-material";
 import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
 import { NumericFormat } from "react-number-format";
 import FreezerAssetTagModal from "../../../components/modals/registration/FreezerAssetTagModal";
@@ -55,10 +57,9 @@ function TermsAndConditions({ direct, editMode, storeType }) {
     // ownersRequirementsIsLink,
   } = useContext(AttachmentsContext);
 
-  console.log(requirementsMode)
-  console.log(ownersRequirements)
-  console.log(representativeRequirements)
-
+  // console.log(requirementsMode);
+  // console.log(ownersRequirements);
+  // console.log(representativeRequirements);
 
   const requirementsModeToSelect =
     requirementsMode === "owner"
@@ -461,27 +462,27 @@ function TermsAndConditions({ direct, editMode, storeType }) {
             }}
           >
             <Box>
-                <FormControlLabel
-                  value={"Monthly"}
-                  control={<Radio />}
-                  label="Monthly"
-                />
-                <FormControlLabel
-                  value={"Quarterly"}
-                  control={<Radio />}
-                  label="Quarterly"
-                />
+              <FormControlLabel
+                value={"Monthly"}
+                control={<Radio />}
+                label="Monthly"
+              />
+              <FormControlLabel
+                value={"Quarterly"}
+                control={<Radio />}
+                label="Quarterly"
+              />
               <Box className="terms__column__item__choicesNoSpace">
-                  <FormControlLabel
-                    value={"Semi-Annual"}
-                    control={<Radio />}
-                    label="Semi-Annual"
-                  />
-                    <FormControlLabel
-                    value={"Annual"}
-                    control={<Radio />}
-                    label="Annual"
-                  />
+                <FormControlLabel
+                  value={"Semi-Annual"}
+                  control={<Radio />}
+                  label="Semi-Annual"
+                />
+                <FormControlLabel
+                  value={"Annual"}
+                  control={<Radio />}
+                  label="Annual"
+                />
               </Box>
             </Box>
           </RadioGroup>
@@ -964,12 +965,27 @@ function TermsAndConditions({ direct, editMode, storeType }) {
           />
         )}
 
-        <Box onClick={onCanvasOpen}>
+        <Box className="terms__row__item__title">
+          <Typography>Signature</Typography>
+          <Tooltip title="Edit" placement="right" arrow >
+            {ownersRequirements["signature"] ||
+            representativeRequirements["signature"] ? (
+              <IconButton
+                sx={{ position: "absolute", right: "10px" }}
+                onClick={onCanvasOpen}
+              >
+                <Edit sx={{ fontSize: "20px", color: "#FFFFFF" }} />
+              </IconButton>
+            ) : ""}
+          </Tooltip>
+        </Box>
+
+        <Box className={ownersRequirements["signature"] ||
+            representativeRequirements["signature"] ? "terms__row__item__signature" : ""}>
           <Box
             sx={{
               display: "flex",
               mt: direct ? "40px" : "60px",
-              cursor: "pointer",
             }}
           >
             {requirementsModeToSelect["signature"] ? (
@@ -996,7 +1012,12 @@ function TermsAndConditions({ direct, editMode, storeType }) {
                 />
               </Box>
             ) : (
-              <SecondaryButton fullWidth size="medium" endIcon={<Edit />}>
+              <SecondaryButton
+                onClick={onCanvasOpen}
+                fullWidth
+                size="medium"
+                endIcon={<Edit />}
+              >
                 Sign here
               </SecondaryButton>
             )}

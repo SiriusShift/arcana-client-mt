@@ -1,10 +1,10 @@
 import { Button } from "@mui/material";
 
-function SecondaryButton({ medium, children, ...otherProps }) {
+function SecondaryButton({ medium, outlined, children, ...otherProps }) {
   return (
     <Button
       size={medium ? "medium" : "small"}
-      variant="contained"
+      variant={outlined ? "outlined" : "contained"}
       color="secondary"
       {...otherProps}
     >
