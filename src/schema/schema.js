@@ -910,12 +910,16 @@ export const cashoutSchema = {
 		invoiceType: yup.string().required("Invoice Type is required"),
 		discount: yup.number().required("Discount is required").nullable(),
 		specialDiscount: yup.number().nullable(),
+		specialDiscountId: yup.number().nullable(),
+		isOneTimeSp: yup.bool().nullable(),
 	}),
 	defaultValues: {
 		invoiceNo: "",
 		invoiceType: "",
 		discount: null,
 		specialDiscount: null,
+		specialDiscountId: null,
+		isOneTimeSp: null,
 	},
 };
 

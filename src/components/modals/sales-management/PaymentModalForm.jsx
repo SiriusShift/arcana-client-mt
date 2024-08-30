@@ -82,17 +82,18 @@ function PaymentModalForm({
     useLazyGetAdvancePaymentBalanceQuery();
   const [triggerListingFeeBalance, { data: listingFeeBalanceData }] =
     useLazyGetListingFeeBalanceByIdQuery();
-  const [triggerOtherExpenses, { data: otherExpensesData }] =
-    useLazyGetOtherExpensesByClientIdQuery();
   const [triggerOtherExpensesBalance, {data: otherExpensesBalanceData}] = useLazyGetOtherExpensesBalanceByClientIdQuery();
   console.log(otherExpensesBalanceData);
+  
   
   const remainingAdvancePayment = parseFloat(
     advancePaymentData?.remainingBalance
   );
   const remainingListingFee = parseFloat(listingFeeBalanceData?.totalBalance);
-  const remainingOtherExpenses = parseFloat(otherExpensesData?.totalBalance);
   const remainingOtherExpensesBalance = parseFloat(otherExpensesBalanceData?.totalBalance);
+
+  console.log(watch("attachment"));
+
 
   console.log(watch());
 
@@ -199,8 +200,8 @@ function PaymentModalForm({
   useEffect(() => {
     if (editMode && open) {
       const { index, ...paymentInfo } = selectedPayment;
-
       Object.keys(paymentInfo).forEach((key) => {
+        console.log("key",paymentInfo[key]);
         if (key === "chequeDate" || key === "dateReceived") {
           setValue(key, paymentInfo[key] ? moment(paymentInfo[key]) : null);
           return;
@@ -222,13 +223,11 @@ function PaymentModalForm({
     if (open) {
       triggerAdvancePaymentBalance({ id: client.id });
       triggerListingFeeBalance({ id: client.id });
-      triggerOtherExpenses({ id: client.id });
     }
   }, [
     open,
     triggerAdvancePaymentBalance,
     triggerListingFeeBalance,
-    triggerOtherExpenses,
     triggerOtherExpensesBalance,
     client,
   ]);
@@ -606,12 +605,14 @@ function PaymentModalForm({
               </>
             )}
 
+
             {watch("paymentMethod")?.label === "Withholding" && (
               <>
                 <Controller
                   name="attachment"
                   control={control}
-                  render={({ field: { value, onChange, ...field } }) => (
+                  render={({ field: { value, onChange, ...field } }) => {
+                    return (
                     <TextField
                       {...field}
                       value={value?.fileName}
@@ -634,7 +635,7 @@ function PaymentModalForm({
                         ),
                       }}
                     />
-                  )}
+                  )}}
                 />
               </>
             )}

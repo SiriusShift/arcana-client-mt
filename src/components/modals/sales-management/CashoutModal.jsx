@@ -69,6 +69,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   const client = orderData?.clientId;
   const items = orderData?.items;
 
+
   //RTK Query
   const [createSalesTransaction] = useCreateSalesTransactionMutation();
   const { data: variableDiscountData } = useGetAllDiscountTypesQuery({
@@ -101,11 +102,15 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
       })),
     };
 
+    console.log("Data", data);
+
     const combinedData = {
       ...transformedOrderData,
       ...data,
       discount: data.discount || 0,
       specialDiscount: data.specialDiscount || 0,
+      specialDiscountId: data.specialDiscountId || null,
+      isOneTimeSp: data.isOneTimeSp || null,
     };
 
     try {
@@ -157,8 +162,10 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   useEffect(() => {
     if (open) {
       !client?.variableDiscount &&
-        setValue("discount", client?.discountPercentage * 100);
+      setValue("discount", client?.discountPercentage * 100);
       setValue("specialDiscount", client?.specialDiscount * 100);
+      setValue("specialDiscountId", client?.specialDiscountId);
+      setValue("isOneTimeSp", client?.isOnetimeSp);
     }
   }, [open, setValue, client]);
 
