@@ -125,11 +125,11 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
 
       resetTransaction();
       handleClose();
-
       snackbar({
         message: "Transaction successfully added!",
         variant: "success",
       });
+      // navigate(0);
     } catch (error) {
       if (error?.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });

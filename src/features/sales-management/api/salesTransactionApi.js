@@ -26,7 +26,7 @@ const salesTransactionApi = api
           method: "POST",
           body,
         }),
-        invalidatesTags: ["Sales Transaction"],
+        invalidatesTags: ["Sales Transaction", "Clients POS"],
       }),
 
       getAllSalesTransaction: builder.query({
