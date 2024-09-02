@@ -124,7 +124,7 @@ function PaymentPage({
 
     data.transactionId.map((id, index) => formData.append(`transactionId`, id));
     formData.append(`receiptNo`, data.receiptNo);
-    formData.append(`receiptAttachment`, data.receiptAttachment);
+    formData.append(`receipt`, data.receiptAttachment);
 
     data.payments.map((payment, index) => {
       const { paymentMethod, ...others } = payment;
@@ -258,6 +258,8 @@ function PaymentPage({
       );
     }
   };
+
+  console.log(watch());
 
   const handleSelectAll = (e) => {
     const { checked } = e.target;

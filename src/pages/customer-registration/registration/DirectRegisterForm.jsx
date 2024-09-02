@@ -128,6 +128,7 @@ function DirectRegisterForm({
   } = useContext(DirectReleaseContext);
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  console.log("selected row",selectedRowData);
   const termsAndConditions = useSelector(
     (state) => state.regularRegistration.value.termsAndConditions
   );
@@ -244,7 +245,7 @@ function DirectRegisterForm({
       icon: <Gavel />,
       disabled: false,
     },
-
+    
     termsAndConditions["terms"] !== 1 && {
       label: "Attachments",
       isValid:
@@ -268,6 +269,7 @@ function DirectRegisterForm({
       disabled: false,
     },
   ].filter(Boolean);
+
 
   navigators[1].disabled = !editMode && activeTab === "Personal Info";
   navigators[2].disabled = !navigators[0].isValid || !navigators[1].isValid;
@@ -307,6 +309,7 @@ function DirectRegisterForm({
       Page: 1,
       PageSize: 1000,
     });
+    console.log("cluster",clusterData);
   const { data: productData } = useGetAllProductsQuery({
     Status: true,
     page: 1,
@@ -329,7 +332,6 @@ function DirectRegisterForm({
     { data: attachmentsData, isLoading: isAttachmentsDataLoading },
   ] = useLazyGetAttachmentsByClientIdQuery();
 
-  console.log(attachmentsData);
   const [
     triggerListingFee,
     { data: listingFeeData, isLoading: isListingFeeLoading },
@@ -341,6 +343,8 @@ function DirectRegisterForm({
 
   const { data: priceModeData, isLoading: isPriceModeLoading } =
     useGetAllPriceModeForClientsQuery();
+
+    // console.log(watch())
 
   //Drawer Functions
   const onSubmit = async (data) => {
@@ -791,9 +795,9 @@ function DirectRegisterForm({
             selectedRowData?.currentApproverPhoneNumber,
           ...getValues(),
           dateOfBirth: getValues().dateOfBirth.format("YYYY-MM-DD"),
-          clusterId: selectedRowData?.clusterId,
-          priceModeId: selectedRowData?.priceModeId,
-          storeType: selectedRowData?.storeType,
+          clusterId: watch("clusterId"),
+          priceModeId: watch("priceModeId"),
+          storeType: watch("storeTypeId"),
         })
       );
     } else if (
@@ -810,6 +814,7 @@ function DirectRegisterForm({
       setActiveTab("Costs and Fees");
     }
   };
+  console.log("watch", watch());
 
   const handleBack = () => {
     if (activeTab === "Terms & Conditions") {
@@ -901,19 +906,19 @@ function DirectRegisterForm({
       setValue(
         "storeTypeId",
         storeTypeData?.storeTypes?.find(
-          (item) => item.storeTypeName === selectedRowData?.storeType
+          (item) => item.storeTypeName === selectedRowData?.storeType || selectedRowData.storeType.id === item.id
         )
       );
       setValue("businessAddress", selectedRowData?.businessAddress);
       setValue(
         "clusterId",
         clusterData?.cluster?.find(
-          (item) => selectedRowData?.clusterId === item.id
+          (item) => selectedRowData?.clusterId === item.id || selectedRowData.clusterId.id === item.id
         )
       );
       setValue(
         "priceModeId",
-        priceModeData.find((item) => selectedRowData?.priceModeId === item.id)
+        priceModeData.find((item) => selectedRowData?.priceModeId === item.id || selectedRowData.priceModeId.id === item.id)
       );
       setValue(
         "authorizedRepresentative",
