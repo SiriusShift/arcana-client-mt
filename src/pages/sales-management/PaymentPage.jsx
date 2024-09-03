@@ -5,11 +5,12 @@ import {
   Payment,
   Receipt,
   RemoveCircleOutline,
-  AttachFile,
+  Visibility 
 } from "@mui/icons-material";
 import {
   Autocomplete,
   Box,
+  InputAdornment,
   Button,
   Checkbox,
   Divider,
@@ -41,6 +42,7 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { useLazyGetAllSalesTransactionQuery } from "../../features/sales-management/api/salesTransactionApi";
 import moment from "moment";
 import ReceiptInput from "../../components/modals/sales-management/ReceiptInput";
+import ViewPhotoModal from "../../components/modals/ViewPhotoModal";
 
 function PaymentPage({
   setPaymentMode,
@@ -70,6 +72,12 @@ function PaymentPage({
     isOpen: isPaymentHistoriesOpen,
     onOpen: onPaymentHistoriesOpen,
     onClose: onPaymentHistoriesClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isViewPhotoOpen,
+    onOpen: onViewPhotoOpen,
+    onClose: onViewPhotoClose,
   } = useDisclosure();
 
   //React Hook Form
@@ -642,7 +650,37 @@ function PaymentPage({
 
             <Divider sx={{ borderStyle: "dashed" }} />
             <Box className="paymentPage__body__payments__receipt">
-              <Controller
+
+            <Controller
+                  name="receiptAttachment"
+                  control={control}
+                  render={({ field: { value, onChange, ...field } }) => {
+                    return (
+                    <TextField
+                      {...field}
+                      value={value?.fileName}
+                      onChange={(e) => {
+                        onChange(e.target.files[0]);
+                      }}
+                      type="file"
+                      size="small"
+                      label="Attachment"
+                      helperText={errors?.attachment?.message}
+                      error={errors?.attachment}
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{
+                        endAdornment: watch("receiptAttachment") && (
+                          <InputAdornment position="end">
+                            <IconButton onClick={onViewPhotoOpen}>
+                              <Visibility />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}}
+                />
+              {/* <Controller
                 name="receiptAttachment"
                 control={control}
                 render={({ field: { onChange, onBlur, value } }) => (
@@ -656,11 +694,10 @@ function PaymentPage({
                     onBlur={onBlur}
                     value={value?.fileName || ""}
                     inputRef={receiptUploadRef}
-                    sx={{ display: "none" }}
                   ></Input>
                 )}
-              />
-              <Box
+              /> */}
+              {/* <Box
                 className="paymentPage__body__payments__receipt__canvas"
                 onClick={() => receiptUploadRef.current.click()}
               >
@@ -669,7 +706,7 @@ function PaymentPage({
                 <Typography fontWeight="500" color="#333333A8">
                   Receipt
                 </Typography>
-              </Box>
+              </Box> */}
 
               <Controller
                 name="receiptNo"
@@ -759,6 +796,12 @@ function PaymentPage({
         expensesFields={expensesFields}
         client={client}
         invoice={watchInvoiceNo}
+      />
+
+      <ViewPhotoModal
+        currentViewPhoto={watch("receiptAttachment")}
+        open={isViewPhotoOpen}
+        onClose={onViewPhotoClose}
       />
 
       <PaymentHistoriesModal

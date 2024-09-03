@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import CommonTable from "../../components/CommonTable";
 import useDisclosure from "../../hooks/useDisclosure";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
+import SessionExpired from "../SessionExpired";
 import {
   usePatchUserStatusMutation,
   useGetAllUsersQuery,
@@ -16,6 +17,7 @@ import useSnackbar from "../../hooks/useSnackbar";
 import useConfirm from "../../hooks/useConfirm";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import UserDrawer from "../../components/page-components/user-management/user-account/UserDrawer";
+import { Navigate } from "react-router-dom";
 
 function UserAccount() {
   const [editMode, setEditMode] = useState(false);
@@ -44,13 +46,14 @@ function UserAccount() {
   const disableActions = ["edit", "archive", "resetPassword"];
 
   // RTK Query
-  const { data, isFetching } = useGetAllUsersQuery({
+  const { data, isFetching, error } = useGetAllUsersQuery({
     Search: search,
     Status: status,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
     ...(roleFilter ? { UserRoleId: roleFilter } : {}),
-  });
+  }, {refetchOnMountOrArgChange: true });
+  console.log(error);
   const [patchUserStatus] = usePatchUserStatusMutation();
   const [patchResetPassword] = usePatchResetPasswordMutation();
   const { data: userRoleData } = useGetAllUserRolesQuery({
@@ -133,6 +136,8 @@ function UserAccount() {
 
   return (
     <>
+      {error ? <SessionExpired/> : 
+
       <Box className="commonPageLayout">
         {/* Page Header */}
         <PageHeaderFilterAdd
@@ -178,6 +183,7 @@ function UserAccount() {
           />
         )}
       </Box>
+          }
 
       {/* Drawer Form */}
       <UserDrawer

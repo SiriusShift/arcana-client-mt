@@ -21,6 +21,7 @@ import useSnackbar from "../../hooks/useSnackbar";
 import useConfirm from "../../hooks/useConfirm";
 import { SupervisorAccount } from "@mui/icons-material";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function UserRole() {
   const snackbar = useSnackbar();
@@ -78,12 +79,12 @@ function UserRole() {
 
   //RTK Query
   const [postUserRole, { isLoading: isAddLoading }] = usePostUserRoleMutation();
-  const { data, isFetching } = useGetAllUserRolesQuery({
+  const { data, isFetching, error } = useGetAllUserRolesQuery({
     Search: search,
     Status: status,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
-  });
+  }, {refetchOnMountOrArgChange: true });
   const [putUserRole, { isLoading: isUpdateLoading }] =
     usePutUserRoleMutation();
   const [patchUserRoleStatus] = usePatchUserRoleStatusMutation();
@@ -185,6 +186,8 @@ function UserRole() {
   }, [search, status, rowsPerPage]);
 
   return (
+    <>
+    {error ? <SessionExpired/> : 
     <Box className="commonPageLayout">
       <PageHeaderAdd
         pageTitle={
@@ -243,6 +246,8 @@ function UserRole() {
         isLoading={isTagLoading}
       />
     </Box>
+    }
+    </>
   );
 }
 
