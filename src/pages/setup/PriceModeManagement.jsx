@@ -30,6 +30,7 @@ import {
 } from "../../utils/CustomFunctions";
 import axios from "axios";
 import useConfirm from "../../hooks/useConfirm";
+import SessionExpired from "../SessionExpired";
 
 function PriceModeManagement() {
   const [search, setSearch] = useState("");
@@ -109,12 +110,17 @@ function PriceModeManagement() {
   };
 
   //RTK Query
-  const { data: priceModeData, isFetching: isPriceModeFetching } =
-    useGetAllPriceModeQuery({
-      Status: true,
-      PageNumber: 1,
-      PageSize: 1000,
-    });
+  const { data: priceModeData, isFetching: isPriceModeFetching, error } =
+    useGetAllPriceModeQuery(
+      {
+        Status: true,
+        PageNumber: 1,
+        PageSize: 1000,
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
   const [postItemsToPriceMode, { isLoading: isTaggingLoading }] =
     usePostItemsToPriceModeMutation();
   const [deletePriceModeItem] = useDeletePriceModeItemMutation();
@@ -258,6 +264,7 @@ function PriceModeManagement() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderAddButtonSearch
           pageTitle={

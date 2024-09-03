@@ -187,7 +187,7 @@ function UserRole() {
 
   return (
     <>
-    {error ? <SessionExpired/> : 
+    {error && <SessionExpired/>}
     <Box className="commonPageLayout">
       <PageHeaderAdd
         pageTitle={
@@ -246,7 +246,6 @@ function UserRole() {
         isLoading={isTagLoading}
       />
     </Box>
-    }
     </>
   );
 }

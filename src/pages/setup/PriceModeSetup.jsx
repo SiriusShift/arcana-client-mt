@@ -20,6 +20,7 @@ import ViewProductsByPriceModeModal from "../../components/modals/ViewProductsBy
 import useSnackbar from "../../hooks/useSnackbar";
 import useConfirm from "../../hooks/useConfirm";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function PriceModeSetup() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -72,12 +73,17 @@ function PriceModeSetup() {
   //RTK Query
   const [postPriceMode, { isLoading: isAddLoading }] =
     usePostPriceModeMutation();
-  const { data, isFetching } = useGetAllPriceModeQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching, error } = useGetAllPriceModeQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putPriceMode, { isLoading: isUpdateLoading }] =
     usePutPriceModeMutation();
   const [patchPrideModeStatus] = usePatchPriceModeStatusMutation();
@@ -173,6 +179,8 @@ function PriceModeSetup() {
   }, [search, status, rowsPerPage]);
 
   return (
+    <>
+    {error && <SessionExpired />}
     <Box className="commonPageLayout">
       <PageHeaderAdd
         pageTitle={
@@ -239,6 +247,7 @@ function PriceModeSetup() {
         onClose={onViewProductsByPriceModeModalClose}
       />
     </Box>
+    </>
   );
 }
 

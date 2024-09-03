@@ -20,6 +20,7 @@ import {
   useUpdateOnlinePlatformMutation,
   useUpdateOnlinePlatformStatusMutation,
 } from "../../features/setup/api/onlinePaymentPlatformsApi";
+import SessionExpired from "../SessionExpired";
 
 function OnlinePaymentPlatforms() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -60,12 +61,17 @@ function OnlinePaymentPlatforms() {
   //RTK Query
   const [createOnlinePlatform, { isLoading: isAddLoading }] =
     useCreateOnlinePlatofrmMutation();
-  const { data, isFetching } = useGetAllOnlinePlatformsQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching } = useGetAllOnlinePlatformsQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [updateOnlinePlatform, { isLoading: isUpdateLoading }] =
     useUpdateOnlinePlatformMutation();
   const [updateOnlinePlatformStatus] = useUpdateOnlinePlatformStatusMutation();
@@ -146,55 +152,58 @@ function OnlinePaymentPlatforms() {
   }, [search, status, rowsPerPage]);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Online Payment Platforms <CreditCard />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={dummyOnlinePaymentPlatformsData}
-          customOrderKeys={customOrderKeys}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
+    <>
+      {/* {error && <SessionExpired />} */}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Online Payment Platforms <CreditCard />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
         />
-      )}
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={dummyOnlinePaymentPlatformsData}
+            customOrderKeys={customOrderKeys}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+          />
+        )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={
-          (drawerMode === "add" ? "Add" : "Edit") + " Online Payment Platform"
-        }
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Online Payment Platform"
-          size="small"
-          autoComplete="off"
-          {...register("onlinePlatform")}
-          helperText={errors?.onlinePlatform?.message}
-          error={errors?.onlinePlatform}
-        />
-      </CommonDrawer>
-    </Box>
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={
+            (drawerMode === "add" ? "Add" : "Edit") + " Online Payment Platform"
+          }
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <TextField
+            label="Online Payment Platform"
+            size="small"
+            autoComplete="off"
+            {...register("onlinePlatform")}
+            helperText={errors?.onlinePlatform?.message}
+            error={errors?.onlinePlatform}
+          />
+        </CommonDrawer>
+      </Box>
+    </>
   );
 }
 

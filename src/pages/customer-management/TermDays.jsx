@@ -19,6 +19,7 @@ import { CalendarToday } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function TermDays() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -58,12 +59,17 @@ function TermDays() {
 
   //RTK Query
   const [postTermDays, { isLoading: isAddLoading }] = usePostTermDaysMutation();
-  const { data, isFetching } = useGetAllTermDaysQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching, error } = useGetAllTermDaysQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putTermDays, { isLoading: isUpdateLoading }] =
     usePutTermDaysMutation();
   const [patchTermDaysStatus] = usePatchTermDaysStatusMutation();
@@ -146,54 +152,57 @@ function TermDays() {
   }, [search, status, rowsPerPage]);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Term Days <CalendarToday />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.termDays}
-          customOrderKeys={customOrderKeys}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
+    <>
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Term Days <CalendarToday />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
         />
-      )}
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.termDays}
+            customOrderKeys={customOrderKeys}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+          />
+        )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Term Days"}
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Term Days"
-          size="small"
-          autoComplete="off"
-          {...register("days")}
-          helperText={errors?.days?.message}
-          error={errors?.days}
-          type="number"
-        />
-      </CommonDrawer>
-    </Box>
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Term Days"}
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <TextField
+            label="Term Days"
+            size="small"
+            autoComplete="off"
+            {...register("days")}
+            helperText={errors?.days?.message}
+            error={errors?.days}
+            type="number"
+          />
+        </CommonDrawer>
+      </Box>
+    </>
   );
 }
 

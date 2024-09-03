@@ -15,6 +15,9 @@ function SessionExpired() {
     dispatch(setToken(""));
     dispatch(setFullname(""));
     dispatch(setPermissisons(""));
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("fullname");
+    sessionStorage.removeItem("permissions");
 
     //Reset API state
     dispatch(api.util.resetApiState());

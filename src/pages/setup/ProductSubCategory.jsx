@@ -21,6 +21,7 @@ import { SubdirectoryArrowRight } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function ProductSubCategory() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -63,12 +64,17 @@ function ProductSubCategory() {
   //RTK Query
   const [postProductSubCategory, { isLoading: isAddLoading }] =
     usePostProductSubCategoryMutation();
-  const { data, isFetching } = useGetAllProductSubCategoriesQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching, error } = useGetAllProductSubCategoriesQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putProductSubCategory, { isLoading: isUpdateLoading }] =
     usePutProductSubCategoryMutation();
   const [patchProductSubCategoryStatus] =
@@ -175,74 +181,77 @@ function ProductSubCategory() {
   }, [search, status, rowsPerPage]);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Product Sub Category <SubdirectoryArrowRight />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.productSubCategories}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
-          tableHeads={tableHeads}
-          customOrderKeys={customOrderKeys}
+    <>
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Product Sub Category <SubdirectoryArrowRight />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
         />
-      )}
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.productSubCategories}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+            tableHeads={tableHeads}
+            customOrderKeys={customOrderKeys}
+          />
+        )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={
-          (drawerMode === "add" ? "Add" : "Edit") + " Product Sub Category"
-        }
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Product Sub Category Name"
-          size="small"
-          autoComplete="off"
-          {...register("productSubCategoryName")}
-          helperText={errors?.productSubCategoryName?.message}
-          error={errors?.productSubCategoryName}
-        />
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={
+            (drawerMode === "add" ? "Add" : "Edit") + " Product Sub Category"
+          }
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <TextField
+            label="Product Sub Category Name"
+            size="small"
+            autoComplete="off"
+            {...register("productSubCategoryName")}
+            helperText={errors?.productSubCategoryName?.message}
+            error={errors?.productSubCategoryName}
+          />
 
-        <ControlledAutocomplete
-          name={"productCategoryId"}
-          control={control}
-          options={productCategoriesData?.result || []}
-          getOptionLabel={(option) => option.productCategoryName}
-          disableClearable
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              label="Product Category"
-              helperText={errors?.productCategoryId?.message}
-              error={errors?.productCategoryId}
-            />
-          )}
-        />
-      </CommonDrawer>
-    </Box>
+          <ControlledAutocomplete
+            name={"productCategoryId"}
+            control={control}
+            options={productCategoriesData?.result || []}
+            getOptionLabel={(option) => option.productCategoryName}
+            disableClearable
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                label="Product Category"
+                helperText={errors?.productCategoryId?.message}
+                error={errors?.productCategoryId}
+              />
+            )}
+          />
+        </CommonDrawer>
+      </Box>
+    </>
   );
 }
 

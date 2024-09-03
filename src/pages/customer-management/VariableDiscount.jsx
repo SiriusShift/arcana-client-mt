@@ -20,6 +20,7 @@ import { Label } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function VariableDiscount() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -66,12 +67,18 @@ function VariableDiscount() {
   //RTK Query
   const [postDiscountType, { isLoading: isAddLoading }] =
     usePostDiscountTypeMutation();
-  const { data, isFetching } = useGetAllDiscountTypesQuery({
-    Search: search,
-    Status: true,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching, error } = useGetAllDiscountTypesQuery(
+    {
+      Search: search,
+      Status: true,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+  // console.log
   const [putDiscountType, { isLoading: isUpdateLoading }] =
     usePutDiscountTypeMutation();
   const [deleteVariableDiscount] = useDeleteVariableDiscountMutation();
@@ -177,149 +184,153 @@ function VariableDiscount() {
   }, [isDrawerOpen, drawerMode, data, setValue]);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Variable Discount <Label />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        removeArchive
-      />
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.discount}
-          customOrderKeys={customOrderKeys}
-          pesoArray={pesoArray}
-          percentageArray={percentageArray}
-          onRemove={onRemove}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
-          disableActions={
-            selectedRowData?.id !==
-              data?.discount?.[data?.discount?.length - 1]?.id && disableActions
+    <>
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Variable Discount <Label />
+            </>
           }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          removeArchive
         />
-      )}
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.discount}
+            customOrderKeys={customOrderKeys}
+            pesoArray={pesoArray}
+            percentageArray={percentageArray}
+            onRemove={onRemove}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+            disableActions={
+              selectedRowData?.id !==
+                data?.discount?.[data?.discount?.length - 1]?.id &&
+              disableActions
+            }
+          />
+        )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={
-          (drawerMode === "add" ? "Add" : "Edit") + " Variable Discount"
-        }
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <Controller
-          control={control}
-          name={"minimumAmount"}
-          render={({ field: { onChange, onBlur, value, ref } }) => (
-            <NumericFormat
-              label="Minimum Amount (₱)"
-              type="text"
-              size="small"
-              customInput={TextField}
-              autoComplete="off"
-              onValueChange={(e) => {
-                onChange(Number(e.value));
-              }}
-              allowNegative={false}
-              decimalScale={0}
-              onBlur={onBlur}
-              value={value || ""}
-              inputRef={ref}
-              thousandSeparator=","
-              disabled
-            />
-          )}
-        />
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={
+            (drawerMode === "add" ? "Add" : "Edit") + " Variable Discount"
+          }
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <Controller
+            control={control}
+            name={"minimumAmount"}
+            render={({ field: { onChange, onBlur, value, ref } }) => (
+              <NumericFormat
+                label="Minimum Amount (₱)"
+                type="text"
+                size="small"
+                customInput={TextField}
+                autoComplete="off"
+                onValueChange={(e) => {
+                  onChange(Number(e.value));
+                }}
+                allowNegative={false}
+                decimalScale={0}
+                onBlur={onBlur}
+                value={value || ""}
+                inputRef={ref}
+                thousandSeparator=","
+                disabled
+              />
+            )}
+          />
 
-        <Controller
-          control={control}
-          name={"maximumAmount"}
-          render={({ field: { onChange, onBlur, value, ref } }) => (
-            <NumericFormat
-              label="Maximum Amount (₱)"
-              type="text"
-              size="small"
-              customInput={TextField}
-              autoComplete="off"
-              allowNegative={false}
-              decimalScale={0}
-              onValueChange={(e) => {
-                onChange(Number(e.value));
-                setValue(
-                  "maximumAmountUpperBoundary",
-                  parseFloat(e.value) + 0.999
-                );
-              }}
-              onBlur={onBlur}
-              value={value || ""}
-              inputRef={ref}
-              thousandSeparator=","
-            />
-          )}
-        />
+          <Controller
+            control={control}
+            name={"maximumAmount"}
+            render={({ field: { onChange, onBlur, value, ref } }) => (
+              <NumericFormat
+                label="Maximum Amount (₱)"
+                type="text"
+                size="small"
+                customInput={TextField}
+                autoComplete="off"
+                allowNegative={false}
+                decimalScale={0}
+                onValueChange={(e) => {
+                  onChange(Number(e.value));
+                  setValue(
+                    "maximumAmountUpperBoundary",
+                    parseFloat(e.value) + 0.999
+                  );
+                }}
+                onBlur={onBlur}
+                value={value || ""}
+                inputRef={ref}
+                thousandSeparator=","
+              />
+            )}
+          />
 
-        <Controller
-          control={control}
-          name={"minimumPercentage"}
-          render={({ field: { onChange, onBlur, value, ref } }) => (
-            <NumericFormat
-              label="Minimum Percentage (%)"
-              type="text"
-              size="small"
-              customInput={TextField}
-              autoComplete="off"
-              onValueChange={(e) => {
-                onChange(Number(e.value));
-              }}
-              onBlur={onBlur}
-              value={value || ""}
-              inputRef={ref}
-              thousandSeparator=","
-              allowNegative={false}
-              decimalScale={0}
-              disabled
-            />
-          )}
-        />
+          <Controller
+            control={control}
+            name={"minimumPercentage"}
+            render={({ field: { onChange, onBlur, value, ref } }) => (
+              <NumericFormat
+                label="Minimum Percentage (%)"
+                type="text"
+                size="small"
+                customInput={TextField}
+                autoComplete="off"
+                onValueChange={(e) => {
+                  onChange(Number(e.value));
+                }}
+                onBlur={onBlur}
+                value={value || ""}
+                inputRef={ref}
+                thousandSeparator=","
+                allowNegative={false}
+                decimalScale={0}
+                disabled
+              />
+            )}
+          />
 
-        <Controller
-          control={control}
-          name={"maximumPercentage"}
-          render={({ field: { onChange, onBlur, value, ref } }) => (
-            <NumericFormat
-              label="Maximum Percentage (%)"
-              type="text"
-              size="small"
-              customInput={TextField}
-              autoComplete="off"
-              onValueChange={(e) => {
-                onChange(Number(e.value));
-              }}
-              onBlur={onBlur}
-              value={value || ""}
-              inputRef={ref}
-              thousandSeparator=","
-              allowNegative={false}
-              decimalScale={0}
-            />
-          )}
-        />
-      </CommonDrawer>
-    </Box>
+          <Controller
+            control={control}
+            name={"maximumPercentage"}
+            render={({ field: { onChange, onBlur, value, ref } }) => (
+              <NumericFormat
+                label="Maximum Percentage (%)"
+                type="text"
+                size="small"
+                customInput={TextField}
+                autoComplete="off"
+                onValueChange={(e) => {
+                  onChange(Number(e.value));
+                }}
+                onBlur={onBlur}
+                value={value || ""}
+                inputRef={ref}
+                thousandSeparator=","
+                allowNegative={false}
+                decimalScale={0}
+              />
+            )}
+          />
+        </CommonDrawer>
+      </Box>
+    </>
   );
 }
 

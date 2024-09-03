@@ -19,6 +19,7 @@ import { StoreMallDirectory } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function BusinessType() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -60,12 +61,17 @@ function BusinessType() {
   //RTK Query
   const [postStoreType, { isLoading: isAddLoading }] =
     usePostStoreTypeMutation();
-  const { data, isFetching } = useGetAllStoreTypesQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching, error } = useGetAllStoreTypesQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putStoreType, { isLoading: isUpdateLoading }] =
     usePutStoreTypeMutation();
   const [patchStoreTypeStatus] = usePatchStoreTypeStatusMutation();
@@ -151,56 +157,59 @@ function BusinessType() {
   }, [search, status, rowsPerPage]);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Business Type <StoreMallDirectory />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.storeTypes}
-          tableHeads={tableHeads}
-          customOrderKeys={customOrderKeys}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
+    <>
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Business Type <StoreMallDirectory />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
         />
-      )}
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.storeTypes}
+            tableHeads={tableHeads}
+            customOrderKeys={customOrderKeys}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+          />
+        )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={
-          (drawerMode === "add" ? "Add" : "Edit") + " Business Type"
-        }
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Business Type Name"
-          size="small"
-          autoComplete="off"
-          {...register("storeTypeName")}
-          helperText={errors?.storeTypeName?.message}
-          error={errors?.storeTypeName}
-        />
-      </CommonDrawer>
-    </Box>
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={
+            (drawerMode === "add" ? "Add" : "Edit") + " Business Type"
+          }
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <TextField
+            label="Business Type Name"
+            size="small"
+            autoComplete="off"
+            {...register("storeTypeName")}
+            helperText={errors?.storeTypeName?.message}
+            error={errors?.storeTypeName}
+          />
+        </CommonDrawer>
+      </Box>
+    </>
   );
 }
 

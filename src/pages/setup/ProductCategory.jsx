@@ -19,6 +19,7 @@ import { Category } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function ProductCategory() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -60,12 +61,17 @@ function ProductCategory() {
   //RTK Query
   const [postProductCategory, { isLoading: isAddLoading }] =
     usePostProductCategoryMutation();
-  const { data, isFetching } = useGetAllProductCategoryQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching, error } = useGetAllProductCategoryQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putProductCategory, { isLoading: isUpdateLoading }] =
     usePutProductCategoryMutation();
   const [patchProductCategoryStatus] = usePatchProductCategoryStatusMutation();
@@ -150,57 +156,60 @@ function ProductCategory() {
   }, [search, status, rowsPerPage]);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Product Category <Category />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
-
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.result}
-          customOrderKeys={customOrderKeys}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
-          tableHeads={tableHeads}
+    <>
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Product Category <Category />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
         />
-      )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={
-          (drawerMode === "add" ? "Add" : "Edit") + " Product Category"
-        }
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Product Category Name"
-          size="small"
-          autoComplete="off"
-          {...register("productCategoryName")}
-          error={errors?.productCategoryName}
-          helperText={errors?.productCategoryName?.message}
-        />
-      </CommonDrawer>
-    </Box>
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.result}
+            customOrderKeys={customOrderKeys}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+            tableHeads={tableHeads}
+          />
+        )}
+
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={
+            (drawerMode === "add" ? "Add" : "Edit") + " Product Category"
+          }
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <TextField
+            label="Product Category Name"
+            size="small"
+            autoComplete="off"
+            {...register("productCategoryName")}
+            error={errors?.productCategoryName}
+            helperText={errors?.productCategoryName?.message}
+          />
+        </CommonDrawer>
+      </Box>
+    </>
   );
 }
 

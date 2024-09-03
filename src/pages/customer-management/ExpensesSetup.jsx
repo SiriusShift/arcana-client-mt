@@ -19,6 +19,7 @@ import { AttachMoney } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function ExpensesSetup() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -60,12 +61,17 @@ function ExpensesSetup() {
   //RTK Query
   const [postOtherExpenses, { isLoading: isAddLoading }] =
     usePostOtherExpensesMutation();
-  const { data, isFetching } = useGetAllOtherExpensesQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching, error } = useGetAllOtherExpensesQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putOtherExpenses, { isLoading: isUpdateLoading }] =
     usePutOtherExpensesMutation();
   const [patchOtherExpensesStatus] = usePatchOtherExpensesStatusMutation();
@@ -150,57 +156,60 @@ function ExpensesSetup() {
   }, [search, status, rowsPerPage]);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Expenses Setup <AttachMoney />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
-
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.otherExpenses}
-          customOrderKeys={customOrderKeys}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
-          tableHeads={tableHeads}
+    <>
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Expenses Setup <AttachMoney />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
         />
-      )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={
-          (drawerMode === "add" ? "Add" : "Edit") + " Other Expenses"
-        }
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Expense Type"
-          size="small"
-          autoComplete="off"
-          {...register("expenseType")}
-          error={errors?.expenseType}
-          helperText={errors?.expenseType?.message}
-        />
-      </CommonDrawer>
-    </Box>
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.otherExpenses}
+            customOrderKeys={customOrderKeys}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+            tableHeads={tableHeads}
+          />
+        )}
+
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={
+            (drawerMode === "add" ? "Add" : "Edit") + " Other Expenses"
+          }
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <TextField
+            label="Expense Type"
+            size="small"
+            autoComplete="off"
+            {...register("expenseType")}
+            error={errors?.expenseType}
+            helperText={errors?.expenseType?.message}
+          />
+        </CommonDrawer>
+      </Box>
+    </>
   );
 }
 

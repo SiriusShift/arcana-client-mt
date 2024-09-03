@@ -163,7 +163,7 @@ function Cluster() {
 
   return (
     <>
-      {error ? <SessionExpired/> : 
+      {error && <SessionExpired/>}
       <Box className="commonPageLayout">
         <PageHeaderAdd
           pageTitle={
@@ -215,7 +215,6 @@ function Cluster() {
           />
         </CommonDrawer>
       </Box>
-      }
       <ViewCDOModal
         open={isViewOpen}
         onClose={onViewClose}

@@ -19,6 +19,7 @@ import { RestaurantMenu } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function MeatType() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -59,12 +60,17 @@ function MeatType() {
 
   //RTK Query
   const [postMeatType, { isLoading: isAddLoading }] = usePostMeatTypeMutation();
-  const { data, isFetching } = useGetAllMeatTypesQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  });
+  const { data, isFetching, error } = useGetAllMeatTypesQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putMeatType, { isLoading: isUpdateLoading }] =
     usePutMeatTypeMutation();
   const [patchMeatTypeStatus] = usePatchMeatTypeStatusMutation();
@@ -150,54 +156,57 @@ function MeatType() {
   }, [search, status, rowsPerPage]);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Meat Type <RestaurantMenu />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.meatTypes}
-          customOrderKeys={customOrderKeys}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
-          tableHeads={tableHeads}
+    <>
+      {error && <SessionExpired  />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Meat Type <RestaurantMenu />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
         />
-      )}
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.meatTypes}
+            customOrderKeys={customOrderKeys}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+            tableHeads={tableHeads}
+          />
+        )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Meat Type"}
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Meat Type Name"
-          size="small"
-          autoComplete="off"
-          {...register("meatTypeName")}
-          helperText={errors?.meatTypeName?.message}
-          error={errors?.meatTypeName}
-        />
-      </CommonDrawer>
-    </Box>
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Meat Type"}
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <TextField
+            label="Meat Type Name"
+            size="small"
+            autoComplete="off"
+            {...register("meatTypeName")}
+            helperText={errors?.meatTypeName?.message}
+            error={errors?.meatTypeName}
+          />
+        </CommonDrawer>
+      </Box>
+    </>
   );
 }
 
