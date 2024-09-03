@@ -82,8 +82,11 @@ function PaymentModalForm({
     useLazyGetAdvancePaymentBalanceQuery();
   const [triggerListingFeeBalance, { data: listingFeeBalanceData }] =
     useLazyGetListingFeeBalanceByIdQuery();
-  const [triggerOtherExpensesBalance, {data: otherExpensesBalanceData}] = useLazyGetOtherExpensesBalanceByClientIdQuery();
-  console.log(otherExpensesBalanceData);
+
+  let [triggerOtherExpensesBalance, {data: otherExpensesBalanceData, error: otherExpensesBalanceError}] = useLazyGetOtherExpensesBalanceByClientIdQuery();
+  if(otherExpensesBalanceError){
+    otherExpensesBalanceData = null
+  }
   
   
   const remainingAdvancePayment = parseFloat(
@@ -91,12 +94,6 @@ function PaymentModalForm({
   );
   const remainingListingFee = parseFloat(listingFeeBalanceData?.totalBalance);
   const remainingOtherExpensesBalance = parseFloat(otherExpensesBalanceData?.totalBalance);
-
-  console.log(watch("attachment"));
-
-
-  console.log(watch());
-
   //Functions
   const onSubmit = async (data) => {
     console.log(data);
@@ -815,7 +812,7 @@ function PaymentModalForm({
 						minimumFractionDigits: 2,
 						maximumFractionDigits: 2,
 					}
-					) : "N/A"}
+					) : "0"}
 				</Typography>
 				</Box>
               </>
