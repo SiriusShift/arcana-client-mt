@@ -20,6 +20,7 @@ import AddButtonSearchMixin from "../../components/mixins/AddButtonSearchMixin";
 import ListingFeeBalancesModal from "../../components/modals/registration/ListingFeeBalancesModal";
 import { Wallet } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
+import SessionExpired from "../SessionExpired";
 
 function ListingFee() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -62,12 +63,14 @@ function ListingFee() {
   } = useDisclosure();
 
   //RTK Query
-  const { data, isFetching } = useGetAllListingFeeQuery({
+  const { data, isFetching, error } = useGetAllListingFeeQuery({
     Search: search,
     Status: true,
     ListingFeeStatus: listingFeeStatus,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   const [deleteCancelListingFee] = useDeleteCancelListingFeeMutation();
@@ -191,6 +194,7 @@ function ListingFee() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderTabs
           wide

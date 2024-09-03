@@ -21,6 +21,7 @@ import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import moment from "moment";
 import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
 import ViewTransactionModal from "../../components/modals/sales-management/ViewTransactionModal";
+import SessionExpired from "../SessionExpired";
 
 function PaymentTransaction() {
   const [paymentMode, setPaymentMode] = useState(false);
@@ -56,12 +57,14 @@ function PaymentTransaction() {
 
 
   //RTK Query
-  const { data: transactionData, isFetching: isTransactionFetching } =
+  const { data: transactionData, isFetching: isTransactionFetching, error } =
     useGetAllSalesTransactionQuery({
       PageNumber: page + 1,
       PageSize: rowsPerPage,
       Search: search,
       TransactionStatus: transactionStatus,
+    }, {
+      refetchOnMountOrArgChange: true,
     });
 
   const [voidSalesTransaction] = useVoidSalesTransactionMutation();
@@ -207,6 +210,7 @@ function PaymentTransaction() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         {paymentMode ? (
           <PaymentPage

@@ -4,7 +4,8 @@ import SecondaryButton from "../components/SecondaryButton";
 import { useNavigate } from "react-router-dom";
 import {
   setFullname,
-  setToken,
+  setTokenEmpty,
+  setPermissisonsEmpty
 } from "../features/authentication/reducers/loginSlice";
 import { useDispatch } from "react-redux";
 
@@ -12,9 +13,13 @@ function SessionExpired() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   function handleLogout(){
-    dispatch(setToken(""));
+    dispatch(setTokenEmpty(""));
     dispatch(setFullname(""));
-    dispatch(setPermissisons(""));
+    dispatch(setPermissisonsEmpty(""));
+
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("fullname");
+    sessionStorage.removeItem("permissions");
     
     //Reset API state
     dispatch(api.util.resetApiState());

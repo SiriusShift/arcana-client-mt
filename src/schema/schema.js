@@ -593,8 +593,8 @@ export const approverSettingsSchema = {
 					minValue: yup
 						.number()
 						.required("Minimum value is required")
-						.test("minValue", "Minimum value must be more than 0", function (value) {
-							return value > 0;
+						.test("minValue", "Minimum value must be from 1% - 100%", function (value) {
+							return (value > 0 && value <= 100);
 						}),
 				})
 			)

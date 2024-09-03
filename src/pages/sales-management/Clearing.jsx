@@ -10,6 +10,7 @@ import { useGetAllClearingTransactionQuery } from "../../features/sales-manageme
 import ClearingModal from "../../components/modals/sales-management/ClearingModal";
 import useDisclosure from "../../hooks/useDisclosure";
 import { AssignmentReturnedOutlined, Autorenew } from "@mui/icons-material";
+import SessionExpired from "../SessionExpired";
 
 function Clearing() {
 	const [tabViewing, setTabViewing] = useState(1);
@@ -113,12 +114,14 @@ function Clearing() {
 	//RTK Query
 	const [patchReadNotification] = usePatchReadNotificationMutation();
 
-	const { data: clearingData, isFetching: isClearingFetching } =
+	const { data: clearingData, isFetching: isClearingFetching, error } =
 		useGetAllClearingTransactionQuery({
 			Search: search,
 			PageNumber: page + 1,
 			PageSize: rowsPerPage,
 			Status: clearingStatus,
+		}, {
+			refetchOnMountOrArgChange: true,
 		});
 
 	// Functions
@@ -154,6 +157,7 @@ function Clearing() {
 
 	return (
 		<>
+			{error && <SessionExpired />}
 			<ClearingModal
 				open={isClearingModalOpen}
 				onClose={onClearingModalClose}

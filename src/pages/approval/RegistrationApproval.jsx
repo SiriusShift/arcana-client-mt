@@ -9,6 +9,7 @@ import { useGetAllClientsQuery } from "../../features/registration/api/registrat
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
 import { AppContext } from "../../context/AppContext";
+import SessionExpired from "../SessionExpired";
 // import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 
 function RegistrationApproval() {
@@ -35,13 +36,15 @@ function RegistrationApproval() {
     onClose: onHistoryClose,
   } = useDisclosure();
 
-  const { data, isFetching } = useGetAllClientsQuery({
+  const { data, isFetching, error } = useGetAllClientsQuery({
     Search: search,
     // Status: true,
     RegistrationStatus: clientStatus,
     Origin: origin,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   // const [patchReadNotification] = usePatchReadNotificationMutation();
@@ -139,6 +142,7 @@ function RegistrationApproval() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderTabs
           pageTitle="Registration Approval"

@@ -19,6 +19,7 @@ import { AppContext } from "../../context/AppContext";
 import SearchVoidFilterMixin from "../../components/mixins/SearchVoidFilterMixin";
 import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 import PrintTTAModal from "../../components/modals/registration/PrintTTAModal";
+import SessionExpired from "../SessionExpired";
 
 function DirectRegistration() {
   const [search, setSearch] = useState("");
@@ -84,13 +85,15 @@ function DirectRegistration() {
   } = useDisclosure();
 
   //RTK Query
-  const { data, isFetching } = useGetAllClientsQuery({
+  const { data, isFetching, error } = useGetAllClientsQuery({
     Search: search,
     // Status: status,
     RegistrationStatus: clientStatus,
     Origin: origin,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+  }, {
+    refetchOnMountOrArgChange: true
   });
   const [putVoidClientRegistration, { isLoading: isVoidLoading }] =
     usePutVoidClientRegistrationMutation();
@@ -219,6 +222,7 @@ function DirectRegistration() {
 
   return (
     <>
+    {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderAddTabs
           pageTitle="Registration"

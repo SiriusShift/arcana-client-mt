@@ -8,6 +8,7 @@ import { useGetAllListingFeeQuery } from "../../features/listing-fee/api/listing
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
 import { AppContext } from "../../context/AppContext";
+import SessionExpired from "../SessionExpired";
 
 function ListingFeeApproval() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -51,12 +52,14 @@ function ListingFeeApproval() {
   //     ListingFeeStatus: "Rejected",
   //   });
 
-  const { data, isFetching } = useGetAllListingFeeQuery({
+  const { data, isFetching, error } = useGetAllListingFeeQuery({
     Search: search,
     Status: true,
     ListingFeeStatus: listingFeeStatus,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   // const [patchReadNotification] = usePatchReadNotificationMutation();
@@ -139,6 +142,7 @@ function ListingFeeApproval() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderTabs
           wide

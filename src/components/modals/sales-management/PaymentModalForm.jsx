@@ -88,7 +88,6 @@ function PaymentModalForm({
     otherExpensesBalanceData = null
   }
   
-  
   const remainingAdvancePayment = parseFloat(
     advancePaymentData?.remainingBalance
   );
@@ -245,7 +244,7 @@ function PaymentModalForm({
         // open={isModalFormOpen}
         // onClose={handleFormClose}
         onSubmit={handleSubmit(onSubmit)}
-        disableSubmit={!isValid || !isDirty}
+        disableSubmit={!isValid || !isDirty || !otherExpensesBalanceData}
         width="800px"
         height="450px"
       >
@@ -679,7 +678,7 @@ function PaymentModalForm({
                       onChange={(e) =>
                         field.onChange(e.target.value.toUpperCase())
                       }
-                      helperText={errors?.remarks?.message}
+                      helperText={errors?.remarks?.message} 
                       error={errors?.remarks}
                     />
                   )}

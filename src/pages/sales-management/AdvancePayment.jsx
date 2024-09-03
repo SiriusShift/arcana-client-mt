@@ -29,6 +29,7 @@ import PageHeaderAdd from "../../components/PageHeaderAdd";
 import ButtonFilterMixin from "../../components/mixins/ButtonFilterMixin";
 import { Wallet } from "@mui/icons-material";
 import AdvancePaymentBalancesModal from "../../components/modals/sales-management/AdvancePaymentBalancesModal";
+import SessionExpired from "../SessionExpired";
 
 function AdvancePayment() {
   const [editMode, setEditMode] = useState(false);
@@ -79,12 +80,14 @@ function AdvancePayment() {
 
   //RTK Query
   const [createAdvancePayment] = useCreateAdvancePaymentMutation();
-  const { data: advancePaymentData, isFetching: isAdvancePaymentFetching } =
+  const { data: advancePaymentData, isFetching: isAdvancePaymentFetching, error } =
     useGetAllAdvancePaymentsQuery({
       Search: search,
       PageNumber: page + 1,
       PageSize: rowsPerPage,
       Origin: origin,
+    }, {
+      refetchOnMountOrArgChange: true,
     });
   const [updateAdvancePayment] = useUpdateAdvancePaymentMutation();
   const [voidAdvancePayment] = useVoidAdvancePaymentMutation();
@@ -289,6 +292,7 @@ function AdvancePayment() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         {/* <PageHeaderAddVoid
           pageTitle="Advance Payment"

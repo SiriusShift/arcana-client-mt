@@ -101,12 +101,16 @@ function Approver() {
   const [parent] = useAutoAnimate();
 
   //RTK Query
-  const { data, isLoading, error } = useGetAllApproversQuery({refetchOnMountOrArgChange: true });
+  const { data, isLoading, error } = useGetAllApproversQuery({
+    refetchOnMountOrArgChange: true,
+  });
 
   const [
     triggerApprovers,
     { data: approversByRangeData, isFetching: isApproverByRangeFetching },
-  ] = useLazyGetApproversByRangeQuery();
+  ] = useLazyGetApproversByRangeQuery({
+    refetchOnMountOrArgChange: true,
+  });
   const [updateApprovers, { isLoading: isUpdateLoading }] =
     useUpdateApproversByRangeMutation();
 

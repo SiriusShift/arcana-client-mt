@@ -8,6 +8,7 @@ import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
 import { AppContext } from "../../context/AppContext";
 import { useGetAllExpensesQuery } from "../../features/otherExpenses/api/otherExpensesRegApi";
 import ViewExpensesModal from "../../components/modals/ViewExpensesModal";
+import SessionExpired from "../SessionExpired";
 
 function OtherExpensesApproval() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -34,12 +35,14 @@ function OtherExpensesApproval() {
 
   //RTK Query
 
-  const { data, isFetching } = useGetAllExpensesQuery({
+  const { data, isFetching, error } = useGetAllExpensesQuery({
     Search: search,
     Status: true,
     ExpenseStatus: expenseStatus,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+  }, {
+    refetchOnMountOrArgChange: true,
   });
 
   // const [patchReadNotification] = usePatchReadNotificationMutation();
@@ -122,6 +125,7 @@ function OtherExpensesApproval() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderTabs
           wide

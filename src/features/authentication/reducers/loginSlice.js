@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import CryptoJS from "crypto-js";
 import { saltkey } from "../../../utils/saltkey";
 import { decryptString } from "../../../utils/CustomFunctions";
+import { setPermissisons } from "./permissionsSlice";
 
 const storedFullname = sessionStorage.getItem("fullname");
 const storedUserDetails = decryptString(sessionStorage.getItem("userDetails"));
@@ -36,6 +37,14 @@ export const loginSlice = createSlice({
       // sessionStorage.setItem("fullname", action.payload);
       sessionStorage.setItem("fullname", action.payload);
     },
+    setTokenEmpty: (state, action) => {
+      state.token = action.payload;
+      sessionStorage.setItem("token", action.payload);
+    },
+    setPermissisonsEmpty: (state, action) => {
+      state.permissions = action.payload;
+      sessionStorage.setItem("permissions", action.payload);
+    },
     setToken: (state, action) => {
       state.token = action.payload;
       const ciphertext = CryptoJS.AES.encrypt(
@@ -67,6 +76,8 @@ export const {
   setFullname,
   setToken,
   setUserDetails,
+  setTokenEmpty,
+  setPermissisonsEmpty,
   setRoleName,
   setTokenTemp,
   setUsername,

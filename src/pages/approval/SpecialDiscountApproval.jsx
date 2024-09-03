@@ -24,6 +24,7 @@ import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import { AppContext } from "../../context/AppContext";
 import CommonDialog from "../../components/common/CommonDialog";
 import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
+import SessionExpired from "../SessionExpired";
 
 function SpecialDiscountApproval() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -125,12 +126,14 @@ function SpecialDiscountApproval() {
   }, [notifications]);
 
   //RTK Query: Get Special Discounts
-  const { data, isFetching } = useGetAllSpecialDiscountQuery({
+  const { data, isFetching, error } = useGetAllSpecialDiscountQuery({
     Search: search,
     SpDiscountStatus: approvalStatus,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
     Status: true,
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   //RTK Query: Approvals
@@ -247,6 +250,7 @@ function SpecialDiscountApproval() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderTabs
           wide

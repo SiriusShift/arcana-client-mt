@@ -35,6 +35,7 @@ import TransactionsList from "../../components/page-components/sales-management/
 import UnderConstruction from "../../assets/images/under-construction.svg";
 import { useGetAllClientsForPOSQuery } from "../../features/sales-management/api/salesTransactionApi.js";
 import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi.js";
+import SessionExpired from "../SessionExpired.jsx";
 
 function SalesTransaction() {
   const [search, setSearch] = useState("");
@@ -91,8 +92,10 @@ function SalesTransaction() {
   const watchClientId = watch("clientId");
 
   //RTK Query: Autocomplete
-  const { data: clientData, isLoading: isClientLoading } =
-    useGetAllClientsForPOSQuery();
+  const { data: clientData, isLoading: isClientLoading, error } =
+    useGetAllClientsForPOSQuery({
+      refetchOnMountOrArgChange: true
+    });
   const { data: productData, isFetching: isProductFetching } =
     useGetAllItemsByPriceModeIdQuery({
       Status: true,
@@ -160,6 +163,7 @@ function SalesTransaction() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         {transactionsMode ? (
           <TransactionsList setTransactionsMode={setTransactionsMode} />

@@ -17,6 +17,7 @@ import {
 import ViewExpensesModal from "../../components/modals/ViewExpensesModal";
 import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function OtherExpenses() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -53,12 +54,14 @@ function OtherExpenses() {
 
   //RTK Query
 
-  const { data, isFetching } = useGetAllExpensesQuery({
+  const { data, isFetching, error } = useGetAllExpensesQuery({
     Search: search,
     Status: true,
     ExpenseStatus: expenseStatus,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   const [patchVoidExpenseRequest] = usePatchVoidExpenseRequestMutation();
@@ -181,6 +184,7 @@ function OtherExpenses() {
 
   return (
     <>
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderTabs
           wide

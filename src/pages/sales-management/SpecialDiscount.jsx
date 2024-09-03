@@ -27,6 +27,7 @@ import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import useConfirm from "../../hooks/useConfirm";
 import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
 import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
+import SessionExpired from "../SessionExpired";
 
 function SpecialDiscount() {
 	const [tabViewing, setTabViewing] = useState(1);
@@ -97,13 +98,15 @@ function SpecialDiscount() {
 
 	//RTK Query
 	const [createSpecialDiscount] = useCreateSpecialDiscountMutation();
-	const { data: specialDiscountData, isFetching: isSpecialDiscountFetching } =
+	const { data: specialDiscountData, isFetching: isSpecialDiscountFetching, error } =
 		useGetAllSpecialDiscountQuery({
 			Search: search,
 			Status: true,
 			SpDiscountStatus: approvalStatus,
 			PageNumber: page + 1,
 			PageSize: rowsPerPage,
+		}, {
+			refetchOnMountOrArgChange: true
 		});
 	const [updateSpecialDiscount] = useUpdateSpecialDiscountMutation();
 	const [voidSpecialDiscount] = useVoidSpecialDiscountMutation();
@@ -357,6 +360,7 @@ function SpecialDiscount() {
 
 	return (
 		<>
+		   {error && <SessionExpired />}
 			<Box className="commonPageLayout">
 				<PageHeaderTabs
 					wide
