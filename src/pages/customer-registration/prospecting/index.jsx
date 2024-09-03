@@ -10,6 +10,7 @@ import ForFreebies from "./ForFreebies";
 import ForReleasing from "./ForReleasing";
 import StoreTypeSkeleton from "../../../components/skeletons/StoreTypeSkeleton";
 import "../../../assets/styles/prospect.styles.scss";
+import SessionExpired from "../../SessionExpired";
 
 function Prospect() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -19,10 +20,12 @@ function Prospect() {
   );
   const dispatch = useDispatch();
 
-  const { data, isLoading } = useGetAllStoreTypesQuery({
+  const { data, isLoading, error } = useGetAllStoreTypesQuery({
     Status: true,
     Page: 1,
-    PageSize: 1000,
+    PageSize: 1000, 
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   const prospectNavigation = [
@@ -51,6 +54,8 @@ function Prospect() {
   }, [selectedStoreType]);
 
   return (
+    <>
+    {error && <SessionExpired />}
     <Box className="commonPageLayout">
       {selectedStoreType ? (
         <PageHeaderTabs
@@ -111,6 +116,7 @@ function Prospect() {
         </>
       )}
     </Box>
+    </>
   );
 }
 

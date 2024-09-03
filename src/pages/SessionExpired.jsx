@@ -11,14 +11,11 @@ import { useDispatch } from "react-redux";
 function SessionExpired() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const handleLogout = () => {
+  function handleLogout(){
     dispatch(setToken(""));
     dispatch(setFullname(""));
     dispatch(setPermissisons(""));
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("fullname");
-    sessionStorage.removeItem("permissions");
-
+    
     //Reset API state
     dispatch(api.util.resetApiState());
 

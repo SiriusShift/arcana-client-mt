@@ -720,7 +720,7 @@ function PaymentModalForm({
                   options={expensesArray.filter(
                     (type) =>
                       !expensesFields?.some(
-                        (field) => field.otherExpense.expenseType === type.expenseType
+                        (field) => field.otherExpense?.expenseType === type?.expenseType
                       )
                   )}
                   getOptionLabel={(option) => option.expenseType.toUpperCase()}
