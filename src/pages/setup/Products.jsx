@@ -26,6 +26,7 @@ import {
 } from "../../utils/CustomFunctions";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
+import SessionExpired from "../SessionExpired";
 
 function Products() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -88,11 +89,13 @@ function Products() {
 
   //RTK Query
   const [postProduct, { isLoading: isAddLoading }] = usePostProductMutation();
-  const { data, isFetching } = useGetAllProductsQuery({
+  const { data, isFetching, error } = useGetAllProductsQuery({
     Search: search,
     Status: status,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+  }, {
+    refetchOnMountOrArgChange: true,
   });
   const [putProduct, { isLoading: isUpdateLoading }] = usePutProductMutation();
   const [patchProductStatus] = usePatchProductStatusMutation();
@@ -229,6 +232,8 @@ function Products() {
   // }, [changePrice]);
 
   return (
+    <>
+    {error && <SessionExpired />}
     <Box className="commonPageLayout">
       <PageHeaderAdd
         pageTitle={
@@ -409,6 +414,7 @@ function Products() {
         </Box>
       </CommonDrawer>
     </Box>
+    </>
   );
 }
 

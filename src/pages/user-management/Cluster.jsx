@@ -20,6 +20,7 @@ import { PinDrop } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import SessionExpired from "../SessionExpired";
 
 function Cluster() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -71,11 +72,13 @@ function Cluster() {
 
   //RTK Query
   const [postCluster, { isLoading: isAddLoading }] = usePostClusterMutation();
-  const { data, isFetching } = useGetAllClustersQuery({
+  const { data, isFetching, error } = useGetAllClustersQuery({
     Search: search,
     Status: status,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+  }, {
+    refetchOnMountOrArgChange: true,
   });
   const [putCluster, { isLoading: isUpdateLoading }] = usePutClusterMutation();
   const [patchClusterStatus] = usePatchClusterStatusMutation();
@@ -160,6 +163,7 @@ function Cluster() {
 
   return (
     <>
+      {error ? <SessionExpired/> : 
       <Box className="commonPageLayout">
         <PageHeaderAdd
           pageTitle={
@@ -211,7 +215,7 @@ function Cluster() {
           />
         </CommonDrawer>
       </Box>
-
+      }
       <ViewCDOModal
         open={isViewOpen}
         onClose={onViewClose}
