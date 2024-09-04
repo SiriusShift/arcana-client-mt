@@ -64,6 +64,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
     () => total - discountAmount - specialDiscountAmount,
     [total, discountAmount, specialDiscountAmount]
   );
+  console.log("total", total);
 
   //Constants
   const client = orderData?.clientId;
@@ -81,6 +82,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   const discountRange = useMemo(() => {
     let discountRange = null;
     variableDiscountData?.discount?.forEach((discount) => {
+      console.log("discount", discount);
       if (total >= discount.minimumAmount && total <= discount.maximumAmount) {
         discountRange = {
           minimumPercentage: discount.minimumPercentage,

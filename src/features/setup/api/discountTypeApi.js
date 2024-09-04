@@ -19,8 +19,8 @@ const discountTypeApi = api
           method: "GET",
         }),
         providesTags: ["Discount Type"],
-        transformResponse: (response) => response,
-        transformErrorResponse: (response) => response,
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
       }),
       putDiscountType: builder.mutation({
         query: ({ id, ...body }) => ({
