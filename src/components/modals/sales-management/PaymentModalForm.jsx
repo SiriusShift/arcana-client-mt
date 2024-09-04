@@ -244,7 +244,7 @@ function PaymentModalForm({
         // open={isModalFormOpen}
         // onClose={handleFormClose}
         onSubmit={handleSubmit(onSubmit)}
-        disableSubmit={!isValid || !isDirty || !otherExpensesBalanceData}
+        disableSubmit={!isValid || !isDirty || !otherExpensesBalanceData || (watch("paymentMethod").label === "Others" && watch("paymentAmount") > otherExpensesBalanceData?.totalBalance )}
         width="800px"
         height="450px"
       >
@@ -370,15 +370,16 @@ function PaymentModalForm({
                     isAllowed={(values) => {
                       const { floatValue } = values;
 
-                      const balanceToCompare = editMode
+                      const balanceToCompare = watch("paymentMethod").label === "Others" ? parseFloat(otherExpensesBalanceData?.totalBalance) : (editMode
                         ? remainingBalance + initialEditAmount
-                        : remainingBalance;
+                        : remainingBalance);
+                      
+                      console.log( balanceToCompare);
 
                       if (
                         floatValue != null &&
                         floatValue > balanceToCompare &&
-                        watch("paymentMethod").label !== "Cheque" &&
-                        floatValue 
+                        watch("paymentMethod").label !== "Cheque" 
                       ) {
                         snackbar({
                           message: `${
