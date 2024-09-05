@@ -418,11 +418,11 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
                                     <>
                                       <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row">
                                         <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row__label">
-                                          Expense Type:
+                                          Payment Channel:
                                         </Typography>
 
                                         <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row__value">
-                                          {paymentTransaction.remarks}
+                                          {paymentTransaction.paymentChannel}
                                         </Typography>
                                       </Box>
                                     </>
