@@ -2194,6 +2194,7 @@
 					font-weight: 500;
 				}
 			}
+			
 
 			&__attachment {
 				display: flex;
@@ -2202,6 +2203,22 @@
 
 				& &__label {
 					font-size: 1.1rem;
+				}
+
+				& &__value {
+					font-size: 1.1rem;
+					font-weight: 500;
+				}
+			}
+
+			&__number {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+
+				& &__label {
+					font-size: 1.1rem;
+					// font-weight: 600;
 				}
 
 				& &__value {
@@ -2287,6 +2304,17 @@
 					}
 				}
 			}
+		}
+	}
+	&__noData{
+		position: relative;
+		display: flex;
+		justify-content: center;
+		overflow: auto;
+		height: calc(100% - 50px);
+		width: 100%;
+		&__image{
+			width: 60%;
 		}
 	}
 }

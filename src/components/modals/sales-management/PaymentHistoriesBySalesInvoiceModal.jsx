@@ -23,6 +23,7 @@ import { formatPesoAmount } from "../../../utils/CustomFunctions";
 import { useLazyGetAllPaymentHistoriesQuery } from "../../../features/sales-management/api/paymentTransactionApi";
 import { useSelector } from "react-redux";
 import useDisclosure from "../../../hooks/useDisclosure";
+import noData from "../../../assets/images/noRecordsFound.svg";
 import ViewHistoriesAttachment from "./ViewHistoryAttachment";
 
 function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
@@ -123,6 +124,7 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
             Payment Histories
           </Typography>
 
+          {paymentHistoriesData?.transactions?.length != 0 ? (
           <Box className="paymentHistoriesBySalesInvoiceModal__body">
             <Stepper
               orientation="vertical"
@@ -167,11 +169,7 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
 
                         <Typography
                           className="paymentHistoriesBySalesInvoiceModal__body__stepContent__attachment__value"
-                          onClick={() =>
-                            setReceiptImage(
-                              paymentRecord.receipt
-                            )
-                          }
+                          onClick={() => setReceiptImage(paymentRecord.receipt)}
                         >
                           <IconButton
                             sx={{ color: "secondary.main", p: 0 }}
@@ -182,15 +180,15 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
                           {/* {formatPesoAmount(paymentRecord.totalPayment)} */}
                         </Typography>
                       </Box>
-                      <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__total">
-                        <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__total__label">
-                        {selectedRowData?.invoiceType === "Sales"
+                      <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__number">
+                        <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__number__label">
+                          {selectedRowData?.invoiceType === "Sales"
                             ? "AR"
                             : "CR"}{" "}
-                           No:
+                          No:
                         </Typography>
 
-                        <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__total__value">
+                        <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__number__value">
                           {paymentRecord.receiptNo}
                         </Typography>
                       </Box>
@@ -414,6 +412,21 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
                                       </Box>
                                     </>
                                   )}
+                                  {/* Others Fields */}
+                                  {paymentTransaction.paymentMethod ===
+                                    "Others" && (
+                                    <>
+                                      <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row">
+                                        <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row__label">
+                                          Expense Type:
+                                        </Typography>
+
+                                        <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row__value">
+                                          {paymentTransaction.remarks}
+                                        </Typography>
+                                      </Box>
+                                    </>
+                                  )}
                                 </Box>
                               </Box>
                             )
@@ -426,6 +439,11 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
               ))}
             </Stepper>
           </Box>
+          ): (
+            <Box className="paymentHistoriesBySalesInvoiceModal__noData">
+              <img src={noData} alt="No Data Found" className="paymentHistoriesBySalesInvoiceModal__noData__image"/>
+            </Box>
+          )}
         </Box>
       </CommonModal>
       <ViewHistoriesAttachment

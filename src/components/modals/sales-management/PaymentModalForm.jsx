@@ -244,7 +244,7 @@ function PaymentModalForm({
         // open={isModalFormOpen}
         // onClose={handleFormClose}
         onSubmit={handleSubmit(onSubmit)}
-        disableSubmit={!isValid || !isDirty || !otherExpensesBalanceData || (watch("paymentMethod").label === "Others" && watch("paymentAmount") > otherExpensesBalanceData?.totalBalance )}
+        disableSubmit={!isValid || !isDirty || !otherExpensesBalanceData}
         width="800px"
         height="450px"
       >
