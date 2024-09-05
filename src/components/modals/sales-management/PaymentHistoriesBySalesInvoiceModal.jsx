@@ -25,6 +25,8 @@ import { useSelector } from "react-redux";
 import useDisclosure from "../../../hooks/useDisclosure";
 import noData from "../../../assets/images/noRecordsFound.svg";
 import ViewHistoriesAttachment from "./ViewHistoryAttachment";
+import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
+
 
 function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
   const { open } = props;
@@ -50,6 +52,10 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
     triggerHistories,
     { data: paymentHistoriesData, isFetching: isPaymentHistoriesFetching },
   ] = useLazyGetAllPaymentHistoriesQuery();
+
+  const { data: expensesData, isLoading: isExpensesLoading } =
+  useGetAllOtherExpensesQuery({ Status: true, page: 1, pageSize: 1000 });
+  const expensesArray = expensesData?.otherExpenses;
 
   //Functions
   const getPaymentTypeIcon = (paymentType) => {
@@ -422,7 +428,12 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
                                         </Typography>
 
                                         <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row__value">
-                                          {paymentTransaction.paymentChannel}
+                                          {expensesArray.map((item) => {
+                                            if(
+                                              item.id === paymentTransaction?.paymentChannel){
+                                                return item.expenseType
+                                              }
+                                          })}
                                         </Typography>
                                       </Box>
                                     </>
