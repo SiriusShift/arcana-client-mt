@@ -211,7 +211,16 @@ function PaymentPage({
 
   //Functions
   const handleReset = useCallback(async () => {
-    reset();
+    reset(
+      {
+      transactionId: [],
+      invoiceNo: [],
+      payments: [],
+      receiptNo: "",
+      receiptAttachment: null,
+    }
+  );
+    receiptUploadRef.current.value = null;
     checkboxRef.current.checked = false;
   }, [reset]);
 
@@ -663,6 +672,7 @@ function PaymentPage({
                         onChange(e.target.files[0]);
                       }}
                       type="file"
+                      inputProps={{ref: receiptUploadRef}}
                       size="small"
                       label="Attachment"
                       helperText={errors?.attachment?.message}
@@ -680,6 +690,7 @@ function PaymentPage({
                     />
                   )}}
                 />
+                {/* <button onClick={() => {receiptUploadRef.current.value = null}}></button> */}
               {/* <Controller
                 name="receiptAttachment"
                 control={control}
