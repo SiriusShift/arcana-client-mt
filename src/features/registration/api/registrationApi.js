@@ -239,6 +239,14 @@ const registrationApi = api
         transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
       }),
+
+      // getConsolidateApprovedClientsExport: builder.query({
+      //   query: (params) => ({
+      //     url: `/approved-clients-export`,
+      //     method: "GET",
+      //     params: params,
+      //   }),
+      // })
     }),
   });
 
@@ -249,6 +257,7 @@ export const {
   usePutAddAttachmentsMutation,
   usePutAddTermsAndCondtionsMutation,
   usePostDirectRegistrationMutation,
+  
   // usePutApproveRegistrationMutation,
   // usePutRejectRegistrationMutation,
   usePutRejectClientMutation,
@@ -274,4 +283,8 @@ export const {
 
   //Approval History
   useLazyGetClientApprovalHistoryByIdQuery,
+
+  //Exporting File
+  // useGetConsolidateApprovedClientsExportQuery,
+  // useLazyGetConsolidateApprovedClientsExportQuery,
 } = registrationApi;

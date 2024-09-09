@@ -12,6 +12,7 @@ function SearchVoidFilterMixin({
   setStatus,
   setSearch,
   selectOptions,
+  children,
   setSelectValue,
 }) {
   const debouncedSetSearch = debounce((value) => {
@@ -33,6 +34,7 @@ function SearchVoidFilterMixin({
       </Box>
 
       <Box className="mixin__right">
+        {children}
         {(status === "Voided" || status === "Rejected") && (
           <>
             <Checkbox

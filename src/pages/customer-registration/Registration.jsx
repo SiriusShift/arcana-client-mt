@@ -1,5 +1,9 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Box, TextField, Typography } from "@mui/material";
+import { GetApp } from "@mui/icons-material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import moment from "moment";
 import CommonTable from "../../components/CommonTable";
 import useDisclosure from "../../hooks/useDisclosure";
 import PageHeaderAddTabs from "../../components/PageHeaderAddTabs";
@@ -20,6 +24,10 @@ import SearchVoidFilterMixin from "../../components/mixins/SearchVoidFilterMixin
 import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 import PrintTTAModal from "../../components/modals/registration/PrintTTAModal";
 import SessionExpired from "../SessionExpired";
+import SecondaryButton from "../../components/SecondaryButton";
+// import { useLazyGetConsolidateApprovedClientsExportQuery } from "../../features/registration/api/registrationApi";
+import * as _ from "lodash";
+import { decryptString } from "../../utils/CustomFunctions";
 
 function DirectRegistration() {
   const [search, setSearch] = useState("");
@@ -28,6 +36,10 @@ function DirectRegistration() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [editMode, setEditMode] = useState(false);
+  const [dateFrom, setDateFrom] = useState(moment());
+  const [dateTo, setDateTo] = useState(moment());
+  const [dateFromTemp, setDateFromTemp] = useState(moment());
+  const [dateToTemp, setDateToTemp] = useState(moment());
 
   const [voidConfirmBox, setVoidConfirmBox] = useState("");
 
@@ -44,6 +56,7 @@ function DirectRegistration() {
     isApprovedOnly ? "Approved" : "Under review"
   );
   const [tabViewing, setTabViewing] = useState(isApprovedOnly ? 2 : 1);
+  console.log(tabViewing);
 
   const { notifications, isNotificationFetching } = useContext(AppContext);
 
@@ -85,20 +98,39 @@ function DirectRegistration() {
   } = useDisclosure();
 
   //RTK Query
-  const { data, isFetching, error } = useGetAllClientsQuery({
-    Search: search,
-    // Status: status,
-    RegistrationStatus: clientStatus,
-    Origin: origin,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  }, {
-    refetchOnMountOrArgChange: true
-  });
+  const { data, isFetching, error } = useGetAllClientsQuery(
+    {
+      Search: search,
+      // Status: status,
+      RegistrationStatus: clientStatus,
+      Origin: origin,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putVoidClientRegistration, { isLoading: isVoidLoading }] =
     usePutVoidClientRegistrationMutation();
 
   const [patchReadNotification] = usePatchReadNotificationMutation();
+
+  // const [getConsolidateClients, { isFetching: isExportLoading, data: exportData }] = useLazyGetConsolidateApprovedClientsExportQuery({
+  //   DateFrom: moment(dateFrom).format("YYYY-MM-DD"),
+  //   DateTo: moment(dateTo).format("YYYY-MM-DD"),
+  // });
+
+  // if(exportData){
+  //   console.log("hello");
+  //   const fileName = `ArcanaApprovedClients_${moment(dateFrom).format("YYYY-MM-DD")}_${moment(dateTo).format("YYYY-MM-DD")}.xlsx`
+  //   const url = window.URL.createObjectURL(new Blob([exportData]));
+  //   const link = document.createElement("a");
+  //   link.href = url;
+  //   link.setAttribute("download", fileName);
+  //   document.body.appendChild(link);
+  //   link.click();
+  // }
 
   //Constants
   const registrationNavigation = useMemo(
@@ -180,6 +212,52 @@ function DirectRegistration() {
     onRegisterOpen();
   };
 
+  const handleSubmitDate = () => {
+    setDateFrom(dateFromTemp);
+    setDateTo(dateToTemp);
+    useDownloadExcel();
+  };
+
+  const useDownloadExcel = async (params) => {
+    console.log(params);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BASEURL}approved-clients-export?DateFrom=${moment(dateFrom).format("MM-DD-YYYY")}&DateTo=${moment(dateTo).format("MM-DD-YYYY")}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            // Accept: " application/json",
+            Authorization: `Bearer ${decryptString(
+              sessionStorage.getItem("token")
+            )}`,
+          },
+          
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to download Excel file.");
+      }
+      console.log(response);
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      const url = window.URL.createObjectURL(blob);
+      link.href = url;
+      link.setAttribute('download', `ArcanaApprovedClients_${moment(dateFrom).format("YYYYMMDD")}_${moment(dateTo).format("YYYYMMDD")}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up and revoke the object URL
+      link.parentNode.removeChild(link);
+      // const link = document.createElement("a");
+      // link.href = response.url;
+      // link.click();
+      // link.remove();
+    } catch (error) {
+      console.error("Error while downloading Excel file:", error);
+    }
+  };
+
   const onVoidSubmit = async () => {
     try {
       await putVoidClientRegistration(selectedRowData?.id).unwrap();
@@ -222,7 +300,7 @@ function DirectRegistration() {
 
   return (
     <>
-    {error && <SessionExpired />}
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderAddTabs
           pageTitle="Registration"
@@ -234,14 +312,63 @@ function DirectRegistration() {
           isNotificationFetching={isNotificationFetching}
           removeAdd={isApprovedOnly}
         />
-
         <SearchVoidFilterMixin
           setSearch={setSearch}
           selectOptions={selectOptions}
           setSelectValue={setOrigin}
           status={clientStatus}
           setStatus={setClientStatus}
-        />
+          tabViewing={tabViewing}
+        >
+          <Box className="transactionsList__filters">
+            {tabViewing === 2 && (
+              <Box className="transactionsList__filters__right">
+                <LocalizationProvider dateAdapter={AdapterMoment}>
+                  <DatePicker
+                    label="Date From"
+                    value={dateFromTemp}
+                    onChange={setDateFromTemp}
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                      },
+                    }}
+                    sx={{ width: "200px" }}
+                    maxDate={dateToTemp}
+                  />
+                </LocalizationProvider>
+
+                <LocalizationProvider dateAdapter={AdapterMoment}>
+                  <DatePicker
+                    label="Date To"
+                    value={dateToTemp}
+                    onChange={setDateToTemp}
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                      },
+                    }}
+                    sx={{ width: "200px" }}
+                    minDate={dateFromTemp}
+                  />
+                </LocalizationProvider>
+
+                <SecondaryButton
+                  size="medium"
+                  onClick={handleSubmitDate}
+                  sx={{ mr: "10px", height: "100%" }}
+                  disabled={
+                    // isExportLoading ||
+                    _.isEqual(dateFrom, dateFromTemp) &&
+                    _.isEqual(dateTo, dateToTemp)
+                  }
+                >
+                  <GetApp />
+                </SecondaryButton>
+              </Box>
+            )}
+          </Box>
+        </SearchVoidFilterMixin>
 
         {isFetching ? (
           <CommonTableSkeleton lowerCompact />
@@ -262,7 +389,7 @@ function DirectRegistration() {
             onHistory={onHistoryOpen}
             onEdit={
               clientStatus !== "Voided" &&
-              (userDetails?.roleName === "Admin"
+              (userDetails?.roleName === "Admin" || userDetails.roleName === "CDO"
                 ? handleEditOpen
                 : userDetails?.roleName !== "Admin"
                 ? clientStatus !== "Approved" && handleEditOpen

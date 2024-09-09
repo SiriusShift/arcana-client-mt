@@ -244,7 +244,7 @@ function PaymentModalForm({
         // open={isModalFormOpen}
         // onClose={handleFormClose}
         onSubmit={handleSubmit(onSubmit)}
-        disableSubmit={!isValid || !isDirty || !otherExpensesBalanceData}
+        disableSubmit={!isValid || !isDirty || (watch("paymentMethod")?.label === "Others" && !otherExpensesBalanceData)}
         width="800px"
         // height change when in advance payment and listing fee to accomodate the payment balance for them
         height= {(watch("paymentMethod")?.label === "Listing Fee" || watch("paymentMethod")?.label === "Advance Payment") ? "350px" : "auto"}
