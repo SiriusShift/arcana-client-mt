@@ -246,7 +246,8 @@ function PaymentModalForm({
         onSubmit={handleSubmit(onSubmit)}
         disableSubmit={!isValid || !isDirty || !otherExpensesBalanceData}
         width="800px"
-        height="450px"
+        // height change when in advance payment and listing fee to accomodate the payment balance for them
+        height= {(watch("paymentMethod")?.label === "Listing Fee" || watch("paymentMethod")?.label === "Advance Payment") ? "350px" : "auto"}
       >
         <Box className="paymentTransactionModal">
           <Box className="paymentTransactionModal__invoice">

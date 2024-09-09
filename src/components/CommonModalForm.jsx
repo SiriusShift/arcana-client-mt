@@ -27,7 +27,7 @@ function CommonModalForm({
       <Box
         sx={{
           width: width ? width : "500px",
-          // height: height && height,
+          height: height && height,
         }}
         className="commonModalForm"
         component="form"

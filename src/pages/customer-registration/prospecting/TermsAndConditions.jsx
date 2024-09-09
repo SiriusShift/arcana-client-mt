@@ -468,15 +468,16 @@ function TermsAndConditions({ direct, editMode, storeType }) {
                 label="Monthly"
               />
               <FormControlLabel
-                value={"Quarterly"}
+                value={"Semi-Annual"}
                 control={<Radio />}
-                label="Quarterly"
+                label="1/2-Annual"
               />
+
               <Box className="terms__column__item__choicesNoSpace">
                 <FormControlLabel
-                  value={"Semi-Annual"}
+                  value={"Quarterly"}
                   control={<Radio />}
-                  label="Semi-Annual"
+                  label="Quarterly"
                 />
                 <FormControlLabel
                   value={"Annual"}
@@ -967,7 +968,7 @@ function TermsAndConditions({ direct, editMode, storeType }) {
 
         <Box className="terms__row__item__title">
           <Typography>Signature</Typography>
-          <Tooltip title="Edit" placement="right" arrow >
+          <Tooltip title="Edit" placement="right" arrow>
             {ownersRequirements["signature"] ||
             representativeRequirements["signature"] ? (
               <IconButton
@@ -976,12 +977,20 @@ function TermsAndConditions({ direct, editMode, storeType }) {
               >
                 <Edit sx={{ fontSize: "20px", color: "#FFFFFF" }} />
               </IconButton>
-            ) : ""}
+            ) : (
+              ""
+            )}
           </Tooltip>
         </Box>
 
-        <Box className={ownersRequirements["signature"] ||
-            representativeRequirements["signature"] ? "terms__row__item__signature" : ""}>
+        <Box
+          className={
+            ownersRequirements["signature"] ||
+            representativeRequirements["signature"]
+              ? "terms__row__item__signature"
+              : ""
+          }
+        >
           <Box
             sx={{
               display: "flex",
