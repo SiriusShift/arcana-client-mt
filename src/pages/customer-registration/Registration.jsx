@@ -40,6 +40,8 @@ function DirectRegistration() {
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
   const [dateToTemp, setDateToTemp] = useState(moment());
+  console.log("dateFromTemp", dateFromTemp);
+  console.log("dateToTemp", dateToTemp);
 
   const [voidConfirmBox, setVoidConfirmBox] = useState("");
 
@@ -212,17 +214,10 @@ function DirectRegistration() {
     onRegisterOpen();
   };
 
-  const handleSubmitDate = () => {
-    setDateFrom(dateFromTemp);
-    setDateTo(dateToTemp);
-    useDownloadExcel();
-  };
-
-  const useDownloadExcel = async (params) => {
-    console.log(params);
+  const useDownloadExcel = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASEURL}approved-clients-export?DateFrom=${moment(dateFrom).format("MM-DD-YYYY")}&DateTo=${moment(dateTo).format("MM-DD-YYYY")}`,
+        `${import.meta.env.VITE_BASEURL}approved-clients-export?DateFrom=${moment(dateFromTemp).format("MM-DD-YYYY")}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
         {
           method: "GET",
           headers: {
@@ -243,7 +238,7 @@ function DirectRegistration() {
       const link = document.createElement('a');
       const url = window.URL.createObjectURL(blob);
       link.href = url;
-      link.setAttribute('download', `ArcanaApprovedClients_${moment(dateFrom).format("YYYYMMDD")}_${moment(dateTo).format("YYYYMMDD")}.xlsx`);
+      link.setAttribute('download', `ArcanaApprovedClients_${moment(dateFromTemp).format("YYYYMMDD")}_${moment(dateToTemp).format("YYYYMMDD")}.xlsx`);
       document.body.appendChild(link);
       link.click();
 
@@ -256,6 +251,13 @@ function DirectRegistration() {
     } catch (error) {
       console.error("Error while downloading Excel file:", error);
     }
+  };
+
+  
+  const handleSubmitDate = () => {
+    setDateFrom(dateFromTemp);
+    setDateTo(dateToTemp);  
+    useDownloadExcel();
   };
 
   const onVoidSubmit = async () => {

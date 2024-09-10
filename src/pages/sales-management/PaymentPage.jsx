@@ -127,7 +127,6 @@ function PaymentPage({
 
   //Functions
   const onSubmit = async (data) => {
-	console.log(data);
     const formData = new FormData();
 
     data.transactionId.map((id, index) => formData.append(`transactionId`, id));
@@ -275,8 +274,6 @@ function PaymentPage({
       );
     }
   };
-
-  console.log(watch());
 
   const handleSelectAll = (e) => {
     const { checked } = e.target;
