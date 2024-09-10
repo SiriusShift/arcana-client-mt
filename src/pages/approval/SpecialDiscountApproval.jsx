@@ -151,7 +151,10 @@ function SpecialDiscountApproval() {
           <>
             Confirm approval of{" "}
             <span style={{ fontWeight: "700" }}>
-              {selectedRowData?.discount * 100}%
+              {(selectedRowData?.discount * 100)?.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}%
             </span>{" "}
             special discount for <br />
             <span style={{ fontWeight: "700" }}>

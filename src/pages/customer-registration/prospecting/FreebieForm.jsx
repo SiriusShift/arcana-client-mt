@@ -392,7 +392,7 @@ function FreebieForm({
                   label="Quantity"
                   size="small"
                   autoComplete="off"
-                  disabled
+                  // disabled
                   onChange={onChange}
                   onBlur={onBlur}
                   value={value || ""}
