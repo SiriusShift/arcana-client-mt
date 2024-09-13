@@ -37,7 +37,7 @@ function Clearing() {
 		return [
 			{
 				case: 1,
-				name: "For A-Tag",
+				name: "For Tagging",
 				clearingStatus: "For Clearing",
 				badge: notifications["forClearing"],
 			},

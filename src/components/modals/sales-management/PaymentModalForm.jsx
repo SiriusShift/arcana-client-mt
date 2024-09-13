@@ -29,6 +29,7 @@ import { useLazyGetListingFeeBalanceByIdQuery } from "../../../features/listing-
 import { useLazyGetOtherExpensesByClientIdQuery } from "../../../features/registration/api/registrationApi";
 import { useLazyGetOtherExpensesBalanceByClientIdQuery } from "../../../features/otherExpenses/api/otherExpensesRegApi";
 import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
+// import { useGetAllOnlinePlatformsQuery } from "../../../features/setup/api/onlinePaymentPlatformsApi";
 
 function PaymentModalForm({
   editMode,
@@ -75,7 +76,7 @@ function PaymentModalForm({
 
   //RTK Query
   const { data: expensesData, isLoading: isExpensesLoading } =
-  useGetAllOtherExpensesQuery({ Status: true, page: 1, pageSize: 1000 });
+    useGetAllOtherExpensesQuery({ Status: true, page: 1, pageSize: 1000 });
 
   const expensesArray = expensesData?.otherExpenses;
   const [triggerAdvancePaymentBalance, { data: advancePaymentData }] =
@@ -83,16 +84,21 @@ function PaymentModalForm({
   const [triggerListingFeeBalance, { data: listingFeeBalanceData }] =
     useLazyGetListingFeeBalanceByIdQuery();
 
-  let [triggerOtherExpensesBalance, {data: otherExpensesBalanceData, error: otherExpensesBalanceError}] = useLazyGetOtherExpensesBalanceByClientIdQuery();
-  if(otherExpensesBalanceError){
-    otherExpensesBalanceData = null
+  let [
+    triggerOtherExpensesBalance,
+    { data: otherExpensesBalanceData, error: otherExpensesBalanceError },
+  ] = useLazyGetOtherExpensesBalanceByClientIdQuery();
+  if (otherExpensesBalanceError) {
+    otherExpensesBalanceData = null;
   }
-  
+
   const remainingAdvancePayment = parseFloat(
     advancePaymentData?.remainingBalance
   );
   const remainingListingFee = parseFloat(listingFeeBalanceData?.totalBalance);
-  const remainingOtherExpensesBalance = parseFloat(otherExpensesBalanceData?.totalBalance);
+  const remainingOtherExpensesBalance = parseFloat(
+    otherExpensesBalanceData?.totalBalance
+  );
   //Functions
   const onSubmit = async (data) => {
     console.log(data);
@@ -197,7 +203,7 @@ function PaymentModalForm({
     if (editMode && open) {
       const { index, ...paymentInfo } = selectedPayment;
       Object.keys(paymentInfo).forEach((key) => {
-        console.log("key",paymentInfo[key]);
+        console.log("key", paymentInfo[key]);
         if (key === "chequeDate" || key === "dateReceived") {
           setValue(key, paymentInfo[key] ? moment(paymentInfo[key]) : null);
           return;
@@ -232,7 +238,10 @@ function PaymentModalForm({
 
   useEffect(() => {
     if (otherExpenseType) {
-      triggerOtherExpensesBalance({ClientId: client.id, OtherExpenseId: otherExpenseType.id});
+      triggerOtherExpensesBalance({
+        ClientId: client.id,
+        OtherExpenseId: otherExpenseType.id,
+      });
     }
   }, [otherExpenseType, triggerOtherExpensesBalance, client]);
 
@@ -244,10 +253,20 @@ function PaymentModalForm({
         // open={isModalFormOpen}
         // onClose={handleFormClose}
         onSubmit={handleSubmit(onSubmit)}
-        disableSubmit={!isValid || !isDirty || (watch("paymentMethod")?.label === "Others" && !otherExpensesBalanceData)}
+        disableSubmit={
+          !isValid ||
+          !isDirty ||
+          (watch("paymentMethod")?.label === "Others" &&
+            !otherExpensesBalanceData)
+        }
         width="800px"
         // height change when in advance payment and listing fee to accomodate the payment balance for them
-        height= {(watch("paymentMethod")?.label === "Listing Fee" || watch("paymentMethod")?.label === "Advance Payment") ? "350px" : "auto"}
+        height={
+          watch("paymentMethod")?.label === "Listing Fee" ||
+          watch("paymentMethod")?.label === "Advance Payment"
+            ? "350px"
+            : "auto"
+        }
       >
         <Box className="paymentTransactionModal">
           <Box className="paymentTransactionModal__invoice">
@@ -371,16 +390,19 @@ function PaymentModalForm({
                     isAllowed={(values) => {
                       const { floatValue } = values;
 
-                      const balanceToCompare = watch("paymentMethod").label === "Others" ? parseFloat(otherExpensesBalanceData?.totalBalance) : (editMode
-                        ? remainingBalance + initialEditAmount
-                        : remainingBalance);
-                      
-                      console.log( balanceToCompare);
+                      const balanceToCompare =
+                        watch("paymentMethod").label === "Others"
+                          ? parseFloat(otherExpensesBalanceData?.totalBalance)
+                          : editMode
+                          ? remainingBalance + initialEditAmount
+                          : remainingBalance;
+
+                      console.log(balanceToCompare);
 
                       if (
                         floatValue != null &&
                         floatValue > balanceToCompare &&
-                        watch("paymentMethod").label !== "Cheque" 
+                        watch("paymentMethod").label !== "Cheque"
                       ) {
                         snackbar({
                           message: `${
@@ -550,6 +572,22 @@ function PaymentModalForm({
             {watch("paymentMethod")?.label === "Online" && (
               <>
                 <Controller
+                  name="onlinePlatform"
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <TextField
+                      label="Online Platform"
+                      size="small"
+                      autoComplete="off"
+                      {...field}
+                      helperText={errors?.accountNo?.message}
+                      error={errors?.accountNo}
+                      type="number"
+                    />
+                  )}
+                />
+                <Controller
                   name="accountName"
                   control={control}
                   defaultValue=""
@@ -564,23 +602,6 @@ function PaymentModalForm({
                       }
                       helperText={errors?.accountName?.message}
                       error={errors?.accountName}
-                    />
-                  )}
-                />
-
-                <Controller
-                  name="accountNo"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      label="Account Number"
-                      size="small"
-                      autoComplete="off"
-                      {...field}
-                      helperText={errors?.accountNo?.message}
-                      error={errors?.accountNo}
-                      type="number"
                     />
                   )}
                 />
@@ -604,7 +625,6 @@ function PaymentModalForm({
               </>
             )}
 
-
             {watch("paymentMethod")?.label === "Withholding" && (
               <>
                 <Controller
@@ -612,29 +632,30 @@ function PaymentModalForm({
                   control={control}
                   render={({ field: { value, onChange, ...field } }) => {
                     return (
-                    <TextField
-                      {...field}
-                      value={value?.fileName}
-                      onChange={(e) => {
-                        onChange(e.target.files[0]);
-                      }}
-                      type="file"
-                      size="small"
-                      label="Attachment"
-                      helperText={errors?.attachment?.message}
-                      error={errors?.attachment}
-                      InputLabelProps={{ shrink: true }}
-                      InputProps={{
-                        endAdornment: watch("attachment") && (
-                          <InputAdornment position="end">
-                            <IconButton onClick={onViewPhotoOpen}>
-                              <Visibility />
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}}
+                      <TextField
+                        {...field}
+                        value={value?.fileName}
+                        onChange={(e) => {
+                          onChange(e.target.files[0]);
+                        }}
+                        type="file"
+                        size="small"
+                        label="Attachment"
+                        helperText={errors?.attachment?.message}
+                        error={errors?.attachment}
+                        InputLabelProps={{ shrink: true }}
+                        InputProps={{
+                          endAdornment: watch("attachment") && (
+                            <InputAdornment position="end">
+                              <IconButton onClick={onViewPhotoOpen}>
+                                <Visibility />
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    );
+                  }}
                 />
               </>
             )}
@@ -681,7 +702,7 @@ function PaymentModalForm({
                       onChange={(e) =>
                         field.onChange(e.target.value.toUpperCase())
                       }
-                      helperText={errors?.remarks?.message} 
+                      helperText={errors?.remarks?.message}
                       error={errors?.remarks}
                     />
                   )}
@@ -722,7 +743,8 @@ function PaymentModalForm({
                   options={expensesArray.filter(
                     (type) =>
                       !expensesFields?.some(
-                        (field) => field.otherExpense?.expenseType === type?.expenseType
+                        (field) =>
+                          field.otherExpense?.expenseType === type?.expenseType
                       )
                   )}
                   getOptionLabel={(option) => option.expenseType.toUpperCase()}
@@ -795,28 +817,30 @@ function PaymentModalForm({
                   // 	return value;
                   // }}
                 />
-				<Box className="paymentTransactionModal__footer">
-				<Box className="paymentTransactionModal__footer__label">
-					<Typography className="paymentTransactionModal__footer__label__top">
-					{watch("otherExpense")?.expenseType ?? "Others"}
-					</Typography>
+                <Box className="paymentTransactionModal__footer">
+                  <Box className="paymentTransactionModal__footer__label">
+                    <Typography className="paymentTransactionModal__footer__label__top">
+                      {watch("otherExpense")?.expenseType ?? "Others"}
+                    </Typography>
 
-					<Typography className="paymentTransactionModal__footer__label__bottom">
-					(Current Balance)
-					</Typography>
-				</Box>
+                    <Typography className="paymentTransactionModal__footer__label__bottom">
+                      (Current Balance)
+                    </Typography>
+                  </Box>
 
-				<Typography className="paymentTransactionModal__footer__value">
-					₱
-					{otherExpensesBalanceData ? otherExpensesBalanceData?.totalBalance?.toLocaleString(
-					undefined,
-					{
-						minimumFractionDigits: 2,
-						maximumFractionDigits: 2,
-					}
-					) : "0"}
-				</Typography>
-				</Box>
+                  <Typography className="paymentTransactionModal__footer__value">
+                    ₱
+                    {otherExpensesBalanceData
+                      ? otherExpensesBalanceData?.totalBalance?.toLocaleString(
+                          undefined,
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )
+                      : "0"}
+                  </Typography>
+                </Box>
               </>
             )}
           </Box>

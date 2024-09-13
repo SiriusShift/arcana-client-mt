@@ -70,7 +70,10 @@ function CommonTable({
   setPage,
   rowsPerPage,
   setRowsPerPage,
+  setRowsPerPageFiltered,
   count = 0,
+  clusterData,
+  searchData,
   status,
   evenLesserCompact,
   lesserCompact,
@@ -619,6 +622,7 @@ function CommonTable({
         rowsPerPageOptions={[5, 10, 25, { label: "All", value: 2000 }]}
         onRowsPerPageChange={(e) => {
           setRowsPerPage(e.target.value);
+          setRowsPerPageFiltered(searchData,clusterData);
         }}
         page={page}
         onPageChange={(_, newPage) => {

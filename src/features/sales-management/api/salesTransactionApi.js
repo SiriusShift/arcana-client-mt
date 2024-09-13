@@ -58,6 +58,16 @@ const salesTransactionApi = api
         invalidatesTags: ["Sales Transaction"],
       }),
 
+      cancelSalesTransaction: builder.mutation({
+        query: (body) => ({
+          // url: `/sales-transaction/${id}/cancel`,
+          url: `/sales-transaction/cancelV2`,
+          method: "PUT",
+          body,
+        }),
+        invalidatesTags: ["Sales Transaction"],
+      }), 
+
       uploadCiAttachment: builder.mutation({
         query: ({ id, formData }) => ({
           url: `/transactions-invoice/${id}`,
@@ -73,6 +83,7 @@ export const {
   useGetAllClientsForPOSQuery,
   useGetAllSalesTransactionQuery,
   useLazyGetAllSalesTransactionQuery,
+  useCancelSalesTransactionMutation,
   useVoidSalesTransactionMutation,
   useUploadCiAttachmentMutation,
   useCreateSalesTransactionMutation,

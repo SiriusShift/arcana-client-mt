@@ -34,6 +34,7 @@ function FreebieForm({
   direct,
 }) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [total, setTotalQuantity] = useState(1);
 
   //Redux States
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -115,6 +116,9 @@ function FreebieForm({
   const { data: productData, isLoading: isProductDataLoading } =
     useGetAllProductsQuery({ Status: true, page: 1, pageSize: 1000 });
 
+  //IF store type is distributor
+  const lengthArray = selectedRowData?.storeType === "Distributor" ? 10 : 5;
+  
   //Drawer Functions
   const onFreebieSubmit = async (data) => {
     if (hasDuplicateItemCodes(watch("freebies"))) {
@@ -172,6 +176,7 @@ function FreebieForm({
 
   const handleDrawerClose = () => {
     reset();
+    setTotalQuantity(1);
     onFreebieFormClose();
     onConfirmCancelClose();
   };
@@ -182,6 +187,11 @@ function FreebieForm({
   };
 
   const snackbar = useSnackbar();
+
+  if(total > 10){
+    snackbar({ message: "Maximum of 10 freebies only", variant: "error" });
+  }
+
 
   const onDirectFreebieSave = (data) => {
     if (hasDuplicateItemCodes(watch("freebies"))) {
@@ -200,9 +210,9 @@ function FreebieForm({
 
   //Misc Functions
   const handleFreebieError = () => {
-    if (fields.length === 1) {
+    if (fields.length === 1 && selectedRowData?.storeType !== "Distributor") {
       snackbar({ message: "Must have at least 1 freebie", variant: "error" });
-    } else if (fields.length === 5) {
+    } else if (fields.length === 5 && selectedRowData?.storeType !== "Distributor") {
       snackbar({ message: "Maximum of 5 freebies only", variant: "error" });
     }
   };
@@ -285,7 +295,7 @@ function FreebieForm({
         onClose={isDirty ? onConfirmCancelOpen : handleDrawerClose}
         width="1000px"
         disableSubmit={
-          direct ? !isValid || !photoProofDirect || !signatureDirect : !isValid
+          direct ? !isValid || !photoProofDirect || !signatureDirect : !isValid || total > 10
         }
         onSubmit={onConfirmSubmitOpen}
         submitLabel={direct && "Save"}
@@ -392,8 +402,12 @@ function FreebieForm({
                   label="Quantity"
                   size="small"
                   autoComplete="off"
-                  // disabled
-                  onChange={onChange}
+                  disabled = {selectedRowData?.storeType !== "Distributor" ? true : false}
+                  onChange={(e) => {onChange(e); setTotalQuantity( 
+                    watch("freebies").reduce((acc, curr) => {
+                      return acc + parseInt(curr.quantity);
+                    }, 0)
+                  )}}
                   onBlur={onBlur}
                   value={value || ""}
                   ref={ref}
@@ -421,16 +435,17 @@ function FreebieForm({
             alignItems: "center",
           }}
         >
-          {watch("freebies").length < 5 && (
+          {((watch("freebies").length < 5 && selectedRowData?.storeType !== "Distributor") ||  (total < 10 && selectedRowData?.storeType === "Distributor"))  && (
             <SecondaryButton
               sx={{ width: "150px" }}
               onClick={() => {
-                fields.length < 5
+                setTotalQuantity((prevValue) => prevValue + 1);
+                fields.length < lengthArray
                   ? append({ itemId: null, quantity: 1 })
                   : handleFreebieError();
               }}
               disabled={
-                !watch("freebies")[watch("freebies").length - 1]?.itemId
+                !watch("freebies")[watch("freebies").length - 1]?.itemId || total > 10
               }
             >
               Add Freebie

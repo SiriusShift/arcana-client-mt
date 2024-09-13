@@ -149,6 +149,7 @@ function ForFreebies() {
     usePatchProspectStatusMutation();
 
   const { data: storeTypeData } = useGetAllStoreTypesQuery({ Status: true });
+  console.log("storeType",storeTypeData);
 
   // const { data: provinceData, isFetching: isProvinceFetching } =
   //   useGetAllProvincesQuery();

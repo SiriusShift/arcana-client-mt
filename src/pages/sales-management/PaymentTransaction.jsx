@@ -7,39 +7,43 @@ import PageHeaderTabs from "../../components/PageHeaderTabs";
 import AddSearchMixin from "../../components/mixins/AddSearchMixin";
 import {
   useGetAllSalesTransactionQuery,
+  useCancelSalesTransactionMutation,
   useVoidSalesTransactionMutation,
 } from "../../features/sales-management/api/salesTransactionApi";
+import { useGetAllTransactionsQuery } from "../../features/filter/api/filterApi";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import PaymentPage from "./PaymentPage";
 import PaymentHistoriesBySalesInvoiceModal from "../../components/modals/sales-management/PaymentHistoriesBySalesInvoiceModal";
 import useDisclosure from "../../hooks/useDisclosure";
 import { useDispatch, useSelector } from "react-redux";
-import useConfirm from "../../hooks/useConfirm";
+import useReasonConfirm from "../../hooks/useReasonConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import moment from "moment";
 import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
 import ViewTransactionModal from "../../components/modals/sales-management/ViewTransactionModal";
 import SessionExpired from "../SessionExpired";
+import { filter } from "lodash";
 
 function PaymentTransaction() {
   const [paymentMode, setPaymentMode] = useState(false);
   const [tabViewing, setTabViewing] = useState(1);
-  const [search, setSearch] = useState("");
+  // const [search, setSearch] = useState("");
   const [transactionStatus, setTransactionStatus] = useState("Pending");
   const [page, setPage] = useState(0);
+  const [search, setSearch] = useState("");
+  const [clusterId, setClusterId] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [clientFromInvoicePage, setClientFromInvoicePage] = useState(null);
-
   const { notifications } = useContext(AppContext);
 
   //Hooks
-  const confirm = useConfirm();
+  const confirmReason = useReasonConfirm();
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
-  const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const selectedRowData = useSelector((state) => state.selectedRow?.value);
   console.log(selectedRowData);
 
   //Disclosures
@@ -55,19 +59,40 @@ function PaymentTransaction() {
     onClose: onViewClose,
   } = useDisclosure();
 
-
   //RTK Query
-  const { data: transactionData, isFetching: isTransactionFetching, error } =
-    useGetAllSalesTransactionQuery({
-      PageNumber: page + 1,
-      PageSize: rowsPerPage,
-      Search: search,
-      TransactionStatus: transactionStatus,
-    }, {
-      refetchOnMountOrArgChange: true,
-    });
+  // const {
+  //   data: transactionData,
+  //   isFetching: isTransactionFetching,
+  //   error,
+  // } = useGetAllSalesTransactionQuery(
+  //   {
+  //     PageNumber: page + 1,
+  //     PageSize: rowsPerPage,
+  //     TransactionStatus: transactionStatus,
+  //   },
+  //   {
+  //     refetchOnMountOrArgChange: true,
+  //   }
+  // );
 
   const [voidSalesTransaction] = useVoidSalesTransactionMutation();
+  const [cancelSalesTransaction] = useCancelSalesTransactionMutation();
+
+  const {
+    data: filterData,
+    isFetching: isTransactionFetching,
+    error,
+  } = useGetAllTransactionsQuery({
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+    TransactionStatus: transactionStatus,
+    refetchOnMountOrArgChange: true,
+    ClusterId: clusterId?.value || "",
+    Search: search || "",
+  });
+
+  const filteredList = filterData?.value;
+  console.log("filter", filterData);
 
   //Constants
   const paymentNavigation = useMemo(
@@ -95,6 +120,12 @@ function PaymentTransaction() {
         name: "Cleared",
         transactionStatus: "Cleared",
         badge: notifications["clearedTransaction"],
+      },
+      {
+        case: 5,
+        name: "Cancelled",
+        transactionStatus: "Cancelled",
+        badge: notifications["cancelledTransaction"],
       },
     ],
     [notifications]
@@ -125,9 +156,44 @@ function PaymentTransaction() {
   const disableActions = ["void"];
 
   //Functions
+
+  const onFilter = async ({ clusterId, search }) => {
+    try {
+      setSearch(search);
+      setClusterId(clusterId);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onCancel = async () => {
+    try {
+      await confirmReason({
+        children: (
+          <>
+            Are you sure you want to cancel transaction number{" "}
+            <span style={{ fontWeight: "bold" }}>
+              {selectedRowData?.transactionNo}
+            </span>
+            ?
+          </>
+        ),
+        question: false,
+        callback: (remarks) =>
+          cancelSalesTransaction({
+            transactionId: [selectedRowData?.transactionNo],
+            reason: remarks,
+          }).unwrap(),
+      });
+    } catch (error) {
+      if (error.isConfirmed) {
+        snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
+      }
+    }
+  };
   const onVoid = async () => {
     try {
-      await confirm({
+      await confirmReason({
         children: (
           <>
             Are you sure you want to void transaction number{" "}
@@ -138,10 +204,10 @@ function PaymentTransaction() {
           </>
         ),
         question: false,
-        callback: () =>
+        callback: (remarks) =>
           voidSalesTransaction({
             transactionId: [selectedRowData?.transactionNo],
-            reason: "test",
+            reason: remarks,
           }).unwrap(),
       });
 
@@ -160,7 +226,6 @@ function PaymentTransaction() {
     const isVoidable =
       moment(date).isAfter(moment().subtract(1, "days")) &&
       totalAmount - balance === 0;
-
     return isVoidable;
   };
 
@@ -179,20 +244,20 @@ function PaymentTransaction() {
   }, [tabViewing, paymentNavigation]);
 
   useEffect(() => {
-    if (transactionData) {
-      setCount(setCount(transactionData?.totalCount));
+    if (filteredList) {
+      setCount(setCount(filteredList?.totalCount));
     }
-  }, [transactionData]);
+  }, [filteredList]);
 
   useEffect(() => {
-    if (transactionData) {
-      setCount(transactionData?.totalCount);
+    if (filteredList) {
+      setCount(filteredList?.totalCount);
     }
-  }, [transactionData]);
+  }, [filteredList]);
 
   useEffect(() => {
     setPage(0);
-  }, [rowsPerPage, search, transactionStatus]);
+  }, [rowsPerPage, transactionStatus]);
 
   useEffect(() => {
     if (!paymentMode) {
@@ -223,7 +288,7 @@ function PaymentTransaction() {
           <>
             <PageHeaderTabs
               pageTitle="Invoices"
-              setSearch={setSearch}
+              // setSearch={setSearch}
               tabsList={paymentNavigation}
               setTabViewing={setTabViewing}
               tabViewing={tabViewing}
@@ -233,18 +298,22 @@ function PaymentTransaction() {
             <AddSearchMixin
               title="Pay Now"
               endIcon={<KeyboardDoubleArrowRight />}
-              setSearch={setSearch}
+              // setSearch={setSearch}
               onAddOpen={() => {
                 dispatch(setSelectedRow(null));
                 setPaymentMode(true);
               }}
+              onFilter={onFilter}
+              clusterFilter={true}
             />
 
             {isTransactionFetching ? (
               <CommonTableSkeleton lowerCompact mt={"-20px"} />
             ) : (
               <CommonTable
-                mapData={transactionData?.transactions}
+                mapData={
+                  filteredList?.transactions
+                }
                 customOrderKeys={customOrderKeys}
                 tableHeads={tableHeads}
                 dateTimeSplitArray={dateTimeSplitArray}
@@ -274,17 +343,22 @@ function PaymentTransaction() {
                 //   disableActions
                 // }
                 onVoid={
-                  transactionStatus === "Pending" &&
-                  // checkIsVoidable(
-                  //   selectedRowData?.createdAt,
-                  //   selectedRowData?.totalAmountDue,
-                  //   selectedRowData?.remainingBalance
-                  // ) &&
-                  onVoid
+                  transactionStatus === "Pending" ||
+                  (transactionStatus === "Paid" &&
+                    // checkIsVoidable(
+                    //   selectedRowData?.createdAt,
+                    //   selectedRowData?.totalAmountDue,
+                    //   selectedRowData?.remainingBalance
+                    // ) &&
+                    onVoid)
                 }
-                onView={transactionStatus === "Paid" && onViewOpen}
+                onView={
+                  transactionStatus === "Paid" ||
+                  (transactionStatus === "Pending" && onViewOpen)
+                }
                 onPaymentHistories={onPaymentHistoriesOpen}
                 onPay={transactionStatus === "Pending" && onPay}
+                onCancel={transactionStatus === "Pending" && onCancel}
               />
             )}
           </>
@@ -297,7 +371,6 @@ function PaymentTransaction() {
       />
 
       <ViewTransactionModal open={isViewOpen} onClose={onViewClose} />
-
     </>
   );
 }

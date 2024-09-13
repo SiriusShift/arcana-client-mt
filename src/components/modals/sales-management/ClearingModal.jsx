@@ -219,16 +219,25 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         <Stack direction="row" justifyContent="space-between">
           <Stack gap={0.5}>
             <Typography fontSize="1rem" fontWeight="500">
-              Payment Method: {selectedRowData?.paymentMethod}
+              CDO: {transaction?.addedBy || null}
             </Typography>
             <Typography fontSize="1rem" fontWeight="500">
-              Reference No: {selectedRowData?.referenceNo || "N/A"}
+              Receipt No: {transaction?.receiptNo || "N/A"}
+            </Typography>
+            <Typography fontSize="1rem" fontWeight="500">
+              Receipt Attachment: {transaction?.receiptAttachment || "N/A"}
             </Typography>
           </Stack>
 
           <Stack gap={0.5}>
-            <Typography fontSize="1rem" fontWeight="500">
+          <Typography fontSize="1rem" fontWeight="500">
               Date: {moment(selectedRowData?.date).format("MMMM DD, YYYY")}
+            </Typography>
+            <Typography fontSize="1rem" fontWeight="500">
+              Payment Method: {selectedRowData?.paymentMethod}
+            </Typography>
+            <Typography fontSize="1rem" fontWeight="500">
+              Payment Channel: {transaction?.paymentChannel || "N/A"}
             </Typography>
           </Stack>
         </Stack>
@@ -323,7 +332,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                   justifyContent="space-between"
                 >
                   <Typography color="error">Return Reason</Typography>
-                  <Typography>{selectedRowData?.reason || "N/A"}</Typography>
+                  <Typography sx={{wordBreak: "break-word"}}>{selectedRowData?.reason || "N/A"}</Typography>
                 </Stack>
               )}
             </Stack>
@@ -332,7 +341,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
 
         {mode === "Clearing" && (
           <TextField
-            label="A-Tag"
+            label="Tag"
             fullWidth
             size="small"
             sx={{ alignSelf: "flex-end", width: "300px" }}

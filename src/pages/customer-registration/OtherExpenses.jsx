@@ -24,6 +24,7 @@ function OtherExpenses() {
   const [search, setSearch] = useState("");
   const [expenseStatus, setExpenseStatus] = useState("Under review");
   const [page, setPage] = useState(0);
+  const [clusterId, setClusterId] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [editMode, setEditMode] = useState(false);
@@ -55,9 +56,10 @@ function OtherExpenses() {
   //RTK Query
 
   const { data, isFetching, error } = useGetAllExpensesQuery({
-    Search: search,
+    Search: search || "",
     Status: true,
     ExpenseStatus: expenseStatus,
+    ClusterId: clusterId?.value || "",
     PageNumber: page + 1,
     PageSize: rowsPerPage,
   }, {
@@ -122,6 +124,15 @@ function OtherExpenses() {
   const handleOpenEdit = () => {
     setEditMode(true);
     onListingFeeOpen();
+  };
+
+  const onFilter = async ({ clusterId, search }) => {
+    try {
+      setSearch(search);
+      setClusterId(clusterId);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onCancel = async () => {
@@ -207,6 +218,8 @@ function OtherExpenses() {
           addTitle="Other Expenses"
           onAddOpen={onListingFeeOpen}
           setSearch={setSearch}
+          onFilter={onFilter}
+          clusterFilter={true}
         />
 
         {isFetching ? (

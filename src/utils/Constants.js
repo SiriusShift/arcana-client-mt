@@ -5,6 +5,29 @@ export const coverageMapping = {
   F4: 4,
 };
 
+export const clusterOptions = [
+	{
+		label: "Cluster 1",
+		value: 1,
+		uppercase: "CLUSTER 1",
+	},
+	{
+		label: "Cluster 2",
+		value: 2,
+		uppercase: "CLUSTER 2",
+	},
+	{
+		label: "Cluster 3",
+		value: 3,
+		uppercase: "CLUSTER 3",
+	},
+	{
+		label: "Cluster 4",
+		value: 4,
+		uppercase: "CLUSTER 4",
+	}
+]
+
 export const paymentTypes = [
 	{
 		label: "Cheque",
