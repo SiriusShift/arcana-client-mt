@@ -29,6 +29,7 @@ import { useLazyGetListingFeeBalanceByIdQuery } from "../../../features/listing-
 import { useLazyGetOtherExpensesByClientIdQuery } from "../../../features/registration/api/registrationApi";
 import { useLazyGetOtherExpensesBalanceByClientIdQuery } from "../../../features/otherExpenses/api/otherExpensesRegApi";
 import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
+import { dummyOnlinePaymentPlatformsData } from "../../../utils/DummyData";
 // import { useGetAllOnlinePlatformsQuery } from "../../../features/setup/api/onlinePaymentPlatformsApi";
 
 function PaymentModalForm({
@@ -71,6 +72,8 @@ function PaymentModalForm({
     defaultValues: paymentSchema.defaultValues,
   });
 
+  console.log("1",watch("paymentChannel"));
+
   //Watch Constants
   const otherExpenseType = watch("otherExpense");
 
@@ -101,7 +104,7 @@ function PaymentModalForm({
   );
   //Functions
   const onSubmit = async (data) => {
-    console.log(data);
+    console.log("test",data.paymentChannel.onlinePlatform);
     let transformedData;
 
     if (data.paymentMethod.label === "Cheque") {
@@ -123,7 +126,7 @@ function PaymentModalForm({
         paymentAmount: data.paymentAmount,
         // invoiceAttachment: data.invoiceAttachment,
         accountName: data.accountName,
-        accountNo: data.accountNo,
+        paymentChannel: data.paymentChannel.onlinePlatform,
         referenceNo: data.referenceNo,
       };
     } else if (data.paymentMethod.label === "Withholding") {
@@ -571,22 +574,26 @@ function PaymentModalForm({
 
             {watch("paymentMethod")?.label === "Online" && (
               <>
-                <Controller
-                  name="onlinePlatform"
+                <ControlledAutocomplete
+                  name="paymentChannel"
                   control={control}
-                  defaultValue=""
-                  render={({ field }) => (
+                  options={dummyOnlinePaymentPlatformsData.map((item) => {
+                    return item
+                  })}
+                  getOptionLabel={(option) => option.onlinePlatform}
+                  disableClearable
+                  isOptionEqualToValue={() => true}
+                  renderInput={(params) => (
                     <TextField
-                      label="Online Platform"
+                      {...params}
                       size="small"
-                      autoComplete="off"
-                      {...field}
-                      helperText={errors?.accountNo?.message}
-                      error={errors?.accountNo}
-                      type="number"
+                      label="Expense Type"
+                      helperText={errors?.paymentChannel?.message}
+                      error={errors?.paymentChannel}
                     />
                   )}
                 />
+
                 <Controller
                   name="accountName"
                   control={control}

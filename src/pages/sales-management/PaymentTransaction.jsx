@@ -34,6 +34,7 @@ function PaymentTransaction() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const [clusterId, setClusterId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [clientFromInvoicePage, setClientFromInvoicePage] = useState(null);
@@ -44,6 +45,7 @@ function PaymentTransaction() {
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow?.value);
+
   console.log(selectedRowData);
 
   //Disclosures
@@ -88,6 +90,7 @@ function PaymentTransaction() {
     TransactionStatus: transactionStatus,
     refetchOnMountOrArgChange: true,
     ClusterId: clusterId?.value || "",
+    paymentMethod: paymentMethod?.value || "",
     Search: search || "",
   });
 
@@ -157,10 +160,10 @@ function PaymentTransaction() {
 
   //Functions
 
-  const onFilter = async ({ clusterId, search }) => {
+  const onFilter = async ({ clusterId, paymentMethod }) => {
     try {
-      setSearch(search);
       setClusterId(clusterId);
+      setPaymentMethod(paymentMethod);
     } catch (error) {
       console.log(error);
     }
@@ -295,16 +298,17 @@ function PaymentTransaction() {
               small
             />
 
-            <AddSearchMixin
+           <AddSearchMixin
               title="Pay Now"
               endIcon={<KeyboardDoubleArrowRight />}
-              // setSearch={setSearch}
+              setSearch={setSearch}
               onAddOpen={() => {
                 dispatch(setSelectedRow(null));
                 setPaymentMode(true);
               }}
               onFilter={onFilter}
               clusterFilter={true}
+              paymentMethodFilter={true}
             />
 
             {isTransactionFetching ? (

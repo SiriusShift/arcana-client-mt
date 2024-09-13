@@ -104,3 +104,14 @@ export const transferOutTypes = [
     value: "Pull Out",
   },
 ];
+
+export const invoiceTypes = [
+  {
+	label: "Sales",
+	value: "SI",
+  },
+  {
+	label: "Charge",
+	value: "CI",
+  },
+];

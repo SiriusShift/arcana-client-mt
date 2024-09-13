@@ -1,6 +1,8 @@
 import { Box, TextField, debounce } from "@mui/material";
 import SecondaryButton from "../SecondaryButton";
 import { Add } from "@mui/icons-material";
+import CommonFilter from "../CommonFilter";
+import { useSelector } from "react-redux";
 
 function AddButtonSearchMixin({
   endIcon,
@@ -10,11 +12,25 @@ function AddButtonSearchMixin({
   buttonIcon,
   onButtonClick,
   onAddOpen,
+  onFilter,
   setSearch,
+  clusterFilter,
+  paymentMethodFilter,
+  expenseTypeFilter,
+  businessTypeFilter,
+  invoiceTypeFilter,
+  validityFilter,
+  uploadStatusFilter,
+  frequenceFilter,
+  paymentChannelFilter,
+  statusFilter,
 }) {
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);
   }, 200);
+
+  const userDetails = useSelector((state) => state.login.userDetails);
+
 
   return (
     // <Paper elevation={1}>
@@ -30,6 +46,20 @@ function AddButtonSearchMixin({
       </Box>
 
       <Box className="mixin__right" sx={{ alignItems: "center" }}>
+      {userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance" ? (<CommonFilter
+          filter={onFilter}
+          clusterFilter={clusterFilter && clusterFilter}
+          paymentMethodFilter={paymentMethodFilter && paymentMethodFilter}
+          expenseTypeFilter={expenseTypeFilter && expenseTypeFilter}
+          businessTypeFilter={businessTypeFilter && businessTypeFilter}
+          invoiceTypeFilter={invoiceTypeFilter && invoiceTypeFilter}
+          validityFilter={validityFilter && validityFilter}
+          uploadStatusFilter={uploadStatusFilter && uploadStatusFilter}
+          frequenceFilter={frequenceFilter && frequenceFilter}
+          paymentChannelFilter={paymentChannelFilter && paymentChannelFilter}
+          statusFilter={statusFilter && statusFilter}
+        />) : ""}
+
         <SecondaryButton
           variant="outlined"
           size="medium"

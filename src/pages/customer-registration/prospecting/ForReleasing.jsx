@@ -39,6 +39,8 @@ function ForReleasing() {
   const [drawerMode, setDrawerMode] = useState("");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [search, setSearch] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [clusterId, setClusterId] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
@@ -143,6 +145,8 @@ function ForReleasing() {
     Search: search,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+    ClusterId: clusterId?.value || "",
+    BusinessType: businessType?.id || "",
     StoreType: selectedStoreType !== "Main" ? selectedStoreType : "",
     FreebieStatus: "For Releasing",
   });
@@ -200,6 +204,15 @@ function ForReleasing() {
     onConfirmClose();
   };
 
+  const onFilter = async ({ clusterId, businessType }) => {
+    try {
+      setClusterId(clusterId);
+      setBusinessType(businessType);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleAddOpen = () => {
     setDrawerMode("add");
     onDrawerOpen();
@@ -251,6 +264,9 @@ function ForReleasing() {
           addTitle="Prospect"
           onAddOpen={handleAddOpen}
           setSearch={setSearch}
+          businessTypeFilter={true}
+          clusterFilter={true}
+          onFilter={onFilter}
         />
         {/* <AddArchiveSearchMixin
           addTitle="Prospect"

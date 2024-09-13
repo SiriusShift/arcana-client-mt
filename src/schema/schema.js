@@ -837,9 +837,9 @@ export const paymentSchema = {
 			otherwise: (schema) => schema.nullable(),
 		}),
 
-		onlinePlatform: yup.string().when("paymentMethod.label", {
+		paymentChannel: yup.object().when("paymentMethod.label", {
 			is: "Online",
-			then: (schema) => schema.required("Online Platform is required"),
+			then: (schema) => schema.required("Payment Channel is required"),
 			otherwise: (schema) => schema.nullable(),
 		}),
 
@@ -880,7 +880,7 @@ export const paymentSchema = {
 		dateReceived: null,
 		// chequeAmount: "",
 		accountName: "",
-		onlinePlatform: "",
+		paymentChannel: "",
 		referenceNo: "",
 		remarks: "",
 		// invoiceAttachment: null,

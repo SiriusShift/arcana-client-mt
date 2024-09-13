@@ -3,15 +3,15 @@ import { api } from "../../api";
 const filterApi = api.enhanceEndpoints({
   addTagTypes: [
     "clusterFilter",
-    "paymentMethodFilter",
-    "expenseTypeFilter",
-    "businessType",
-    "invoiceTypeFilter",
-    "validityFilter",
-    "uploadStatusFilter",
-    "frequenceFilter",
-    "paymentTypeFilter",
-    "statusFilter",
+    // "paymentMethodFilter",
+    // "expenseTypeFilter",
+    // "businessTypeFilter",
+    // "invoiceTypeFilter",
+    // "validityFilter",
+    // "uploadStatusFilter",
+    // "frequenceFilter",
+    // "paymentTypeFilter",
+    // "statusFilter",
   ],
 }).injectEndpoints({
   endpoints: (builder) => ({

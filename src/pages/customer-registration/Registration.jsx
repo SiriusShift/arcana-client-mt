@@ -31,6 +31,8 @@ import { decryptString } from "../../utils/CustomFunctions";
 
 function DirectRegistration() {
   const [search, setSearch] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [clusterId, setClusterId] = useState("");
   const [origin, setOrigin] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -106,6 +108,8 @@ function DirectRegistration() {
       // Status: status,
       RegistrationStatus: clientStatus,
       Origin: origin,
+      ClusterId: clusterId?.value || "",
+      BusinessType: businessType?.id || "",
       PageNumber: page + 1,
       PageSize: rowsPerPage,
     },
@@ -217,7 +221,11 @@ function DirectRegistration() {
   const useDownloadExcel = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASEURL}approved-clients-export?DateFrom=${moment(dateFromTemp).format("MM-DD-YYYY")}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
+        `${
+          import.meta.env.VITE_BASEURL
+        }approved-clients-export?DateFrom=${moment(dateFromTemp).format(
+          "MM-DD-YYYY"
+        )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
         {
           method: "GET",
           headers: {
@@ -227,7 +235,6 @@ function DirectRegistration() {
               sessionStorage.getItem("token")
             )}`,
           },
-          
         }
       );
       if (!response.ok) {
@@ -235,10 +242,15 @@ function DirectRegistration() {
       }
       console.log(response);
       const blob = await response.blob();
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       const url = window.URL.createObjectURL(blob);
       link.href = url;
-      link.setAttribute('download', `ArcanaApprovedClients_${moment(dateFromTemp).format("YYYYMMDD")}_${moment(dateToTemp).format("YYYYMMDD")}.xlsx`);
+      link.setAttribute(
+        "download",
+        `ArcanaApprovedClients_${moment(dateFromTemp).format(
+          "YYYYMMDD"
+        )}_${moment(dateToTemp).format("YYYYMMDD")}.xlsx`
+      );
       document.body.appendChild(link);
       link.click();
 
@@ -253,11 +265,19 @@ function DirectRegistration() {
     }
   };
 
-  
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
-    setDateTo(dateToTemp);  
+    setDateTo(dateToTemp);
     useDownloadExcel();
+  };
+
+  const onFilter = async ({ clusterId, businessType }) => {
+    try {
+      setClusterId(clusterId);
+      setBusinessType(businessType);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onVoidSubmit = async () => {
@@ -321,6 +341,9 @@ function DirectRegistration() {
           status={clientStatus}
           setStatus={setClientStatus}
           tabViewing={tabViewing}
+          businessTypeFilter={true}
+          clusterFilter={true}
+          onFilter={onFilter}
         >
           <Box className="transactionsList__filters">
             {tabViewing === 2 && (
@@ -391,7 +414,8 @@ function DirectRegistration() {
             onHistory={onHistoryOpen}
             onEdit={
               clientStatus !== "Voided" &&
-              (userDetails?.roleName === "Admin" || userDetails.roleName === "CDO"
+              (userDetails?.roleName === "Admin" ||
+              userDetails.roleName === "CDO"
                 ? handleEditOpen
                 : userDetails?.roleName !== "Admin"
                 ? clientStatus !== "Approved" && handleEditOpen

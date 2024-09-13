@@ -39,6 +39,8 @@ function ForFreebies() {
   const [selectedId, setSelectedId] = useState(null);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [search, setSearch] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [clusterId, setClusterId] = useState("");
   const [status, setStatus] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -142,6 +144,8 @@ function ForFreebies() {
     Status: status,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+    BusinessType: businessType?.id || "",
+    ClusterId: clusterId?.value || "",
     StoreType: selectedStoreType !== "Main" ? selectedStoreType : "",
   });
   const [putProspect, { isLoading: isEditLoading }] = usePutProspectMutation();
@@ -225,6 +229,16 @@ function ForFreebies() {
     }
   };
 
+  const onFilter = async ({ clusterId, businessType }) => {
+    console.log(businessType)
+    try {
+      setClusterId(clusterId);
+      setBusinessType(businessType);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleAddOpen = () => {
     setDrawerMode("add");
     onDrawerOpen();
@@ -302,6 +316,9 @@ function ForFreebies() {
           onAddOpen={handleAddOpen}
           setStatus={setStatus}
           setSearch={setSearch}
+          clusterFilter={true}
+          onFilter={onFilter}
+          businessTypeFilter={true}
         />
         {isFetching ? (
           <CommonTableSkeleton lowerCompact />

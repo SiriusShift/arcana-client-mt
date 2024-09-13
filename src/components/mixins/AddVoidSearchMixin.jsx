@@ -1,17 +1,32 @@
 import { Box, Checkbox, TextField, Typography, debounce } from "@mui/material";
 import SecondaryButton from "../SecondaryButton";
 import { Add } from "@mui/icons-material";
+import CommonFilter from "../CommonFilter";
+import { useSelector } from "react-redux";
 
 function AddVoidSearchMixin({
   addTitle,
   onAddOpen,
+  onFilter,
   setSearch,
+  clusterFilter,
+  paymentMethodFilter,
+  expenseTypeFilter,
+  businessTypeFilter,
+  invoiceTypeFilter,
+  validityFilter,
+  uploadStatusFilter,
+  frequenceFilter,
+  paymentChannelFilter,
+  statusFilter,
   setStatus,
   status,
 }) {
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);
   }, 200);
+
+  const userDetails = useSelector((state) => state.login.userDetails);
 
   return (
     // <Paper elevation={1}>
@@ -40,6 +55,20 @@ function AddVoidSearchMixin({
             <Typography variant="subtitle2">Voided</Typography>
           </>
         )}
+         {userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance" ? (<CommonFilter
+          filter={onFilter}
+          clusterFilter={clusterFilter && clusterFilter}
+          paymentMethodFilter={paymentMethodFilter && paymentMethodFilter}
+          expenseTypeFilter={expenseTypeFilter && expenseTypeFilter}
+          businessTypeFilter={businessTypeFilter && businessTypeFilter}
+          invoiceTypeFilter={invoiceTypeFilter && invoiceTypeFilter}
+          validityFilter={validityFilter && validityFilter}
+          uploadStatusFilter={uploadStatusFilter && uploadStatusFilter}
+          frequenceFilter={frequenceFilter && frequenceFilter}
+          paymentChannelFilter={paymentChannelFilter && paymentChannelFilter}
+          statusFilter={statusFilter && statusFilter}
+        />) : ""}
+
 
         <TextField
           type="search"

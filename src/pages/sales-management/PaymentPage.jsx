@@ -106,6 +106,8 @@ function PaymentPage({
     name: "payments",
   });
 
+  console.log(watch());
+
   //Watch Constants
   const watchTransactionIds = watch("transactionId");
   const watchInvoiceNo = watch("invoiceNo");
@@ -164,8 +166,8 @@ function PaymentPage({
       // IF PAYMENT METHOD IS ONLINE
       payment.accountName &&
         formData.append(`Payments[${index}].accountName`, payment.accountName);
-      payment.accountNo &&
-        formData.append(`Payments[${index}].accountNo`, payment.accountNo);
+      payment.paymentChannel &&
+        formData.append(`Payments[${index}].paymentChannel`, payment.paymentChannel);
       payment.referenceNo &&
         formData.append(`Payments[${index}].referenceNo`, payment.referenceNo);
       // IF PAYMENT METHOD IS WITHHOLDING

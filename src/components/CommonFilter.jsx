@@ -11,68 +11,71 @@ import React, { useRef } from "react";
 import SecondaryButton from "./SecondaryButton";
 import useDisclosure from "../hooks/useDisclosure";
 import { FilterList } from "@mui/icons-material";
-import { clusterOptions, paymentTypes } from "../utils/constants";
+import { clusterOptions, paymentTypes, invoiceTypes } from "../utils/constants";
 import { useGetAllOtherExpensesQuery } from "../features/setup/api/otherExpensesApi";
+import { useGetAllStoreTypesQuery } from "../features/setup/api/storeTypeApi";
 
 function CommonFilter({
   filter,
-  setSearch,
+  // setSearch,
   clusterFilter,
   paymentMethodFilter,
-  expenseTypeFilter,
-  businessType,
-  invoiceTypeFilter,
-  validityFilter,
-  uploadStatusFilter,
-  frequenceFilter,
-  paymentTypeFilter,
-  statusFilter,
+  // expenseTypeFilter,
+  businessTypeFilter,
+  // invoiceTypeFilter,
+  // validityFilter,
+  // uploadStatusFilter,
+  // frequenceFilter,
+  // paymentChannelFilter,
+  // statusFilter,
 }) {
   //States
   const [filters, setFilters] = React.useState({
-    search: "",
+    // search: "",
     clusterId: null,
-    paymentType: null,
-    expenseType: null,
+    // paymentType: null,
+    // expenseType: null,
     businessType: null,
-    invoiceType: null,
-    validity: null,
-    uploadStatus: null,
-    frequence: null,
+    // invoiceType: null,
+    // validity: null,
+    // uploadStatus: null,
+    // frequence: null,
     paymentMethod: null,
-    status: null,
+    // status: null,
   });
 
   //Query
-  const { data: otherExpensesOptions } = useGetAllOtherExpensesQuery();
+  // const { data: otherExpensesOptions } = useGetAllOtherExpensesQuery();
+  const { data: storeTypeData } = useGetAllStoreTypesQuery({ Status: true });
+  
 
   //Function
   const resetFilter = () => {
     setFilters({
-      search: "",
-      clusterId: null,
-      paymentType: null,
-      expenseType: null,
-      businessType: null,
-      invoiceType: null,
-      validity: null,
-      uploadStatus: null,
-      frequence: null,
-      paymentMethod: null,
-      status: null,
+       // search: "",
+    clusterId: null,
+    // paymentType: null,
+    // expenseType: null,
+    businessType: null,
+    // invoiceType: null,
+    // validity: null,
+    // uploadStatus: null,
+    // frequence: null,
+    paymentMethod: null,
+    // status: null,
     });
     filter({
-      search: "",
-      clusterId: null,
-      paymentType: null,
-      expenseType: null,
-      businessType: null,
-      invoiceType: null,
-      validity: null,
-      uploadStatus: null,
-      frequence: null,
-      paymentMethod: null,
-      status: null,
+       // search: "",
+    clusterId: null,
+    // paymentType: null,
+    // expenseType: null,
+    businessType: null,
+    // invoiceType: null,
+    // validity: null,
+    // uploadStatus: null,
+    // frequence: null,
+    paymentMethod: null,
+    // status: null,
     });
   };
 
@@ -106,17 +109,6 @@ function CommonFilter({
         }}
       >
         <Box className="filter">
-          <TextField
-            type="search"
-            size="small"
-            label="Search"
-            value={filters.search}
-            sx={{ width: "300px" }}
-            onChange={(e) => {
-              setFilters({ ...filters, search: e.target.value });
-            }}
-            autoComplete="off"
-          />
           {clusterFilter && (
             <Autocomplete
               options={clusterOptions}
@@ -125,7 +117,6 @@ function CommonFilter({
                 setFilters({ ...filters, clusterId: value });
               }}
               value={filters.clusterId}
-              // isOptionEqualToValue={(option, value) => console.log({option, value})}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -143,13 +134,12 @@ function CommonFilter({
               options={paymentTypes}
               getOptionLabel={(option) => option.label}
               onChange={(_, value) => {
-                setFilters({ ...filters, paymentMethod: value?.expenseType });
+                setFilters({ ...filters, paymentMethod: value });
               }}
-              // defaultValue={[top100Films[13], top100Films[12], top100Films[11]]}
+              value={filters.paymentMethod}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  value={filters.paymentMethod}
                   size="small"
                   sx={{ width: "300px" }}
                   label="Payment Method"
@@ -158,15 +148,62 @@ function CommonFilter({
             />
           )}
 
-          {expenseTypeFilter && 
-          <Autocomplete
-          options={otherExpensesOptions?.otherExpenses}
-          getOptionLabel={(option) => option?.expenseType}
-          onChange={(_, value) => {
-            setFilters({ ...filters, expenseType: value?.value });
-          }}
-          >
-            </Autocomplete>}
+          {/* {expenseTypeFilter && (
+            <Autocomplete
+              options={otherExpensesOptions?.otherExpenses}
+              getOptionLabel={(option) => option?.expenseType}
+              onChange={(_, value) => {
+                setFilters({ ...filters, expenseType: value });
+              }}
+              value={filters?.expenseType}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  sx={{ width: "300px" }}
+                  label="Expense Type"
+                />
+              )}
+            ></Autocomplete>
+          )} */}
+
+
+          {businessTypeFilter && (
+            <Autocomplete
+              options={storeTypeData?.storeTypes}
+              getOptionLabel={(option) => option?.storeTypeName}
+              onChange={(_, value) => {
+                setFilters({ ...filters, businessType: value });
+              }}
+              value={filters?.businessType}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  sx={{ width: "300px" }}
+                  label="Business Type"
+                />
+              )}
+            ></Autocomplete>
+          )}
+          {/* {invoiceTypeFilter && (
+            <Autocomplete
+              options={invoiceTypes}
+              getOptionLabel={(option) => option?.label}
+              onChange={(_, value) => {
+                setFilters({ ...filters, invoiceType: value });
+              }}
+              value={filters?.invoiceType}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  sx={{ width: "300px" }}
+                  label="Invoice Type"
+                />
+              )}
+            ></Autocomplete>
+          )} */}
         </Box>
         <Divider sx={{ marginX: 3 }} />
         <Box className="filter__button">

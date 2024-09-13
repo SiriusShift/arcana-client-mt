@@ -34,6 +34,7 @@ import SessionExpired from "../SessionExpired";
 function AdvancePayment() {
   const [editMode, setEditMode] = useState(false);
   const [search, setSearch] = useState("");
+  const [clusterId, setClusterId] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
@@ -83,6 +84,7 @@ function AdvancePayment() {
   const { data: advancePaymentData, isFetching: isAdvancePaymentFetching, error } =
     useGetAllAdvancePaymentsQuery({
       Search: search,
+      ClusterId: clusterId?.value || "",
       PageNumber: page + 1,
       PageSize: rowsPerPage,
       Origin: origin,
@@ -206,6 +208,14 @@ function AdvancePayment() {
     }
   };
 
+  const onFilter = async ({ clusterId }) => {
+    try {
+      setClusterId(clusterId);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const onVoid = async () => {
     try {
       await confirm({
@@ -317,6 +327,8 @@ function AdvancePayment() {
           buttonIcon={<Wallet />}
           onButtonClick={onBalancesOpen}
           removeFilter
+          onFilter={onFilter}
+          clusterFilter={true}
         />
 
         {isAdvancePaymentFetching ? (

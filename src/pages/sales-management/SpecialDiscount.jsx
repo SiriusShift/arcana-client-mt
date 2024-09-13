@@ -32,6 +32,8 @@ import SessionExpired from "../SessionExpired";
 function SpecialDiscount() {
 	const [tabViewing, setTabViewing] = useState(1);
 	const [search, setSearch] = useState("");
+	const [clusterId, setClusterId] = useState("");
+	const [frequency, setFrequency] = useState("");
 	const [approvalStatus, setApprovalStatus] = useState("Under review");
 	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -102,6 +104,8 @@ function SpecialDiscount() {
 		useGetAllSpecialDiscountQuery({
 			Search: search,
 			Status: true,
+			Frequency: frequency?.value || "",
+			ClusterId: clusterId?.value || "",
 			SpDiscountStatus: approvalStatus,
 			PageNumber: page + 1,
 			PageSize: rowsPerPage,
@@ -146,6 +150,15 @@ function SpecialDiscount() {
 			falseDisplay: <Chip label="Recurring" color="primary" variant="outlined" />,
 		},
 	];
+
+	//Functions: Other Functions
+	const onFilter = async ({ clusterId, search }) => {
+		try {
+		  setClusterId(clusterId);
+		} catch (error) {
+		  console.log(error);
+		}
+	  };
 
 	//Functions: API
 	const onSubmit = async (data) => {
@@ -377,6 +390,9 @@ function SpecialDiscount() {
 					setSearch={setSearch}
 					setStatus={setApprovalStatus}
 					status={approvalStatus}
+					clusterFilter={true}
+					onFilter={onFilter}
+					//frequencyFilter={true}
 				/>
 
 				{isSpecialDiscountFetching ? (
@@ -397,7 +413,7 @@ function SpecialDiscount() {
 						// onEdit={tabViewing === 2 ? null : handleEditOpen}
 						onEdit={
 							approvalStatus !== "Voided" &&
-							(userDetails?.roleName === "Admin"
+							(userDetails?.roleName === "Admin" || userDetails?.roleName === "CDO"
 								? handleEditOpen
 								: userDetails?.roleName !== "Admin"
 								? approvalStatus !== "Approved" && handleEditOpen

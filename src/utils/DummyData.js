@@ -600,7 +600,7 @@ export const dummyOnlinePaymentPlatformsData = [
   },
   {
     id: 3,
-    onlinePlatform: "Coins.PH",
+    onlinePlatform: "Coins PH",
   },
   {
     id: 4,

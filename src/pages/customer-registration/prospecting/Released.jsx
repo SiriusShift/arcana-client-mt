@@ -16,6 +16,8 @@ import SearchVoidMixin from "../../../components/mixins/SearchVoidMixin";
 
 function Released() {
   const [search, setSearch] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [clusterId, setClusterId] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
@@ -73,6 +75,8 @@ function Released() {
     Status: true,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+    BusinessType: businessType?.id || "",
+    ClusterId: clusterId?.value || "",
     StoreType: selectedStoreType !== "Main" ? selectedStoreType : "",
     // WithFreebies: true,
     FreebieStatus: registrationStatus !== "Voided" ? "Released" : "",
@@ -86,6 +90,16 @@ function Released() {
     usePatchVoidProspectMutation();
 
   //Misc Functions
+
+  const onFilter = async ({ clusterId, businessType }) => {
+    console.log(businessType)
+    try {
+      setClusterId(clusterId);
+      setBusinessType(businessType);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const onVoidSubmit = async () => {
     try {
@@ -114,6 +128,9 @@ function Released() {
           setSearch={setSearch}
           setStatus={setRegistrationStatus}
           status={registrationStatus}
+          clusterFilter={true}
+          onFilter={onFilter}
+          businessTypeFilter={true}
         />
         {/* <TextField
           type="search"

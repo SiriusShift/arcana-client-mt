@@ -27,6 +27,7 @@ function ListingFee() {
   const [search, setSearch] = useState("");
   const [listingFeeStatus, setListingFeeStatus] = useState("Under review");
   const [page, setPage] = useState(0);
+  const [clusterId, setClusterId] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [editMode, setEditMode] = useState(false);
@@ -68,6 +69,7 @@ function ListingFee() {
     Status: true,
     ListingFeeStatus: listingFeeStatus,
     PageNumber: page + 1,
+    ClusterId: clusterId?.value || "",
     PageSize: rowsPerPage,
   }, {
     refetchOnMountOrArgChange: true
@@ -130,6 +132,14 @@ function ListingFee() {
   const handleOpenEdit = () => {
     setEditMode(true);
     onListingFeeOpen();
+  };
+
+  const onFilter = async ({ clusterId, search }) => {
+    try {
+      setClusterId(clusterId);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onCancel = async () => {
@@ -212,6 +222,8 @@ function ListingFee() {
           buttonTitle="Listing Fee Balances"
           buttonIcon={<Wallet />}
           onButtonClick={onBalancesOpen}
+          clusterFilter={true}
+          onFilter={onFilter}
         />
 
         {isFetching ? (

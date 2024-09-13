@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import CommonFilter from "../../../CommonFilter";
 import {
   Box,
   Chip,
@@ -28,6 +30,8 @@ import * as _ from "lodash";
 
 function TransactionsList({ setTransactionsMode }) {
   const [search, setSearch] = useState("");
+  const [invoiceType, setInvoiceType] = useState("");
+  const [clusterId, setClusterId] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
@@ -35,6 +39,9 @@ function TransactionsList({ setTransactionsMode }) {
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
   const [dateToTemp, setDateToTemp] = useState(moment());
+
+  //Slices
+  const userDetails = useSelector((state) => state.login.userDetails);
 
   //Disclosures
   const {
@@ -79,6 +86,8 @@ function TransactionsList({ setTransactionsMode }) {
   const { data: transactionsData, isFetching: isTransactionsFetching } =
     useGetAllSalesTransactionQuery({
       ...(search ? { Search: search } : {}),
+      ClusterId: clusterId?.value || "",
+      InvoiceType: invoiceType?.value || "",
       DateFrom: moment(dateFrom).format("YYYY-MM-DD"),
       DateTo: moment(dateTo).format("YYYY-MM-DD"),
       PageNumber: page + 1,
@@ -93,6 +102,14 @@ function TransactionsList({ setTransactionsMode }) {
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
     setDateTo(dateToTemp);
+  };
+  const onFilter = async ({ clusterId, invoiceType }) => {
+    try {
+      setClusterId(clusterId);
+      setInvoiceType(invoiceType);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // Constants
@@ -222,6 +239,26 @@ function TransactionsList({ setTransactionsMode }) {
             >
               <Search />
             </SecondaryButton>
+            {userDetails?.roleName === "Admin" ||
+            userDetails?.roleName === "Treasury" ||
+            userDetails?.roleName === "GAS" ||
+            userDetails?.roleName === "Finance" ? (
+              <CommonFilter
+                filter={onFilter}
+                clusterFilter={true}
+                // paymentMethodFilter={paymentMethodFilter && paymentMethodFilter}
+                // expenseTypeFilter={expenseTypeFilter && expenseTypeFilter}
+                // businessTypeFilter={businessTypeFilter && businessTypeFilter}
+                invoiceTypeFilter={true}
+                validityFilter={true}
+                uploadStatusFilter={true}
+                // frequenceFilter={frequenceFilter && frequenceFilter}
+                // paymentChannelFilter={paymentChannelFilter && paymentChannelFilter}
+                // statusFilter={statusFilter && statusFilter}
+              />
+            ) : (
+              ""
+            )}
           </Box>
         </Box>
 
