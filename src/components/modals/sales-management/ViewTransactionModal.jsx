@@ -17,7 +17,7 @@ import { useSelector } from "react-redux";
 import { formatPesoAmount } from "../../../utils/CustomFunctions";
 import ViewTransactionModalSkeleton from "../../skeletons/ViewTransactionModalSkeleton";
 
-function ViewTransactionModal({ ...props }) {
+function ViewTransactionModal({ transactionId, ...props}) {
 	const { open } = props;
 	const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -29,7 +29,7 @@ function ViewTransactionModal({ ...props }) {
 	//useEffect
 	useEffect(() => {
 		if (open) {
-			trigger({ id: selectedRowData?.transactionNo }, { preferCacheValue: true });
+			trigger({ id: selectedRowData?.transactionNo || transactionId }, { preferCacheValue: true });
 		}
 	}, [open, selectedRowData, trigger]);
 

@@ -1,4 +1,6 @@
 import {
+  IconButton,
+  InputAdornment,
   Stack,
   Table,
   TableBody,
@@ -10,6 +12,8 @@ import {
   Typography,
 } from "@mui/material";
 import CommonModal from "../../CommonModal";
+import ViewPhotoModal from "../ViewPhotoModal";
+import useDisclosure from "../../../hooks/useDisclosure";
 import {
   useClearPaymentTransactionMutation,
   useFileClearingTransactionMutation,
@@ -30,10 +34,13 @@ import moment from "moment";
 import useConfirm from "../../../hooks/useConfirm";
 import useReasonConfirm from "../../../hooks/useReasonConfirm";
 import ClearingModalSkeleton from "../../skeletons/ClearingModalSkeleton";
+import { Visibility } from "@mui/icons-material";
+import ViewTransactionModal from "./ViewTransactionModal";
 
 // mode props options: Clearing, Filing, Viewing
 const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
   const [aTag, setATag] = useState("");
+  const [invoice, setInvoice] = useState("");
 
   const confirm = useConfirm();
   const reasonConfirm = useReasonConfirm();
@@ -51,12 +58,26 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
   const paymentTransactionIds = transaction?.transactions?.map(
     (t) => t.paymentTransactionId
   );
+  console.log(paymentTransactionIds);
   const totalAmountDue = transaction?.transactions?.reduce(
     (acc, t) =>
       acc +
       t.transactionItems?.reduce((acc, item) => acc + (item.amount || 0), 0),
     0
   );
+
+  //Disclosure
+  const {
+    isOpen: isViewPhotoOpen,
+    onOpen: onViewPhotoOpen,
+    onClose: onViewPhotoClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isViewOpen,
+    onOpen: onViewOpen,
+    onClose: onViewClose,
+  } = useDisclosure();
 
   // Functions
   const onATag = async (e) => {
@@ -203,175 +224,208 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
   ]);
 
   return (
-    <CommonModal
-      open={open}
-      onClose={onClose}
-      {...props}
-      closeTopRight
-      closeOnBackdropClick
-      width="600px"
-    >
-      <Stack gap={2} component="form" onSubmit={submitFunction}>
-        <Typography fontSize="1.2rem" fontWeight="600">
-          Remittance
-        </Typography>
+    <>
+      <CommonModal
+        open={open}
+        onClose={onClose}
+        {...props}
+        closeTopRight
+        closeOnBackdropClick
+        width="600px"
+      >
+        <Stack gap={2} component="form" onSubmit={submitFunction}>
+          <Typography fontSize="1.2rem" fontWeight="600">
+            Remittance
+          </Typography>
 
-        <Stack direction="row" justifyContent="space-between">
-          <Stack gap={0.5}>
-            <Typography fontSize="1rem" fontWeight="500">
-              CDO: {transaction?.addedBy || null}
-            </Typography>
-            <Typography fontSize="1rem" fontWeight="500">
-              Receipt No: {transaction?.receiptNo || "N/A"}
-            </Typography>
-            <Typography fontSize="1rem" fontWeight="500">
-              Receipt Attachment: {transaction?.receiptAttachment || "N/A"}
-            </Typography>
-          </Stack>
-
-          <Stack gap={0.5}>
-          <Typography fontSize="1rem" fontWeight="500">
-              Date: {moment(selectedRowData?.date).format("MMMM DD, YYYY")}
-            </Typography>
-            <Typography fontSize="1rem" fontWeight="500">
-              Payment Method: {selectedRowData?.paymentMethod}
-            </Typography>
-            <Typography fontSize="1rem" fontWeight="500">
-              Payment Channel: {transaction?.paymentChannel || "N/A"}
-            </Typography>
-          </Stack>
-        </Stack>
-
-        {isFetching ? (
-          <ClearingModalSkeleton />
-        ) : (
-          <>
-            <Stack border="1px solid gray" borderRadius="5px" p={1}>
-              <Typography fontSize="1.05rem" fontWeight="500">
-                Invoices Details
+          <Stack direction="row" justifyContent="space-between">
+            <Stack gap={0.5}>
+              <Typography fontSize="1rem" fontWeight="500">
+                CDO: {transaction?.addedBy || null}
               </Typography>
+              <Typography fontSize="1rem" fontWeight="500">
+                Payment Method: {selectedRowData?.paymentMethod}{" "}
+                {transaction?.attachment ||
+                  (selectedRowData?.paymentMethod === "Withholding" && (
+                    <IconButton
+                      size="small"
+                      sx={{ p: 0 }}
+                      onClick={onViewPhotoOpen}
+                    >
+                      <Visibility />
+                    </IconButton>
+                  ))}
+              </Typography>
+              <Typography fontSize="1rem" fontWeight="500">
+                Payment Channel: {transaction?.paymentChannel || "N/A"}
+              </Typography>
+            </Stack>
 
-              <TableContainer
-                sx={{
-                  maxHeight: "300px",
-                  height: "fit-content",
-                  minHeight: "200px",
-                }}
-              >
-                <Table>
-                  <TableHead sx={{ bgcolor: "white !important" }}>
-                    <TableRow>
-                      <TableCell sx={{ color: "black" }}>Invoice No.</TableCell>
-                      <TableCell sx={{ color: "black" }}>
-                        Invoice Type
-                      </TableCell>
-                      <TableCell sx={{ color: "black" }}>Amount Due</TableCell>
-                    </TableRow>
-                  </TableHead>
+            <Stack gap={0.5}>
+              <Typography fontSize="1rem" fontWeight="500">
+                Date: {moment(selectedRowData?.date).format("MMMM DD, YYYY")}
+              </Typography>
+              <Typography fontSize="1rem" fontWeight="500">
+                Receipt No: {transaction?.receiptNo || "N/A"}
+              </Typography>
+              <Typography fontSize="1rem" fontWeight="500">
+                Receipt Attachment: {transaction?.receiptAttachment || "N/A"}
+              </Typography>
+            </Stack>
+          </Stack>
 
-                  <TableBody>
-                    {transaction?.transactions?.map((t, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{t.invoiceNo}</TableCell>
-                        <TableCell>{t.invoiceType}</TableCell>
-                        <TableCell>
-                          {formatPesoAmount(
-                            t.transactionItems?.reduce(
-                              (acc, item) => acc + (item.amount || 0),
-                              0
-                            ) || 0
-                          )}
+          {isFetching ? (
+            <ClearingModalSkeleton />
+          ) : (
+            <>
+              <Stack border="1px solid gray" borderRadius="5px" p={1}>
+                <Typography fontSize="1.05rem" fontWeight="500">
+                  Invoices Details
+                </Typography>
+
+                <TableContainer
+                  sx={{
+                    maxHeight: "300px",
+                    height: "fit-content",
+                    minHeight: "200px",
+                  }}
+                >
+                  <Table>
+                    <TableHead sx={{ bgcolor: "white !important" }}>
+                      <TableRow>
+                        <TableCell sx={{ color: "black" }}>
+                          Invoice No.
+                        </TableCell>
+                        <TableCell sx={{ color: "black" }}>
+                          Invoice Type
+                        </TableCell>
+                        <TableCell sx={{ color: "black" }}>
+                          Amount Due
                         </TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Stack>
+                    </TableHead>
 
-            <Stack ml="40%">
-              <Stack direction="row" gap={1} justifyContent="space-between">
-                <Typography>Total Invoice Amount</Typography>
-                <Typography
-                  fontSize="1rem"
-                  color="primary.main"
-                  fontWeight="500"
-                >
-                  {formatPesoAmount(totalAmountDue)}
-                </Typography>
+                    <TableBody>
+                      {transaction?.transactions?.map((t, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{t.invoiceNo}</TableCell>
+                          <TableCell>
+                            {t.invoiceType}{" "}
+                            <IconButton
+                              size="small"
+                              sx={{ p: 0 }}
+                              onClick={() => {onViewOpen(); setInvoice(t?.paymentTransactionId)}}
+                            >
+                              <Visibility />
+                            </IconButton>
+                          </TableCell>
+                          <TableCell>
+                            {formatPesoAmount(
+                              t.transactionItems?.reduce(
+                                (acc, item) => acc + (item.amount || 0),
+                                0
+                              ) || 0
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </Stack>
 
-              <Stack direction="row" gap={1} justifyContent="space-between">
-                <Typography>Total Payment Amount</Typography>
-                <Typography
-                  fontSize="1.2rem"
-                  color="primary.main"
-                  fontWeight="600"
-                >
-                  {formatPesoAmount(transaction?.totalAmount)}
-                </Typography>
+              <Stack ml="40%">
+                <Stack direction="row" gap={1} justifyContent="space-between">
+                  <Typography>Total Invoice Amount</Typography>
+                  <Typography
+                    fontSize="1rem"
+                    color="primary.main"
+                    fontWeight="500"
+                  >
+                    {formatPesoAmount(totalAmountDue)}
+                  </Typography>
+                </Stack>
+
+                <Stack direction="row" gap={1} justifyContent="space-between">
+                  <Typography>Total Payment Amount</Typography>
+                  <Typography
+                    fontSize="1.2rem"
+                    color="primary.main"
+                    fontWeight="600"
+                  >
+                    {formatPesoAmount(transaction?.totalAmount)}
+                  </Typography>
+                </Stack>
+
+                {mode === "VoidedViewing" && (
+                  <Stack
+                    direction="row"
+                    gap={1}
+                    mt={0.5}
+                    justifyContent="space-between"
+                  >
+                    <Typography color="error">Void Reason</Typography>
+                    <Typography>{selectedRowData?.reason || "N/A"}</Typography>
+                  </Stack>
+                )}
+
+                {mode === "Clearing" && selectedRowData?.reason && (
+                  <Stack
+                    direction="row"
+                    gap={1}
+                    mt={0.5}
+                    justifyContent="space-between"
+                  >
+                    <Typography color="error">Return Reason</Typography>
+                    <Typography sx={{ wordBreak: "break-word" }}>
+                      {selectedRowData?.reason || "N/A"}
+                    </Typography>
+                  </Stack>
+                )}
               </Stack>
-
-              {mode === "VoidedViewing" && (
-                <Stack
-                  direction="row"
-                  gap={1}
-                  mt={0.5}
-                  justifyContent="space-between"
-                >
-                  <Typography color="error">Void Reason</Typography>
-                  <Typography>{selectedRowData?.reason || "N/A"}</Typography>
-                </Stack>
-              )}
-
-              {mode === "Clearing" && selectedRowData?.reason && (
-                <Stack
-                  direction="row"
-                  gap={1}
-                  mt={0.5}
-                  justifyContent="space-between"
-                >
-                  <Typography color="error">Return Reason</Typography>
-                  <Typography sx={{wordBreak: "break-word"}}>{selectedRowData?.reason || "N/A"}</Typography>
-                </Stack>
-              )}
-            </Stack>
-          </>
-        )}
-
-        {mode === "Clearing" && (
-          <TextField
-            label="Tag"
-            fullWidth
-            size="small"
-            sx={{ alignSelf: "flex-end", width: "300px" }}
-            inputRef={tagRef}
-            value={aTag}
-            onChange={(e) => setATag(e.target.value)}
-          />
-        )}
-
-        <Stack direction="row" gap={1} alignSelf="flex-end">
-          {mode === "Clearing" && (
-            <DangerButton onClick={onVoid}>Void</DangerButton>
+            </>
           )}
 
           {mode === "Clearing" && (
-            <SecondaryButton disabled={!aTag} type="submit">
-              Submit
-            </SecondaryButton>
+            <TextField
+              label="Tag"
+              fullWidth
+              size="small"
+              sx={{ alignSelf: "flex-end", width: "300px" }}
+              inputRef={tagRef}
+              value={aTag}
+              onChange={(e) => setATag(e.target.value)}
+            />
           )}
 
-          {mode === "Filing" && (
-            <DangerButton onClick={onReturn}>Return</DangerButton>
-          )}
+          <Stack direction="row" gap={1} alignSelf="flex-end">
+            {mode === "Clearing" && (
+              <DangerButton onClick={onVoid}>Void</DangerButton>
+            )}
 
-          {mode === "Filing" && (
-            <SecondaryButton type="submit">File</SecondaryButton>
-          )}
+            {mode === "Clearing" && (
+              <SecondaryButton disabled={!aTag} type="submit">
+                Submit
+              </SecondaryButton>
+            )}
+
+            {mode === "Filing" && (
+              <DangerButton onClick={onReturn}>Return</DangerButton>
+            )}
+
+            {mode === "Filing" && (
+              <SecondaryButton type="submit">File</SecondaryButton>
+            )}
+          </Stack>
         </Stack>
-      </Stack>
-    </CommonModal>
+      </CommonModal>
+      <ViewPhotoModal
+        currentViewPhoto={transaction?.attachment}
+        open={isViewPhotoOpen}
+        onClose={onViewPhotoClose}
+      />
+      <ViewTransactionModal transactionId={invoice} open={isViewOpen} onClose={onViewClose} />
+    </>
   );
 };
 

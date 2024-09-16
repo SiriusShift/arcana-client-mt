@@ -318,7 +318,7 @@ function ForFreebies() {
           setSearch={setSearch}
           clusterFilter={true}
           onFilter={onFilter}
-          businessTypeFilter={true}
+          // businessTypeFilter={true}
         />
         {isFetching ? (
           <CommonTableSkeleton lowerCompact />

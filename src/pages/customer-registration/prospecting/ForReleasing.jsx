@@ -264,7 +264,7 @@ function ForReleasing() {
           addTitle="Prospect"
           onAddOpen={handleAddOpen}
           setSearch={setSearch}
-          businessTypeFilter={true}
+          // businessTypeFilter={true}
           clusterFilter={true}
           onFilter={onFilter}
         />

@@ -880,7 +880,7 @@ export const paymentSchema = {
 		dateReceived: null,
 		// chequeAmount: "",
 		accountName: "",
-		paymentChannel: "",
+		paymentChannel: null,
 		referenceNo: "",
 		remarks: "",
 		// invoiceAttachment: null,

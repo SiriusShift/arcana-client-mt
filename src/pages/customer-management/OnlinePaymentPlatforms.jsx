@@ -64,9 +64,6 @@ function OnlinePaymentPlatforms() {
   const { data, isFetching } = useGetAllOnlinePlatformsQuery(
     {
       Search: search,
-      Status: status,
-      PageNumber: page + 1,
-      PageSize: rowsPerPage,
     },
     {
       refetchOnMountOrArgChange: true,

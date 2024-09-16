@@ -130,7 +130,7 @@ function Released() {
           status={registrationStatus}
           clusterFilter={true}
           onFilter={onFilter}
-          businessTypeFilter={true}
+          // businessTypeFilter={true}
         />
         {/* <TextField
           type="search"

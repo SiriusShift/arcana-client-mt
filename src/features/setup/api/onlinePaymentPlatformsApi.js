@@ -15,7 +15,7 @@ const onlinePaymentPlatformsApi = api
       getAllOnlinePlatforms: builder.query({
         query: (params) => ({
           params: params,
-          url: "/OnlinePayment/GetOnlinePayment",
+          url: "/OnlinePayments",
           method: "GET",
         }),
         providesTags: ["Online Payment"],

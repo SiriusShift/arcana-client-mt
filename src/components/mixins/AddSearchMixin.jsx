@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 function AddSearchMixin({
   endIcon,
   title,
+  transactionStatus,
   addTitle,
   onAddOpen,
   onFilter,
@@ -44,6 +45,7 @@ function AddSearchMixin({
       <Box className="mixin__right">
       {userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance" ? (<CommonFilter
           filter={onFilter}
+          transactionStatus={transactionStatus}
           clusterFilter={clusterFilter && clusterFilter}
           paymentMethodFilter={paymentMethodFilter && paymentMethodFilter}
           expenseTypeFilter={expenseTypeFilter && expenseTypeFilter}

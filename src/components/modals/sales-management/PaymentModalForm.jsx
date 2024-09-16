@@ -30,7 +30,7 @@ import { useLazyGetOtherExpensesByClientIdQuery } from "../../../features/regist
 import { useLazyGetOtherExpensesBalanceByClientIdQuery } from "../../../features/otherExpenses/api/otherExpensesRegApi";
 import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
 import { dummyOnlinePaymentPlatformsData } from "../../../utils/DummyData";
-// import { useGetAllOnlinePlatformsQuery } from "../../../features/setup/api/onlinePaymentPlatformsApi";
+import { useGetAllOnlinePlatformsQuery } from "../../../features/setup/api/onlinePaymentPlatformsApi";
 
 function PaymentModalForm({
   editMode,
@@ -86,6 +86,9 @@ function PaymentModalForm({
     useLazyGetAdvancePaymentBalanceQuery();
   const [triggerListingFeeBalance, { data: listingFeeBalanceData }] =
     useLazyGetListingFeeBalanceByIdQuery();
+  const {data: onlinePlatforms } = useGetAllOnlinePlatformsQuery({
+    pageSize: 1000
+  });
 
   let [
     triggerOtherExpensesBalance,
@@ -126,7 +129,7 @@ function PaymentModalForm({
         paymentAmount: data.paymentAmount,
         // invoiceAttachment: data.invoiceAttachment,
         accountName: data.accountName,
-        paymentChannel: data.paymentChannel.onlinePlatform,
+        paymentChannel: data.paymentChannel.id,
         referenceNo: data.referenceNo,
       };
     } else if (data.paymentMethod.label === "Withholding") {
@@ -577,17 +580,17 @@ function PaymentModalForm({
                 <ControlledAutocomplete
                   name="paymentChannel"
                   control={control}
-                  options={dummyOnlinePaymentPlatformsData.map((item) => {
-                    return item
-                  })}
-                  getOptionLabel={(option) => option.onlinePlatform}
+                  options={onlinePlatforms.online.filter(
+                    (option) => option.label !== "Cash"
+                  )}
+                  getOptionLabel={(option) => option.onlinePlatform.toUpperCase()}
                   disableClearable
                   isOptionEqualToValue={() => true}
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       size="small"
-                      label="Expense Type"
+                      label="Payment Channel"
                       helperText={errors?.paymentChannel?.message}
                       error={errors?.paymentChannel}
                     />

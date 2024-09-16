@@ -308,6 +308,7 @@ function PaymentTransaction() {
               }}
               onFilter={onFilter}
               clusterFilter={true}
+              transactionStatus={transactionStatus}
               paymentMethodFilter={true}
             />
 

@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import React, { useRef } from "react";
 import SecondaryButton from "./SecondaryButton";
+import { useSelector } from "react-redux";
 import useDisclosure from "../hooks/useDisclosure";
 import { FilterList } from "@mui/icons-material";
 import { clusterOptions, paymentTypes, invoiceTypes } from "../utils/constants";
@@ -18,6 +19,7 @@ import { useGetAllStoreTypesQuery } from "../features/setup/api/storeTypeApi";
 function CommonFilter({
   filter,
   // setSearch,
+  transactionStatus,
   clusterFilter,
   paymentMethodFilter,
   // expenseTypeFilter,
@@ -47,7 +49,11 @@ function CommonFilter({
   //Query
   // const { data: otherExpensesOptions } = useGetAllOtherExpensesQuery();
   const { data: storeTypeData } = useGetAllStoreTypesQuery({ Status: true });
-  
+
+  //slice
+  const userDetails = useSelector((state) => state.login.userDetails);
+  console.log(userDetails);
+
 
   //Function
   const resetFilter = () => {
@@ -112,7 +118,7 @@ function CommonFilter({
           {clusterFilter && (
             <Autocomplete
               options={clusterOptions}
-              getOptionLabel={(option) => option.label || option}
+              getOptionLabel={(option) => option?.label || option}
               onChange={(_, value) => {
                 setFilters({ ...filters, clusterId: value });
               }}
@@ -129,10 +135,13 @@ function CommonFilter({
             />
           )}
 
-          {paymentMethodFilter && (
+          {paymentMethodFilter && transactionStatus !== "Pending" && (
             <Autocomplete
-              options={paymentTypes}
-              getOptionLabel={(option) => option.label}
+              options={paymentTypes.filter((type) => {
+                return userDetails?.username !== "rsunga" && userDetails?.username !== "admin" ?
+                type?.label !== "Withholding" : type.label
+              })}
+              getOptionLabel={(option) => option?.label}
               onChange={(_, value) => {
                 setFilters({ ...filters, paymentMethod: value });
               }}
