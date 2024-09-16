@@ -341,7 +341,7 @@ function DirectRegistration() {
           status={clientStatus}
           setStatus={setClientStatus}
           tabViewing={tabViewing}
-          // businessTypeFilter={true}
+          businessTypeFilter={true}
           clusterFilter={true}
           onFilter={onFilter}
         >

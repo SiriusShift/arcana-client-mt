@@ -264,8 +264,7 @@ function ForReleasing() {
           addTitle="Prospect"
           onAddOpen={handleAddOpen}
           setSearch={setSearch}
-          // businessTypeFilter={true}
-          clusterFilter={true}
+          businessTypeFilter={true}
           onFilter={onFilter}
         />
         {/* <AddArchiveSearchMixin

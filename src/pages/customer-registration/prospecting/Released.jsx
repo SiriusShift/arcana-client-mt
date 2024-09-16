@@ -128,9 +128,8 @@ function Released() {
           setSearch={setSearch}
           setStatus={setRegistrationStatus}
           status={registrationStatus}
-          clusterFilter={true}
           onFilter={onFilter}
-          // businessTypeFilter={true}
+          businessTypeFilter={true}
         />
         {/* <TextField
           type="search"

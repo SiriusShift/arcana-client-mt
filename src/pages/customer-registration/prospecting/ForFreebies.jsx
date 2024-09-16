@@ -316,9 +316,8 @@ function ForFreebies() {
           onAddOpen={handleAddOpen}
           setStatus={setStatus}
           setSearch={setSearch}
-          clusterFilter={true}
           onFilter={onFilter}
-          // businessTypeFilter={true}
+          businessTypeFilter={true}
         />
         {isFetching ? (
           <CommonTableSkeleton lowerCompact />
