@@ -72,8 +72,6 @@ function PaymentModalForm({
     defaultValues: paymentSchema.defaultValues,
   });
 
-  console.log("1",watch("paymentChannel"));
-
   //Watch Constants
   const otherExpenseType = watch("otherExpense");
 
@@ -107,7 +105,6 @@ function PaymentModalForm({
   );
   //Functions
   const onSubmit = async (data) => {
-    console.log("test",data.paymentChannel.onlinePlatform);
     let transformedData;
 
     if (data.paymentMethod.label === "Cheque") {
@@ -209,7 +206,6 @@ function PaymentModalForm({
     if (editMode && open) {
       const { index, ...paymentInfo } = selectedPayment;
       Object.keys(paymentInfo).forEach((key) => {
-        console.log("key", paymentInfo[key]);
         if (key === "chequeDate" || key === "dateReceived") {
           setValue(key, paymentInfo[key] ? moment(paymentInfo[key]) : null);
           return;
@@ -403,7 +399,6 @@ function PaymentModalForm({
                           ? remainingBalance + initialEditAmount
                           : remainingBalance;
 
-                      console.log(balanceToCompare);
 
                       if (
                         floatValue != null &&

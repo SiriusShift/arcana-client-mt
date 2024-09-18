@@ -4,12 +4,12 @@ import PageHeaderAdd from "../../components/PageHeaderAdd";
 import CommonTable from "../../components/CommonTable";
 import CommonDrawer from "../../components/CommonDrawer";
 import useDisclosure from "../../hooks/useDisclosure";
-import { useForm } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import { priceModeSetupSchema } from "../../schema/schema";
 import { useSelector } from "react-redux";
-import { Settings } from "@mui/icons-material";
+import { Settings, Watch } from "@mui/icons-material";
 import {
   usePutPriceModeMutation,
   useGetAllPriceModeQuery,
@@ -23,7 +23,7 @@ import useConfirm from "../../hooks/useConfirm";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import SessionExpired from "../SessionExpired";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
-
+import { useField } from "@mui/x-date-pickers/internals";
 
 function PriceModeSetup() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -65,6 +65,7 @@ function PriceModeSetup() {
     handleSubmit,
     formState: { errors, isValid },
     control,
+    watch,
     register,
     setValue,
     reset,
@@ -74,14 +75,20 @@ function PriceModeSetup() {
     defaultValues: priceModeSetupSchema.defaultValues,
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "freebies",
+  });
+
   //RTK Query
   const [postPriceMode, { isLoading: isAddLoading }] =
     usePostPriceModeMutation();
 
-  const { data: priceModeItems } = useGetAllItemsByPriceModeIdQuery({
-    PriceModeId: 1,
-    PageSize: 1000,
-  });
+  const { data: priceModeItems, isLoading: isProductDataLoading } =
+    useGetAllItemsByPriceModeIdQuery({
+      PriceModeId: 1,
+      PageSize: 1000,
+    });
 
   console.log(priceModeItems);
 
@@ -99,6 +106,19 @@ function PriceModeSetup() {
   const [putPriceMode, { isLoading: isUpdateLoading }] =
     usePutPriceModeMutation();
   const [patchPrideModeStatus] = usePatchPriceModeStatusMutation();
+
+  //useEffect
+  useEffect(() => {
+    const productsArray = priceModeItems?.priceModeItems?.map((product) => ({
+      itemId: product.priceModeItemId,
+      desc: product.itemDescription,
+      uom: product.uom,
+      price: product.currentPrice,
+    }));
+    setValue("products", productsArray);
+  }, [priceModeItems]);
+
+  console.log(watch("products"));
 
   //Drawer Functions
   const onDrawerSubmit = async (data) => {
@@ -260,7 +280,7 @@ function PriceModeSetup() {
             <Typography className="priceModeSetup__title">Products</Typography>
             {priceModeItems?.priceModeItems?.map((item, index) => (
               <Box
-                key={item.priceModeItemId}
+                key={item?.priceModeItemId}
                 sx={{
                   display: "flex",
                   justifyContent: "center",
@@ -268,23 +288,96 @@ function PriceModeSetup() {
                   alignItems: "center",
                 }}
               >
-                            <Controller
-              control={control}
-              name={`freebies[${index}].itemDescription`}
-              render={({ field: { onChange, onBlur, value, ref } }) => (
-                <TextField
-                  label="Item Description"
-                  size="small"
-                  autoComplete="off"
-                  disabled
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  value={value?.toUpperCase() || ""}
-                  ref={ref}
-                  sx={{ width: "500px" }}
+                <ControlledAutocomplete
+                  name={`products[${index}].itemId`}
+                  control={control}
+                  options={priceModeItems?.priceModeItems || []}
+                  getOptionLabel={(option) => option.itemCode || ""}
+                  getOptionDisabled={(option) => {
+                    const products = watch("products");
+                    return products.some(
+                      (item) => item?.itemId?.itemCode === option.itemCode
+                    );
+                  }}
+                  loading={isProductDataLoading}
+                  disableClearable
+                  isOptionEqualToValue={() => true}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      label="Product Code"
+                      // required
+                      helperText={errors?.itemId?.message}
+                      error={errors?.itemId}
+                      sx={{ width: "200px" }}
+                      data-testid={`product-${index}`}
+                    />
+                  )}
+                  onChange={(_, value) => {
+                    setValue(
+                      `freebies[${index}].itemDescription`,
+                      value?.itemDescription
+                    );
+                    setValue(`freebies[${index}].uom`, value?.uom);
+                    return value;
+                  }}
                 />
-              )}
-            />
+
+                <Controller
+                  control={control}
+                  name={`products[${index}].desc`}
+                  render={({ field: { onChange, onBlur, value, ref } }) => (
+                    <TextField
+                      label="Item Description"
+                      size="small"
+                      autoComplete="off"
+                      disabled
+                      onChange={onChange}
+                      onBlur={onBlur}
+                      value={value?.toUpperCase() || ""}
+                      ref={ref}
+                      sx={{ width: "500px" }}
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name={`products[${index}].uom`}
+                  render={({ field: { onChange, onBlur, value, ref } }) => {
+                    return (
+                      <TextField
+                        label="UOM"
+                        size="small"
+                        autoComplete="off"
+                        disabled
+                        onChange={onChange}
+                        onBlur={onBlur}
+                        value={value || ""}
+                        ref={ref}
+                        sx={{ width: "200px" }}
+                      />
+                    );
+                  }}
+                />
+                <Controller
+                  control={control}
+                  name={`products[${index}].price`}
+                  render={({ field: { onChange, onBlur, value, ref } }) => {
+                    return (
+                      <TextField
+                        label="Price"
+                        size="small"
+                        autoComplete="off"
+                        onChange={onChange}
+                        onBlur={onBlur}
+                        value={value || ""}
+                        ref={ref}
+                        sx={{ width: "200px" }}
+                      />
+                    );
+                  }}
+                />
               </Box>
             ))}
           </Box>

@@ -170,6 +170,8 @@ export const priceModeSetupSchema = {
 		products: yup.array().of(
 			yup.object({
 				itemId: yup.object().required("Product Code is required"),
+				desc: yup.string().required("Description is required"),
+				uom: yup.string().required("UOM is required"),
 				price: yup.number().required("Price is required"),
 			})
 		)
@@ -180,7 +182,9 @@ export const priceModeSetupSchema = {
 		products: [
 			{
 				itemId: null,
+				desc: null,
 				price: null,
+				uom: null,
 			}
 		],
 	},
