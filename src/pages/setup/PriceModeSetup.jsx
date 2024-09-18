@@ -1,4 +1,4 @@
-import { Box, TextField, Typography } from "@mui/material";
+import { Box, IconButton, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import CommonTable from "../../components/CommonTable";
@@ -9,7 +9,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import { priceModeSetupSchema } from "../../schema/schema";
 import { useSelector } from "react-redux";
-import { Settings, Watch } from "@mui/icons-material";
+import { RemoveCircleOutline, Settings, Watch } from "@mui/icons-material";
 import {
   usePutPriceModeMutation,
   useGetAllPriceModeQuery,
@@ -378,6 +378,17 @@ function PriceModeSetup() {
                     );
                   }}
                 />
+                <IconButton
+                  sx={{ color: "error.main" }}
+                  onClick={() => {
+                    fields.length <= 1
+                      ? handleFreebieError()
+                      : // : remove(fields[index]);
+                        remove(index);
+                  }}
+                >
+                  <RemoveCircleOutline sx={{ fontSize: "30px" }} />
+                </IconButton>
               </Box>
             ))}
           </Box>

@@ -363,7 +363,7 @@ function PaymentTransaction() {
                 }
                 onPaymentHistories={onPaymentHistoriesOpen}
                 onPay={transactionStatus === "Pending" && onPay}
-                onCancel={transactionStatus === "Pending" && onCancel}
+                onCancel={transactionStatus === "Pending" || transactionStatus === "Paid" && onCancel}
               />
             )}
           </>
