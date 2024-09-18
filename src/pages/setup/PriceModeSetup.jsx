@@ -1,4 +1,4 @@
-import { Box, TextField } from "@mui/material";
+import { Box, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import CommonTable from "../../components/CommonTable";
@@ -16,11 +16,14 @@ import {
   usePostPriceModeMutation,
   usePatchPriceModeStatusMutation,
 } from "../../features/setup/api/priceModeSetupApi";
+import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi";
 import ViewProductsByPriceModeModal from "../../components/modals/ViewProductsByPriceModeModal";
 import useSnackbar from "../../hooks/useSnackbar";
 import useConfirm from "../../hooks/useConfirm";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import SessionExpired from "../SessionExpired";
+import ControlledAutocomplete from "../../components/ControlledAutocomplete";
+
 
 function PriceModeSetup() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -61,6 +64,7 @@ function PriceModeSetup() {
   const {
     handleSubmit,
     formState: { errors, isValid },
+    control,
     register,
     setValue,
     reset,
@@ -73,6 +77,14 @@ function PriceModeSetup() {
   //RTK Query
   const [postPriceMode, { isLoading: isAddLoading }] =
     usePostPriceModeMutation();
+
+  const { data: priceModeItems } = useGetAllItemsByPriceModeIdQuery({
+    PriceModeId: 1,
+    PageSize: 1000,
+  });
+
+  console.log(priceModeItems);
+
   const { data, isFetching, error } = useGetAllPriceModeQuery(
     {
       Search: search,
@@ -180,73 +192,109 @@ function PriceModeSetup() {
 
   return (
     <>
-    {error && <SessionExpired />}
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Price Mode Setup <Settings />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
-
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.priceMode}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          onViewMoreConstant={onViewProductsByPriceModeModalOpen}
-          onViewMoreConstantDisabled={!status}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          tableHeads={tableHeads}
-          customOrderKeys={customOrderKeys}
-          count={count}
-          status={status}
-        />
-      )}
-
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Price Mode"}
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Price Mode Code"
-          size="small"
-          autoComplete="off"
-          {...register("priceMode")}
-          helperText={errors?.priceMode?.message}
-          error={errors?.priceMode}
-          disabled={drawerMode === "edit"}
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Price Mode Setup <Settings />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
         />
 
-        <TextField
-          label="Price Mode Description"
-          size="small"
-          autoComplete="off"
-          {...register("priceModeDescription")}
-          helperText={errors?.priceModeDescription?.message}
-          error={errors?.priceModeDescription}
-        />
-      </CommonDrawer>
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.priceMode}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            onViewMoreConstant={onViewProductsByPriceModeModalOpen}
+            onViewMoreConstantDisabled={!status}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            tableHeads={tableHeads}
+            customOrderKeys={customOrderKeys}
+            count={count}
+            status={status}
+          />
+        )}
 
-      <ViewProductsByPriceModeModal
-        open={isViewProductsByPriceModeModalOpen}
-        onClose={onViewProductsByPriceModeModalClose}
-      />
-    </Box>
+        <CommonDrawer
+          width={"1000px"}
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Price Mode"}
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+        >
+          <Box className="priceModeSetup">
+            <Box className="priceModeSetup__row">
+              <TextField
+                className="priceModeSetup__row__code"
+                label="Price Mode Code"
+                size="small"
+                autoComplete="off"
+                {...register("priceMode")}
+                helperText={errors?.priceMode?.message}
+                error={errors?.priceMode}
+                disabled={drawerMode === "edit"}
+              />
+              <TextField
+                className="priceModeSetup__row__description"
+                label="Price Mode Description"
+                size="small"
+                autoComplete="off"
+                {...register("priceModeDescription")}
+                helperText={errors?.priceModeDescription?.message}
+                error={errors?.priceModeDescription}
+              />
+            </Box>
+            <Typography className="priceModeSetup__title">Products</Typography>
+            {priceModeItems?.priceModeItems?.map((item, index) => (
+              <Box
+                key={item.priceModeItemId}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "10px",
+                  alignItems: "center",
+                }}
+              >
+                            <Controller
+              control={control}
+              name={`freebies[${index}].itemDescription`}
+              render={({ field: { onChange, onBlur, value, ref } }) => (
+                <TextField
+                  label="Item Description"
+                  size="small"
+                  autoComplete="off"
+                  disabled
+                  onChange={onChange}
+                  onBlur={onBlur}
+                  value={value?.toUpperCase() || ""}
+                  ref={ref}
+                  sx={{ width: "500px" }}
+                />
+              )}
+            />
+              </Box>
+            ))}
+          </Box>
+        </CommonDrawer>
+
+        <ViewProductsByPriceModeModal
+          open={isViewProductsByPriceModeModalOpen}
+          onClose={onViewProductsByPriceModeModalClose}
+        />
+      </Box>
     </>
   );
 }

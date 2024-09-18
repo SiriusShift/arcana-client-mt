@@ -64,6 +64,8 @@ function OnlinePaymentPlatforms() {
   const { data, isFetching } = useGetAllOnlinePlatformsQuery(
     {
       Search: search,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -72,6 +74,8 @@ function OnlinePaymentPlatforms() {
   const [updateOnlinePlatform, { isLoading: isUpdateLoading }] =
     useUpdateOnlinePlatformMutation();
   const [updateOnlinePlatformStatus] = useUpdateOnlinePlatformStatusMutation();
+
+  console.log(data);
 
   //Drawer Functions
   const onDrawerSubmit = async (data) => {
@@ -167,7 +171,7 @@ function OnlinePaymentPlatforms() {
         ) : (
           <CommonTable
             evenLesserCompact
-            mapData={dummyOnlinePaymentPlatformsData}
+            mapData={data?.online}
             customOrderKeys={customOrderKeys}
             onEdit={handleEditOpen}
             onArchive={onArchive}

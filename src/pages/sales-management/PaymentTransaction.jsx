@@ -348,14 +348,14 @@ function PaymentTransaction() {
                 //   disableActions
                 // }
                 onVoid={
-                  transactionStatus === "Pending" ||
-                  (transactionStatus === "Paid" &&
+                  (transactionStatus === "Pending" ||
+                  transactionStatus === "Paid") &&
                     // checkIsVoidable(
                     //   selectedRowData?.createdAt,
                     //   selectedRowData?.totalAmountDue,
                     //   selectedRowData?.remainingBalance
                     // ) &&
-                    onVoid)
+                    onVoid
                 }
                 onView={
                   transactionStatus === "Paid" ||

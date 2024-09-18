@@ -180,6 +180,27 @@
   }
 }
 
+.priceModeSetup{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  &__row{
+    display: flex;
+    gap: 20px;
+    &__code{
+      width: 30%;
+    }
+    &__description{
+      width: 70%;
+    }
+  }
+  & &__title{
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+}
+
 .terms {
   // display: flex;
   // justify-content: center;

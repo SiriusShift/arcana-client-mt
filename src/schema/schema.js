@@ -167,10 +167,22 @@ export const priceModeSetupSchema = {
 		priceModeDescription: yup
 			.string()
 			.required("Price mode description is required"),
+		products: yup.array().of(
+			yup.object({
+				itemId: yup.object().required("Product Code is required"),
+				price: yup.number().required("Price is required"),
+			})
+		)
 	}),
 	defaultValues: {
 		priceMode: "",
 		priceModeDescription: "",
+		products: [
+			{
+				itemId: null,
+				price: null,
+			}
+		],
 	},
 };
 
