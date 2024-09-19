@@ -183,16 +183,15 @@
 .priceModeSetup{
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
   &__row{
     display: flex;
     gap: 20px;
-    &__code{
-      width: 30%;
-    }
-    &__description{
-      width: 70%;
-    }
+  }
+  &__column{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
   & &__title{
     margin-top: 10px;

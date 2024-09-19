@@ -151,6 +151,8 @@ function SpecialDiscount() {
 		},
 	];
 
+	console.log(watch("clientId"));
+
 	//Functions: Other Functions
 	const onFilter = async ({ clusterId, search }) => {
 		try {

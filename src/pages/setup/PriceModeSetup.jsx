@@ -247,7 +247,6 @@ function PriceModeSetup() {
         )}
 
         <CommonDrawer
-          width={"1000px"}
           open={isDrawerOpen}
           onClose={handleDrawerClose}
           drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Price Mode"}
@@ -255,143 +254,25 @@ function PriceModeSetup() {
           disableSubmit={!isValid}
           isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
         >
-          <Box className="priceModeSetup">
-            <Box className="priceModeSetup__row">
-              <TextField
-                className="priceModeSetup__row__code"
-                label="Price Mode Code"
-                size="small"
-                autoComplete="off"
-                {...register("priceMode")}
-                helperText={errors?.priceMode?.message}
-                error={errors?.priceMode}
-                disabled={drawerMode === "edit"}
-              />
-              <TextField
-                className="priceModeSetup__row__description"
-                label="Price Mode Description"
-                size="small"
-                autoComplete="off"
-                {...register("priceModeDescription")}
-                helperText={errors?.priceModeDescription?.message}
-                error={errors?.priceModeDescription}
-              />
-            </Box>
-            <Typography className="priceModeSetup__title">Products</Typography>
-            {priceModeItems?.priceModeItems?.map((item, index) => (
-              <Box
-                key={item?.priceModeItemId}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: "10px",
-                  alignItems: "center",
-                }}
-              >
-                <ControlledAutocomplete
-                  name={`products[${index}].itemId`}
-                  control={control}
-                  options={priceModeItems?.priceModeItems || []}
-                  getOptionLabel={(option) => option.itemCode || ""}
-                  getOptionDisabled={(option) => {
-                    const products = watch("products");
-                    return products.some(
-                      (item) => item?.itemId?.itemCode === option.itemCode
-                    );
-                  }}
-                  loading={isProductDataLoading}
-                  disableClearable
-                  isOptionEqualToValue={() => true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size="small"
-                      label="Product Code"
-                      // required
-                      helperText={errors?.itemId?.message}
-                      error={errors?.itemId}
-                      sx={{ width: "200px" }}
-                      data-testid={`product-${index}`}
-                    />
-                  )}
-                  onChange={(_, value) => {
-                    setValue(
-                      `freebies[${index}].itemDescription`,
-                      value?.itemDescription
-                    );
-                    setValue(`freebies[${index}].uom`, value?.uom);
-                    return value;
-                  }}
-                />
-
-                <Controller
-                  control={control}
-                  name={`products[${index}].desc`}
-                  render={({ field: { onChange, onBlur, value, ref } }) => (
-                    <TextField
-                      label="Item Description"
-                      size="small"
-                      autoComplete="off"
-                      disabled
-                      onChange={onChange}
-                      onBlur={onBlur}
-                      value={value?.toUpperCase() || ""}
-                      ref={ref}
-                      sx={{ width: "500px" }}
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name={`products[${index}].uom`}
-                  render={({ field: { onChange, onBlur, value, ref } }) => {
-                    return (
-                      <TextField
-                        label="UOM"
-                        size="small"
-                        autoComplete="off"
-                        disabled
-                        onChange={onChange}
-                        onBlur={onBlur}
-                        value={value || ""}
-                        ref={ref}
-                        sx={{ width: "200px" }}
-                      />
-                    );
-                  }}
-                />
-                <Controller
-                  control={control}
-                  name={`products[${index}].price`}
-                  render={({ field: { onChange, onBlur, value, ref } }) => {
-                    return (
-                      <TextField
-                        label="Price"
-                        size="small"
-                        autoComplete="off"
-                        onChange={onChange}
-                        onBlur={onBlur}
-                        value={value || ""}
-                        ref={ref}
-                        sx={{ width: "200px" }}
-                      />
-                    );
-                  }}
-                />
-                <IconButton
-                  sx={{ color: "error.main" }}
-                  onClick={() => {
-                    fields.length <= 1
-                      ? handleFreebieError()
-                      : // : remove(fields[index]);
-                        remove(index);
-                  }}
-                >
-                  <RemoveCircleOutline sx={{ fontSize: "30px" }} />
-                </IconButton>
-              </Box>
-            ))}
-          </Box>
+          <TextField
+            className="priceModeSetup__row__code"
+            label="Price Mode Code"
+            size="small"
+            autoComplete="off"
+            {...register("priceMode")}
+            helperText={errors?.priceMode?.message}
+            error={errors?.priceMode}
+            disabled={drawerMode === "edit"}
+          />
+          <TextField
+            className="priceModeSetup__row__description"
+            label="Price Mode Description"
+            size="small"
+            autoComplete="off"
+            {...register("priceModeDescription")}
+            helperText={errors?.priceModeDescription?.message}
+            error={errors?.priceModeDescription}
+          />
         </CommonDrawer>
 
         <ViewProductsByPriceModeModal

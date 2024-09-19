@@ -87,6 +87,9 @@ function SalesTransaction() {
     name: "items",
   });
 
+  console.log(watch("clientId"));
+
+
   //Hook Form Constant Values
   const watchAllValues = watch();
   const watchClientId = watch("clientId");
