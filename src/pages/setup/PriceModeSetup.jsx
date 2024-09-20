@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import CommonTable from "../../components/CommonTable";
 import CommonDrawer from "../../components/CommonDrawer";
+import PriceModeForm from "./PriceModeForm";
 import useDisclosure from "../../hooks/useDisclosure";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { priceModeSetupSchema } from "../../schema/schema";
+import { priceModeSetupSchemaEdit } from "../../schema/schema";
 import { useSelector } from "react-redux";
 import { RemoveCircleOutline, Settings, Watch } from "@mui/icons-material";
 import {
@@ -44,6 +45,12 @@ function PriceModeSetup() {
     onOpen: onDrawerOpen,
     onClose: onDrawerClose,
   } = useDisclosure();
+  
+  const {
+    isOpen: isAddDrawerOpen,
+    onOpen: onAddDrawerOpen,
+    onClose: onAddDrawerClose,
+  } = useDisclosure();
 
   const {
     isOpen: isViewProductsByPriceModeModalOpen,
@@ -70,14 +77,9 @@ function PriceModeSetup() {
     setValue,
     reset,
   } = useForm({
-    resolver: yupResolver(priceModeSetupSchema.schema),
+    resolver: yupResolver(priceModeSetupSchemaEdit.schema),
     mode: "onChange",
-    defaultValues: priceModeSetupSchema.defaultValues,
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "freebies",
+    defaultValues: priceModeSetupSchemaEdit.defaultValues,
   });
 
   //RTK Query
@@ -108,17 +110,17 @@ function PriceModeSetup() {
   const [patchPrideModeStatus] = usePatchPriceModeStatusMutation();
 
   //useEffect
-  useEffect(() => {
-    const productsArray = priceModeItems?.priceModeItems?.map((product) => ({
-      itemId: product.priceModeItemId,
-      desc: product.itemDescription,
-      uom: product.uom,
-      price: product.currentPrice,
-    }));
-    setValue("products", productsArray);
-  }, [priceModeItems]);
+  // useEffect(() => {
+  //   const productsArray = priceModeItems?.priceModeItems?.map((product) => ({
+  //     itemId: product.priceModeItemId,
+  //     desc: product.itemDescription,
+  //     uom: product.uom,
+  //     price: product.currentPrice,
+  //   }));
+  //   setValue("products", productsArray);
+  // }, [priceModeItems]);
 
-  console.log(watch("products"));
+  console.log("hello",watch());
 
   //Drawer Functions
   const onDrawerSubmit = async (data) => {
@@ -185,10 +187,11 @@ function PriceModeSetup() {
 
   const handleAddOpen = () => {
     setDrawerMode("add");
-    onDrawerOpen();
+    onAddDrawerOpen();
   };
 
   const handleEditOpen = (editData) => {
+    console.log("hi", editData);
     setDrawerMode("edit");
     onDrawerOpen();
 
@@ -249,10 +252,10 @@ function PriceModeSetup() {
         <CommonDrawer
           open={isDrawerOpen}
           onClose={handleDrawerClose}
-          drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Price Mode"}
+          drawerHeader={"Edit Price Mode"}
           onSubmit={handleSubmit(onDrawerSubmit)}
           disableSubmit={!isValid}
-          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
+          isLoading={drawerMode === "edit" && isAddLoading }
         >
           <TextField
             className="priceModeSetup__row__code"
@@ -279,6 +282,8 @@ function PriceModeSetup() {
           open={isViewProductsByPriceModeModalOpen}
           onClose={onViewProductsByPriceModeModalClose}
         />
+
+        <PriceModeForm drawerMode={drawerMode} onOpen={isAddDrawerOpen} onClose={onAddDrawerClose} />
       </Box>
     </>
   );

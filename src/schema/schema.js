@@ -190,6 +190,17 @@ export const priceModeSetupSchema = {
 	},
 };
 
+export const priceModeSetupSchemaEdit = {
+	schema: yup.object({
+		priceMode: yup.string().required("Price mode is required"),
+		priceModeDescription: yup.string().required("Price mode code is required"),
+	}),
+	defaultValues: {
+		priceMode: "",
+		priceModeDescription: "",
+	},
+	}
+
 export const priceModeItemSchema = {
 	schema: yup.object({
 		itemId: yup.object().required("Product Code is required"),
