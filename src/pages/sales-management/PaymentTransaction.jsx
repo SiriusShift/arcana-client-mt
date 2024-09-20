@@ -7,7 +7,7 @@ import PageHeaderTabs from "../../components/PageHeaderTabs";
 import AddSearchMixin from "../../components/mixins/AddSearchMixin";
 import {
   useGetAllSalesTransactionQuery,
-  useCancelSalesTransactionMutation,
+  // useCancelSalesTransactionMutation,
   useVoidSalesTransactionMutation,
 } from "../../features/sales-management/api/salesTransactionApi";
 import { useGetAllTransactionsQuery } from "../../features/filter/api/filterApi";
@@ -78,7 +78,7 @@ function PaymentTransaction() {
   // );
 
   const [voidSalesTransaction] = useVoidSalesTransactionMutation();
-  const [cancelSalesTransaction] = useCancelSalesTransactionMutation();
+  // const [cancelSalesTransaction] = useCancelSalesTransactionMutation();
 
   const {
     data: filterData,
@@ -124,12 +124,6 @@ function PaymentTransaction() {
         transactionStatus: "Cleared",
         badge: notifications["clearedTransaction"],
       },
-      {
-        case: 5,
-        name: "Cancelled",
-        transactionStatus: "Cancelled",
-        badge: notifications["cancelledTransaction"],
-      },
     ],
     [notifications]
   );
@@ -169,31 +163,31 @@ function PaymentTransaction() {
     }
   };
 
-  const onCancel = async () => {
-    try {
-      await confirmReason({
-        children: (
-          <>
-            Are you sure you want to cancel transaction number{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {selectedRowData?.transactionNo}
-            </span>
-            ?
-          </>
-        ),
-        question: false,
-        callback: (remarks) =>
-          cancelSalesTransaction({
-            transactionId: [selectedRowData?.transactionNo],
-            reason: remarks,
-          }).unwrap(),
-      });
-    } catch (error) {
-      if (error.isConfirmed) {
-        snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
-      }
-    }
-  };
+  // const onCancel = async () => {
+  //   try {
+  //     await confirmReason({
+  //       children: (
+  //         <>
+  //           Are you sure you want to cancel transaction number{" "}
+  //           <span style={{ fontWeight: "bold" }}>
+  //             {selectedRowData?.transactionNo}
+  //           </span>
+  //           ?
+  //         </>
+  //       ),
+  //       question: false,
+  //       callback: (remarks) =>
+  //         cancelSalesTransaction({
+  //           transactionId: [selectedRowData?.transactionNo],
+  //           reason: remarks,
+  //         }).unwrap(),
+  //     });
+  //   } catch (error) {
+  //     if (error.isConfirmed) {
+  //       snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
+  //     }
+  //   }
+  // };
   const onVoid = async () => {
     try {
       await confirmReason({
@@ -363,7 +357,7 @@ function PaymentTransaction() {
                 }
                 onPaymentHistories={onPaymentHistoriesOpen}
                 onPay={transactionStatus === "Pending" && onPay}
-                onCancel={transactionStatus === "Pending" || transactionStatus === "Paid" && onCancel}
+                // onCancel={transactionStatus === "Pending" || transactionStatus === "Paid" && onCancel}
               />
             )}
           </>

@@ -6,6 +6,7 @@ function PageHeaderTabs({
   wide,
   extraWide,
   pageTitle,
+  children,
   tabsList,
   tabViewing,
   setTabViewing,
@@ -15,6 +16,7 @@ function PageHeaderTabs({
     <Box sx={{ padding: "1px" }}>
       <Box component={Paper} className="pageHeader">
         <Box className="pageHeader__left">
+          {children}
           <Typography className="pageHeader__title">{pageTitle}</Typography>
         </Box>
         <Box className="pageHeader__right">
