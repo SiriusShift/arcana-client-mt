@@ -74,7 +74,7 @@ function PriceModeSetup({
 
   //Variables
   const productsArray = priceModeItems?.priceModeItems;
-  console.log(watch("products"));
+  console.log(watch());
 
   const handleFreebieError = () => {
     if (fields.length === 1) {
@@ -105,7 +105,15 @@ function PriceModeSetup({
   const onDrawerSubmit = async (data) => {
     try {
       if (drawerMode === "add") {
-        await postPriceMode(data).unwrap();
+        await postPriceMode({
+          priceModeCode: data.priceModeCode,
+          priceModeDescription: data.priceModeDescription,
+          items: data.items.map((items) => ({
+            itemId: items.itemId.itemId,
+            price: items.price,
+            isClearPack: items.isClearPack,
+          }))
+        }).unwrap();
         snackbar({
           message: "Price Mode added successfully",
           variant: "success",
@@ -118,10 +126,10 @@ function PriceModeSetup({
         });
       }
 
-      onDrawerClose();
+      onClose();
       reset();
     } catch (error) {
-      console.log(error);
+      console.log("error",error);
       if (error?.data?.error?.message) {
         snackbar({ message: error?.data?.error?.message, variant: "error" });
       } else {
@@ -295,7 +303,7 @@ function PriceModeSetup({
                       />
                       <Controller
                         control={control}
-                        name={`items[${index}].remarks`}
+                        name={`items[${index}].isClearPack`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -305,7 +313,7 @@ function PriceModeSetup({
                             size="small"
                             autoComplete="off"
                             onChange={(e) => {
-                              setValue(`items[${index}].remarks`, e.target.checked);
+                              setValue(`items[${index}].isClearPack`, e.target.checked);
                             }}
                             onBlur={onBlur}
                             value={value || ""}
@@ -350,7 +358,7 @@ function PriceModeSetup({
                 sx={{ width: "150px" }}
                 onClick={() => {
                   // fields.length < productsArray?.length ? 
-                  append({ itemId: null, desc: "", price: 0, remarks: false })
+                  append({ itemId: null, desc: "", price: 0, isClearPack: false })
                     // : handleFreebieError();
                 }}
                 disabled={

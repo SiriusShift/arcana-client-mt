@@ -173,7 +173,7 @@ export const priceModeSetupSchema = {
 				desc: yup.string().required("Description is required"),
 				uom: yup.string().required("UOM is required"),
 				price: yup.number().required("Price is required"),
-				remarks: yup.string(),
+				isClearPack: yup.bool(),
 			})
 		)
 	}),
@@ -186,7 +186,7 @@ export const priceModeSetupSchema = {
 				desc: null,
 				price: null,
 				uom: null,
-				remarks: false,
+				isClearPack: false,
 			}
 		],
 	},

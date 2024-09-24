@@ -109,7 +109,7 @@ function ListingFeeDrawer({
   const { data: clientData, isLoading: isClientLoading, error } = useGetAllClientsQuery(
     {
       RegistrationStatus: "Approved",
-      ClusterId: clusterId?.value || "",
+      ClusterId: clusterId?.value || "",  
       PageNumber: 1,
       PageSize: 1000,
     },
