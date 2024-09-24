@@ -26,9 +26,10 @@ import useDisclosure from "../../../../hooks/useDisclosure";
 import ViewTransactionModal from "../../../modals/sales-management/ViewTransactionModal";
 import ViewAttachmentModal from "../../../modals/sales-management/ViewAttachmentModal";
 import { debounce } from "../../../../utils/CustomFunctions";
-import { useGetAllSalesTransactionQuery } from "../../../../features/sales-management/api/salesTransactionApi";
+import { useCancelSalesTransactionMutation, useGetAllSalesTransactionQuery, useVoidSalesTransactionMutation } from "../../../../features/sales-management/api/salesTransactionApi";
 import CommonTableSkeleton from "../../../CommonTableSkeleton";
 import * as _ from "lodash";
+import useReasonConfirm from "../../../../hooks/useReasonConfirm";
 
 function TransactionsList({ setTransactionsMode }) {
   const [search, setSearch] = useState("");
@@ -43,9 +44,11 @@ function TransactionsList({ setTransactionsMode }) {
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
   const [dateToTemp, setDateToTemp] = useState(moment());
+  const reasonConfirm = useReasonConfirm();
 
   //Slices
   const userDetails = useSelector((state) => state.login.userDetails);
+  const selectedRowData = useSelector((state) => state.selectedRow.value);
 
   //Disclosures
   const {
@@ -99,6 +102,9 @@ function TransactionsList({ setTransactionsMode }) {
       PageSize: rowsPerPage,
     });
 
+  const [voidSalesTransaction] = useVoidSalesTransactionMutation();
+  const [cancelSalesTransaction] = useCancelSalesTransactionMutation();
+
   //Functions: Others
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);
@@ -111,7 +117,7 @@ function TransactionsList({ setTransactionsMode }) {
 
    const onCancel = async () => {
     try {
-      await confirmReason({
+      await reasonConfirm({
         children: (
           <>
             Are you sure you want to cancel transaction number{" "}
@@ -137,7 +143,7 @@ function TransactionsList({ setTransactionsMode }) {
 
   const onVoid = async () => {
     try {
-      await confirmReason({
+      await reasonConfirm({
         children: (
           <>
             Are you sure you want to void transaction number{" "}
@@ -160,6 +166,7 @@ function TransactionsList({ setTransactionsMode }) {
         variant: "success",
       });
     } catch (error) {
+      console.log(error);
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
       }
@@ -400,7 +407,6 @@ function TransactionsList({ setTransactionsMode }) {
             onAttach={onAttachmentOpen}
             onVoid={transactionStatus === "Pending" && onVoid}
             onCancel={transactionStatus === "Pending" && onCancel}
-            // onVoid={onVoid}
             lessCompact
             moveNoDataUp
           />

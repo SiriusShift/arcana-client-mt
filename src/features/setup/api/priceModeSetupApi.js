@@ -6,7 +6,7 @@ const priceModeSetupApi = api
     endpoints: (builder) => ({
       postPriceMode: builder.mutation({
         query: (body) => ({
-          url: "/price-mode",
+          url: "/price-mode-with-items",
           method: "POST",
           body: body,
         }),

@@ -253,6 +253,7 @@ function ListingFee() {
 
       <ListingFeeDrawer
         isListingFeeOpen={isListingFeeOpen}
+        clusterId={clusterId}
         onListingFeeClose={onListingFeeClose}
         editMode={editMode}
         setEditMode={setEditMode}

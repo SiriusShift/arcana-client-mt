@@ -163,28 +163,30 @@ export const uomSchema = {
 
 export const priceModeSetupSchema = {
 	schema: yup.object({
-		priceMode: yup.string().required("Price mode code is required"),
+		priceModeCode: yup.string().required("Price mode code is required"),
 		priceModeDescription: yup
 			.string()
 			.required("Price mode description is required"),
-		products: yup.array().of(
+		items: yup.array().of(
 			yup.object({
 				itemId: yup.object().required("Product Code is required"),
 				desc: yup.string().required("Description is required"),
 				uom: yup.string().required("UOM is required"),
 				price: yup.number().required("Price is required"),
+				remarks: yup.string(),
 			})
 		)
 	}),
 	defaultValues: {
-		priceMode: "",
+		priceModeCode: "",
 		priceModeDescription: "",
-		products: [
+		items: [
 			{
 				itemId: null,
 				desc: null,
 				price: null,
 				uom: null,
+				remarks: false,
 			}
 		],
 	},

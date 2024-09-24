@@ -1,4 +1,4 @@
-import { Box, IconButton, TextField, Typography } from "@mui/material";
+import { Box, Checkbox, IconButton, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import CommonTable from "../../components/CommonTable";
@@ -9,7 +9,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import { priceModeSetupSchema } from "../../schema/schema";
 import { useSelector } from "react-redux";
-import { RemoveCircleOutline, Settings, Watch } from "@mui/icons-material";
+import { CheckBox, RemoveCircleOutline, Settings, Watch } from "@mui/icons-material";
 import {
   usePutPriceModeMutation,
   useGetAllPriceModeQuery,
@@ -56,7 +56,7 @@ function PriceModeSetup({
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "products",
+    name: "items",
   });
 
   //RTK Query
@@ -74,8 +74,15 @@ function PriceModeSetup({
 
   //Variables
   const productsArray = priceModeItems?.priceModeItems;
+  console.log(watch("products"));
 
-  console.log(watch());
+  const handleFreebieError = () => {
+    if (fields.length === 1) {
+      snackbar({ message: "Must have at least 1 freebie", variant: "error" });
+    } else if (fields.length === 5) {
+      snackbar({ message: "Maximum of 5 freebies only", variant: "error" });
+    }
+  };
 
   //useEffect
   // useEffect(() => {
@@ -92,7 +99,7 @@ function PriceModeSetup({
 
   const handleDrawerClose = () => {
     reset();
-    onAddDrawerClose();
+    onClose();
   };
 
   const onDrawerSubmit = async (data) => {
@@ -114,6 +121,7 @@ function PriceModeSetup({
       onDrawerClose();
       reset();
     } catch (error) {
+      console.log(error);
       if (error?.data?.error?.message) {
         snackbar({ message: error?.data?.error?.message, variant: "error" });
       } else {
@@ -133,7 +141,7 @@ function PriceModeSetup({
         <CommonDrawer
           width={drawerMode === "add" ? "1000px" : ""}
           open={onOpen}
-          onClose={onClose}
+          onClose={handleDrawerClose}
           drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Price Mode"}
           onSubmit={handleSubmit(onDrawerSubmit)}
           disableSubmit={!isValid}
@@ -153,9 +161,9 @@ function PriceModeSetup({
                 label="Price Mode Code"
                 size="small"
                 autoComplete="off"
-                {...register("priceMode")}
-                helperText={errors?.priceMode?.message}
-                error={errors?.priceMode}
+                {...register("priceModeCode")}
+                helperText={errors?.priceModeCode?.message}
+                error={errors?.priceModeCode}
                 disabled={drawerMode === "edit"}
               />
               <TextField
@@ -185,16 +193,16 @@ function PriceModeSetup({
                       }}
                     >
                       <ControlledAutocomplete
-                        name={`products[${index}].itemId`}
+                        name={`items[${index}].itemId`}
                         control={control}
                         options={productsArray || []}
                         getOptionLabel={(option) => option.itemCode || ""}
-                        getOptionDisabled={(option) => {
-                          const products = watch("products");
-                          return products.some(
-                            (item) => item?.itemId?.itemCode === option?.itemCode
-                          );
-                        }}
+                        // getOptionDisabled={(option) => {
+                        //   const products = watch("products");
+                        //   return products.some(
+                        //     (item) => item?.itemId?.itemCode === option?.itemCode
+                        //   );
+                        // }}
                         loading={isProductDataLoading}
                         disableClearable
                         isOptionEqualToValue={() => true}
@@ -213,12 +221,12 @@ function PriceModeSetup({
                         onChange={(_, value) => {
                           console.log("value", value);
                           setValue(
-                            `products[${index}].desc`,
+                            `items[${index}].desc`,
                             value?.itemDescription
                           );
-                          setValue(`products[${index}].uom`, value?.uom);
+                          setValue(`items[${index}].uom`, value?.uom);
                           setValue(
-                            `products[${index}].price`,
+                            `items[${index}].price`,
                             value?.currentPrice
                           );
                           return value;
@@ -227,7 +235,7 @@ function PriceModeSetup({
 
                       <Controller
                         control={control}
-                        name={`products[${index}].desc`}
+                        name={`items[${index}].desc`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -246,7 +254,7 @@ function PriceModeSetup({
                       />
                       <Controller
                         control={control}
-                        name={`products[${index}].uom`}
+                        name={`items[${index}].uom`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => {
@@ -267,7 +275,7 @@ function PriceModeSetup({
                       />
                       <Controller
                         control={control}
-                        name={`products[${index}].price`}
+                        name={`items[${index}].price`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => {
@@ -285,6 +293,32 @@ function PriceModeSetup({
                           );
                         }}
                       />
+                      <Controller
+                        control={control}
+                        name={`items[${index}].remarks`}
+                        render={({
+                          field: { onChange, onBlur, value, ref },
+                        }) => (
+                          <>
+                          <Checkbox
+                            label="Remarks"
+                            size="small"
+                            autoComplete="off"
+                            onChange={(e) => {
+                              setValue(`items[${index}].remarks`, e.target.checked);
+                            }}
+                            onBlur={onBlur}
+                            value={value || ""}
+                            ref={ref}
+                          />
+                          <Typography>
+                            Clearpack
+                          </Typography>
+                          </>
+                        )}
+                      >
+
+                      </Controller>
                       <IconButton
                         sx={{ color: "error.main" }}
                         onClick={() => {
@@ -309,16 +343,18 @@ function PriceModeSetup({
               alignItems: "center",
             }}
           >
-            {drawerMode !== "edit" && (
+            {drawerMode !== "edit" 
+            // && fields.length < productsArray?.length 
+            && (
               <SecondaryButton
                 sx={{ width: "150px" }}
                 onClick={() => {
-                  fields.length < productsArray?.length
-                    ? append({ itemId: null, desc: "", price: 0, quantity: 1 })
-                    : handleFreebieError();
+                  // fields.length < productsArray?.length ? 
+                  append({ itemId: null, desc: "", price: 0, remarks: false })
+                    // : handleFreebieError();
                 }}
                 disabled={
-                  !watch("products")[watch("products")?.length - 1]?.itemId
+                  !watch("items")[watch("items")?.length - 1]?.itemId
                 }
               >
                 Add Freebie

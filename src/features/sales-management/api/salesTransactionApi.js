@@ -61,7 +61,7 @@ const salesTransactionApi = api
       cancelSalesTransaction: builder.mutation({
         query: (body) => ({
           // url: `/sales-transaction/${id}/cancel`,
-          url: `/sales-transaction/cancelV2`,
+          url: `/cancel-transaction`,
           method: "PUT",
           body,
         }),

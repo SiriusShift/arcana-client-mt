@@ -14,7 +14,7 @@ import SuccessSnackbar from "../SuccessSnackbar";
 import CommonDialog from "../common/CommonDialog";
 import { requestListingFeeSchema } from "../../schema/schema";
 import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
-import { useGetAllClientsForListingFeeQuery } from "../../features/registration/api/registrationApi";
+import { useGetAllClientsForListingFeeQuery, useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import {
   usePostListingFeeMutation,
   usePutUpdateListingFeeMutation,
@@ -27,6 +27,7 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 function ListingFeeDrawer({
   editMode,
+  clusterId,
   setEditMode,
   isListingFeeOpen,
   onListingFeeClose,
@@ -96,13 +97,26 @@ function ListingFeeDrawer({
   });
 
   //RTK Query
-  const { data: clientData, isLoading: isClientLoading } =
-    useGetAllClientsForListingFeeQuery({
-      Status: true,
+  // const { data: clientData, isLoading: isClientLoading } =
+  //   useGetAllClientsForListingFeeQuery({
+  //     Status: true,
+  //     PageNumber: 1,
+  //     PageSize: 1000,
+  //     IncludeRejected: editMode ? editMode : "",
+  //   });
+
+  console.log(clusterId.value);
+  const { data: clientData, isLoading: isClientLoading, error } = useGetAllClientsQuery(
+    {
+      RegistrationStatus: "Approved",
+      ClusterId: clusterId?.value || "",
       PageNumber: 1,
       PageSize: 1000,
-      IncludeRejected: editMode ? editMode : "",
-    });
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const { data: productData, isLoading: isProductLoading } =
     useGetAllProductsQuery({ Status: true, page: 1, pageSize: 1000 });
