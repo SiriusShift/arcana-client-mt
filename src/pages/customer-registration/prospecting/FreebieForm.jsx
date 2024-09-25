@@ -402,7 +402,7 @@ function FreebieForm({
                   label="Quantity"
                   size="small"
                   autoComplete="off"
-                  disabled = {selectedRowData?.storeType !== "Distributor" ? true : false}
+                  // disabled = {selectedRowData?.storeType !== "Distributor" ? true : false}
                   onChange={(e) => {onChange(e); setTotalQuantity( 
                     watch("freebies").reduce((acc, curr) => {
                       return acc + parseInt(curr.quantity);
@@ -435,7 +435,7 @@ function FreebieForm({
             alignItems: "center",
           }}
         >
-          {((watch("freebies").length < 5 && selectedRowData?.storeType !== "Distributor") ||  (total < 10 && selectedRowData?.storeType === "Distributor"))  && (
+          {(((total < 5 && selectedRowData?.storeType !== "Distributor")) ||  (total < 10 && selectedRowData?.storeType === "Distributor"))  && (
             <SecondaryButton
               sx={{ width: "150px" }}
               onClick={() => {

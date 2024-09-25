@@ -275,7 +275,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
               </Typography>
               <Typography fontSize="1rem" fontWeight="500">
                 Receipt Attachment: 
-                {transaction?.receiptAttachment && (
+                {transaction?.receiptAttachment ? (
                     <IconButton
                       size="small"
                       sx={{ p: 0 }}
@@ -283,7 +283,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                     >
                       <Visibility />
                     </IconButton>
-                  )}
+                  ) : " N/A"}
               </Typography>
             </Stack>
           </Stack>

@@ -89,16 +89,18 @@ function SalesTransaction() {
 
   console.log(watch("clientId"));
 
-
   //Hook Form Constant Values
   const watchAllValues = watch();
   const watchClientId = watch("clientId");
 
   //RTK Query: Autocomplete
-  const { data: clientData, isLoading: isClientLoading, error } =
-    useGetAllClientsForPOSQuery({
-      refetchOnMountOrArgChange: true
-    });
+  const {
+    data: clientData,
+    isLoading: isClientLoading,
+    error,
+  } = useGetAllClientsForPOSQuery({
+    refetchOnMountOrArgChange: true,
+  });
   const { data: productData, isFetching: isProductFetching } =
     useGetAllItemsByPriceModeIdQuery({
       Status: true,
@@ -343,66 +345,78 @@ function SalesTransaction() {
                       />
                     </Box>
                   ) : (
-                    productData?.priceModeItems?.map((item) => (
-                      <Button
-                        className="salesTransaction__body__itemsForm__itemsList__itemCard"
-                        key={item.itemId}
-                        onClick={() => {
-                          if (quickAdd) {
-                            handleAddItem(item);
-                          } else {
-                            dispatch(setSelectedRow(item));
-                            onAddItemOpen();
-                          }
-                        }}
-                        data-tour="select-item"
-                      >
-                        <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__imageWrapper">
-                          {item.itemImageLink ? (
-                            <img src={item.itemImageLink} alt="product-img" />
-                          ) : (
-                            <NoPhotography
-                              sx={{
-                                padding: "10px",
-                                fontSize: "120px",
-                                color: "#7D8B99",
-                              }}
-                            />
-                          )}
-                        </Box>
-                        <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__labels">
-                          <Typography
-                            fontSize="1.2rem"
-                            fontWeight="700"
-                            textTransform="none"
-                          >
-                            {item.itemCode}
-                          </Typography>
-
-                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__labels__price">
+                    productData?.priceModeItems?.map((item) => {
+                      console.log(item.priceModeCode);
+                      return (
+                        <Button
+                          className="salesTransaction__body__itemsForm__itemsList__itemCard"
+                          sx={{
+                            border:
+                              item.priceModeCode === "RG"
+                                ? "1px solid #dee2e6"
+                                : "2px solid yellow",
+                          }}
+                          key={item.itemId}
+                          onClick={() => {
+                            if (quickAdd) {
+                              handleAddItem(item);
+                            } else {
+                              dispatch(setSelectedRow(item));
+                              onAddItemOpen();
+                            }
+                          }}
+                          data-tour="select-item"
+                        >
+                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__imageWrapper">
+                            {item.itemImageLink ? (
+                              <img src={item.itemImageLink} alt="product-img" />
+                            ) : (
+                              <NoPhotography
+                                sx={{
+                                  padding: "10px",
+                                  fontSize: "120px",
+                                  color: "#7D8B99",
+                                }}
+                              />
+                            )}
+                          </Box>
+                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__labels">
                             <Typography
+                              fontSize="1.2rem"
                               fontWeight="700"
-                              whiteSpace="nowrap"
-                              color="white !important"
+                              textTransform="none"
                             >
-                              <span style={{ whiteSpace: "nowrap" }}>
-                                ₱
-                                {item.currentPrice?.toLocaleString(undefined, {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })}
-                              </span>
+                              {item.itemCode} 
+                            </Typography>
+                            
+                            <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__labels__price">
+                              <Typography
+                                fontWeight="700"
+                                whiteSpace="nowrap"
+                                color="white !important"
+                              >
+                                <span style={{ whiteSpace: "nowrap" }}>
+                                  ₱
+                                  {item.currentPrice?.toLocaleString(
+                                    undefined,
+                                    {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    }
+                                  )}
+                                </span>
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__description">
+                            <Typography fontSize="12px">
+                              {item.isClearPack === true ? "© " : ""}{item.itemDescription}
                             </Typography>
                           </Box>
-                        </Box>
-
-                        <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__description">
-                          <Typography fontSize="12px">
-                            {item.itemDescription}
-                          </Typography>
-                        </Box>
-                      </Button>
-                    ))
+                        </Button>
+                      );
+                    })
                   )}
                 </Box>
               </Box>

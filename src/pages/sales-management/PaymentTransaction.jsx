@@ -352,8 +352,8 @@ function PaymentTransaction() {
                     onVoid
                 }
                 onView={
-                  transactionStatus === "Paid" ||
-                  (transactionStatus === "Pending" && onViewOpen)
+                  (transactionStatus === "Paid" ||
+                  transactionStatus === "Pending" ) && onViewOpen
                 }
                 onPaymentHistories={onPaymentHistoriesOpen}
                 onPay={transactionStatus === "Pending" && onPay}

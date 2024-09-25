@@ -1,3 +1,4 @@
+
 import { Box, TextField, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link } from "@mui/icons-material";
@@ -273,6 +274,7 @@ function PriceModeManagement() {
             </>
           }
           setSearch={setSearch}
+          removeAdd
           onOpen={onDrawerOpen}
           removeArchive
           secondButtonTitle="Export"
