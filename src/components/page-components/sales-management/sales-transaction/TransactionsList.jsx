@@ -194,9 +194,9 @@ function TransactionsList({ setTransactionsMode }) {
       },
       {
         case: 2,
-        name: "Cleared",
-        transactionStatus: "Cleared",
-        // badge: notifications["paidTransaction"],
+        name: "Paid",
+        transactionStatus: "Paid",
+        // badge: notifications["receivableTransaction"],
       },
       {
         case: 3,
@@ -206,6 +206,12 @@ function TransactionsList({ setTransactionsMode }) {
       },
       {
         case: 4,
+        name: "Cleared",
+        transactionStatus: "Cleared",
+        // badge: notifications["paidTransaction"],
+      },
+      {
+        case: 5,
         name: "Cancelled",
         transactionStatus: "Cancelled",
         // badge: notifications["clearedTransaction"],
