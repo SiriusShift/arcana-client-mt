@@ -28,6 +28,25 @@ export const clusterOptions = [
 	}
 ]
 
+export const reportNames = [
+	{
+		label: "Sales",
+		value: 0,
+	},
+	{
+		label: "Sales Journal",
+		value: 1,
+	},
+	{
+		label: "General Trade",
+		value: 2,
+	},
+	{
+		label: "General Trade AR",
+		value: 3,
+	},
+]
+
 export const paymentTypes = [
 	{
 		label: "Cheque",

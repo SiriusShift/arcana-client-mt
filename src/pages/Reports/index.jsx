@@ -1,332 +1,213 @@
-import { Box, Tooltip, Typography } from "@mui/material";
-import { useSelector } from "react-redux";
-import "../../assets/styles/dashboard.styles.scss";
-import {
-  ArrowDownward,
-  ArrowUpward,
-  Group,
-  Info,
-  KeyboardDoubleArrowRight,
-  Schedule,
-  SupervisorAccount,
-} from "@mui/icons-material";
-import { BarChart } from "@mui/x-charts";
-import { dummyDataset, dummyInventoryData } from "../../utils/DummyData";
-import { useNavigate } from "react-router-dom";
-import { transformName } from "../../utils/CustomFunctions";
-import Register from "../../assets/images/Register.svg";
-import Sales from "../../assets/images/Sales.svg";
-import Inventory from "../../assets/images/Inventory.svg";
-import DashboardSkeleton from "../../components/skeletons/DashboardSkeleton";
-import { useGetDashboardDataQuery } from "../../features/dashboard/api/dashboardApi";
+import { Autocomplete, Box, TextField } from "@mui/material";
+import PageHeaderAdd from "../../components/PageHeaderAdd";
+import CommonTable from "../../components/CommonTable";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
+import { reportNames } from "../../utils/constants";
+import { useEffect, useState } from "react";
+import { useGetInventoryMrpQuery } from "../../features/inventory-management/api/inventoryMrpApi";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import moment from "moment";
+import SecondaryButton from "../../components/SecondaryButton";
+import _ from "lodash";
+import { GetApp } from "@mui/icons-material";
 
-function Reports() {
-  //Hooks
-  const navigate = useNavigate();
-  const fullName = useSelector((state) => state.login.fullname);
+function InventoryMRP() {
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [activeReport, setActiveReport] = useState(0);
+  const [dateFrom, setDateFrom] = useState(moment());
+  const [dateTo, setDateTo] = useState(moment());
+  const [dateFromTemp, setDateFromTemp] = useState(moment());
+  const [dateToTemp, setDateToTemp] = useState(moment());
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState("");
+
+  console.log(activeReport);
 
   // RTK Query
-  const { data, isFetching } = useGetDashboardDataQuery();
+  const { data, isFetching } = useGetInventoryMrpQuery({
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    Search: search,
+  });
 
-  //Functions
-  const valueFormatterSeries = (value) =>
-    `₱${value?.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionsDigits: 2,
-    })}`;
-
-  const valueFormatterTick = (value) => {
-    if (value >= 1e9) {
-      return (value / 1e9).toFixed(1) + "B";
-    } else if (value >= 1e6) {
-      return (value / 1e6).toFixed(1) + "M";
-    } else if (value >= 1e3) {
-      return (value / 1e3).toFixed(1) + "K";
-    } else {
-      return value.toString();
-    }
+  //functions
+  const handleSubmitDate = () => {
+    setDateFrom(dateFromTemp);
+    setDateTo(dateToTemp);
+    useDownloadExcel();
   };
 
-  if (isFetching) {
-    return <DashboardSkeleton />;
-  }
+  // CommonTable Props
+  //Constants
+  const customOrderKeys = [
+    [
+      "comment",
+      "year",
+      "yearOld",
+      "remarks",
+      "monthOrig",
+      "dateOrig",
+      "outletCode",
+      // "SI No",
+      // "Item Code",
+      // "New Item Code",
+      // "Qty",
+      // "% Discount",
+      // "Unit Price",
+      // "Amount",
+      // "Discounted Price",
+      // "Discounted Amount",
+      // "Discount",
+      // "Item Description Orig",
+      // "Item Description New",
+      // "Outlet",
+      // "Province",
+      // "Area",
+      // "Customer Type",
+      // "Channel",
+      // "Status",
+      // "Region",
+      // "Region Old",
+      // "Weekly",
+      // "Month",
+      // "Date",
+      // "Conversion Orig",
+      // "Conversion New",
+      // "Volume",
+      // "Revenue",
+      // "Qty Orig",
+      // "Qty New",
+      // "Remarks",
+      // "Yhiel Remarks",
+      // "Nhel Remarks Discount",
+      // "Yhiel Remarks New",
+      // "Store Remarks",
+      // "Store from MT",
+      // "SI",
+      // "Checking Vol",
+      // "Vol Check"
+    ],
+    [
+      "siNo",
+      "itemCode",
+      "newItemCode",
+      "qty",
+      "percentDiscount",
+      "unitPrice",
+      "amount",
+    ],
+  ];
+
+  const tableHeads = [
+    [
+      "Comment",
+      "Year",
+      "Year Old",
+      "Remarks",
+      "Month Orig",
+      "Date Orig",
+      "Outlet Code",
+    ],
+    [
+      "SI No",
+      "Item Code",
+      "New Item Code",
+      "Qty",
+      "% Discount",
+      "Unit Price",
+      "Amount",
+    ],
+  ];
+
+  // UseEffect
+  useEffect(() => {
+    setPage(0);
+  }, [search, rowsPerPage]);
 
   return (
-    <Box className="dashboard">
-      <Box className="dashboard__top">
-        <Box className="dashboard__top__greetingCard">
-          <Typography className="dashboard__top__greetingCard__greeting">
-            Fresh morning!
-          </Typography>
-
-          <Box className="dashboard__top__greetingCard__content">
-            <Box className="dashboard__top__greetingCard__content__nameContainer">
-              <Typography className="dashboard__top__greetingCard__content__nameContainer__name">
-                {transformName(fullName) || "user"}
-              </Typography>
-            </Box>
-
-            <Box className="dashboard__top__greetingCard__content__messageContainer">
-              <Typography className="dashboard__top__greetingCard__content__messageContainer__message">
-                Here&apos;s what&apos;s happening
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        <Box className="dashboard__top__firstCard">
-          <Box className="dashboard__top__firstCard__title">
-            <Box className="dashboard__top__firstCard__title__icon">
-              <Group sx={{ fontSize: "0.95rem" }} />
-            </Box>
-
-            <Typography>Total Customers</Typography>
-          </Box>
-
-          <Box className="dashboard__top__firstCard__content">
-            <Typography className="dashboard__top__firstCard__content__mainContent">
-              {(1000).toLocaleString()}
-            </Typography>
-
-            <Box className="dashboard__top__firstCard__content__subContent">
-              <Box className="dashboard__top__firstCard__content__subContent__percent">
-                <ArrowUpward className="dashboard__top__firstCard__content__subContent__percent__iconUp" />
-
-                <Typography className="dashboard__top__firstCard__content__subContent__percent__number">
-                  26%
-                </Typography>
-              </Box>
-
-              <Typography className="dashboard__top__firstCard__content__subContent__difference">
-                +200 today
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        <Box className="dashboard__top__secondCard">
-          <Box className="dashboard__top__secondCard__title">
-            <Box className="dashboard__top__secondCard__title__icon">
-              <SupervisorAccount sx={{ fontSize: "0.95rem" }} />
-            </Box>
-
-            <Typography>Prospects</Typography>
-          </Box>
-
-          <Box className="dashboard__top__secondCard__content">
-            <Typography className="dashboard__top__secondCard__content__mainContent">
-              {(124).toLocaleString()}
-            </Typography>
-
-            <Box className="dashboard__top__secondCard__content__subContent">
-              <Box className="dashboard__top__secondCard__content__subContent__percent">
-                <ArrowDownward className="dashboard__top__secondCard__content__subContent__percent__iconDown" />
-
-                <Typography className="dashboard__top__secondCard__content__subContent__percent__number">
-                  26%
-                </Typography>
-              </Box>
-
-              <Typography className="dashboard__top__secondCard__content__subContent__difference">
-                +20 today
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        <Box className="dashboard__top__thirdCard">
-          <Box className="dashboard__top__thirdCard__title">
-            <Box className="dashboard__top__thirdCard__title__icon">
-              <Schedule sx={{ fontSize: "0.95rem" }} />
-            </Box>
-
-            <Typography>Pending Transactions</Typography>
-          </Box>
-          <Box className="dashboard__top__thirdCard__content">
-            <Typography className="dashboard__top__thirdCard__content__mainContent">
-              {(22).toLocaleString()}
-            </Typography>
-
-            <Box className="dashboard__top__thirdCard__content__subContent">
-              <Box className="dashboard__top__thirdCard__content__subContent__percent">
-                <Info className="dashboard__top__thirdCard__content__subContent__percent__iconDown" />
-
-                <Typography className="dashboard__top__thirdCard__content__subContent__percent__number">
-                  4
-                </Typography>
-              </Box>
-
-              <Typography className="dashboard__top__thirdCard__content__subContent__difference">
-                overdue payments
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-
-      <Box className="dashboard__body">
-        <Box className="dashboard__body__left">
-          <Box className="dashboard__body__left__chart">
-            <Box className="dashboard__body__left__chart__header">
-              <Typography>Total Revenue Per Month</Typography>
-
-              {/* <LocalizationProvider dateAdapter={AdapterMoment}>
-                <DatePicker
-                  views={["year"]}
-                  label="Year"
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
-                  }}
-                  sx={{ width: "120px" }}
-                  value={chartYear}
-                  onChange={(e) => setChartYear(e.target.value)}
-                />
-              </LocalizationProvider> */}
-            </Box>
-
-            <BarChart
-              dataset={dummyDataset}
-              xAxis={[{ scaleType: "band", dataKey: "month" }]}
-              yAxis={[{ valueFormatter: valueFormatterTick }]}
-              series={[
-                { dataKey: "amount", valueFormatter: valueFormatterSeries },
-              ]}
-              colors={["#544d91", "#243448"]}
-              skipAnimation
+    <Box className="commonPageLayout" sx={{gap: "0px"}}>
+      <PageHeaderAdd pageTitle="Reports" removeArchive removeAdd removeSearch />
+      <Box className="mixin">
+        <Autocomplete
+          options={reportNames}
+          getOptionLabel={(option) => option?.label}
+          onChange={(_, value) => {
+            setActiveReport(value.value);
+          }}
+          value={activeReport.value}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              size="small"
+              sx={{ width: "250px"}}
+              label="Report Name"
             />
-          </Box>
-
-          <Box className="dashboard__body__left__quickLinks">
-            <Box
-              className="dashboard__body__left__quickLinks__firstCard"
-              onClick={() => navigate("customer-registration/registration")}
-            >
-              <Box className="dashboard__body__left__quickLinks__firstCard__left">
-                <Typography className="dashboard__body__left__quickLinks__firstCard__left__title">
-                  Register a customer
-                </Typography>
-
-                <Box className="dashboard__body__left__quickLinks__firstCard__left__arrow">
-                  <KeyboardDoubleArrowRight />
-                </Box>
-              </Box>
-
-              <Box className="dashboard__body__left__quickLinks__firstCard__imageContainer">
-                <img src={Register} alt="registration" />
-              </Box>
-            </Box>
-
-            <Box
-              className="dashboard__body__left__quickLinks__secondCard"
-              onClick={() => {
-                sessionStorage.removeItem("transactionsMode");
-                navigate("sales-management/sales-transaction");
+          )}
+        />
+        <Box className="mixin__right">
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <DatePicker
+              label="Date From"
+              value={dateFromTemp}
+              onChange={setDateFromTemp}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
               }}
-            >
-              <Box className="dashboard__body__left__quickLinks__secondCard__left">
-                <Typography className="dashboard__body__left__quickLinks__secondCard__left__title">
-                  Create a sales order
-                </Typography>
+              sx={{ width: "200px" }}
+              maxDate={dateToTemp}
+            />
+          </LocalizationProvider>
 
-                <Box className="dashboard__body__left__quickLinks__secondCard__left__arrow">
-                  <KeyboardDoubleArrowRight />
-                </Box>
-              </Box>
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <DatePicker
+              label="Date To"
+              value={dateToTemp}
+              onChange={setDateToTemp}
+              slotProps={{
+                textField: {
+                  size: "small",
+                },
+              }}
+              sx={{ width: "200px" }}
+              minDate={dateFromTemp}
+            />
+          </LocalizationProvider>
 
-              <Box className="dashboard__body__left__quickLinks__secondCard__imageContainer">
-                <img src={Sales} alt="sales" />
-              </Box>
-            </Box>
-
-            <Box
-              className="dashboard__body__left__quickLinks__thirdCard"
-              onClick={() => navigate("inventory-management/inventory-mrp")}
-            >
-              <Box className="dashboard__body__left__quickLinks__thirdCard__left">
-                <Typography className="dashboard__body__left__quickLinks__thirdCard__left__title">
-                  Manage the inventory
-                </Typography>
-
-                <Box className="dashboard__body__left__quickLinks__thirdCard__left__arrow">
-                  <KeyboardDoubleArrowRight />
-                </Box>
-              </Box>
-
-              <Box className="dashboard__body__left__quickLinks__thirdCard__imageContainer">
-                <img src={Inventory} alt="inventory" />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-
-        <Box className="dashboard__body__widget">
-          <Typography className="dashboard__body__widget__title">
-            Near Expiry Overview
-          </Typography>
-
-          <Box className="dashboard__body__widget__content">
-            {dummyInventoryData
-              .sort((a, b) => {
-                const ratioA = (a.nearExpiry / a.totalStock) * 100;
-                const ratioB = (b.nearExpiry / b.totalStock) * 100;
-
-                return ratioB - ratioA;
-              })
-              .map((item) => (
-                <Box
-                  key={item.id}
-                  className="dashboard__body__widget__content__item"
-                >
-                  <Tooltip
-                    title={item.itemDescription}
-                    sx={{ cursor: "pointer" }}
-                    placement="top"
-                    PopperProps={{
-                      popperOptions: {
-                        modifiers: [
-                          {
-                            name: "offset",
-                            options: {
-                              offset: [-2, -5],
-                            },
-                          },
-                        ],
-                      },
-                    }}
-                  >
-                    <Box className="dashboard__body__widget__content__item__label">
-                      <Typography className="dashboard__body__widget__content__item__label__text">
-                        {item.itemCode}
-                      </Typography>
-
-                      <Info fontSize="" sx={{ color: "gray" }} />
-                    </Box>
-                  </Tooltip>
-
-                  <Tooltip
-                    title={`${item.nearExpiry} over ${item.totalStock} stocks are near expiry`}
-                    placement="top"
-                  >
-                    <Box className="dashboard__body__widget__content__item__full">
-                      <Box
-                        className="dashboard__body__widget__content__item__full__fill"
-                        sx={{
-                          width: `${
-                            (item.nearExpiry / item.totalStock) * 100
-                          }%`,
-                        }}
-                      />
-                    </Box>
-                  </Tooltip>
-                </Box>
-              ))}
-          </Box>
+          <SecondaryButton
+            size="medium"
+            onClick={handleSubmitDate}
+            sx={{ mr: "10px", height: "100%" }}
+            disabled={
+              // isExportLoading ||
+              _.isEqual(dateFrom, dateFromTemp) && _.isEqual(dateTo, dateToTemp)
+            }
+          >
+            <GetApp />
+          </SecondaryButton>
         </Box>
       </Box>
+      {isFetching ? (
+        <CommonTableSkeleton evenLesserCompact />
+      ) : (
+        <CommonTable
+        lowerCompact
+          moveNoDataUp
+          mapData={data?.inventoryMrp}
+          tableHeads={tableHeads[activeReport]}
+          customOrderKeys={customOrderKeys[activeReport]}
+          includeActions={false}
+          count={data?.totalCount || 0}
+          rowsPerPage={rowsPerPage}
+          setRowsPerPage={setRowsPerPage}
+          page={page}
+          setPage={setPage}
+        />
+      )}
     </Box>
   );
 }
 
-export default Reports;
+export default InventoryMRP;
