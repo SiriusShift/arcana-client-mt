@@ -55,6 +55,7 @@ import {
 	ArrowUpward,
 	Restaurant,
 	MoreHoriz,
+	Description
 } from "@mui/icons-material";
 
 export const getIconElement = (iconName, color, fontSize) => {
@@ -503,6 +504,14 @@ export const getIconElement = (iconName, color, fontSize) => {
 				}}
 			/>
 		),
+		Description: (
+			<Description
+				sx={{
+					color: color && `${color} !important`,
+					fontSize: fontSize && `${fontSize} !important`,		
+				}}
+			/>
+		)
 	};
 
 	return (

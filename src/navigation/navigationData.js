@@ -390,4 +390,11 @@ export const navigationData = [
       },
     ],
   },
+  {
+    id: 10,
+    name: "Reports",
+    path:"/reports",
+    icon: "Description",
+    description: "Viewing and exporting of reports"
+  }
 ];
