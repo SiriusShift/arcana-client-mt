@@ -318,6 +318,7 @@ function PriceModeSetup({
                             onBlur={onBlur}
                             value={value || ""}
                             ref={ref}
+                            checked={value}
                           />
                           <Typography>
                             Clearpack

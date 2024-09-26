@@ -87,7 +87,7 @@ function SalesTransaction() {
     name: "items",
   });
 
-  console.log(watch("clientId"));
+  console.log(watch("items"));
 
   //Hook Form Constant Values
   const watchAllValues = watch();
@@ -123,7 +123,7 @@ function SalesTransaction() {
 
   const handleAddItem = (item, quantity) => {
     const existingItemIndex = watch("items").findIndex(
-      (existingItem) => existingItem.itemId?.itemCode === item.itemCode
+      (existingItem) => (existingItem.itemId.priceModeItemId === item.priceModeItemId && existingItem.itemId.currentPrice === item.currentPrice)
     );
 
     if (existingItemIndex !== -1) {
@@ -358,6 +358,7 @@ function SalesTransaction() {
                           }}
                           key={item.itemId}
                           onClick={() => {
+                            console.log("item", item);
                             if (quickAdd) {
                               handleAddItem(item);
                             } else {
