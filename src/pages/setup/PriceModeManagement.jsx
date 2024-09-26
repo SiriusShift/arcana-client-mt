@@ -274,7 +274,7 @@ function PriceModeManagement() {
             </>
           }
           setSearch={setSearch}
-          removeAdd
+          // removeAdd
           onOpen={onDrawerOpen}
           removeArchive
           secondButtonTitle="Export"
