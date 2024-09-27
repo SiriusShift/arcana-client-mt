@@ -42,13 +42,14 @@ function InventoryMRP() {
   //Constants
   const customOrderKeys = [
     [
-      "comment",
-      "year",
-      "yearOld",
-      "remarks",
-      "monthOrig",
       "dateOrig",
-      "outletCode",
+      "siNo",
+      "itemCode",
+      "newItemCode",
+      "qty",
+      "percentDiscount",
+      "unitPrice",
+      "amount"
       // "SI No",
       // "Item Code",
       // "New Item Code",
@@ -101,13 +102,14 @@ function InventoryMRP() {
 
   const tableHeads = [
     [
-      "Comment",
-      "Year",
-      "Year Old",
-      "Remarks",
-      "Month Orig",
       "Date Orig",
-      "Outlet Code",
+      "SI No",
+      "Item Code",
+      "New Item Code",
+      "Qty",
+      "% Discount",
+      "Unit Price",
+      "Amount"
     ],
     [
       "SI No",
