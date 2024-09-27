@@ -13,6 +13,17 @@ const priceModeSetupApi = api
         invalidatesTags: ["Price Mode Setup"],
       }),
 
+      getAllItemsForPriceModeManagement: builder.query({
+        query: (params) => ({
+          params: params,
+          url: "/price-mode-management-items",
+          method: "GET",
+        }),
+        providesTags: ["Price Mode Items"],
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
+      }),
+
       getAllPriceMode: builder.query({
         query: (params) => ({
           params: params,
@@ -56,6 +67,7 @@ const priceModeSetupApi = api
 export const {
   usePostPriceModeMutation,
   useGetAllPriceModeQuery,
+  useGetAllItemsForPriceModeManagementQuery,
   useGetAllPriceModeForClientsQuery,
   usePutPriceModeMutation,
   usePatchPriceModeStatusMutation,
