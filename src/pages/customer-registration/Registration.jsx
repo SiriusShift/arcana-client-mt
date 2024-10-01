@@ -42,8 +42,6 @@ function DirectRegistration() {
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
   const [dateToTemp, setDateToTemp] = useState(moment());
-  console.log("dateFromTemp", dateFromTemp);
-  console.log("dateToTemp", dateToTemp);
 
   const [voidConfirmBox, setVoidConfirmBox] = useState("");
 
@@ -60,7 +58,6 @@ function DirectRegistration() {
     isApprovedOnly ? "Approved" : "Under review"
   );
   const [tabViewing, setTabViewing] = useState(isApprovedOnly ? 2 : 1);
-  console.log(tabViewing);
 
   const { notifications, isNotificationFetching } = useContext(AppContext);
 
@@ -240,7 +237,6 @@ function DirectRegistration() {
       if (!response.ok) {
         throw new Error("Failed to download Excel file.");
       }
-      console.log(response);
       const blob = await response.blob();
       const link = document.createElement("a");
       const url = window.URL.createObjectURL(blob);

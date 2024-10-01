@@ -75,8 +75,6 @@ function OnlinePaymentPlatforms() {
     useUpdateOnlinePlatformMutation();
   const [updateOnlinePlatformStatus] = useUpdateOnlinePlatformStatusMutation();
 
-  console.log(data);
-
   //Drawer Functions
   const onDrawerSubmit = async (data) => {
     try {

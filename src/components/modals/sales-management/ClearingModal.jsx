@@ -58,7 +58,6 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
   const paymentTransactionIds = transaction?.transactions?.map(
     (t) => t.paymentTransactionId
   );
-  console.log(paymentTransactionIds);
   const totalAmountDue = transaction?.transactions?.reduce(
     (acc, t) =>
       acc +

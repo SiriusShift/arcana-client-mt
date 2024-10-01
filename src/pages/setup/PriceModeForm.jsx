@@ -74,7 +74,6 @@ function PriceModeSetup({
 
   //Variables
   const productsArray = priceModeItems?.priceModeItems;
-  console.log(watch());
 
   const handleFreebieError = () => {
     if (fields.length === 1) {
@@ -227,7 +226,6 @@ function PriceModeSetup({
                           />
                         )}
                         onChange={(_, value) => {
-                          console.log("value", value);
                           setValue(
                             `items[${index}].desc`,
                             value?.itemDescription

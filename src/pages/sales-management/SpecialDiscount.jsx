@@ -151,8 +151,6 @@ function SpecialDiscount() {
 		},
 	];
 
-	console.log(watch("clientId"));
-
 	//Functions: Other Functions
 	const onFilter = async ({ clusterId, search }) => {
 		try {
@@ -325,7 +323,6 @@ function SpecialDiscount() {
 				(client) => client.id === selectedRowData?.clientId
 			)
 		);
-		console.log(clientData, "selectedRowData");
 		setValue(
 			"discount",
 			selectedRowData?.discount

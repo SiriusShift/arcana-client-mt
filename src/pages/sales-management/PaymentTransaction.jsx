@@ -46,8 +46,6 @@ function PaymentTransaction() {
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow?.value);
 
-  console.log(selectedRowData);
-
   //Disclosures
   const {
     isOpen: isPaymentHistoriesOpen,
@@ -95,7 +93,6 @@ function PaymentTransaction() {
   });
 
   const filteredList = filterData?.value;
-  console.log("filter", filterData);
 
   //Constants
   const paymentNavigation = useMemo(

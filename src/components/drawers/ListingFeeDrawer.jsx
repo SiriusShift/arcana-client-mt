@@ -105,7 +105,6 @@ function ListingFeeDrawer({
   //     IncludeRejected: editMode ? editMode : "",
   //   });
 
-  console.log(clusterId.value);
   const { data: clientData, isLoading: isClientLoading, error } = useGetAllClientsQuery(
     {
       RegistrationStatus: "Approved",
@@ -588,7 +587,6 @@ function ListingFeeDrawer({
                   <IconButton
                     sx={{ color: "error.main" }}
                     onClick={() => {
-                      console.log(index);
                       fields.length <= 1
                         ? handleListingFeeError()
                         : // : remove(fields[index]);

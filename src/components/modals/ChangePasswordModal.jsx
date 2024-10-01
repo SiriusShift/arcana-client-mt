@@ -77,7 +77,6 @@ function ChangePasswordModal({ ...otherProps }) {
       });
       handleCloseModal();
     } catch (error) {
-      console.log(error);
       if (error?.data?.error?.message) {
         snackbar({ message: error?.data?.error?.message, variant: "error" });
       } else {

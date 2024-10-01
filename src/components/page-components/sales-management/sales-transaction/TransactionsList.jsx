@@ -166,7 +166,6 @@ function TransactionsList({ setTransactionsMode }) {
         variant: "success",
       });
     } catch (error) {
-      console.log(error);
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
       }
@@ -178,7 +177,6 @@ function TransactionsList({ setTransactionsMode }) {
       setClusterId(clusterId);
       setInvoiceType(invoiceType);
     } catch (error) {
-      console.log(error);
     }
   };
 

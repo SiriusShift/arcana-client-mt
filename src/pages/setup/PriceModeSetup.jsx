@@ -92,7 +92,6 @@ function PriceModeSetup() {
       PageSize: 1000,
     });
 
-  console.log(priceModeItems);
 
   const { data, isFetching, error } = useGetAllPriceModeQuery(
     {
@@ -120,7 +119,6 @@ function PriceModeSetup() {
   //   setValue("products", productsArray);
   // }, [priceModeItems]);
 
-  console.log("hello",watch());
 
   //Drawer Functions
   const onDrawerSubmit = async (data) => {
@@ -191,7 +189,6 @@ function PriceModeSetup() {
   };
 
   const handleEditOpen = (editData) => {
-    console.log("hi", editData);
     setDrawerMode("edit");
     onDrawerOpen();
 

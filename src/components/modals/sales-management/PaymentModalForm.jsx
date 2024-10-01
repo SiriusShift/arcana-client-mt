@@ -45,7 +45,6 @@ function PaymentModalForm({
   ...props
 }) {
   const { open, onClose } = props;
-  console.log(expensesFields);
   const [initialEditAmount, setInitialEditAmount] = useState(0);
   //Hooks
   const confirm = useConfirm();

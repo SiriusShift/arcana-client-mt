@@ -129,7 +129,6 @@ function PriceModeManagement() {
     PageSize: rowsPerPage,
   })
 
-  console.log(priceModeItems);
   const [postItemsToPriceMode, { isLoading: isTaggingLoading }] =
     usePostItemsToPriceModeMutation();
   const [deletePriceModeItem] = useDeletePriceModeItemMutation();

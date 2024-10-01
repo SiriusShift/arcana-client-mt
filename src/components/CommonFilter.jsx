@@ -52,7 +52,6 @@ function CommonFilter({
 
   //slice
   const userDetails = useSelector((state) => state.login.userDetails);
-  console.log(userDetails);
 
 
   //Function

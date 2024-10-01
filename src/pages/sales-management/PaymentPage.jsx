@@ -106,12 +106,9 @@ function PaymentPage({
     name: "payments",
   });
 
-  console.log(watch());
-
   //Watch Constants
   const watchTransactionIds = watch("transactionId");
   const watchInvoiceNo = watch("invoiceNo");
-  console.log("watch",watch());
 
   //RTK Query
   const [

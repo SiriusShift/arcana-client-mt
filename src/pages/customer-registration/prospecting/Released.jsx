@@ -92,7 +92,6 @@ function Released() {
   //Misc Functions
 
   const onFilter = async ({ clusterId, businessType }) => {
-    console.log(businessType)
     try {
       setClusterId(clusterId);
       setBusinessType(businessType);

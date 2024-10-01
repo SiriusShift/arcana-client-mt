@@ -87,8 +87,6 @@ function SalesTransaction() {
     name: "items",
   });
 
-  console.log(watch("items"));
-
   //Hook Form Constant Values
   const watchAllValues = watch();
   const watchClientId = watch("clientId");
@@ -346,7 +344,6 @@ function SalesTransaction() {
                     </Box>
                   ) : (
                     productData?.priceModeItems?.map((item) => {
-                      console.log(item.priceModeCode);
                       return (
                         <Button
                           className="salesTransaction__body__itemsForm__itemsList__itemCard"
@@ -358,7 +355,6 @@ function SalesTransaction() {
                           }}
                           key={item.itemId}
                           onClick={() => {
-                            console.log("item", item);
                             if (quickAdd) {
                               handleAddItem(item);
                             } else {
