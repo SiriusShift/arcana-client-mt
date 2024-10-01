@@ -111,6 +111,7 @@ function PaymentPage({
   //Watch Constants
   const watchTransactionIds = watch("transactionId");
   const watchInvoiceNo = watch("invoiceNo");
+  console.log("watch",watch());
 
   //RTK Query
   const [
@@ -295,6 +296,7 @@ function PaymentPage({
     } else {
       // If checkbox is unchecked, deselect all transaction IDs
       setValue("transactionId", []);
+      setValue("invoiceNo", []);
     }
   };
 
