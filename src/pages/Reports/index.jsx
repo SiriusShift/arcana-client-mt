@@ -11,10 +11,11 @@ import moment from "moment";
 import SecondaryButton from "../../components/SecondaryButton";
 import _ from "lodash";
 import { GetApp } from "@mui/icons-material";
+import { decryptString } from "../../utils/CustomFunctions";
 
 function InventoryMRP() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [activeReport, setActiveReport] = useState(0);
+  const [activeReport, setActiveReport] = useState();
   const [dateFrom, setDateFrom] = useState(moment());
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
@@ -22,20 +23,60 @@ function InventoryMRP() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
 
-  console.log(activeReport);
-
   // RTK Query
-  const { data, isFetching } = useGetInventoryMrpQuery({
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    Search: search,
-  });
 
   //functions
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
     setDateTo(dateToTemp);
     useDownloadExcel();
+  };
+
+  const useDownloadExcel = async () => {
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_BASEURL
+        }CDO-reports?DateFrom=${moment(dateFromTemp).format(
+          "MM-DD-YYYY"
+        )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            // Accept: " application/json",
+            Authorization: `Bearer ${decryptString(
+              sessionStorage.getItem("token")
+            )}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to download Excel file.");
+      }
+      console.log(response);
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      const url = window.URL.createObjectURL(blob);
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `${activeReport.value}_Reports_${moment(dateFromTemp).format(
+          "YYYYMMDD"
+        )}_${moment(dateToTemp).format("YYYYMMDD")}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up and revoke the object URL
+      link.parentNode.removeChild(link);
+      // const link = document.createElement("a");
+      // link.href = response.url;
+      // link.click();
+      // link.remove();
+    } catch (error) {
+      console.error("Error while downloading Excel file:", error);
+    }
   };
 
   // CommonTable Props
@@ -135,9 +176,9 @@ function InventoryMRP() {
           options={reportNames}
           getOptionLabel={(option) => option?.label}
           onChange={(_, value) => {
-            setActiveReport(value.value);
+            setActiveReport(value);
           }}
-          value={activeReport.value}
+          value={activeReport}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -191,15 +232,15 @@ function InventoryMRP() {
           </SecondaryButton>
         </Box>
       </Box>
-      {isFetching ? (
+      {/* {activeReport ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
         lowerCompact
           moveNoDataUp
           mapData={data?.inventoryMrp}
-          tableHeads={tableHeads[activeReport]}
-          customOrderKeys={customOrderKeys[activeReport]}
+          tableHeads={tableHeads[activeReport?.index]}
+          customOrderKeys={customOrderKeys[activeReport?.index]}
           includeActions={false}
           count={data?.totalCount || 0}
           rowsPerPage={rowsPerPage}
@@ -207,7 +248,7 @@ function InventoryMRP() {
           page={page}
           setPage={setPage}
         />
-      )}
+      )} */}
     </Box>
   );
 }

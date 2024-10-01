@@ -30,20 +30,24 @@ export const clusterOptions = [
 
 export const reportNames = [
 	{
-		label: "Sales",
-		value: 0,
+		label: "CDO Reports",
+		index: 0,
+		value: "CDO",
 	},
 	{
-		label: "Sales Journal",
-		value: 1,
+		label: "Sales Analyst Reports",
+		index: 1,
+		value: "SA",
 	},
 	{
-		label: "General Trade",
-		value: 2,
+		label: "AS Report",
+		index: 2,
+		value: "AS",
 	},
 	{
-		label: "General Trade AR",
-		value: 3,
+		label: "GAS Report",
+		index: 3,
+		value: "GAS",
 	},
 ]
 
