@@ -343,7 +343,8 @@ function SalesTransaction() {
                       />
                     </Box>
                   ) : (
-                    productData?.priceModeItems?.map((item) => {
+                    productData?.priceModeItems?.map((item, index) => {
+                      console.log(productData)
                       return (
                         <Button
                           className="salesTransaction__body__itemsForm__itemsList__itemCard"
@@ -353,7 +354,7 @@ function SalesTransaction() {
                                 ? "1px solid #dee2e6"
                                 : "2px solid yellow",
                           }}
-                          key={item.itemId}
+                          key={index}
                           onClick={() => {
                             if (quickAdd) {
                               handleAddItem(item);
