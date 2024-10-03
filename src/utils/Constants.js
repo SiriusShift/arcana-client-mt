@@ -37,7 +37,7 @@ export const reportNames = [
 	{
 		label: "Sales Analyst Reports",
 		index: 1,
-		value: "SA",
+		value: "sales-journal",
 	},
 	{
 		label: "AS Report",

@@ -32,12 +32,14 @@ function InventoryMRP() {
     useDownloadExcel();
   };
 
+  console.log(activeReport)
+
   const useDownloadExcel = async () => {
     try {
       const response = await fetch(
         `${
           import.meta.env.VITE_BASEURL
-        }CDO-reports?DateFrom=${moment(dateFromTemp).format(
+        }${activeReport.value}-reports?DateFrom=${moment(dateFromTemp).format(
           "MM-DD-YYYY"
         )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
         {
