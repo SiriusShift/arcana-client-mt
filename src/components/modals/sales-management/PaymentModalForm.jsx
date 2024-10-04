@@ -391,10 +391,7 @@ function PaymentModalForm({
                     isAllowed={(values) => {
                       const { floatValue } = values;
 
-                      const balanceToCompare =
-                        watch("paymentMethod").label === "Others"
-                          ? parseFloat(otherExpensesBalanceData?.totalBalance)
-                          : editMode
+                      const balanceToCompare = editMode
                           ? remainingBalance + initialEditAmount
                           : remainingBalance;
 
