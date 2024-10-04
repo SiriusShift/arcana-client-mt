@@ -186,7 +186,7 @@ export const priceModeSetupSchema = {
 				desc: null,
 				price: null,
 				uom: null,
-				isClearPack: false,
+				isClearPack: true,
 			}
 		],
 	},

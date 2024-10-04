@@ -24,6 +24,17 @@ const priceModeSetupApi = api
         transformErrorResponse: (response) => response.value,
       }),
 
+      getAllItemsForPriceModeManagement: builder.query({
+        query: (params) => ({
+          params: params,
+          url: "/price-mode-management-items",
+          method: "GET",
+        }),
+        providesTags: ["Price Mode Items"],
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
+      }),
+
       getAllPriceModeForClients: builder.query({
         query: () => ({
           url: "/price-mode",
@@ -56,6 +67,7 @@ const priceModeSetupApi = api
 export const {
   usePostPriceModeMutation,
   useGetAllPriceModeQuery,
+  useGetAllItemsForPriceModeManagementQuery,
   useGetAllPriceModeForClientsQuery,
   usePutPriceModeMutation,
   usePatchPriceModeStatusMutation,
