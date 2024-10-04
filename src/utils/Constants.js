@@ -49,6 +49,11 @@ export const reportNames = [
 		index: 3,
 		value: "GAS",
 	},
+	{
+		label: "Price Mode Report",
+		index: 4,
+		value: "price-mode",
+	}
 ]
 
 export const paymentTypes = [
