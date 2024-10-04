@@ -45,7 +45,6 @@ function PaymentModalForm({
   ...props
 }) {
   const { open, onClose } = props;
-  console.log(expensesFields);
   const [initialEditAmount, setInitialEditAmount] = useState(0);
   //Hooks
   const confirm = useConfirm();
@@ -392,10 +391,7 @@ function PaymentModalForm({
                     isAllowed={(values) => {
                       const { floatValue } = values;
 
-                      const balanceToCompare =
-                        watch("paymentMethod").label === "Others"
-                          ? parseFloat(otherExpensesBalanceData?.totalBalance)
-                          : editMode
+                      const balanceToCompare = editMode
                           ? remainingBalance + initialEditAmount
                           : remainingBalance;
 

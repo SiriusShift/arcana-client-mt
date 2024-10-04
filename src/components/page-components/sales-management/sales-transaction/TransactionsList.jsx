@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useContext, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import CommonFilter from "../../../CommonFilter";
 import {
@@ -16,6 +16,8 @@ import {
   Search,
 } from "@mui/icons-material";
 import CommonTable from "../../../CommonTable";
+import PageHeaderTabs from "../../../../components/PageHeaderTabs";
+import { AppContext } from "../../../../context/AppContext";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
@@ -24,13 +26,16 @@ import useDisclosure from "../../../../hooks/useDisclosure";
 import ViewTransactionModal from "../../../modals/sales-management/ViewTransactionModal";
 import ViewAttachmentModal from "../../../modals/sales-management/ViewAttachmentModal";
 import { debounce } from "../../../../utils/CustomFunctions";
-import { useGetAllSalesTransactionQuery } from "../../../../features/sales-management/api/salesTransactionApi";
+import { useCancelSalesTransactionMutation, useGetAllSalesTransactionQuery, useVoidSalesTransactionMutation } from "../../../../features/sales-management/api/salesTransactionApi";
 import CommonTableSkeleton from "../../../CommonTableSkeleton";
 import * as _ from "lodash";
+import useReasonConfirm from "../../../../hooks/useReasonConfirm";
 
 function TransactionsList({ setTransactionsMode }) {
   const [search, setSearch] = useState("");
   const [invoiceType, setInvoiceType] = useState("");
+  const [tabViewing, setTabViewing] = useState(1);
+  const [transactionStatus, setTransactionStatus] = useState("Pending");
   const [clusterId, setClusterId] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -39,9 +44,11 @@ function TransactionsList({ setTransactionsMode }) {
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
   const [dateToTemp, setDateToTemp] = useState(moment());
+  const reasonConfirm = useReasonConfirm();
 
   //Slices
   const userDetails = useSelector((state) => state.login.userDetails);
+  const selectedRowData = useSelector((state) => state.selectedRow.value);
 
   //Disclosures
   const {
@@ -88,11 +95,15 @@ function TransactionsList({ setTransactionsMode }) {
       ...(search ? { Search: search } : {}),
       ClusterId: clusterId?.value || "",
       InvoiceType: invoiceType?.value || "",
+      TransactionStatus: transactionStatus,
       DateFrom: moment(dateFrom).format("YYYY-MM-DD"),
       DateTo: moment(dateTo).format("YYYY-MM-DD"),
       PageNumber: page + 1,
       PageSize: rowsPerPage,
     });
+
+  const [voidSalesTransaction] = useVoidSalesTransactionMutation();
+  const [cancelSalesTransaction] = useCancelSalesTransactionMutation();
 
   //Functions: Others
   const debouncedSetSearch = debounce((value) => {
@@ -103,16 +114,104 @@ function TransactionsList({ setTransactionsMode }) {
     setDateFrom(dateFromTemp);
     setDateTo(dateToTemp);
   };
+
+   const onCancel = async () => {
+    try {
+      await reasonConfirm({
+        children: (
+          <>
+            Are you sure you want to cancel transaction number{" "}
+            <span style={{ fontWeight: "bold" }}>
+              {selectedRowData?.transactionNo}
+            </span>
+            ?
+          </>
+        ),
+        question: false,
+        callback: (remarks) =>
+          cancelSalesTransaction({
+            transactionId: [selectedRowData?.transactionNo],
+            reason: remarks,
+          }).unwrap(),
+      });
+    } catch (error) {
+      if (error.isConfirmed) {
+        snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
+      }
+    }
+  };
+
+  const onVoid = async () => {
+    try {
+      await reasonConfirm({
+        children: (
+          <>
+            Are you sure you want to void transaction number{" "}
+            <span style={{ fontWeight: "bold" }}>
+              {selectedRowData?.transactionNo}
+            </span>
+            ?
+          </>
+        ),
+        question: false,
+        callback: (remarks) =>
+          voidSalesTransaction({
+            transactionId: [selectedRowData?.transactionNo],
+            reason: remarks,
+          }).unwrap(),
+      });
+
+      snackbar({
+        message: "Transaction voided successfully",
+        variant: "success",
+      });
+    } catch (error) {
+      if (error.isConfirmed) {
+        snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
+      }
+    }
+  };
+
   const onFilter = async ({ clusterId, invoiceType }) => {
     try {
       setClusterId(clusterId);
       setInvoiceType(invoiceType);
     } catch (error) {
-      console.log(error);
     }
   };
 
   // Constants
+
+  const paymentNavigation = useMemo(
+    () => [
+      {
+        case: 1,
+        name: "Receivable",
+        transactionStatus: "Pending",
+        // badge: notifications["receivableTransaction"],
+      },
+      {
+        case: 2,
+        name: "Cleared",
+        transactionStatus: "Cleared",
+        // badge: notifications["paidTransaction"],
+      },
+      {
+        case: 3,
+        name: "Voided",
+        transactionStatus: "Voided",
+        // badge: notifications["voidedTransaction"],
+      },
+      {
+        case: 4,
+        name: "Cancelled",
+        transactionStatus: "Cancelled",
+        // badge: notifications["clearedTransaction"],
+      },
+    ],
+    []
+  );
+
   const valueDisplayOptions = [
     {
       keyName: "status",
@@ -159,13 +258,39 @@ function TransactionsList({ setTransactionsMode }) {
   }, [transactionsData]);
 
   useEffect(() => {
+    const foundItem = paymentNavigation.find(
+      (item) => item.case === tabViewing
+    );
+
+    setTransactionStatus(foundItem?.transactionStatus);
+  }, [tabViewing, paymentNavigation]);
+
+  useEffect(() => {
     setPage(0);
   }, [search, rowsPerPage, dateFrom, dateTo]);
+  
 
   return (
     <>
       <Box className="transactionsList">
-        <Box className="transactionsList__header">
+        <PageHeaderTabs
+          pageTitle="Invoices"
+          tabsList={paymentNavigation}
+          setTabViewing={setTabViewing}
+          tabViewing={tabViewing}
+          small
+        >
+          <IconButton
+            onClick={() => {
+              setTransactionsMode(false);
+              sessionStorage.removeItem("transactionsMode");
+            }}
+            // sx={{ ml: "30px", height: "100%" }}
+          >
+            <KeyboardDoubleArrowLeft sx={{ fontSize: "1.6rem" }} />
+          </IconButton>
+        </PageHeaderTabs>
+        {/* <Box className="transactionsList__header">
           <Box className="transactionsList__header__left">
             <IconButton
               onClick={() => {
@@ -181,9 +306,7 @@ function TransactionsList({ setTransactionsMode }) {
               Invoices
             </Typography>
           </Box>
-        </Box>
-
-        <Divider />
+        </Box> */}
 
         <Box className="transactionsList__filters">
           <TextField
@@ -280,7 +403,8 @@ function TransactionsList({ setTransactionsMode }) {
             attachKey={attachKey}
             onView={onViewOpen}
             onAttach={onAttachmentOpen}
-            // onVoid={onVoid}
+            onVoid={transactionStatus === "Pending" && onVoid}
+            onCancel={transactionStatus === "Pending" && onCancel}
             lessCompact
             moveNoDataUp
           />

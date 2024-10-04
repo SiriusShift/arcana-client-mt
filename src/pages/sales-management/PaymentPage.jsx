@@ -106,8 +106,6 @@ function PaymentPage({
     name: "payments",
   });
 
-  console.log(watch());
-
   //Watch Constants
   const watchTransactionIds = watch("transactionId");
   const watchInvoiceNo = watch("invoiceNo");
@@ -295,6 +293,7 @@ function PaymentPage({
     } else {
       // If checkbox is unchecked, deselect all transaction IDs
       setValue("transactionId", []);
+      setValue("invoiceNo", []);
     }
   };
 

@@ -58,7 +58,6 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
   const paymentTransactionIds = transaction?.transactions?.map(
     (t) => t.paymentTransactionId
   );
-  console.log(paymentTransactionIds);
   const totalAmountDue = transaction?.transactions?.reduce(
     (acc, t) =>
       acc +
@@ -71,6 +70,12 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
     isOpen: isViewPhotoOpen,
     onOpen: onViewPhotoOpen,
     onClose: onViewPhotoClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isViewAttachmentOpen,
+    onOpen: onViewAttachmentOpen,
+    onClose: onViewAttachmentClose,
   } = useDisclosure();
 
   const {
@@ -245,16 +250,15 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
               </Typography>
               <Typography fontSize="1rem" fontWeight="500">
                 Payment Method: {selectedRowData?.paymentMethod}{" "}
-                {transaction?.attachment ||
-                  (selectedRowData?.paymentMethod === "Withholding" && (
+                {transaction?.attachment && (
                     <IconButton
                       size="small"
                       sx={{ p: 0 }}
-                      onClick={onViewPhotoOpen}
+                      onClick={onViewAttachmentOpen}
                     >
                       <Visibility />
                     </IconButton>
-                  ))}
+                  )}
               </Typography>
               <Typography fontSize="1rem" fontWeight="500">
                 Payment Channel: {transaction?.paymentChannel || "N/A"}
@@ -269,7 +273,16 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                 Receipt No: {transaction?.receiptNo || "N/A"}
               </Typography>
               <Typography fontSize="1rem" fontWeight="500">
-                Receipt Attachment: {transaction?.receiptAttachment || "N/A"}
+                Receipt Attachment: 
+                {transaction?.receiptAttachment ? (
+                    <IconButton
+                      size="small"
+                      sx={{ p: 0 }}
+                      onClick={onViewPhotoOpen}
+                    >
+                      <Visibility />
+                    </IconButton>
+                  ) : " N/A"}
               </Typography>
             </Stack>
           </Stack>
@@ -403,7 +416,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
               <DangerButton onClick={onVoid}>Void</DangerButton>
             )}
 
-            {mode === "Clearing" && (
+            {mode === "Clearing" && ( 
               <SecondaryButton disabled={!aTag} type="submit">
                 Submit
               </SecondaryButton>
@@ -420,9 +433,16 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         </Stack>
       </CommonModal>
       <ViewPhotoModal
-        currentViewPhoto={transaction?.attachment}
+        currentViewPhoto={transaction?.receiptAttachment}
         open={isViewPhotoOpen}
         onClose={onViewPhotoClose}
+        cloudified={true}
+      />
+      <ViewPhotoModal 
+        currentViewPhoto={transaction?.attachment}
+        open={isViewAttachmentOpen}
+        onClose={onViewAttachmentClose}
+        cloudified={true}
       />
       <ViewTransactionModal transactionId={invoice} open={isViewOpen} onClose={onViewClose} />
     </>

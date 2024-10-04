@@ -128,7 +128,6 @@ function DirectRegisterForm({
   } = useContext(DirectReleaseContext);
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  console.log("selected row",selectedRowData);
   const termsAndConditions = useSelector(
     (state) => state.regularRegistration.value.termsAndConditions
   );
@@ -309,7 +308,6 @@ function DirectRegisterForm({
       Page: 1,
       PageSize: 1000,
     });
-    console.log("cluster",clusterData);
   const { data: productData } = useGetAllProductsQuery({
     Status: true,
     page: 1,
@@ -814,7 +812,6 @@ function DirectRegisterForm({
       setActiveTab("Costs and Fees");
     }
   };
-  console.log("watch", watch());
 
   const handleBack = () => {
     if (activeTab === "Terms & Conditions") {

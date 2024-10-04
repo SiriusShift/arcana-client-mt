@@ -149,7 +149,6 @@ function Clearing() {
   };
 
   const onFilter = async ({ clusterId, paymentMethod }) => {
-	console.log(paymentMethod);
     try {
       setClusterId(clusterId);
       setPaymentMethod(paymentMethod);

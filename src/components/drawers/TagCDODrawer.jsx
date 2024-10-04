@@ -78,7 +78,6 @@ function TagCDODrawer({ editMode, open, onClose }) {
       reset();
       onSuccessOpen();
     } catch (error) {
-      console.log(error);
       if (error?.data?.error?.message) {
         setSnackbarMessage(error?.data?.error?.message);
       } else {

@@ -11,8 +11,6 @@ function TermsAndConditionsTab() {
     id: selectedRowData?.id,
   });
 
-  console.log("data", data);
-
   return (
     <Box className="viewRegistrationModal__termsAndConditions">
       <Box className="viewRegistrationModal__termsAndConditions__header">

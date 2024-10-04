@@ -1,8 +1,9 @@
+
 import { Box, TextField, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link } from "@mui/icons-material";
 import CommonTable from "../../components/CommonTable";
-import { useGetAllPriceModeQuery } from "../../features/setup/api/priceModeSetupApi";
+import { useGetAllPriceModeQuery, useGetAllItemsForPriceModeManagementQuery } from "../../features/setup/api/priceModeSetupApi";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import useDisclosure from "../../hooks/useDisclosure";
 import { Controller, useForm } from "react-hook-form";
@@ -121,6 +122,13 @@ function PriceModeManagement() {
         refetchOnMountOrArgChange: true,
       }
     );
+
+  const {data: priceModeItems, isFetching} = useGetAllItemsForPriceModeManagementQuery({
+    Search: search,
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+  })
+
   const [postItemsToPriceMode, { isLoading: isTaggingLoading }] =
     usePostItemsToPriceModeMutation();
   const [deletePriceModeItem] = useDeletePriceModeItemMutation();
@@ -255,7 +263,7 @@ function PriceModeManagement() {
   }, [watchPriceModeId, triggerProducts]);
 
   useEffect(() => {
-    setCount(priceModeItemsData?.totalCount);
+    setCount(priceModeItems?.totalCount);
   }, [priceModeItemsData]);
 
   useEffect(() => {
@@ -273,6 +281,7 @@ function PriceModeManagement() {
             </>
           }
           setSearch={setSearch}
+          // removeAdd
           onOpen={onDrawerOpen}
           removeArchive
           secondButtonTitle="Export"
@@ -284,7 +293,7 @@ function PriceModeManagement() {
         ) : (
           <CommonTable
             evenLesserCompact
-            mapData={priceModeItemsData?.priceModeItems}
+            mapData={priceModeItems?.priceModeItems}
             onRemove={onRemove}
             onPriceChange={onPriceChangeOpen}
             onViewMoreConstant={onPriceDetailsOpen}
