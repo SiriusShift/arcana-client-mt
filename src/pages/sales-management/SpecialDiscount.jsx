@@ -415,7 +415,7 @@ function SpecialDiscount() {
 						// onEdit={tabViewing === 2 ? null : handleEditOpen}
 						onEdit={
 							approvalStatus !== "Voided" &&
-							(userDetails?.roleName === "Admin" || userDetails?.roleName === "CDO"
+							(userDetails?.roleName === "Admin"
 								? handleEditOpen
 								: userDetails?.roleName !== "Admin"
 								? approvalStatus !== "Approved" && handleEditOpen

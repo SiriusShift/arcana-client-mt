@@ -123,7 +123,7 @@ function SalesTransaction() {
 
   const handleAddItem = (item, quantity) => {
     const existingItemIndex = watch("items").findIndex(
-      (existingItem) => existingItem.itemId?.itemCode === item.itemCode
+      (existingItem) => (existingItem.itemId.priceModeItemId === item.priceModeItemId && existingItem.itemId.currentPrice === item.currentPrice)
     );
 
     if (existingItemIndex !== -1) {
@@ -345,7 +345,7 @@ function SalesTransaction() {
                       />
                     </Box>
                   ) : (
-                    productData?.priceModeItems?.map((item) => {
+                    productData?.priceModeItems?.map((item, index) => {
                       console.log(item.priceModeCode);
                       return (
                         <Button
@@ -356,7 +356,7 @@ function SalesTransaction() {
                                 ? "1px solid #dee2e6"
                                 : "2px solid yellow",
                           }}
-                          key={item.itemId}
+                          key={index}
                           onClick={() => {
                             if (quickAdd) {
                               handleAddItem(item);

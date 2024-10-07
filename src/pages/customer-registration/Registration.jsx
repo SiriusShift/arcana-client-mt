@@ -414,8 +414,7 @@ function DirectRegistration() {
             onHistory={onHistoryOpen}
             onEdit={
               clientStatus !== "Voided" &&
-              (userDetails?.roleName === "Admin" ||
-              userDetails.roleName === "CDO"
+              (userDetails?.roleName === "Admin"
                 ? handleEditOpen
                 : userDetails?.roleName !== "Admin"
                 ? clientStatus !== "Approved" && handleEditOpen

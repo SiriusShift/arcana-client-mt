@@ -3,7 +3,6 @@ import { Box, TextField, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link } from "@mui/icons-material";
 import CommonTable from "../../components/CommonTable";
-import { useGetAllPriceModeQuery } from "../../features/setup/api/priceModeSetupApi";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import useDisclosure from "../../hooks/useDisclosure";
 import { Controller, useForm } from "react-hook-form";
@@ -19,6 +18,7 @@ import {
   useGetAllItemsByPriceModeIdQuery,
   usePostItemsToPriceModeMutation,
 } from "../../features/setup/api/priceModeItemsApi";
+import { useGetAllPriceModeQuery, useGetAllItemsForPriceModeManagementQuery } from "../../features/setup/api/priceModeSetupApi";
 import CommonDrawer from "../../components/CommonDrawer";
 import PriceChangeDrawer from "../../components/drawers/PriceChangeDrawer";
 import PriceDetailsModal from "../../components/modals/PriceDetailsModal";
@@ -125,6 +125,12 @@ function PriceModeManagement() {
   const [postItemsToPriceMode, { isLoading: isTaggingLoading }] =
     usePostItemsToPriceModeMutation();
   const [deletePriceModeItem] = useDeletePriceModeItemMutation();
+
+  const {data: priceModeItems, isFetching} = useGetAllItemsForPriceModeManagementQuery({
+    Search: search,
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+  })
 
   const [
     triggerProducts,
@@ -256,7 +262,7 @@ function PriceModeManagement() {
   }, [watchPriceModeId, triggerProducts]);
 
   useEffect(() => {
-    setCount(priceModeItemsData?.totalCount);
+    setCount(priceModeItems?.totalCount);
   }, [priceModeItemsData]);
 
   useEffect(() => {
@@ -274,7 +280,7 @@ function PriceModeManagement() {
             </>
           }
           setSearch={setSearch}
-          removeAdd
+          // removeAdd
           onOpen={onDrawerOpen}
           removeArchive
           secondButtonTitle="Export"
@@ -286,7 +292,7 @@ function PriceModeManagement() {
         ) : (
           <CommonTable
             evenLesserCompact
-            mapData={priceModeItemsData?.priceModeItems}
+            mapData={priceModeItems?.priceModeItems}
             onRemove={onRemove}
             onPriceChange={onPriceChangeOpen}
             onViewMoreConstant={onPriceDetailsOpen}
