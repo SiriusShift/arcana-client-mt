@@ -203,7 +203,7 @@ function PaymentTransaction() {
         question: false,
         callback: (remarks) =>
           voidSalesTransaction({
-            transactionId: [selectedRowData?.transactionNo],
+            transactionId: selectedRowData?.transactionNo,
             reason: remarks,
           }).unwrap(),
       });

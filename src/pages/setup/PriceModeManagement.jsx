@@ -3,7 +3,6 @@ import { Box, TextField, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link } from "@mui/icons-material";
 import CommonTable from "../../components/CommonTable";
-import { useGetAllPriceModeQuery } from "../../features/setup/api/priceModeSetupApi";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import useDisclosure from "../../hooks/useDisclosure";
 import { Controller, useForm } from "react-hook-form";

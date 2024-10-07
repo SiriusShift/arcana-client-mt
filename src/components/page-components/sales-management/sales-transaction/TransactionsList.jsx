@@ -130,7 +130,7 @@ function TransactionsList({ setTransactionsMode }) {
         question: false,
         callback: (remarks) =>
           cancelSalesTransaction({
-            transactionId: [selectedRowData?.transactionNo],
+            transactionId: selectedRowData?.transactionNo,
             reason: remarks,
           }).unwrap(),
       });
@@ -156,7 +156,7 @@ function TransactionsList({ setTransactionsMode }) {
         question: false,
         callback: (remarks) =>
           voidSalesTransaction({
-            transactionId: [selectedRowData?.transactionNo],
+            transactionId: selectedRowData?.transactionNo,
             reason: remarks,
           }).unwrap(),
       });
@@ -412,7 +412,7 @@ function TransactionsList({ setTransactionsMode }) {
             onView={onViewOpen}
             onAttach={onAttachmentOpen}
             onVoid={transactionStatus === "Pending" && onVoid}
-            onCancel={transactionStatus === "Pending" && onCancel}
+            onCancel={transactionStatus === "Pending" || transactionStatus === "Paid" && onCancel}
             lessCompact
             moveNoDataUp
           />
