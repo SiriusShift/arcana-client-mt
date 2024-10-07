@@ -26,7 +26,11 @@ import useDisclosure from "../../../../hooks/useDisclosure";
 import ViewTransactionModal from "../../../modals/sales-management/ViewTransactionModal";
 import ViewAttachmentModal from "../../../modals/sales-management/ViewAttachmentModal";
 import { debounce } from "../../../../utils/CustomFunctions";
-import { useCancelSalesTransactionMutation, useGetAllSalesTransactionQuery, useVoidSalesTransactionMutation } from "../../../../features/sales-management/api/salesTransactionApi";
+import {
+  useCancelSalesTransactionMutation,
+  useGetAllSalesTransactionQuery,
+  useVoidSalesTransactionMutation,
+} from "../../../../features/sales-management/api/salesTransactionApi";
 import CommonTableSkeleton from "../../../CommonTableSkeleton";
 import * as _ from "lodash";
 import useReasonConfirm from "../../../../hooks/useReasonConfirm";
@@ -115,7 +119,7 @@ function TransactionsList({ setTransactionsMode }) {
     setDateTo(dateToTemp);
   };
 
-   const onCancel = async () => {
+  const onCancel = async () => {
     try {
       await reasonConfirm({
         children: (
@@ -276,7 +280,6 @@ function TransactionsList({ setTransactionsMode }) {
   useEffect(() => {
     setPage(0);
   }, [search, rowsPerPage, dateFrom, dateTo]);
-  
 
   return (
     <>
@@ -411,8 +414,14 @@ function TransactionsList({ setTransactionsMode }) {
             attachKey={attachKey}
             onView={onViewOpen}
             onAttach={onAttachmentOpen}
-            onVoid={transactionStatus === "Pending" && onVoid}
-            onCancel={transactionStatus === "Pending" || transactionStatus === "Paid" && onCancel}
+            onVoid={
+              transactionStatus === "Pending" ||
+              (transactionStatus === "Paid" && onVoid)
+            }
+            onCancel={
+              transactionStatus === "Pending" ||
+              (transactionStatus === "Paid" && onCancel)
+            }
             lessCompact
             moveNoDataUp
           />
