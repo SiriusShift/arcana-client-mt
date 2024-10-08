@@ -51,7 +51,7 @@ const salesTransactionApi = api
       voidSalesTransaction: builder.mutation({
         query: (body) => ({
           // url: `/sales-transaction/${id}/void`,
-          url: `/sales-transaction/voidV2`,
+          url: `/void-transaction`,
           method: "PUT",
           body,
         }),

@@ -14,6 +14,7 @@ import {
   KeyboardDoubleArrowLeft,
   RemoveCircle,
   Search,
+  Cancel,
 } from "@mui/icons-material";
 import CommonTable from "../../../CommonTable";
 import PageHeaderTabs from "../../../../components/PageHeaderTabs";
@@ -76,7 +77,7 @@ function TransactionsList({ setTransactionsMode }) {
     "Business Name",
     "Invoice Type",
     "Invoice No.",
-    "Validity",
+    // "Validity",
     "Upload Status",
   ];
   const customOrderKeys = [
@@ -86,7 +87,7 @@ function TransactionsList({ setTransactionsMode }) {
     "businessName",
     "invoiceType",
     "invoiceNo",
-    "status",
+    // "status",
     "ciAttachment",
   ];
   const pesoArray = ["totalAmountDue"];
@@ -146,6 +147,7 @@ function TransactionsList({ setTransactionsMode }) {
   };
 
   const onVoid = async () => {
+    console.log("test");
     try {
       await reasonConfirm({
         children: (
@@ -260,6 +262,15 @@ function TransactionsList({ setTransactionsMode }) {
             variant="outlined"
           />
         ),
+        Cancelled: (
+          <Chip 
+          icon={<Cancel sx={{ fontSize: "16px" }} />}
+          label="Cancelled"
+          color="error"
+          sx={{ color: "red" }}
+          variant="outlined"
+          />
+        )
       },
     },
   ];
@@ -405,7 +416,7 @@ function TransactionsList({ setTransactionsMode }) {
             mapData={transactionsData?.transactions || []}
             pesoArray={pesoArray}
             dateTimeSplitArray={dateTimeSplitArray}
-            valueDisplayOptions={valueDisplayOptions}
+            // valueDisplayOptions={valueDisplayOptions}
             page={page}
             setPage={setPage}
             rowsPerPage={rowsPerPage}
@@ -415,12 +426,12 @@ function TransactionsList({ setTransactionsMode }) {
             onView={onViewOpen}
             onAttach={onAttachmentOpen}
             onVoid={
-              transactionStatus === "Pending" ||
-              (transactionStatus === "Paid" && onVoid)
+              (transactionStatus === "Pending" ||
+              transactionStatus === "Paid") && onVoid
             }
             onCancel={
-              transactionStatus === "Pending" ||
-              (transactionStatus === "Paid" && onCancel)
+              (transactionStatus === "Pending" ||
+              transactionStatus === "Paid") && onCancel
             }
             lessCompact
             moveNoDataUp
