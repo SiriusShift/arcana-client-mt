@@ -44,14 +44,14 @@ export const reportNames = [
 		index: 2,
 		value: "AS",
 	},
-	{
-		label: "GAS Report",
-		index: 3,
-		value: "GAS",
-	},
+	// {
+	// 	label: "GAS Report",
+	// 	index: 3,
+	// 	value: "GAS",
+	// },
 	{
 		label: "Price Mode Report",
-		index: 4,
+		index: 3,
 		value: "price-mode",
 	}
 ]

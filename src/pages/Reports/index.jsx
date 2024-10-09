@@ -12,10 +12,24 @@ import SecondaryButton from "../../components/SecondaryButton";
 import _ from "lodash";
 import { GetApp } from "@mui/icons-material";
 import { decryptString } from "../../utils/CustomFunctions";
+import {
+  useCDOReportsQuery,
+  useSJReportsQuery,
+  useASReportsQuery,
+  usePriceModeReportQuery,
+} from "../../features/reports/api/reportsApi";
 
 function InventoryMRP() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [count, setCount] = useState(0);
   const [activeReport, setActiveReport] = useState();
+  const [activeArray, setActiveArray]  = useState();
+  const [isActive, setIsActive] = useState({
+    cdo: true,
+    sj: true,
+    as: true,
+    pm: true
+})
   const [dateFrom, setDateFrom] = useState(moment());
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
@@ -23,7 +37,36 @@ function InventoryMRP() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
 
+  console.log("date from : ", dateFromTemp, dateToTemp)
+  
   // RTK Query
+  const { data: cdoReportData, isFetching: cdoFetching } =
+    useCDOReportsQuery({
+      Page: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
+      DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+    }, {skip: isActive.cdo});
+
+  const { data: sjReportData, isFetching: sjFetching } = useSJReportsQuery({
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
+    DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+  }, {skip: isActive.sj});
+
+  const { data: asReportData, isFetching: asFetching } = useASReportsQuery({
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
+    DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+  }, {skip: isActive.as});
+
+  const { data: priceModeReportData, isFetching: priceModeFetching } =
+    usePriceModeReportQuery({
+      Page: page + 1,
+      PageSize: rowsPerPage,
+    }, {skip: isActive.pm});
 
   //functions
   const handleSubmitDate = () => {
@@ -32,14 +75,14 @@ function InventoryMRP() {
     useDownloadExcel();
   };
 
-  console.log(activeReport)
+  console.log(rowsPerPage);
 
   const useDownloadExcel = async () => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_BASEURL
-        }${activeReport.value}-reports?DateFrom=${moment(dateFromTemp).format(
+        `${import.meta.env.VITE_BASEURL}${
+          activeReport.value
+        }-reports?DateFrom=${moment(dateFromTemp).format(
           "MM-DD-YYYY"
         )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
         {
@@ -81,97 +124,78 @@ function InventoryMRP() {
     }
   };
 
+  //useEffect()
+  useEffect(() => {
+    const reports = [cdoReportData, sjReportData, asReportData, priceModeReportData];
+    const keys = ['cdo', 'sj', 'as', 'pm'];
+  
+    if (activeReport?.index !== undefined) {
+      setActiveArray(reports[activeReport.index]?.value);
+      
+      const newIsActive = keys.reduce((acc, key, idx) => {
+        acc[key] = idx !== activeReport.index;
+        return acc;
+      }, {});
+      
+      setIsActive(newIsActive);
+    }
+  }, [
+    activeReport,
+    cdoReportData,
+    sjReportData,
+    asReportData,
+    priceModeReportData,
+    dateFromTemp,
+    dateToTemp,
+  ]);
+
+  useEffect(() => {
+    if (activeArray) {
+      setCount(setCount(activeArray?.totalCount));
+    }
+  }, [activeArray]);
+
+  useEffect(() => {
+    if (activeArray) {
+      setCount(activeArray?.totalCount);
+    }
+  }, [activeArray]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [rowsPerPage, activeReport]);
+
   // CommonTable Props
   //Constants
   const customOrderKeys = [
     [
-      "dateOrig",
-      "siNo",
-      "itemCode",
-      "newItemCode",
+      "date",
+      "invoiceNo",
+      "itemDescription",
       "qty",
-      "percentDiscount",
-      "unitPrice",
-      "amount"
-      // "SI No",
-      // "Item Code",
-      // "New Item Code",
-      // "Qty",
-      // "% Discount",
-      // "Unit Price",
-      // "Amount",
-      // "Discounted Price",
-      // "Discounted Amount",
-      // "Discount",
-      // "Item Description Orig",
-      // "Item Description New",
-      // "Outlet",
-      // "Province",
-      // "Area",
-      // "Customer Type",
-      // "Channel",
-      // "Status",
-      // "Region",
-      // "Region Old",
-      // "Weekly",
-      // "Month",
-      // "Date",
-      // "Conversion Orig",
-      // "Conversion New",
-      // "Volume",
-      // "Revenue",
-      // "Qty Orig",
-      // "Qty New",
-      // "Remarks",
-      // "Yhiel Remarks",
-      // "Nhel Remarks Discount",
-      // "Yhiel Remarks New",
-      // "Store Remarks",
-      // "Store from MT",
-      // "SI",
-      // "Checking Vol",
-      // "Vol Check"
-    ],
-    [
-      "siNo",
-      "itemCode",
-      "newItemCode",
-      "qty",
-      "percentDiscount",
       "unitPrice",
       "amount",
+      "outlet",
     ],
+    
   ];
 
   const tableHeads = [
     [
-      "Date Orig",
-      "SI No",
-      "Item Code",
-      "New Item Code",
-      "Qty",
-      "% Discount",
-      "Unit Price",
-      "Amount"
-    ],
-    [
-      "SI No",
-      "Item Code",
-      "New Item Code",
-      "Qty",
-      "% Discount",
+      "Date",
+      "Invoice Number",
+      "Item Description",
+      "Quantity",
       "Unit Price",
       "Amount",
+      "Outlet",
     ],
   ];
 
-  // UseEffect
-  useEffect(() => {
-    setPage(0);
-  }, [search, rowsPerPage]);
+  console.log("heads", customOrderKeys[activeReport?.index]);
 
   return (
-    <Box className="commonPageLayout" sx={{gap: "0px"}}>
+    <Box className="commonPageLayout" sx={{ gap: "0px" }}>
       <PageHeaderAdd pageTitle="Reports" removeArchive removeAdd removeSearch />
       <Box className="mixin">
         <Autocomplete
@@ -185,7 +209,7 @@ function InventoryMRP() {
             <TextField
               {...params}
               size="small"
-              sx={{ width: "250px"}}
+              sx={{ width: "250px" }}
               label="Report Name"
             />
           )}
@@ -234,23 +258,23 @@ function InventoryMRP() {
           </SecondaryButton>
         </Box>
       </Box>
-      {/* {activeReport ? (
+      {cdoFetching || sjFetching || asFetching || priceModeFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
-        lowerCompact
+          lowerCompact
           moveNoDataUp
-          mapData={data?.inventoryMrp}
-          tableHeads={tableHeads[activeReport?.index]}
-          customOrderKeys={customOrderKeys[activeReport?.index]}
+          mapData={activeArray?.transactions}
+          // tableHeads={tableHeads[activeReport?.index]}
+          // customOrderKeys={customOrderKeys[activeReport?.index]}
           includeActions={false}
-          count={data?.totalCount || 0}
+          count={count}
           rowsPerPage={rowsPerPage}
           setRowsPerPage={setRowsPerPage}
           page={page}
           setPage={setPage}
         />
-      )} */}
+      )}
     </Box>
   );
 }

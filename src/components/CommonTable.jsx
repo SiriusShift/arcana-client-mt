@@ -104,6 +104,9 @@ function CommonTable({
   flexNone,
   nestedProperty = {},
 }) {
+
+  console.log(tableHeads, customOrderKeys)
+
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -468,7 +471,7 @@ function CommonTable({
                       );
                     }
 
-                    if (keys === "createdAt" || keys === "updatedAt") {
+                    if (keys === "createdAt" || keys === "updatedAt" || keys === "date") {
                       return (
                         <TableCell key={k}>
                           {item[keys] &&
@@ -622,7 +625,7 @@ function CommonTable({
         rowsPerPageOptions={[5, 10, 25, { label: "All", value: 2000 }]}
         onRowsPerPageChange={(e) => {
           setRowsPerPage(e.target.value);
-          setRowsPerPageFiltered(searchData,clusterData);
+          // setRowsPerPageFiltered(searchData,clusterData);
         }}
         page={page}
         onPageChange={(_, newPage) => {
