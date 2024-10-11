@@ -104,8 +104,7 @@ function CommonTable({
   flexNone,
   nestedProperty = {},
 }) {
-
-  console.log(tableHeads, customOrderKeys)
+  console.log("map",mapData);
 
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -471,7 +470,13 @@ function CommonTable({
                       );
                     }
 
-                    if (keys === "createdAt" || keys === "updatedAt" || keys === "date") {
+                    if (
+                      keys === "createdAt" ||
+                      keys === "updatedAt" ||
+                      keys === "date" ||
+                      keys === "chequeDate" ||
+                      keys === "createdDate"
+                    ) {
                       return (
                         <TableCell key={k}>
                           {item[keys] &&

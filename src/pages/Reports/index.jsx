@@ -19,7 +19,7 @@ import {
   usePriceModeReportQuery,
 } from "../../features/reports/api/reportsApi";
 
-function InventoryMRP() {
+function Reports() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [activeReport, setActiveReport] = useState();
@@ -279,4 +279,4 @@ function InventoryMRP() {
   );
 }
 
-export default InventoryMRP;
+export default Reports;

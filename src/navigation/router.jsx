@@ -62,6 +62,7 @@ import ViewSampling from "../pages/inventory-management/Sampling/ViewSampling";
 import ReturnForm from "../pages/inventory-management/Return/ReturnForm";
 import ViewReturn from "../pages/inventory-management/Return/ViewReturn";
 import Reports from "../pages/Reports";
+import Cheque from "../pages/cheque";
 
 export const router = createBrowserRouter([
   {
@@ -362,6 +363,10 @@ export const router = createBrowserRouter([
       {
         path: "reports",
         element: <Reports />
+      },
+      {
+        path: "cheque",
+        element: <Cheque />
       }
     ],
   },

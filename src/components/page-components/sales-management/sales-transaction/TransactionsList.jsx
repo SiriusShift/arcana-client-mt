@@ -93,6 +93,8 @@ function TransactionsList({ setTransactionsMode }) {
   const pesoArray = ["totalAmountDue"];
   const dateTimeSplitArray = ["createdAt"];
   const attachKey = "ciAttachment";
+  const disableActions = ["void", "cancel"];
+
 
   //RTK Query
   const { data: transactionsData, isFetching: isTransactionsFetching } =
@@ -118,6 +120,13 @@ function TransactionsList({ setTransactionsMode }) {
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
     setDateTo(dateToTemp);
+  };
+
+  const checkIsVoidable = (date, totalAmount, balance) => {
+    const isVoidable =
+      moment(date).isAfter(moment().subtract(1, "days")) 
+      // && totalAmount - balance === 0;
+    return isVoidable;
   };
 
   const onCancel = async () => {
@@ -425,6 +434,15 @@ function TransactionsList({ setTransactionsMode }) {
             attachKey={attachKey}
             onView={onViewOpen}
             onAttach={onAttachmentOpen}
+            disableActions={
+              (transactionStatus === "Pending" || transactionStatus === "Paid") &&
+              !checkIsVoidable(
+                selectedRowData?.createdAt,
+                selectedRowData?.totalAmountDue,
+                selectedRowData?.remainingBalance
+              ) &&
+              disableActions
+            }
             onVoid={
               (transactionStatus === "Pending" ||
               transactionStatus === "Paid") && onVoid

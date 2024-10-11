@@ -221,8 +221,8 @@ function PaymentTransaction() {
 
   const checkIsVoidable = (date, totalAmount, balance) => {
     const isVoidable =
-      moment(date).isAfter(moment().subtract(1, "days")) &&
-      totalAmount - balance === 0;
+      moment(date).isAfter(moment().subtract(1, "days")) 
+      // && totalAmount - balance === 0;
     return isVoidable;
   };
 
@@ -332,15 +332,15 @@ function PaymentTransaction() {
                 setRowsPerPage={setRowsPerPage}
                 count={count}
                 mt={"-20px"}
-                // disableActions={
-                //   transactionStatus === "Pending" &&
-                //   !checkIsVoidable(
-                //     selectedRowData?.createdAt,
-                //     selectedRowData?.totalAmountDue,
-                //     selectedRowData?.remainingBalance
-                //   ) &&
-                //   disableActions
-                // }
+                disableActions={
+                  (transactionStatus === "Pending" || transactionStatus === "Paid") &&
+                  !checkIsVoidable(
+                    selectedRowData?.createdAt,
+                    selectedRowData?.totalAmountDue,
+                    selectedRowData?.remainingBalance
+                  ) &&
+                  disableActions
+                }
                 onVoid={
                   (transactionStatus === "Pending" ||
                   transactionStatus === "Paid") &&

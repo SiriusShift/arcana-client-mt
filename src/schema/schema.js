@@ -192,6 +192,25 @@ export const priceModeSetupSchema = {
 	},
 };
 
+export const listingToChequeSchema ={
+	schema: yup.object({
+		clientId: yup.object().required("Client ID is required"),
+		bankName: yup.string().required("Bank name is required"),
+		chequeNo: yup.string().required("Cheque number is required"),
+		chequeDate: yup.date().required("Cheque date is required"),
+		voucherNo: yup.string().required("Voucher number is required"),
+		amount: yup.string().required("Amount is required"),
+	}),
+	defaultValues: {
+		clientId: null,
+		bankName: "",
+		chequeNo: null,
+		chequeDate: moment(),
+		voucherNo: null,
+		amount: null,
+	}
+}
+
 export const priceModeSetupSchemaEdit = {
 	schema: yup.object({
 		priceMode: yup.string().required("Price mode is required"),
