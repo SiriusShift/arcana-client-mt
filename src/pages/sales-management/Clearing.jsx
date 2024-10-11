@@ -79,7 +79,7 @@ function Clearing() {
   const customOrderKeys = [
     "date",
     "businessName",
-    "businessOwner",
+    "ownersName",
     "paymentChannel",
     "paymentMethod",
     "referenceNo",
