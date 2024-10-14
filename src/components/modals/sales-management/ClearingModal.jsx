@@ -55,6 +55,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
   const [trigger, { data, isFetching }] = useLazyGetPaymentOverviewQuery();
 
   const transaction = data?.[0];
+  console.log(transaction);
   const paymentTransactionIds = transaction?.transactions?.map(
     (t) => t.paymentTransactionId
   );

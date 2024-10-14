@@ -24,6 +24,7 @@ import { useGetAllDiscountTypesQuery } from "../../../features/setup/api/discoun
 
 function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   const { onClose, open } = props;
+  console.log(orderData);
 
   //Hooks
   const reasonConfirm = useReasonConfirm();

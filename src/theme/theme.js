@@ -58,6 +58,16 @@ export const theme = createTheme({
   },
 
   components: {
+    MuiInput: {
+      styleOverrides: {
+        root: ({ ownerState, theme }) => ({
+          ...(ownerState.color === 'secondary' && {
+            color: theme.vars.palette.text.secondary,
+            backgroundColor: theme.vars.palette.background.level1,
+          }),
+        }),
+      },
+    },
     MuiButton: {
       variants: [
         {
@@ -101,7 +111,7 @@ export const theme = createTheme({
           props: { size: "extraSmall" },
           style: {
             "& .MuiInputBase-input": {
-              height: "0.7rem",
+              height: "0.3rem",
               padding: "12px",
             },
             "& .MuiInputLabel-root": {

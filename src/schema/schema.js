@@ -944,6 +944,7 @@ export const salesTransactionSchema = {
 			.array()
 			.of(yup.object())
 			.min(1, "At least one product is required"),
+		products: yup.array().of(yup.object()),	
 	}),
 
 	defaultValues: {
