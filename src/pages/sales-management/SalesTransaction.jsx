@@ -49,6 +49,7 @@ function SalesTransaction() {
   );
   const [isLoading, setIsLoading] = useState(false);
 
+
   // const [currentTime, setCurrentTime] = useState(
   //   moment().format("M/D/YY h:m a")
   // );
@@ -90,16 +91,6 @@ function SalesTransaction() {
     name: "items",
   });
 
-  const {
-    fields: productFields,
-    append: productAppend,
-    remove: productRemove,
-    update: productUpdate,
-  } = useFieldArray({
-    control,
-    name: "products",
-  });
-
   //Hook Form Constant Values
   const watchAllValues = watch();
   const watchClientId = watch("clientId");
@@ -132,11 +123,13 @@ function SalesTransaction() {
     }, 0);
   }, [watchAllValues]);
 
-  const handleAddItem = (item, quantity) => {
+  const handleAddItem = (item, quantity, 
+    // price
+  ) => {
     const existingItemIndex = watch("items").findIndex(
       (existingItem) =>
         existingItem.itemId.priceModeItemId === item.priceModeItemId &&
-        existingItem.itemId.currentPrice === item.currentPrice
+        existingItem.itemId.currentPrice === price
     );
 
     if (existingItemIndex !== -1) {
@@ -151,6 +144,7 @@ function SalesTransaction() {
     } else {
       // Item with the itemCode does not exist, so add a new item with quantity 1
       append({
+        // itemId: { ...item, currentPrice: price }, // Update currentPrice field
         itemId: item,
         quantity: quantity ? parseInt(quantity) : 1,
       });
@@ -178,18 +172,6 @@ function SalesTransaction() {
     // Clear the timeout if the component unmounts before the timeout
     return () => clearTimeout(timeoutId);
   }, [watchClientId]);
-
-  //updating the value of product if edited
-  useEffect(() => {
-    setValue("products", productFields || []);
-  }, [productFields]);
-
-  //resetting value every time it change customer
-  useEffect(() => {
-    if (productData) {
-      setValue("products", productData?.priceModeItems || []);
-    }
-  }, [productData, watchClientId]);
 
   // useEffect(() => {
   //   setValue("products", productFields || []);
@@ -298,7 +280,7 @@ function SalesTransaction() {
                       <Typography>Quick Add</Typography>
                     </Box>
 
-                    <Tooltip title="Edit">
+                    {/* <Tooltip title="Edit">
                       <IconButton
                         onClick={() => {
                           setEditMode(!editMode);
@@ -307,7 +289,7 @@ function SalesTransaction() {
                       >
                         <Edit />
                       </IconButton>
-                    </Tooltip>
+                    </Tooltip> */}
 
                     <Tooltip title="Filters">
                       <Box ref={filterRef}>
@@ -348,7 +330,7 @@ function SalesTransaction() {
                 <Box
                   className={
                     "salesTransaction__body__itemsForm__itemsList" +
-                    (productFields?.length === 0 &&
+                    (productData?.priceModeItems?.length === 0 &&
                     !isProductFetching &&
                     !isLoading
                       ? " noProductFound"
@@ -376,7 +358,7 @@ function SalesTransaction() {
                     <Typography className="salesTransaction__body__itemsForm__itemsList__selectClientFirst">
                       Select client first
                     </Typography>
-                  ) : productFields?.length === 0 ? (
+                  ) : productData?.priceModeItems?.length === 0 ? (
                     <Box className="salesTransaction__body__itemsForm__itemsList__noProductFound">
                       <img
                         width="200px"
@@ -385,8 +367,8 @@ function SalesTransaction() {
                       />
                     </Box>
                   ) : (
-                    productFields?.map((item, index) => {
-                      return !editMode ? (
+                    productData?.priceModeItems?.map((item, index) => {
+                      return (
                         <Button
                           className="salesTransaction__body__itemsForm__itemsList__itemCard"
                           sx={{
@@ -436,21 +418,15 @@ function SalesTransaction() {
                               >
                                 <span style={{ whiteSpace: "nowrap" }}>
                                   ₱
-                                  <Controller
-                                    name={`products[${index}].currentPrice`}
-                                    control={control}
-                                    render={({ field }) => (
-                                      <span>
-                                        {field.value?.toLocaleString(
-                                          undefined,
-                                          {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                          }
-                                        )}
-                                      </span>
+                                  <span>
+                                    {item.currentPrice?.toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      }
                                     )}
-                                  />
+                                  </span>
                                 </span>
                               </Typography>
                             </Box>
@@ -463,76 +439,6 @@ function SalesTransaction() {
                             </Typography>
                           </Box>
                         </Button>
-                      ) : (
-                        <Box
-                          className="salesTransaction__body__itemsForm__itemsList__itemCardEdit"
-                          sx={{
-                            border:
-                              item.priceModeCode === "RG"
-                                ? "1px solid #dee2e6"
-                                : "2px solid yellow",
-                          }}
-                          key={index}
-                          // onClick={() => {
-                          //   if (quickAdd) {
-                          //     handleAddItem(item);
-                          //   } else {
-                          //     dispatch(setSelectedRow(item));
-                          //     onAddItemOpen();
-                          //   }
-                          // }}
-                          data-tour="select-item"
-                        >
-                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCardEdit__imageWrapper">
-                            {item.itemImageLink ? (
-                              <img src={item.itemImageLink} alt="product-img" />
-                            ) : (
-                              <NoPhotography
-                                sx={{
-                                  padding: "10px",
-                                  fontSize: "120px",
-                                  color: "#7D8B99",
-                                }}
-                              />
-                            )}
-                          </Box>
-                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCardEdit__labels">
-                            <Typography
-                              fontSize="1.2rem"
-                              fontWeight="700"
-                              textTransform="none"
-                            >
-                              {item.itemCode}
-                            </Typography>
-                            <Controller
-                              control={control}
-                              name={`products[${index}].currentPrice`}
-                              render={({
-                                field: { onChange, onBlur, value, ref },
-                              }) => (
-                                <TextField
-                                  className="salesTransaction__body__itemsForm__itemsList__itemCardEdit__labels__price"
-                                  size="extraSmall"
-                                  autoComplete="off"
-                                  onChange={onChange}
-                                  onBlur={onBlur}
-                                  value={value?.toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}
-                                  ref={ref}
-                                />
-                              )}
-                            />
-                          </Box>
-
-                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCardEdit__description">
-                            <Typography fontSize="12px">
-                              {item.isClearPack === true ? "© " : ""}
-                              {item.itemDescription}
-                            </Typography>
-                          </Box>
-                        </Box>
                       );
                     })
                   )}

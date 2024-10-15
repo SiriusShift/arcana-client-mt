@@ -24,7 +24,6 @@ import { useGetAllDiscountTypesQuery } from "../../../features/setup/api/discoun
 
 function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   const { onClose, open } = props;
-  console.log(orderData);
 
   //Hooks
   const reasonConfirm = useReasonConfirm();
@@ -65,7 +64,6 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
     () => total - discountAmount - specialDiscountAmount,
     [total, discountAmount, specialDiscountAmount]
   );
-  console.log("total", total);
 
   //Constants
   const client = orderData?.clientId;

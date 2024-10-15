@@ -397,11 +397,11 @@ export const navigationData = [
     icon: "Description",
     description: "Viewing and exporting of reports"
   },
-  {
-    id: 11,
-    name: "Cheque",
-    path:"/cheque",
-    icon: "AccountBalance",
-    description: "Viewing and exporting of reports"
-  }
+  // {
+  //   id: 11,
+  //   name: "Cheque",
+  //   path:"/cheque",
+  //   icon: "AccountBalance",
+  //   description: "Viewing and exporting of reports"
+  // }
 ];

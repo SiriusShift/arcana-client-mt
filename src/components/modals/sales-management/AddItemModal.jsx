@@ -10,6 +10,7 @@ import useSnackbar from "../../../hooks/useSnackbar";
 function AddItemModal({ onSubmit, ...otherProps }) {
   const { onClose, open } = otherProps;
   const [quantity, setQuantity] = useState(1);
+  const [price, setPrice] = useState(null);
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const quantityRef = useRef();
@@ -29,7 +30,9 @@ function AddItemModal({ onSubmit, ...otherProps }) {
         variant: "error",
       });
     } else {
-      onSubmit(selectedRowData, quantity);
+      onSubmit(selectedRowData, quantity,
+        //  price
+        );
       handleClose();
     }
   };
@@ -39,6 +42,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
       setTimeout(() => {
         quantityRef.current.select();
       }, 0);
+      setPrice(selectedRowData?.currentPrice)
     }
   }, [open]);
 
@@ -71,6 +75,23 @@ function AddItemModal({ onSubmit, ...otherProps }) {
           allowNegative={false}
           allowLeadingZeros={false}
         />
+        {/* <NumericFormat
+          label="Price"
+          size="small"
+          type="text"
+          sx={{ mt: "10px", width: "100%" }}
+          customInput={TextField}
+          onValueChange={(e) => {
+            e.value !== "" && setPrice(Number(e.value));
+          }}
+          value={price}
+          thousandSeparator=","
+          autoComplete="off"
+          inputRef={quantityRef}
+          autoFocus
+          allowNegative={false}
+          allowLeadingZeros={false}
+        /> */}
 
         <Box
           sx={{
@@ -82,7 +103,10 @@ function AddItemModal({ onSubmit, ...otherProps }) {
           className="roleTaggingModal__actions"
         >
           <DangerButton onClick={handleClose}>Close</DangerButton>
-          <SecondaryButton type="submit" disabled={!quantity}>
+          <SecondaryButton type="submit" disabled={!quantity 
+            // || price <= 0
+          }
+            >
             Add Item
           </SecondaryButton>
         </Box>
