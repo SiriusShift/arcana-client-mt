@@ -49,7 +49,6 @@ function SalesTransaction() {
   );
   const [isLoading, setIsLoading] = useState(false);
 
-
   // const [currentTime, setCurrentTime] = useState(
   //   moment().format("M/D/YY h:m a")
   // );
@@ -123,9 +122,7 @@ function SalesTransaction() {
     }, 0);
   }, [watchAllValues]);
 
-  const handleAddItem = (item, quantity, 
-    // price
-  ) => {
+  const handleAddItem = (item, quantity, price) => {
     const existingItemIndex = watch("items").findIndex(
       (existingItem) =>
         existingItem.itemId.priceModeItemId === item.priceModeItemId &&
@@ -144,9 +141,9 @@ function SalesTransaction() {
     } else {
       // Item with the itemCode does not exist, so add a new item with quantity 1
       append({
-        // itemId: { ...item, currentPrice: price }, // Update currentPrice field
-        itemId: item,
-        quantity: quantity ? parseInt(quantity) : 1,
+        itemId: { ...item, currentPrice: price }, // Update currentPrice field
+        // itemId: item,
+        quantity: quantity ? parseFloat(quantity.toFixed(2)) : 1,
       });
     }
   };
@@ -561,7 +558,7 @@ function SalesTransaction() {
       />
 
       <CashoutModal
-        total={totalAmount}
+        total={parseFloat(totalAmount).toFixed(2)}
         resetTransaction={reset}
         orderData={getValues()}
         open={isCashoutOpen}

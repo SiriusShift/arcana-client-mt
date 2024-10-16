@@ -31,7 +31,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
       });
     } else {
       onSubmit(selectedRowData, quantity,
-        //  price
+         price
         );
       handleClose();
     }
@@ -75,7 +75,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
           allowNegative={false}
           allowLeadingZeros={false}
         />
-        {/* <NumericFormat
+        <NumericFormat
           label="Price"
           size="small"
           type="text"
@@ -91,7 +91,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
           autoFocus
           allowNegative={false}
           allowLeadingZeros={false}
-        /> */}
+        />
 
         <Box
           sx={{
@@ -104,7 +104,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
         >
           <DangerButton onClick={handleClose}>Close</DangerButton>
           <SecondaryButton type="submit" disabled={!quantity 
-            // || price <= 0
+            || price <= 0
           }
             >
             Add Item

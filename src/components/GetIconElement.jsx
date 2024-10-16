@@ -512,14 +512,7 @@ export const getIconElement = (iconName, color, fontSize) => {
         }}
       />
     ),
-    AccountBalance: (
-      <AccountBalance
-        sx={{
-          color: color && `${color} !important`,
-          fontSize: fontSize && `${fontSize} !important`,
-        }}
-      />
-    ),
+
   };
 
   return (
