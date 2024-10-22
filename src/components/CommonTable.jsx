@@ -428,6 +428,14 @@ function CommonTable({
                       );
                     }
 
+                    if (keys === "referenceNos"){
+                      return (
+                        <TableCell key={k} sx={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                          {item[keys] && item[keys].join(", ")}
+                        </TableCell>
+                      );
+                    } 
+
                     if (keys === "origin") {
                       return (
                         <TableCell key={k}>

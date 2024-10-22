@@ -212,7 +212,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
     if (open) {
       trigger(
         {
-          ReferenceNo: selectedRowData?.referenceNo,
+          PaymentRecordId: selectedRowData?.paymentRecordId,
           PaymentMethod: selectedRowData?.paymentMethod,
         },
         { preferCacheValue: true }

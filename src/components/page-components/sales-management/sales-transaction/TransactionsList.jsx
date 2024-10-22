@@ -434,15 +434,15 @@ function TransactionsList({ setTransactionsMode }) {
             attachKey={attachKey}
             onView={onViewOpen}
             onAttach={onAttachmentOpen}
-            // disableActions={
-            //   (transactionStatus === "Pending" || transactionStatus === "Paid") &&
-            //   !checkIsVoidable(
-            //     selectedRowData?.createdAt,
-            //     selectedRowData?.totalAmountDue,
-            //     selectedRowData?.remainingBalance
-            //   ) &&
-            //   disableActions
-            // }
+            disableActions={
+              (transactionStatus === "Pending" || transactionStatus === "Paid") &&
+              !checkIsVoidable(
+                selectedRowData?.createdAt,
+                selectedRowData?.totalAmountDue,
+                selectedRowData?.remainingBalance
+              ) &&
+              disableActions
+            }
             onVoid={
               (transactionStatus === "Pending" ||
               transactionStatus === "Paid") && onVoid

@@ -82,7 +82,7 @@ function Clearing() {
     "ownersName",
     "paymentChannel",
     "paymentMethod",
-    "referenceNo",
+    "referenceNos",
     "totalPaymentAmount",
     "aTag",
     ...(clearingStatus === "For Clearing" ? ["reason"] : []),
