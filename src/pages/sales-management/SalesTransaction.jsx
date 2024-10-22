@@ -222,18 +222,23 @@ function SalesTransaction() {
                       control={control}
                       options={clientData || []}
                       disabled={watch("items")?.length > 0}
-                      getOptionLabel={(option) =>
-                        option.businessName?.toUpperCase() +
-                          " " +
-                          option.city?.toUpperCase() +
-                          ", " +
-                          option.province?.toUpperCase() +
-                          " - " +
-                          option.ownersName?.toUpperCase() || ""
-                      }
-                      // disableClearable
+                      getOptionLabel={(option) => {
+                        const businessName =
+                          option.businessName?.toUpperCase() || "";
+                        const city = option.city?.toUpperCase() || "";
+                        const province = option.province?.toUpperCase() || "";
+                        const ownersName =
+                          option.ownersName?.toUpperCase() || "";
+                        const clientId = option.clientId
+                          ? ` - ${option.clientId}`
+                          : ""; // Assuming option.clientId exists
+
+                        return `${businessName} ${city}, ${province} - ${ownersName}${clientId}`;
+                      }}
                       loading={isClientLoading}
-                      isOptionEqualToValue={() => true}
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value?.id
+                      } // Compare by unique ID
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -244,6 +249,7 @@ function SalesTransaction() {
                               watch("items")?.length > 0 ? "none" : "auto",
                           }}
                           data-tour="select-client"
+                          // Uncomment if needed
                           // helperText={errors?.clientId?.message}
                           // error={!!errors?.clientId}
                         />

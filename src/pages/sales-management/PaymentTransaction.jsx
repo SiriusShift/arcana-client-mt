@@ -332,15 +332,15 @@ function PaymentTransaction() {
                 setRowsPerPage={setRowsPerPage}
                 count={count}
                 mt={"-20px"}
-                disableActions={
-                  (transactionStatus === "Pending" || transactionStatus === "Paid") &&
-                  !checkIsVoidable(
-                    selectedRowData?.createdAt,
-                    selectedRowData?.totalAmountDue,
-                    selectedRowData?.remainingBalance
-                  ) &&
-                  disableActions
-                }
+                // disableActions={
+                //   (transactionStatus === "Pending" || transactionStatus === "Paid") &&
+                //   !checkIsVoidable(
+                //     selectedRowData?.createdAt,
+                //     selectedRowData?.totalAmountDue,
+                //     selectedRowData?.remainingBalance
+                //   ) &&
+                //   disableActions
+                // }
                 onVoid={
                   (transactionStatus === "Pending" ||
                   transactionStatus === "Paid") &&
