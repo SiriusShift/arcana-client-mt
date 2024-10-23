@@ -149,7 +149,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         children: "Are you sure you want to file this transaction?",
         question: true,
         callback: () =>
-          fileClearingTransaction({ paymentTransactionIds }).unwrap(),
+          fileClearingTransaction({ paymentRecords: [selectedRowData] }).unwrap(),
       });
 
       snackbar({
@@ -430,7 +430,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
             )}
 
             {mode === "Filing" && (
-              <SecondaryButton type="submit">File</SecondaryButton>
+              <SecondaryButton  type="submit">File</SecondaryButton>
             )}
           </Stack>
         </Stack>

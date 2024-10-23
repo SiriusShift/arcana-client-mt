@@ -52,8 +52,6 @@ function cheque() {
     DateTo: moment(dateTo).format("MM-DD-YYYY"),
   });
 
-  console.log(data);
-
   const { data: RegisteredClients, isFetching: fetchingClients } =
     useGetAllClientsQuery({
       PageSize: 1000,
@@ -76,7 +74,6 @@ function cheque() {
     defaultValues: listingToChequeSchema.defaultValues,
   });
 
-  console.log(errors);
   //Functions
   const handleDrawerClose = () => {
     onDrawerClose();
@@ -84,7 +81,6 @@ function cheque() {
   };
 
   const onSubmit = async (data) => {
-    console.log(data);
     const transformedData = {
       clientId: data?.clientId?.id,
       bankName: data?.bankName,
@@ -96,7 +92,6 @@ function cheque() {
 
     try {
       const response = await postCheque(transformedData).unwrap();
-      console.log(response);
 
       handleDrawerClose();
       snackbar({

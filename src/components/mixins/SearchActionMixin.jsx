@@ -4,6 +4,7 @@ import CommonFilter from "../CommonFilter";
 import { useSelector } from "react-redux";
 
 function SearchActionMixin({
+  children,
   setSearch,
   onFilter,
   clusterFilter,
@@ -36,6 +37,7 @@ function SearchActionMixin({
       </Box>
 
       <Box className="mixin__right">
+        {children}
         {!removeAction && (
           <SecondaryButton
             size="medium"

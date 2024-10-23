@@ -189,7 +189,7 @@ function CommonTable({
     const { checked } = e.target;
 
     if (checked) {
-      setCheckedArray(dataToMap?.map((item, index) => index));
+      setCheckedArray(dataToMap?.map((_, index) => index));
     } else {
       setCheckedArray([]);
     }
