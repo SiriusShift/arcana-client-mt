@@ -97,7 +97,8 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         callback: () =>
           clearPaymentTransaction({
             aTag,
-            paymentTransactionIds,
+            paymentRecordId: selectedRowData?.paymentRecordId,
+            paymentMethod: selectedRowData?.paymentMethod
           }).unwrap(),
       });
 
