@@ -174,7 +174,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         question: false,
         callback: (data) =>
           returnClearingTransaction({
-            paymentTransactionIds,
+            paymentRecords: [selectedRowData],
             reason: data,
           }).unwrap(),
       });

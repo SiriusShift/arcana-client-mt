@@ -6,12 +6,13 @@ import CommonTable from "../../components/CommonTable";
 import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 import SearchActionMixin from "../../components/mixins/SearchActionMixin";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { useFileClearingTransactionMutation, useGetAllClearingTransactionQuery } from "../../features/sales-management/api/clearingApi";
+import { useFileClearingTransactionMutation, useGetAllClearingTransactionQuery, useReturnClearingTransactionMutation } from "../../features/sales-management/api/clearingApi";
 import ClearingModal from "../../components/modals/sales-management/ClearingModal";
 import useDisclosure from "../../hooks/useDisclosure";
 import { AssignmentReturnedOutlined, Autorenew } from "@mui/icons-material";
 import SessionExpired from "../SessionExpired";
 import useConfirm from "../../hooks/useConfirm";
+import useReasonConfirm from "../../hooks/useReasonConfirm";
 
 function Clearing() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -23,6 +24,8 @@ function Clearing() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [clearingModalMode, setClearingModalMode] = useState("Viewing");
   const confirm = useConfirm();
+  const reasonConfirm = useReasonConfirm();
+
 
   const [checkedArray, setCheckedArray] = useState([]);
 
@@ -120,6 +123,8 @@ function Clearing() {
   //RTK Query
   const [patchReadNotification] = usePatchReadNotificationMutation();
   const [fileClearingTransaction] = useFileClearingTransactionMutation();
+  const [returnClearingTransaction] = useReturnClearingTransactionMutation();
+
 
   const {
     data: clearingData,
@@ -172,6 +177,33 @@ function Clearing() {
       onClose();
       setCheckedArray([]);
 
+    } catch (error) {
+      if (error?.isConfirmed) {
+        snackbar({
+          message: handleCatchErrorMessage(error),
+          variant: "error",
+        });
+      }
+    }
+  };
+
+  const onReturn = async () => {
+    try {
+      await reasonConfirm({
+        children: "Are you sure you want to return this transaction?",
+        question: false,
+        callback: (data) =>
+          returnClearingTransaction({
+            paymentRecords: checkedArrayData,
+            reason: data,
+          }).unwrap(),
+      });
+
+      snackbar({
+        message: "Transaction returned successfully",
+        variant: "success",
+      });
+      onClose();
     } catch (error) {
       if (error?.isConfirmed) {
         snackbar({
@@ -237,14 +269,24 @@ function Clearing() {
 		  paymentMethodFilter={true}
         >
           {clearingStatus === "For Filing" && (
+            <>
             <Button
               variant="contained"
               color="secondary"
               onClick={onFile}
               disabled={checkedArrayData.length === 0}
             >
-              Pay
+              File
             </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={onReturn}
+              disabled={checkedArrayData.length === 0}
+            >
+              Return
+            </Button>
+            </>
           )}
         </SearchActionMixin>
 
