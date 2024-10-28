@@ -54,6 +54,8 @@ function TransactionsList({ setTransactionsMode }) {
   //Slices
   const userDetails = useSelector((state) => state.login.userDetails);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  
+  const isAdmin = userDetails?.roleName === "Admin";
 
   //Disclosures
   const {
@@ -436,6 +438,7 @@ function TransactionsList({ setTransactionsMode }) {
             onAttach={onAttachmentOpen}
             disableActions={
               (transactionStatus === "Pending" || transactionStatus === "Paid") &&
+              !isAdmin && 
               !checkIsVoidable(
                 selectedRowData?.createdAt,
                 selectedRowData?.totalAmountDue,

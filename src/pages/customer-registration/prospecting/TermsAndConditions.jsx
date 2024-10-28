@@ -452,11 +452,12 @@ function TermsAndConditions({ direct, editMode, storeType }) {
             row
             className="terms__column__item__choices"
             value={termsAndConditions["withholdingIssuance"]}
+            defaultValue={"Strictly"}
             onChange={(e) => {
               dispatch(
                 setTermsAndConditions({
                   property: "withholdingIssuance",
-                  value: e.target.value,
+                  value: e.target.value || "Strictly",
                 })
               );
             }}

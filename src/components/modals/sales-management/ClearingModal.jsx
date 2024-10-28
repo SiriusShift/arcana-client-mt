@@ -97,6 +97,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         callback: () =>
           clearPaymentTransaction({
             aTag,
+            paymentAmount: selectedRowData?.paymentAmount,
             paymentRecordId: selectedRowData?.paymentRecordId,
             paymentMethod: selectedRowData?.paymentMethod
           }).unwrap(),
@@ -121,7 +122,9 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         question: false,
         callback: (data) =>
           voidPaymentTransaction({
-            paymentTransactionIds,
+            paymentRecordId: selectedRowData?.paymentRecordId,
+            paymentMethod: selectedRowData?.paymentMethod,
+            paymentAmount: selectedRowData?.paymentAmount,
             reason: data,
           }).unwrap(),
       });

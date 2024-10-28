@@ -45,6 +45,10 @@ function PaymentTransaction() {
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow?.value);
+  const userDetails = useSelector((state) => state.login.userDetails);
+
+  const isAdmin = userDetails?.roleName === "Admin";
+  console.log(isAdmin);
 
   console.log(selectedRowData);
 
@@ -334,6 +338,7 @@ function PaymentTransaction() {
                 mt={"-20px"}
                 disableActions={
                   (transactionStatus === "Pending" || transactionStatus === "Paid") &&
+                  !isAdmin && 
                   !checkIsVoidable(
                     selectedRowData?.createdAt,
                     selectedRowData?.totalAmountDue,

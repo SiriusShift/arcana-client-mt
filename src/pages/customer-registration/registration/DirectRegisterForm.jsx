@@ -187,6 +187,8 @@ function DirectRegisterForm({
     defaultValues: directRegisterPersonalSchema.defaultValues,
   });
 
+  console.log(watch());
+
   //Constants
   const navigators = [
     {
