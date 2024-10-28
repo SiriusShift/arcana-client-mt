@@ -418,7 +418,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
           )}
 
           <Stack direction="row" gap={1} alignSelf="flex-end">
-            {mode === "Clearing" && (
+            {mode === "Clearing" || (mode === "Filing" && selectedRowData?.paymentMethod === "Withholding") && (
               <DangerButton onClick={onVoid}>Void</DangerButton>
             )}
 
@@ -428,7 +428,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
               </SecondaryButton>
             )}
 
-            {mode === "Filing" && (
+            {(mode === "Filing" && selectedRowData?.paymentMethod != "Withholding")&& (
               <DangerButton onClick={onReturn}>Return</DangerButton>
             )}
 
