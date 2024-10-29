@@ -5,7 +5,7 @@ import {
   Payment,
   Receipt,
   RemoveCircleOutline,
-  Visibility 
+  Visibility,
 } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -167,7 +167,10 @@ function PaymentPage({
       payment.accountName &&
         formData.append(`Payments[${index}].accountName`, payment.accountName);
       payment.paymentChannel &&
-        formData.append(`Payments[${index}].paymentChannel`, payment.paymentChannel);
+        formData.append(
+          `Payments[${index}].paymentChannel`,
+          payment.paymentChannel
+        );
       payment.referenceNo &&
         formData.append(`Payments[${index}].referenceNo`, payment.referenceNo);
       // IF PAYMENT METHOD IS WITHHOLDING
@@ -177,11 +180,11 @@ function PaymentPage({
           payment.attachment
         );
       // IF PAYMENT IS OTHERS
-      payment.otherExpense && 
+      payment.otherExpense &&
         formData.append(
           `Payments[${index}].othersPayment`,
           payment.otherExpense.id
-        )
+        );
     });
 
     try {
@@ -212,15 +215,13 @@ function PaymentPage({
 
   //Functions
   const handleReset = useCallback(async () => {
-    reset(
-      {
+    reset({
       transactionId: [],
       invoiceNo: [],
       payments: [],
       receiptNo: "",
       receiptAttachment: null,
-    }
-  );
+    });
     receiptUploadRef.current.value = null;
     checkboxRef.current.checked = false;
   }, [reset]);
@@ -521,6 +522,8 @@ function PaymentPage({
                             ? "primary.lightActive"
                             : "primary.light",
                         },
+                        borderColor: item?.voidReason ? "yellow" : "",
+                        borderWidth: item?.voidReason ? "1px" : "",
                       }}
                     >
                       <Typography className="paymentPage__body__transactions__transactionsList__item__date">
@@ -557,6 +560,15 @@ function PaymentPage({
                             {item.invoiceType}
                           </Typography>
                         </Box>
+                        {item?.voidReason && (
+                          <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__voidReason">
+                            <Typography sx={{marginRight: "20px"}}>Payment Void:</Typography>
+
+                            <Typography sx={{ wordBreak: "break-word" }}>
+                              {item?.voidReason || "N/A"}
+                            </Typography>
+                          </Box>
+                        )}
                       </Box>
 
                       <Divider />
@@ -658,12 +670,11 @@ function PaymentPage({
 
             <Divider sx={{ borderStyle: "dashed" }} />
             <Box className="paymentPage__body__payments__receipt">
-
-            <Controller
-                  name="receiptAttachment"
-                  control={control}
-                  render={({ field: { value, onChange, ...field } }) => {
-                    return (
+              <Controller
+                name="receiptAttachment"
+                control={control}
+                render={({ field: { value, onChange, ...field } }) => {
+                  return (
                     <TextField
                       {...field}
                       value={value?.fileName}
@@ -671,7 +682,7 @@ function PaymentPage({
                         onChange(e.target.files[0]);
                       }}
                       type="file"
-                      inputProps={{ref: receiptUploadRef}}
+                      inputProps={{ ref: receiptUploadRef }}
                       size="small"
                       label="Attachment"
                       helperText={errors?.attachment?.message}
@@ -687,9 +698,10 @@ function PaymentPage({
                         ),
                       }}
                     />
-                  )}}
-                />
-                {/* <button onClick={() => {receiptUploadRef.current.value = null}}></button> */}
+                  );
+                }}
+              />
+              {/* <button onClick={() => {receiptUploadRef.current.value = null}}></button> */}
               {/* <Controller
                 name="receiptAttachment"
                 control={control}

@@ -56,6 +56,7 @@ import {
   Restaurant,
   MoreHoriz,
   Description,
+  Today
 } from "@mui/icons-material";
 
 export const getIconElement = (iconName, color, fontSize) => {
@@ -512,6 +513,14 @@ export const getIconElement = (iconName, color, fontSize) => {
         }}
       />
     ),
+    Today: (
+      <Today
+        sx={{
+          color: color && `${color} !important`,
+          fontSize: fontSize && `${fontSize} !important`,
+        }}
+      />
+    )
 
   };
 

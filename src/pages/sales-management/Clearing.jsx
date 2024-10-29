@@ -187,32 +187,32 @@ function Clearing() {
     }
   };
 
-  const onReturn = async () => {
-    try {
-      await reasonConfirm({
-        children: "Are you sure you want to return this transaction?",
-        question: false,
-        callback: (data) =>
-          returnClearingTransaction({
-            paymentRecords: checkedArrayData,
-            reason: data,
-          }).unwrap(),
-      });
+  // const onReturn = async () => {
+  //   try {
+  //     await reasonConfirm({
+  //       children: "Are you sure you want to return this transaction?",
+  //       question: false,
+  //       callback: (data) =>
+  //         returnClearingTransaction({
+  //           paymentRecords: checkedArrayData,
+  //           reason: data,
+  //         }).unwrap(),
+  //     });
 
-      snackbar({
-        message: "Transaction returned successfully",
-        variant: "success",
-      });
-      onClose();
-    } catch (error) {
-      if (error?.isConfirmed) {
-        snackbar({
-          message: handleCatchErrorMessage(error),
-          variant: "error",
-        });
-      }
-    }
-  };
+  //     snackbar({
+  //       message: "Transaction returned successfully",
+  //       variant: "success",
+  //     });
+  //     onClose();
+  //   } catch (error) {
+  //     if (error?.isConfirmed) {
+  //       snackbar({
+  //         message: handleCatchErrorMessage(error),
+  //         variant: "error",
+  //       });
+  //     }
+  //   }
+  // };
 
   const onFilter = async ({ clusterId, paymentMethod }) => {
 	console.log(paymentMethod);
@@ -278,14 +278,14 @@ function Clearing() {
             >
               File
             </Button>
-            <Button
+            {/* <Button
               variant="contained"
               color="secondary"
               onClick={onReturn}
               disabled={checkedArrayData.length === 0}
             >
               Return
-            </Button>
+            </Button> */}
             </>
           )}
         </SearchActionMixin>

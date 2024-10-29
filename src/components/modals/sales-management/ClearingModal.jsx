@@ -243,6 +243,8 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         closeTopRight
         closeOnBackdropClick
         width="600px"
+        maxHeight={"600px"}
+        overflow="scroll"
       >
         <Stack gap={2} component="form" onSubmit={submitFunction}>
           <Typography fontSize="1.2rem" fontWeight="600">
@@ -384,7 +386,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                     justifyContent="space-between"
                   >
                     <Typography color="error">Void Reason</Typography>
-                    <Typography>{selectedRowData?.reason || "N/A"}</Typography>
+                    <Typography>{transaction?.reason || "N/A"}</Typography>
                   </Stack>
                 )}
 
@@ -418,7 +420,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
           )}
 
           <Stack direction="row" gap={1} alignSelf="flex-end">
-            {mode === "Clearing" || (mode === "Filing" && selectedRowData?.paymentMethod === "Withholding") && (
+            {(mode === "Clearing" || (mode === "Filing" && selectedRowData?.paymentMethod === "Withholding")) && (
               <DangerButton onClick={onVoid}>Void</DangerButton>
             )}
 

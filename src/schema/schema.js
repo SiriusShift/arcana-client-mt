@@ -1153,3 +1153,14 @@ export const returnSchema = {
 		],
 	},
 };
+
+export const attendanceSchema = {
+	schema: yup.object({
+		userId: yup.object().required("User is required"),
+		image: yup.mixed().required("Image attachment is required"),
+	}),
+	defaultValues: {
+		userId: null,
+		image: null,
+	},
+};
