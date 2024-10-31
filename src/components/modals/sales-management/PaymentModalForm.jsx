@@ -72,6 +72,8 @@ function PaymentModalForm({
     defaultValues: paymentSchema.defaultValues,
   });
 
+  console.log(watch());
+
   //Watch Constants
   const otherExpenseType = watch("otherExpense");
 
@@ -750,40 +752,6 @@ function PaymentModalForm({
                       )
                   )}
                   getOptionLabel={(option) => option.expenseType.toUpperCase()}
-                  // renderOption={(props, option) => {
-                  // 	const notifIcon = (
-                  // 		<InfoOutlined
-                  // 			sx={{
-                  // 				fontSize: "20px",
-                  // 				color: "notification.main",
-                  // 				ml: 1,
-                  // 			}}
-                  // 		/>
-                  // 	);
-
-                  // 	const isAdvancePaymentNotif =
-                  // 		option.label === "Advance Payment" && remainingAdvancePayment > 0;
-
-                  // 	const isListingFeeNotif =
-                  // 		option.label === "Listing Fee" && remainingListingFee > 0;
-
-                  // 	return (
-                  // 		<Tooltip
-                  // 			title={
-                  // 				isAdvancePaymentNotif || isListingFeeNotif
-                  // 					? "Balance available"
-                  // 					: ""
-                  // 			}
-                  // 			followCursor
-                  // 		>
-                  // 			<li {...props}>
-                  // 				{option.label.toUpperCase()}
-                  // 				{isAdvancePaymentNotif && notifIcon}
-                  // 				{isListingFeeNotif && notifIcon}
-                  // 			</li>
-                  // 		</Tooltip>
-                  // 	);
-                  // }}
                   disableClearable
                   isOptionEqualToValue={() => true}
                   renderInput={(params) => (
@@ -795,29 +763,7 @@ function PaymentModalForm({
                       error={errors?.otherExpense}
                     />
                   )}
-                  // onChange={(_, value) => {
-                  // 	if (value.label !== "Cheque") {
-                  // 		setValue("payee", "");
-                  // 		setValue("chequeDate", null);
-                  // 		setValue("bankName", "");
-                  // 		setValue("chequeNo", "");
-                  // 		setValue("dateReceived", null);
-                  // 		// setValue("chequeAmount", "");
-                  // 	}
-                  // 	if (value.label !== "Online") {
-                  // 		setValue("accountName", "");
-                  // 		setValue("accountNo", "");
-                  // 		setValue("referenceNo", "");
-                  // 	}
-                  // 	if (value.label !== "Offset") {
-                  // 		setValue("remarks", "");
-                  // 	}
 
-                  // 	if (value.label !== "Withholding") {
-                  // 		setValue("attachment", "");
-                  // 	}
-                  // 	return value;
-                  // }}
                 />
                 <Box className="paymentTransactionModal__footer">
                   <Box className="paymentTransactionModal__footer__label">

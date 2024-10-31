@@ -92,7 +92,6 @@ function cheque() {
 
     try {
       const response = await postCheque(transformedData).unwrap();
-
       handleDrawerClose();
       snackbar({
         message: "Successfully added cheque",

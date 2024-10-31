@@ -13,6 +13,7 @@ import {
   FileCopy,
   History,
   HowToReg,
+  Map,
   MonetizationOn,
   More,
   MoveToInbox,
@@ -37,6 +38,7 @@ function CommonActions({
   onEdit,
   onArchive,
   onView,
+  onMap,
   onTag,
   onFreebie,
   onReleaseFreebie,
@@ -81,6 +83,8 @@ function CommonActions({
       onArchive(item.id);
     } else if (action === "tag") {
       onTag();
+    } else if (action === "map") {
+      onMap();
     } else if (action === "requestFreebie") {
       onFreebie();
     } else if (action === "releaseFreebie") {
@@ -238,6 +242,19 @@ function CommonActions({
           >
             <Tag />
             Tagging
+          </MenuItem>
+        )}
+
+        {onMap && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("map");
+            }}
+            disabled={disableActions ? disableActions?.includes("map") : false}
+          >
+            <Map />
+            Map
           </MenuItem>
         )}
 

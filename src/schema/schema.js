@@ -1156,11 +1156,19 @@ export const returnSchema = {
 
 export const attendanceSchema = {
 	schema: yup.object({
-		userId: yup.object().required("User is required"),
+		userId: yup.number().required("User is required"),
 		image: yup.mixed().required("Image attachment is required"),
+		storeName: yup.object().required("Store name is required"),
+		latitude: yup.number().required("Latitude is required"),
+		longitude: yup.number().required("Longitude is required"),
+		remarks: yup.string().required("Remarks is required"),
 	}),
 	defaultValues: {
 		userId: null,
 		image: null,
+		storeName: null,
+		latitude: null,
+		longitude: null,
+		remarks: "",
 	},
 };
