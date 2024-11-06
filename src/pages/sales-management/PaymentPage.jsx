@@ -361,13 +361,12 @@ function PaymentPage({
   useEffect(() => {
     console.log("hello",transactionsData);
     if (invoiceId && client && transactionsData) {
-      transactionsData?.transactions.map((item) => {
-        if(item.ciAttachment){
+      transactionsData?.transactions.filter((transaction) => 
+        transaction.ciAttachment
+      ).map((transaction) => {
+        if (transaction.transactionNo === invoiceId) {
           setValue("transactionId", [invoiceId]);
           setValue("invoiceNo", [invoiceNo]);
-        }else{
-          setValue("transactionId", []);
-          setValue("invoiceNo", []);
         }
       })
     }
