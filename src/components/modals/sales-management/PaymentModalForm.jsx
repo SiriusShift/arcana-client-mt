@@ -95,16 +95,19 @@ function PaymentModalForm({
     { data: otherExpensesBalanceData, error: otherExpensesBalanceError },
   ] = useLazyGetOtherExpensesBalanceByClientIdQuery();
   if (otherExpensesBalanceError) {
-    otherExpensesBalanceData = null;
+    otherExpensesBalanceData = 0;
   }
 
   const remainingAdvancePayment = parseFloat(
     advancePaymentData?.remainingBalance
   );
   const remainingListingFee = parseFloat(listingFeeBalanceData?.totalBalance);
-  const remainingOtherExpensesBalance = parseFloat(
-    otherExpensesBalanceData?.totalBalance
-  );
+  // const remainingOtherExpensesBalance = parseFloat(
+  //   otherExpensesBalanceData?.totalBalance
+  // );
+
+  console.log(otherExpensesBalanceData);
+
   //Functions
   const onSubmit = async (data) => {
     let transformedData;
@@ -308,7 +311,7 @@ function PaymentModalForm({
                     <InfoOutlined
                       sx={{
                         fontSize: "20px",
-                        color: "notification.main",
+                        color: "#3CB043",
                         ml: 1,
                       }}
                     />
@@ -385,6 +388,7 @@ function PaymentModalForm({
                   <NumericFormat
                     label="Payment Amount"
                     type="text"
+                    disabled={(watch("paymentMethod")?.label === "Listing Fee" && remainingAdvancePayment < 1 ) || (watch("paymentMethod")?.label === "Advance Payment" && remainingAdvancePayment < 1) || (watch("paymentMethod")?.label === "Others" && otherExpensesBalanceData < 1)}
                     size="small"
                     customInput={TextField}
                     autoComplete="off"
@@ -753,6 +757,41 @@ function PaymentModalForm({
                   )}
                   getOptionLabel={(option) => option.expenseType.toUpperCase()}
                   disableClearable
+                  // renderOption={(props, option) => {
+                  //   const notifIcon = (
+                  //     <InfoOutlined
+                  //       sx={{
+                  //         fontSize: "20px",
+                  //         color: "success",
+                  //         ml: 1,
+                  //       }}
+                  //     />
+                  //   );
+  
+                  //   // const isAdvancePaymentNotif =
+                  //   //   option.label === "Advance Payment" &&
+                  //   //   remainingAdvancePayment > 0;
+  
+                  //   // const isListingFeeNotif =
+                  //   //   option.label === "Listing Fee" && remainingListingFee > 0;
+  
+                  //   return (
+                  //     <Tooltip
+                  //       // title={
+                  //       //   isAdvancePaymentNotif || isListingFeeNotif
+                  //       //     ? "Balance available"
+                  //       //     : ""
+                  //       // }
+                  //       followCursor
+                  //     >
+                  //       {/* <li {...props}>
+                  //         {option.label.toUpperCase()}
+                  //         {isAdvancePaymentNotif && notifIcon}
+                  //         {isListingFeeNotif && notifIcon}
+                  //       </li> */}
+                  //     </Tooltip>
+                  //   );
+                  // }}
                   isOptionEqualToValue={() => true}
                   renderInput={(params) => (
                     <TextField

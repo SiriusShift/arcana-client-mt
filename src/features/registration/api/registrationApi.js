@@ -42,6 +42,16 @@ const registrationApi = api
         transformErrorResponse: (response) => response.value,
       }),
 
+      getAllClientsForCheckIn: builder.query({
+        query: (params) => ({
+          url: "/get-clients-check-in",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Clients POS"],
+        transformResponse: (response) => response.value,
+      }),
+
       putRegisterClient: builder.mutation({
         query: ({ clientId, ...body }) => ({
           url: `/Registration/RegisterClient/${clientId}`,
@@ -252,6 +262,8 @@ const registrationApi = api
 
 export const {
   useGetAllClientsQuery,
+  useGetAllClientsForCheckInQuery,
+  useLazyGetAllClientsQuery,
   useGetAllClientsForListingFeeQuery,
   usePutRegisterClientMutation,
   usePutAddAttachmentsMutation,

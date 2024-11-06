@@ -36,6 +36,7 @@ import useReasonConfirm from "../../../hooks/useReasonConfirm";
 import ClearingModalSkeleton from "../../skeletons/ClearingModalSkeleton";
 import { Visibility } from "@mui/icons-material";
 import ViewTransactionModal from "./ViewTransactionModal";
+import CommonActions from "../../common/CommonActions";
 
 // mode props options: Clearing, Filing, Viewing
 const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
@@ -99,7 +100,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
             aTag,
             paymentAmount: selectedRowData?.paymentAmount,
             paymentRecordId: selectedRowData?.paymentRecordId,
-            paymentMethod: selectedRowData?.paymentMethod
+            paymentMethod: selectedRowData?.paymentMethod,
           }).unwrap(),
       });
 
@@ -152,7 +153,9 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         children: "Are you sure you want to file this transaction?",
         question: true,
         callback: () =>
-          fileClearingTransaction({ paymentRecords: [selectedRowData] }).unwrap(),
+          fileClearingTransaction({
+            paymentRecords: [selectedRowData],
+          }).unwrap(),
       });
 
       snackbar({
@@ -259,14 +262,14 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
               <Typography fontSize="1rem" fontWeight="500">
                 Payment Method: {selectedRowData?.paymentMethod}{" "}
                 {transaction?.attachment && (
-                    <IconButton
-                      size="small"
-                      sx={{ p: 0 }}
-                      onClick={onViewAttachmentOpen}
-                    >
-                      <Visibility />
-                    </IconButton>
-                  )}
+                  <IconButton
+                    size="small"
+                    sx={{ p: 0 }}
+                    onClick={onViewAttachmentOpen}
+                  >
+                    <Visibility />
+                  </IconButton>
+                )}
               </Typography>
               <Typography fontSize="1rem" fontWeight="500">
                 Payment Channel: {transaction?.paymentChannel || "N/A"}
@@ -281,16 +284,18 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                 Receipt No: {transaction?.receiptNo || "N/A"}
               </Typography>
               <Typography fontSize="1rem" fontWeight="500">
-                Receipt Attachment: 
+                Receipt Attachment:
                 {transaction?.receiptAttachment ? (
-                    <IconButton
-                      size="small"
-                      sx={{ p: 0 }}
-                      onClick={onViewPhotoOpen}
-                    >
-                      <Visibility />
-                    </IconButton>
-                  ) : " N/A"}
+                  <IconButton
+                    size="small"
+                    sx={{ p: 0 }}
+                    onClick={onViewPhotoOpen}
+                  >
+                    <Visibility />
+                  </IconButton>
+                ) : (
+                  " N/A"
+                )}
               </Typography>
             </Stack>
           </Stack>
@@ -332,13 +337,9 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                           <TableCell>{t.invoiceNo}</TableCell>
                           <TableCell>
                             {t.invoiceType}{" "}
-                            <IconButton
-                              size="small"
-                              sx={{ p: 0 }}
-                              onClick={() => {onViewOpen(); setInvoice(t?.paymentTransactionId)}}
-                            >
-                              <Visibility />
-                            </IconButton>
+                            <CommonActions                 
+                              onView={() => {onViewOpen(); setInvoice(t?.paymentTransactionId)}}
+                              />
                           </TableCell>
                           <TableCell>
                             {formatPesoAmount(
@@ -420,22 +421,25 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
           )}
 
           <Stack direction="row" gap={1} alignSelf="flex-end">
-            {(mode === "Clearing" || (mode === "Filing" && selectedRowData?.paymentMethod === "Withholding")) && (
+            {(mode === "Clearing" ||
+              (mode === "Filing" &&
+                selectedRowData?.paymentMethod === "Withholding")) && (
               <DangerButton onClick={onVoid}>Void</DangerButton>
             )}
 
-            {mode === "Clearing" && ( 
+            {mode === "Clearing" && (
               <SecondaryButton disabled={!aTag} type="submit">
                 Submit
               </SecondaryButton>
             )}
 
-            {(mode === "Filing" && selectedRowData?.paymentMethod != "Withholding")&& (
-              <DangerButton onClick={onReturn}>Return</DangerButton>
-            )}
+            {mode === "Filing" &&
+              selectedRowData?.paymentMethod != "Withholding" && (
+                <DangerButton onClick={onReturn}>Return</DangerButton>
+              )}
 
             {mode === "Filing" && (
-              <SecondaryButton  type="submit">File</SecondaryButton>
+              <SecondaryButton type="submit">File</SecondaryButton>
             )}
           </Stack>
         </Stack>
@@ -446,13 +450,17 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         onClose={onViewPhotoClose}
         cloudified={true}
       />
-      <ViewPhotoModal 
+      <ViewPhotoModal
         currentViewPhoto={transaction?.attachment}
         open={isViewAttachmentOpen}
         onClose={onViewAttachmentClose}
         cloudified={true}
       />
-      <ViewTransactionModal transactionId={invoice} open={isViewOpen} onClose={onViewClose} />
+      <ViewTransactionModal
+        transactionId={invoice}
+        open={isViewOpen}
+        onClose={onViewClose}
+      />
     </>
   );
 };

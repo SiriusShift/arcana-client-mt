@@ -1172,3 +1172,30 @@ export const attendanceSchema = {
 		remarks: "",
 	},
 };
+
+export const othersAttendance = {
+	schema: yup.object({
+		userId: yup.number().required("User is required"),
+		image: yup.mixed().required("Image attachment is required"),
+		storeName: yup.string().required("Store name is required"),
+		ownersName: yup.string().required("Owner's name is required"),
+		barangay: yup.string().required("Barangay is required"),
+		city: yup.string().required("City is required"), 
+		province: yup.string().required("Province is required"),
+		latitude: yup.number().required("Latitude is required"),
+		longitude: yup.number().required("Longitude is required"),
+		remarks: yup.string().required("Remarks is required"),
+	}),
+	defaultValues: {
+		userId: null,
+		image: null,
+		storeName: null,
+		ownersName: null,
+		barangay: null,
+		city: null, 
+		province: null,
+		latitude: null,
+		longitude: null,
+		remarks: "",
+	},
+};

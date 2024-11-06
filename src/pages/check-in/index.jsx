@@ -9,16 +9,14 @@ import PageHeaderAdd from "../../components/PageHeaderAdd";
 import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import { useEffect, useRef, useState } from "react";
-import { useGetInventoryMrpQuery } from "../../features/inventory-management/api/inventoryMrpApi";
 import useDisclosure from "../../hooks/useDisclosure";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
-import { attendanceSchema } from "../../schema/schema";
+import { attendanceSchema, othersAttendance } from "../../schema/schema";
 import CommonDrawer from "../../components/CommonDrawer";
 import WebcamForm from "../../utils/webcam";
 import useGeolocation from "../../hooks/useGeolocation";
-import CommonModal from "../../components/CommonModal";
-import { useGetAllClientsForPOSQuery } from "../../features/sales-management/api/salesTransactionApi";
+import { useGetAllClientsForCheckInQuery } from "../../features/registration/api/registrationApi";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
 import { useSelector } from "react-redux";
 import moment from "moment/moment";
@@ -29,17 +27,36 @@ import {
 } from "../../features/check-in/api/checkinApi";
 import CheckInModal from "../../components/modals/CheckInModal";
 import MapModal from "../../components/modals/MapModal";
-
+import useSnackbar from "../../hooks/useSnackbar";
 
 function CheckIn() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
+  const [typeCustomer, setTypeCustomer] = useState(null);
   const [search, setSearch] = useState("");
   const location = useGeolocation();
+  const snackbar = useSnackbar();
   const webcamRef = useRef(null);
   const userData = useSelector((state) => state.login.userDetails);
-  console.log(userData);
+  console.log(typeCustomer);
 
+  // Object for type
+  const type = [
+    {
+      value: 0,
+      label: "Direct",
+    },
+    {
+      value: 1,
+      label: "Prospecting",
+    },
+    {
+      value: 2,
+      label: "Others",
+    },
+  ];
+
+  // Hooks
   const {
     isOpen: isDrawerOpen,
     onOpen: onDrawerOpen,
@@ -50,12 +67,6 @@ function CheckIn() {
     isOpen: isViewImageOpen,
     onOpen: onViewImageOpen,
     onClose: onViewImageClose,
-  } = useDisclosure();
-
-  const {
-    isOpen: isWebcamOpen,
-    onOpen: onWebcamOpen,
-    onClose: onWebcamClose,
   } = useDisclosure();
 
   const {
@@ -71,9 +82,11 @@ function CheckIn() {
   });
 
   const { data: clients, isFetching: isFetchingClients } =
-    useGetAllClientsForPOSQuery();
+    useGetAllClientsForCheckInQuery({
+      Origin: typeCustomer?.label,
+    });
 
-  const [postCheckin, { isLoading }] = usePostCheckinMutation();
+  const [postCheckin, { isLoading: isPosting }] = usePostCheckinMutation();
 
   const {
     handleSubmit,
@@ -84,9 +97,16 @@ function CheckIn() {
     errors,
     watch,
   } = useForm({
-    resolver: yupResolver(attendanceSchema.schema),
+    resolver: yupResolver(
+      typeCustomer?.label === "Others"
+        ? othersAttendance?.schema
+        : attendanceSchema?.schema
+    ),
     mode: "onChange",
-    defaultValues: attendanceSchema.defaultValues,
+    defaultValues:
+      typeCustomer?.label === "Others"
+        ? othersAttendance?.defaultValues
+        : attendanceSchema?.defaultValues,
   });
 
   console.log(isValid);
@@ -100,13 +120,25 @@ function CheckIn() {
     try {
       const formData = new FormData();
 
-      data?.image && formData.append("image", data?.image);
-      data?.latitude && formData.append("latitude", data?.latitude);
-      data?.longitude && formData.append("longitude", data?.longitude);
-      data?.remarks && formData.append("remarks", data?.remarks);
-      data?.userId && formData.append("userId", data?.userId);
-      data?.storeName && formData.append("clientId", data?.storeName?.clientId);
-
+      if(typeCustomer?.label === "Others"){
+        formData.append("image", data?.image);
+        formData.append("latitude", data?.latitude);
+        formData.append("longitude", data?.longitude);
+        formData.append("userId", data?.userId);
+        formData.append("BusinessName", data?.storeName);
+        formData.append("City", data?.city);
+        formData.append("Province", data?.province);
+        formData.append("barangay", data?.barangay);
+        formData.append("FullName", data?.ownersName)
+        formData.append("Remarks", data?.remarks);
+      }else{
+        data?.image && formData.append("image", data?.image);
+        data?.latitude && formData.append("latitude", data?.latitude);
+        data?.longitude && formData.append("longitude", data?.longitude);
+        data?.remarks && formData.append("remarks", data?.remarks);
+        data?.userId && formData.append("userId", data?.userId);
+        data?.storeName && formData.append("clientId", data?.storeName?.clientId);
+      }
       // Append current date in your preferred format (or use moment here)
       formData.append("date", moment().toISOString());
 
@@ -116,6 +148,8 @@ function CheckIn() {
       }
 
       await postCheckin(formData).unwrap();
+      reset();
+      setTypeCustomer(null);
       onDrawerClose();
       // Use formData in your API call here
     } catch (error) {
@@ -125,16 +159,24 @@ function CheckIn() {
   };
 
   const submitImage = (data) => {
-    setValue("image", data);
+    setValue("image", data, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
+
+  const retake = () => {
+    setValue("image", null, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }
+
+  const handleAddOpen = () => {
+    onDrawerOpen();
     setValue("latitude", location?.coordinates?.lat);
     setValue("longitude", location?.coordinates?.lng);
     setValue("userId", userData.id);
-    onWebcamClose();
-  };
-
-  const handleAddOpen = () => {
-    onWebcamOpen();
-    onDrawerOpen();
   };
   const onView = () => {
     console.log("view");
@@ -142,7 +184,7 @@ function CheckIn() {
   };
 
   const onMap = () => {
-    console.log("hello")
+    console.log("hello");
     onMapOpen();
   };
 
@@ -183,6 +225,8 @@ function CheckIn() {
     setPage(0);
   }, [search, rowsPerPage]);
 
+  console.log("clients", clients);
+
   return (
     <Box className="commonPageLayout">
       <PageHeaderAdd
@@ -219,28 +263,116 @@ function CheckIn() {
         drawerHeader={"Time in"}
         onSubmit={handleSubmit(onDrawerSubmit)}
         disableSubmit={!isValid}
-        //   isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <ControlledAutocomplete
-          name="storeName"
-          control={control}
-          options={clients}
-          getOptionLabel={(option) =>
-            `${option?.ownersName} - ${option?.businessName} - ${option?.city}, ${option?.province} - ${option?.clientId}`
-          }
+        isLoading={isPosting}      
+        >
+        <Autocomplete
+          disablePortal
+          name="type"
+          options={type}
+          onChange={(e, value) => {
+            setTypeCustomer(value);
+            setValue("storeName", null, {
+              shouldValidate: true,
+              shouldDirty: true,
+            });
+          }}
           isOptionEqualToValue={(option, value) =>
-            option?.clientId === value?.clientId
+            option?.label === value?.label
           }
+          getOptionLabel={(option) => option?.label}
           renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              label="Store Name"
-              helperText={errors?.storeName?.message}
-              error={!!errors?.storeName}
-            />
+            <TextField {...params} size="small" label="Type of Customer" />
           )}
         />
+        {typeCustomer?.label === "Others" ? (
+          <>
+            <Controller
+              control={control}
+              name="storeName"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  size="small"
+                  label="Business Name"
+                  autoComplete="off"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="ownersName"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  size="small"
+                  label="Owner's Name"
+                  autoComplete="off"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="barangay"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  size="small"
+                  label="Barangay"
+                  autoComplete="off"
+                />
+              )}
+            />
+             <Controller
+              control={control}
+              name="city"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  size="small"
+                  label="City"
+                  autoComplete="off"
+                />
+              )}
+            />
+             <Controller
+              control={control}
+              name="province"
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  size="small"
+                  label="Province"
+                  autoComplete="off"
+                />
+              )}
+            />
+          </>
+        ) : (
+          <ControlledAutocomplete
+            name="storeName"
+            control={control}
+            options={clients}
+            getOptionLabel={(option) =>
+              `${option?.fullName + " - " || "N/A"}  ${
+                option?.businessName
+              } - ${option?.barangayName || "N/A"}, ${
+                option?.municipality || "N/A"
+              }, ${option?.province || "N/A"} - ${option?.clientId}`
+            }
+            isOptionEqualToValue={(option, value) =>
+              option?.clientId === value?.clientId
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                label="Business Name"
+                helperText={errors?.storeName?.message}
+                error={!!errors?.storeName}
+              />
+            )}
+          />
+        )}
         <Controller
           control={control}
           name="remarks"
@@ -255,15 +387,8 @@ function CheckIn() {
             />
           )}
         />
+        <WebcamForm reset={retake} submitImage={submitImage} />
       </CommonDrawer>
-      <CommonModal
-        open={isWebcamOpen}
-        onClose={onWebcamClose}
-        closeTopRight
-        title="Capture Image"
-      >
-        <WebcamForm submitImage={submitImage} />
-      </CommonModal>
       <CheckInModal onClose={onViewImageClose} open={isViewImageOpen} />
       <MapModal onClose={onMapClose} open={isMapOpen} />
     </Box>

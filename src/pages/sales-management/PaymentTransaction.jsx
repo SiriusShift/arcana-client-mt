@@ -123,7 +123,7 @@ function PaymentTransaction() {
       },
       {
         case: 4,
-        name: "Cleared",
+        name: "Filed",
         transactionStatus: "Cleared",
         badge: notifications["clearedTransaction"],
       },

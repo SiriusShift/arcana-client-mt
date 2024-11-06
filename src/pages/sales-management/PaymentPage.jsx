@@ -50,6 +50,7 @@ function PaymentPage({
   invoiceId,
   invoiceNo,
 }) {
+  console.log(invoiceId, invoiceNo)
   const [client, setClient] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState({});
@@ -281,13 +282,13 @@ function PaymentPage({
   const handleSelectAll = (e) => {
     const { checked } = e.target;
 
-    const allTransactionIds = transactionsData?.transactions?.map(
-      (transaction) => transaction.transactionNo
-    );
+    const allTransactionIds = transactionsData?.transactions?.filter(
+      (transaction) => transaction.ciAttachment
+    ).map((transaction) => transaction.transactionNo);
 
-    const allInvoiceNo = transactionsData?.transactions?.map(
-      (transaction) => transaction.invoiceNo
-    );
+    const allInvoiceNo = transactionsData?.transactions?.filter(
+      (transaction) => transaction.ciAttachment
+    ).map((transaction) => transaction.invoiceNo);
 
     if (checked) {
       // If checkbox is checked, select all transaction IDs
@@ -296,6 +297,7 @@ function PaymentPage({
     } else {
       // If checkbox is unchecked, deselect all transaction IDs
       setValue("transactionId", []);
+      setValue("invoiceNo", []);
     }
   };
 
@@ -357,16 +359,24 @@ function PaymentPage({
   }, [clientFromInvoicePage, clientData]);
 
   useEffect(() => {
-    if (invoiceId && client) {
-      setValue("transactionId", [invoiceId]);
-      setValue("invoiceNo", [invoiceNo]);
+    console.log("hello",transactionsData);
+    if (invoiceId && client && transactionsData) {
+      transactionsData?.transactions.map((item) => {
+        if(item.ciAttachment){
+          setValue("transactionId", [invoiceId]);
+          setValue("invoiceNo", [invoiceNo]);
+        }else{
+          setValue("transactionId", []);
+          setValue("invoiceNo", []);
+        }
+      })
     }
 
     return () => {
       setValue("transactionId", []);
       setValue("invoiceNo", []);
     };
-  }, [invoiceId, client, setValue]);
+  }, [invoiceId, client, setValue, transactionsData]);
 
   return (
     <>
@@ -524,6 +534,8 @@ function PaymentPage({
                         },
                         borderColor: item?.voidReason ? "yellow" : "",
                         borderWidth: item?.voidReason ? "1px" : "",
+                        pointerEvents: item?.ciAttachment ? "all" : "none",
+                        opacity: item?.ciAttachment ? 1 : 0.5,
                       }}
                     >
                       <Typography className="paymentPage__body__transactions__transactionsList__item__date">

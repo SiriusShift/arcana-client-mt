@@ -4,25 +4,18 @@ import { useForm } from "react-hook-form";
 import Webcam from "react-webcam";
 import { base64ToBlob } from "./CustomFunctions";
 
-const WebcamForm = ({ submitImage }) => {
+const WebcamForm = ({ submitImage, reset }) => {
   const { register, handleSubmit, setValue } = useForm();
   const webcamRef = React.useRef(null);
   const [facingMode, setFacingMode] = useState("user"); // "user" for front, "environment" for back
   const [capturedImage, setCapturedImage] = useState(null);
   console.log(facingMode);
 
-  const onCapture = () => {
+  const onCapture = (data) => {
     const imageSrc = webcamRef.current.getScreenshot();
     setCapturedImage(imageSrc);
     setValue("image", imageSrc); // Store the captured image in the form
-  };
-
-  const onRetake = () => {
-    setCapturedImage(null); // Reset captured image to show webcam again
-  };
-
-  const onSubmit = (data) => {
-    const imageBlob = base64ToBlob(data.image);
+    const imageBlob = base64ToBlob(imageSrc);
     const uniqueFilename = `image_${Date.now()}_${Math.floor(
       Math.random() * 10000
     )}.jpg`;
@@ -30,62 +23,62 @@ const WebcamForm = ({ submitImage }) => {
     submitImage(file);
   };
 
+  const onRetake = () => {
+    setCapturedImage(null); // Reset captured image to show webcam again
+    reset();
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="cameraModal">
-        <Typography fontSize="1.5rem" fontWeight="600">
-          Capture Image
-        </Typography>
-        <div className="cameraModal__image">
-          {capturedImage ? (
-            // Show captured image with a "Retake" option
-            <>
-              <img
-                src={capturedImage}
-                alt="Captured"
-                width={400}
-                height={300}
-              />
-            </>
-          ) : (
-            // Show webcam view with a "Capture" button
-            <>
-              <Webcam
-                audio={false}
-                ref={webcamRef}
-                videoConstraints={{ facingMode: facingMode }}
-                screenshotFormat="image/jpeg"
-                width={500} // Adjust width as needed
-                height={300} // Adjust height as needed
-              />
-            </>
-          )}
-        </div>
+    <form onSubmit={handleSubmit(onCapture)}>
+      <div className="cameraBox">
+        {capturedImage ? (
+          // Show captured image with a "Retake" option
+          <>
+            <img src={capturedImage} alt="Captured" />
+          </>
+        ) : (
+          // Show webcam view with a "Capture" button
+          <>
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              videoConstraints={{ facingMode: facingMode }}
+              screenshotFormat="image/jpeg"
+            />
+          </>
+        )}
 
         {/* Hidden input to store the image data */}
         <input type="hidden" {...register("image")} />
-        <div className="cameraModal__button">
+        <div className="cameraBox__button">
           <Button
             type="button"
+            size="small"
             variant="outlined"
             onClick={() =>
               setFacingMode(facingMode === "user" ? "environment" : "user")
             }
           >
-            {facingMode === "user" ? "Back" : "Front"} Camera
+            {facingMode === "user" ? "Back" : "Front"}
           </Button>
           {capturedImage ? (
-            <Button type="button" variant="outlined" onClick={onRetake}>
-              Retake Photo
+            <Button
+              type="button"
+              size="small"
+              variant="outlined"
+              onClick={onRetake}
+            >
+              Retake
             </Button>
           ) : (
-            <Button type="button" variant="outlined" onClick={onCapture}>
-              Capture Photo
+            <Button
+              type="submit"
+              size="small"
+              variant="outlined"
+            >
+              Capture
             </Button>
           )}
-          <Button disabled={!capturedImage} type="submit" variant="contained">
-            Submit
-          </Button>
         </div>
       </div>
     </form>

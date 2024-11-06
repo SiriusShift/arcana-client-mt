@@ -75,20 +75,19 @@
 	}
 }
 
-.cameraModal{
+.cameraBox{
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	gap: 20px;
+	margin-bottom: 20px;
 	&__image{
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		& img{
-			width: 400px;
-			height: 300px;
-		}
+		width: 300px;
+		height: 215px;
 	}
 	&__button{
 		display: flex;
