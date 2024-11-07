@@ -10,6 +10,7 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Tooltip,
 } from "@mui/material";
 import React from "react";
 import { transformKey } from "../utils/CustomFunctions";
@@ -105,7 +106,7 @@ function CommonTable({
   flexNone,
   nestedProperty = {},
 }) {
-  console.log("map",mapData);
+  console.log("map", mapData);
 
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -286,7 +287,9 @@ function CommonTable({
                   {warning && (
                     <TableCell>
                       {item[warning.key] === warning.value ? (
-                        <PriorityHigh color="error" />
+                        <Tooltip title={warning.value} arrow>
+                          <PriorityHigh color="error" />
+                        </Tooltip>
                       ) : null}
                     </TableCell>
                   )}
@@ -429,13 +432,16 @@ function CommonTable({
                       );
                     }
 
-                    if (keys === "referenceNos"){
+                    if (keys === "referenceNos") {
                       return (
-                        <TableCell key={k} sx={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        <TableCell
+                          key={k}
+                          sx={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                        >
                           {item[keys] && item[keys].join(", ")}
                         </TableCell>
                       );
-                    } 
+                    }
 
                     if (keys === "origin") {
                       return (
@@ -483,8 +489,7 @@ function CommonTable({
                       keys === "createdAt" ||
                       keys === "updatedAt" ||
                       keys === "date" ||
-                      keys === "chequeDate" ||
-                      keys === "createdDate"
+                      keys === "chequeDate"
                     ) {
                       return (
                         <TableCell key={k}>
@@ -493,6 +498,16 @@ function CommonTable({
                           {/* // H:mm a */}
                         </TableCell>
                       );
+                    }
+                    
+                    if(keys === "createdDate"){
+                      return (
+                        <TableCell key={k}>
+                          {item[keys] &&
+                            moment(item[keys]).format("MMM DD, YYYY HH:mm:ss")}
+                          {/* // H:mm a */}
+                        </TableCell>
+                      )
                     }
 
                     if (uppercaseKeys.includes(keys)) {

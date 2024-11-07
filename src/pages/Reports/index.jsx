@@ -16,7 +16,8 @@ import {
   useCDOReportsQuery,
   useSJReportsQuery,
   useASReportsQuery,
-  usePriceModeReportQuery,
+  useGetCheckInReportsQuery,
+  useCheckInReportQuery
 } from "../../features/reports/api/reportsApi";
 
 function Reports() {
@@ -28,7 +29,8 @@ function Reports() {
     cdo: true,
     sj: true,
     as: true,
-    pm: true
+    // pm: true,
+    ci: true
 })
   const [dateFrom, setDateFrom] = useState(moment());
   const [dateTo, setDateTo] = useState(moment());
@@ -38,6 +40,7 @@ function Reports() {
   const [search, setSearch] = useState("");
 
   console.log("date from : ", dateFromTemp, dateToTemp)
+  console.log(activeArray);
   
   // RTK Query
   const { data: cdoReportData, isFetching: cdoFetching } =
@@ -62,20 +65,24 @@ function Reports() {
     DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
   }, {skip: isActive.as});
 
-  const { data: priceModeReportData, isFetching: priceModeFetching } =
-    usePriceModeReportQuery({
-      Page: page + 1,
-      PageSize: rowsPerPage,
-    }, {skip: isActive.pm});
+  // const { data: priceModeReportData, isFetching: priceModeFetching } =
+  //   usePriceModeReportQuery({
+  //     Page: page + 1,
+  //     PageSize: rowsPerPage,
+  //   }, {skip: isActive.pm});
 
+  const { data: checkInReportData, isFetching: checkInFetching } = useGetCheckInReportsQuery({
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
+    DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+  }, {});
   //functions
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
     setDateTo(dateToTemp);
     useDownloadExcel();
   };
-
-  console.log(rowsPerPage);
 
   const useDownloadExcel = async () => {
     try {
@@ -126,10 +133,15 @@ function Reports() {
 
   //useEffect()
   useEffect(() => {
-    const reports = [cdoReportData, sjReportData, asReportData, priceModeReportData];
-    const keys = ['cdo', 'sj', 'as', 'pm'];
+    const reports = [cdoReportData, sjReportData, asReportData, 
+      // priceModeReportData, 
+      checkInReportData];
+    const keys = ['cdo', 'sj', 'as', 'ci'
+      // 'pm',
+      ];
   
     if (activeReport?.index !== undefined) {
+      console.log(reports[activeReport.index]?.value);
       setActiveArray(reports[activeReport.index]?.value);
       
       const newIsActive = keys.reduce((acc, key, idx) => {
@@ -144,7 +156,8 @@ function Reports() {
     cdoReportData,
     sjReportData,
     asReportData,
-    priceModeReportData,
+    checkInReportData,
+    // priceModeReportData,
     dateFromTemp,
     dateToTemp,
   ]);
@@ -177,6 +190,37 @@ function Reports() {
       "amount",
       "outlet",
     ],
+    [
+      "date",
+      "businessName",
+      "businessAddress",
+      "invoiceNo",
+      "amount",
+      "debit",
+      "credit",
+      "cluster"
+    ],
+    [
+      "date",
+      "businessName",
+      "customerName",
+      "invoiceNo",
+      "grossSales",
+      "netSales",
+      "cluster",
+    ],
+    [
+      "createdBy",
+      "createdDate",
+      "businessName",
+      "fullName",
+      "barangay",
+      "city",
+      "province",
+      "latitude",
+      "longitude",
+      "image",
+    ]
     
   ];
 
@@ -190,6 +234,37 @@ function Reports() {
       "Amount",
       "Outlet",
     ],
+    [
+      "Date",
+      "Business Name",
+      "Business Address",
+      "Invoice Number",
+      "Amount",
+      "Debit",
+      "Credit",
+      "Cluster"
+    ],
+    [
+      "Date",
+      "Business Name",
+      "Business Owner",
+      "Invoice Number",
+      "Gross Sales",
+      "Net Sales",
+      "Cluster",
+    ],
+    [
+      "CDO",
+      "Date",
+      "Business Name",
+      "Full Name",
+      "Barangay",
+      "City",
+      "Province",
+      "Latitude",
+      "Longitude",
+      "Image",
+    ]
   ];
 
   console.log("heads", customOrderKeys[activeReport?.index]);
@@ -258,17 +333,20 @@ function Reports() {
           </SecondaryButton>
         </Box>
       </Box>
-      {cdoFetching || sjFetching || asFetching || priceModeFetching ? (
+      {cdoFetching || sjFetching || asFetching || 
+      // priceModeFetching || 
+      checkInFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
           lowerCompact
           moveNoDataUp
-          mapData={activeArray?.transactions}
-          // tableHeads={tableHeads[activeReport?.index]}
-          // customOrderKeys={customOrderKeys[activeReport?.index]}
+          mapData={activeArray?.transactions || activeArray?.checkIn}
+          tableHeads={tableHeads[activeReport?.index]}
+          customOrderKeys={customOrderKeys[activeReport?.index]}
           includeActions={false}
           count={count}
+          attachKey={"image"}
           rowsPerPage={rowsPerPage}
           setRowsPerPage={setRowsPerPage}
           page={page}

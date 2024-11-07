@@ -34,7 +34,7 @@ import moment from "moment";
 import useConfirm from "../../../hooks/useConfirm";
 import useReasonConfirm from "../../../hooks/useReasonConfirm";
 import ClearingModalSkeleton from "../../skeletons/ClearingModalSkeleton";
-import { Visibility } from "@mui/icons-material";
+import { MoreHoriz, Visibility } from "@mui/icons-material";
 import ViewTransactionModal from "./ViewTransactionModal";
 import CommonActions from "../../common/CommonActions";
 
@@ -262,13 +262,13 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
               <Typography fontSize="1rem" fontWeight="500">
                 Payment Method: {selectedRowData?.paymentMethod}{" "}
                 {transaction?.attachment && (
-                  <IconButton
-                    size="small"
-                    sx={{ p: 0 }}
-                    onClick={onViewAttachmentOpen}
-                  >
-                    <Visibility />
-                  </IconButton>
+                  <CommonActions
+                    icon={<MoreHoriz />}
+                    onView={() => {
+                      onViewOpen();
+                      setInvoice(t?.paymentTransactionId);
+                    }}
+                  />
                 )}
               </Typography>
               <Typography fontSize="1rem" fontWeight="500">
@@ -286,13 +286,13 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
               <Typography fontSize="1rem" fontWeight="500">
                 Receipt Attachment:
                 {transaction?.receiptAttachment ? (
-                  <IconButton
-                    size="small"
-                    sx={{ p: 0 }}
-                    onClick={onViewPhotoOpen}
-                  >
-                    <Visibility />
-                  </IconButton>
+                  <CommonActions
+                    icon={<MoreHoriz />}
+                    onView={() => {
+                      onViewOpen();
+                      setInvoice(t?.paymentTransactionId);
+                    }}
+                  />
                 ) : (
                   " N/A"
                 )}
@@ -337,9 +337,13 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                           <TableCell>{t.invoiceNo}</TableCell>
                           <TableCell>
                             {t.invoiceType}{" "}
-                            <CommonActions                 
-                              onView={() => {onViewOpen(); setInvoice(t?.paymentTransactionId)}}
-                              />
+                            <CommonActions
+                              icon={<MoreHoriz />}
+                              onView={() => {
+                                onViewOpen();
+                                setInvoice(t?.paymentTransactionId);
+                              }}
+                            />
                           </TableCell>
                           <TableCell>
                             {formatPesoAmount(

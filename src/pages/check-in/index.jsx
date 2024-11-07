@@ -79,6 +79,7 @@ function CheckIn() {
   const { data, isFetching } = useGetCheckinQuery({
     Page: page + 1,
     PageSize: rowsPerPage,
+    Search: search,
   });
 
   const { data: clients, isFetching: isFetchingClients } =
@@ -230,7 +231,6 @@ function CheckIn() {
   return (
     <Box className="commonPageLayout">
       <PageHeaderAdd
-        removeSearch
         onOpen={handleAddOpen}
         pageTitle="Check In"
         removeArchive

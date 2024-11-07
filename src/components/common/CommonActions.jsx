@@ -35,6 +35,7 @@ import {
 
 function CommonActions({
   iconColor,
+  icon,
   onEdit,
   onArchive,
   onView,
@@ -158,7 +159,7 @@ function CommonActions({
         data-tour="actions"
         disabled={disabled}
       >
-        <More />
+        {icon ? icon : <More />}
       </IconButton>
 
       <Menu
