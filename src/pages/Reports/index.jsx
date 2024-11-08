@@ -19,12 +19,15 @@ import {
   useGetCheckInReportsQuery,
   useCheckInReportQuery
 } from "../../features/reports/api/reportsApi";
+import { useSelector } from "react-redux";
+import CommonFilter from "../../components/CommonFilter";
 
 function Reports() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [activeReport, setActiveReport] = useState();
   const [activeArray, setActiveArray]  = useState();
+  const [clusterId, setClusterId] = useState();
   const [isActive, setIsActive] = useState({
     cdo: true,
     sj: true,
@@ -38,6 +41,10 @@ function Reports() {
   const [dateToTemp, setDateToTemp] = useState(moment());
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const userDetails = useSelector((state) => state.login.userDetails);
+
+  console.log(clusterId);
+
 
   console.log("date from : ", dateFromTemp, dateToTemp)
   console.log(activeArray);
@@ -49,6 +56,7 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
       DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || ""
     }, {skip: isActive.cdo});
 
   const { data: sjReportData, isFetching: sjFetching } = useSJReportsQuery({
@@ -56,6 +64,7 @@ function Reports() {
     PageSize: rowsPerPage,
     DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
     DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.value || ""
   }, {skip: isActive.sj});
 
   const { data: asReportData, isFetching: asFetching } = useASReportsQuery({
@@ -63,6 +72,7 @@ function Reports() {
     PageSize: rowsPerPage,
     DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
     DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.value || ""
   }, {skip: isActive.as});
 
   // const { data: priceModeReportData, isFetching: priceModeFetching } =
@@ -76,12 +86,21 @@ function Reports() {
     PageSize: rowsPerPage,
     DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
     DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.value || ""
   }, {});
   //functions
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
     setDateTo(dateToTemp);
     useDownloadExcel();
+  };
+
+  const onFilter = async ({ clusterId }) => {
+    try {
+      setClusterId(clusterId);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const useDownloadExcel = async () => {
@@ -290,6 +309,11 @@ function Reports() {
           )}
         />
         <Box className="mixin__right">
+        {(userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance") ? (
+          <CommonFilter
+          filter={onFilter}
+          clusterFilter
+        />) : ""}
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
               label="Date From"
