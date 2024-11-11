@@ -134,7 +134,7 @@ function TransactionsList({ setTransactionsMode }) {
 
   const onCancel = async () => {
     try {
-      await reasonConfirm({
+      await confirmReason({
         children: (
           <>
             Are you sure you want to cancel transaction number{" "}

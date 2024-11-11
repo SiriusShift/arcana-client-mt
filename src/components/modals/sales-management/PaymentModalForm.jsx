@@ -102,6 +102,7 @@ function PaymentModalForm({
       (item) => item?.otherExpenseName === watch("otherExpense")?.expenseType
     )?.balance ?? 0;
   console.log(currentExpenseBalance);
+  console.log(watch("paymentMethod"));
 
   const remainingAdvancePayment = parseFloat(
     advancePaymentData?.remainingBalance
@@ -386,13 +387,11 @@ function PaymentModalForm({
                     label="Payment Amount"
                     type="text"
                     disabled={
-                      (watch("paymentMethod")?.label === "Listing Fee" &&
-                        remainingAdvancePayment < 1) ||
-                      (watch("paymentMethod")?.label === "Advance Payment" &&
-                        remainingAdvancePayment < 1) ||
-                      (watch("paymentMethod")?.label === "Others" &&
-                        currentExpenseBalance < 1)
+                      (watch("paymentMethod")?.label === "Listing Fee" && remainingListingFee < 1) ||
+                      (watch("paymentMethod")?.label === "Advance Payment" && remainingAdvancePayment < 1) ||
+                      (watch("paymentMethod")?.label === "Others" && currentExpenseBalance < 1)
                     }
+                    
                     size="small"
                     customInput={TextField}
                     autoComplete="off"
