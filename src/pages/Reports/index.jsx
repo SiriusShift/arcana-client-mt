@@ -110,7 +110,7 @@ function Reports() {
           activeReport.value
         }-reports?DateFrom=${moment(dateFromTemp).format(
           "MM-DD-YYYY"
-        )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
+        )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}&ClusterId=${clusterId?.value}`,
         {
           method: "GET",
           headers: {
