@@ -35,6 +35,8 @@ import {
 import CommonTableSkeleton from "../../../CommonTableSkeleton";
 import * as _ from "lodash";
 import useReasonConfirm from "../../../../hooks/useReasonConfirm";
+import useSnackbar from "../../../../hooks/useSnackbar";
+import {handleCatchErrorMessage} from "../../../../utils/CustomFunctions";
 
 function TransactionsList({ setTransactionsMode }) {
   const [search, setSearch] = useState("");
@@ -49,11 +51,14 @@ function TransactionsList({ setTransactionsMode }) {
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
   const [dateToTemp, setDateToTemp] = useState(moment());
-  const reasonConfirm = useReasonConfirm();
+  const confirmReason = useReasonConfirm();
+  const snackbar = useSnackbar();
 
   //Slices
   const userDetails = useSelector((state) => state.login.userDetails);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+
+  const isAdmin = userDetails?.roleName === "Admin";
 
   //Disclosures
   const {
@@ -93,6 +98,7 @@ function TransactionsList({ setTransactionsMode }) {
   const pesoArray = ["totalAmountDue"];
   const dateTimeSplitArray = ["createdAt"];
   const attachKey = "ciAttachment";
+  const disableActions = ["void", "cancel"];
 
   //RTK Query
   const { data: transactionsData, isFetching: isTransactionsFetching } =
@@ -118,6 +124,12 @@ function TransactionsList({ setTransactionsMode }) {
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
     setDateTo(dateToTemp);
+  };
+
+  const checkIsVoidable = (date, totalAmount, balance) => {
+    const isVoidable = moment(date).isAfter(moment().subtract(1, "days"));
+    // && totalAmount - balance === 0;
+    return isVoidable;
   };
 
   const onCancel = async () => {
@@ -147,9 +159,8 @@ function TransactionsList({ setTransactionsMode }) {
   };
 
   const onVoid = async () => {
-    console.log("test");
     try {
-      await reasonConfirm({
+      await confirmReason({
         children: (
           <>
             Are you sure you want to void transaction number{" "}
@@ -172,8 +183,8 @@ function TransactionsList({ setTransactionsMode }) {
         variant: "success",
       });
     } catch (error) {
-      console.log(error);
       if (error.isConfirmed) {
+        console.log(error);
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
       }
     }
@@ -263,14 +274,14 @@ function TransactionsList({ setTransactionsMode }) {
           />
         ),
         Cancelled: (
-          <Chip 
-          icon={<Cancel sx={{ fontSize: "16px" }} />}
-          label="Cancelled"
-          color="error"
-          sx={{ color: "red" }}
-          variant="outlined"
+          <Chip
+            icon={<Cancel sx={{ fontSize: "16px" }} />}
+            label="Cancelled"
+            color="error"
+            sx={{ color: "red" }}
+            variant="outlined"
           />
-        )
+        ),
       },
     },
   ];
@@ -425,13 +436,26 @@ function TransactionsList({ setTransactionsMode }) {
             attachKey={attachKey}
             onView={onViewOpen}
             onAttach={onAttachmentOpen}
+            disableActions={
+              (transactionStatus === "Pending" ||
+                transactionStatus === "Paid") &&
+              !isAdmin &&
+              !checkIsVoidable(
+                selectedRowData?.createdAt,
+                selectedRowData?.totalAmountDue,
+                selectedRowData?.remainingBalance
+              ) &&
+              disableActions
+            }
             onVoid={
               (transactionStatus === "Pending" ||
-              transactionStatus === "Paid") && onVoid
+                transactionStatus === "Paid") &&
+              onVoid
             }
             onCancel={
               (transactionStatus === "Pending" ||
-              transactionStatus === "Paid") && onCancel
+                transactionStatus === "Paid") &&
+              onCancel
             }
             lessCompact
             moveNoDataUp

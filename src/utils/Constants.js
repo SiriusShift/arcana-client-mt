@@ -50,9 +50,9 @@ export const reportNames = [
 	// 	value: "GAS",
 	// },
 	{
-		label: "Price Mode Report",
+		label: "Check In Reports",
 		index: 3,
-		value: "price-mode",
+		value: "check-ins",
 	}
 ]
 

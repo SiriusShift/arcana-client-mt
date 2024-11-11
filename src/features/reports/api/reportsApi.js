@@ -38,7 +38,15 @@ const reportsApi = api
         }),
         providesTags: ["Price Mode Report"],
       }),
+      getCheckInReports: builder.query({
+        query: (params) => ({
+          url: "/get-check-in-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["CheckIn Report"],
+      }),
     }),
   });
 
-export const { useCDOReportsQuery, useSJReportsQuery, useASReportsQuery, usePriceModeReportQuery } = reportsApi;
+export const { useCDOReportsQuery, useSJReportsQuery, useASReportsQuery, usePriceModeReportQuery, useGetCheckInReportsQuery, useCheckInReportQuery } = reportsApi;

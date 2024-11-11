@@ -1,4 +1,4 @@
-import { Box, Chip } from "@mui/material";
+import { Box, Button, Chip } from "@mui/material";
 import PageHeaderTabs from "../../components/PageHeaderTabs";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { AppContext } from "../../context/AppContext";
@@ -6,11 +6,13 @@ import CommonTable from "../../components/CommonTable";
 import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 import SearchActionMixin from "../../components/mixins/SearchActionMixin";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { useGetAllClearingTransactionQuery } from "../../features/sales-management/api/clearingApi";
+import { useFileClearingTransactionMutation, useGetAllClearingTransactionQuery, useReturnClearingTransactionMutation } from "../../features/sales-management/api/clearingApi";
 import ClearingModal from "../../components/modals/sales-management/ClearingModal";
 import useDisclosure from "../../hooks/useDisclosure";
 import { AssignmentReturnedOutlined, Autorenew } from "@mui/icons-material";
 import SessionExpired from "../SessionExpired";
+import useConfirm from "../../hooks/useConfirm";
+import useReasonConfirm from "../../hooks/useReasonConfirm";
 
 function Clearing() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -21,6 +23,9 @@ function Clearing() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [clearingModalMode, setClearingModalMode] = useState("Viewing");
+  const confirm = useConfirm();
+  const reasonConfirm = useReasonConfirm();
+
 
   const [checkedArray, setCheckedArray] = useState([]);
 
@@ -67,6 +72,7 @@ function Clearing() {
   const tableHeads = [
     "Date",
     "Business Name",
+    "Business Owner",
     "Payment Channel",
     "Payment Method",
     "Reference No",
@@ -78,9 +84,10 @@ function Clearing() {
   const customOrderKeys = [
     "date",
     "businessName",
+    "ownersName",
     "paymentChannel",
     "paymentMethod",
-    "referenceNo",
+    "referenceNos",
     "totalPaymentAmount",
     "aTag",
     ...(clearingStatus === "For Clearing" ? ["reason"] : []),
@@ -115,6 +122,9 @@ function Clearing() {
 
   //RTK Query
   const [patchReadNotification] = usePatchReadNotificationMutation();
+  const [fileClearingTransaction] = useFileClearingTransactionMutation();
+  const [returnClearingTransaction] = useReturnClearingTransactionMutation();
+
 
   const {
     data: clearingData,
@@ -134,6 +144,8 @@ function Clearing() {
     }
   );
 
+  const checkedArrayData = clearingData?.transactions.filter((_, index) => checkedArray.includes(index));
+
   // Functions
   const onInspect = () => {
     if (clearingStatus === "For Clearing") {
@@ -147,6 +159,60 @@ function Clearing() {
     }
     onClearingModalOpen();
   };
+
+  const onFile = async () => {
+    try {
+      await confirm({
+        children: "Are you sure you want to file this transaction?",
+        question: true,
+        callback: () =>
+          fileClearingTransaction({ paymentRecords: checkedArrayData }).unwrap(),
+      });
+      // fileClearingTransaction({ paymentRecords: checkedArrayData }).unwrap(),
+
+      snackbar({
+        message: "Transaction filed succesfully",
+        variant: "success",
+      });
+      onClose();
+      setCheckedArray([]);
+
+    } catch (error) {
+      if (error?.isConfirmed) {
+        snackbar({
+          message: handleCatchErrorMessage(error),
+          variant: "error",
+        });
+      }
+    }
+  };
+
+  // const onReturn = async () => {
+  //   try {
+  //     await reasonConfirm({
+  //       children: "Are you sure you want to return this transaction?",
+  //       question: false,
+  //       callback: (data) =>
+  //         returnClearingTransaction({
+  //           paymentRecords: checkedArrayData,
+  //           reason: data,
+  //         }).unwrap(),
+  //     });
+
+  //     snackbar({
+  //       message: "Transaction returned successfully",
+  //       variant: "success",
+  //     });
+  //     onClose();
+  //   } catch (error) {
+  //     if (error?.isConfirmed) {
+  //       snackbar({
+  //         message: handleCatchErrorMessage(error),
+  //         variant: "error",
+  //       });
+  //     }
+  //   }
+  // };
 
   const onFilter = async ({ clusterId, paymentMethod }) => {
 	console.log(paymentMethod);
@@ -201,7 +267,28 @@ function Clearing() {
           onFilter={onFilter}
           clusterFilter={true}
 		  paymentMethodFilter={true}
-        />
+        >
+          {clearingStatus === "For Filing" && (
+            <>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={onFile}
+              disabled={checkedArrayData.length === 0}
+            >
+              File
+            </Button>
+            {/* <Button
+              variant="contained"
+              color="secondary"
+              onClick={onReturn}
+              disabled={checkedArrayData.length === 0}
+            >
+              Return
+            </Button> */}
+            </>
+          )}
+        </SearchActionMixin>
 
         {isClearingFetching ? (
           <CommonTableSkeleton lowerCompact />

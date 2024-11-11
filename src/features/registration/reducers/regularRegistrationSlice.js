@@ -10,7 +10,7 @@ export const regularRegistrationSlice = createSlice({
         typeOfCustomer: null,
         directDelivery: null,
         bookingCoverageId: null,
-        withholdingIssuance: "1 Up 1 Down",
+        withholdingIssuance: "Strictly",
         terms: null,
         modeOfPayments: [],
         variableDiscount: null,

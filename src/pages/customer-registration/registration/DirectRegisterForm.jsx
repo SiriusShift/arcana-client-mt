@@ -187,6 +187,8 @@ function DirectRegisterForm({
     defaultValues: directRegisterPersonalSchema.defaultValues,
   });
 
+  console.log(watch());
+
   //Constants
   const navigators = [
     {
@@ -1810,6 +1812,7 @@ function DirectRegisterForm({
                     <ControlledAutocomplete
                       name="priceModeId"
                       control={control}
+                      disabled
                       options={priceModeData || []}
                       getOptionLabel={(option) =>
                         `${option.priceModeCode?.toUpperCase()} -  ${option.priceModeDescription?.toUpperCase()}`

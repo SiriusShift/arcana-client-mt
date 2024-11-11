@@ -10,6 +10,7 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Tooltip,
 } from "@mui/material";
 import React from "react";
 import { transformKey } from "../utils/CustomFunctions";
@@ -46,6 +47,7 @@ function CommonTable({
   onManageApprovers,
   onAddPriceChange,
   onCancel,
+  onMap,
   onVoid,
   onHistory,
   onDelete,
@@ -104,8 +106,7 @@ function CommonTable({
   flexNone,
   nestedProperty = {},
 }) {
-
-  console.log(tableHeads, customOrderKeys)
+  console.log("map", mapData);
 
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -190,7 +191,7 @@ function CommonTable({
     const { checked } = e.target;
 
     if (checked) {
-      setCheckedArray(dataToMap?.map((item, index) => index));
+      setCheckedArray(dataToMap?.map((_, index) => index));
     } else {
       setCheckedArray([]);
     }
@@ -286,7 +287,9 @@ function CommonTable({
                   {warning && (
                     <TableCell>
                       {item[warning.key] === warning.value ? (
-                        <PriorityHigh color="error" />
+                        <Tooltip title={warning.value} arrow>
+                          <PriorityHigh color="error" />
+                        </Tooltip>
                       ) : null}
                     </TableCell>
                   )}
@@ -429,6 +432,17 @@ function CommonTable({
                       );
                     }
 
+                    if (keys === "referenceNos") {
+                      return (
+                        <TableCell
+                          key={k}
+                          sx={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                        >
+                          {item[keys] && item[keys].join(", ")}
+                        </TableCell>
+                      );
+                    }
+
                     if (keys === "origin") {
                       return (
                         <TableCell key={k}>
@@ -471,7 +485,12 @@ function CommonTable({
                       );
                     }
 
-                    if (keys === "createdAt" || keys === "updatedAt" || keys === "date") {
+                    if (
+                      keys === "createdAt" ||
+                      keys === "updatedAt" ||
+                      keys === "date" ||
+                      keys === "chequeDate"
+                    ) {
                       return (
                         <TableCell key={k}>
                           {item[keys] &&
@@ -479,6 +498,16 @@ function CommonTable({
                           {/* // H:mm a */}
                         </TableCell>
                       );
+                    }
+                    
+                    if(keys === "createdDate"){
+                      return (
+                        <TableCell key={k}>
+                          {item[keys] &&
+                            moment(item[keys]).format("MMM DD, YYYY HH:mm:ss")}
+                          {/* // H:mm a */}
+                        </TableCell>
+                      )
                     }
 
                     if (uppercaseKeys.includes(keys)) {
@@ -576,6 +605,7 @@ function CommonTable({
                         }
                         onUpdateFreebies={onUpdateFreebies && onUpdateFreebies}
                         onCancelFreebies={onCancelFreebies && onCancelFreebies}
+                        onMap={onMap && onMap}
                         onView={onView && onView}
                         onManageApprovers={
                           onManageApprovers && onManageApprovers

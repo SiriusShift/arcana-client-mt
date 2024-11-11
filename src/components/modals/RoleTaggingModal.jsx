@@ -128,7 +128,7 @@ function RoleTaggingModal({
                 <Checkbox
                   checked={checkedModules?.includes(item.name)}
                   onChange={() => handleCheckboxChange(item.name)}
-                  disabled={item.name !== "Dashboard" && item.name !== "Reports"}
+                  disabled={item.name !== "Dashboard" && item.name !== "Reports" && item.name !== "Cheque" && item.name !== "Check In"}
                   // disabled
                 />
                 <Typography

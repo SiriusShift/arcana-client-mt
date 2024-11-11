@@ -75,6 +75,27 @@
 	}
 }
 
+.cameraBox{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 20px;
+	margin-bottom: 20px;
+	&__image{
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 300px;
+		height: 215px;
+	}
+	&__button{
+		display: flex;
+		justify-content: end;
+		gap: 10px;
+	}
+}
+
 .releaseFreebieModal {
 	display: flex;
 	flex-direction: column;
@@ -265,6 +286,18 @@
 			display: flex;
 			gap: 10px;
 		}
+	}
+}
+
+.checkInModal {
+	display: flex;
+	flex-direction: column;
+	&__image{
+		width: 100%;
+	}
+	& &__title {
+		font-size: 20px;
+		font-weight: 900;
 	}
 }
 

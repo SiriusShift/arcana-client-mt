@@ -1085,6 +1085,7 @@ function RegisterRegularForm({ open, onClose }) {
                 <ControlledAutocomplete
                   name="priceModeId"
                   control={control}
+                  disabled
                   options={priceModeData || []}
                   getOptionLabel={(option) =>
                     `${option.priceModeCode?.toUpperCase()} -  ${option.priceModeDescription?.toUpperCase()}`

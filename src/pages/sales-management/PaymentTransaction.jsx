@@ -10,7 +10,6 @@ import {
   // useCancelSalesTransactionMutation,
   useVoidSalesTransactionMutation,
 } from "../../features/sales-management/api/salesTransactionApi";
-import { useGetAllTransactionsQuery } from "../../features/filter/api/filterApi";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import { KeyboardDoubleArrowRight } from "@mui/icons-material";
 import PaymentPage from "./PaymentPage";
@@ -45,6 +44,10 @@ function PaymentTransaction() {
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow?.value);
+  const userDetails = useSelector((state) => state.login.userDetails);
+
+  const isAdmin = userDetails?.roleName === "Admin";
+  console.log(isAdmin);
 
   console.log(selectedRowData);
 
@@ -60,6 +63,7 @@ function PaymentTransaction() {
     onOpen: onViewOpen,
     onClose: onViewClose,
   } = useDisclosure();
+
 
   //RTK Query
   // const {
@@ -84,17 +88,16 @@ function PaymentTransaction() {
     data: filterData,
     isFetching: isTransactionFetching,
     error,
-  } = useGetAllTransactionsQuery({
+  } = useGetAllSalesTransactionQuery({
     PageNumber: page + 1,
     PageSize: rowsPerPage,
     TransactionStatus: transactionStatus,
-    refetchOnMountOrArgChange: true,
     ClusterId: clusterId?.value || "",
     paymentMethod: paymentMethod?.value || "",
     Search: search || "",
   });
 
-  const filteredList = filterData?.value;
+  const filteredList = filterData;
   console.log("filter", filterData);
 
   //Constants
@@ -120,7 +123,7 @@ function PaymentTransaction() {
       },
       {
         case: 4,
-        name: "Cleared",
+        name: "Filed",
         transactionStatus: "Cleared",
         badge: notifications["clearedTransaction"],
       },
@@ -221,8 +224,8 @@ function PaymentTransaction() {
 
   const checkIsVoidable = (date, totalAmount, balance) => {
     const isVoidable =
-      moment(date).isAfter(moment().subtract(1, "days")) &&
-      totalAmount - balance === 0;
+      moment(date).isAfter(moment().subtract(1, "days")) 
+      // && totalAmount - balance === 0;
     return isVoidable;
   };
 
@@ -332,15 +335,16 @@ function PaymentTransaction() {
                 setRowsPerPage={setRowsPerPage}
                 count={count}
                 mt={"-20px"}
-                // disableActions={
-                //   transactionStatus === "Pending" &&
-                //   !checkIsVoidable(
-                //     selectedRowData?.createdAt,
-                //     selectedRowData?.totalAmountDue,
-                //     selectedRowData?.remainingBalance
-                //   ) &&
-                //   disableActions
-                // }
+                disableActions={
+                  (transactionStatus === "Pending" || transactionStatus === "Paid") &&
+                  !isAdmin && 
+                  !checkIsVoidable(
+                    selectedRowData?.createdAt,
+                    selectedRowData?.totalAmountDue,
+                    selectedRowData?.remainingBalance
+                  ) &&
+                  disableActions
+                }
                 onVoid={
                   (transactionStatus === "Pending" ||
                   transactionStatus === "Paid") &&

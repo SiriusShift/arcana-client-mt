@@ -16,19 +16,24 @@ import {
   useCDOReportsQuery,
   useSJReportsQuery,
   useASReportsQuery,
-  usePriceModeReportQuery,
+  useGetCheckInReportsQuery,
+  useCheckInReportQuery
 } from "../../features/reports/api/reportsApi";
+import { useSelector } from "react-redux";
+import CommonFilter from "../../components/CommonFilter";
 
-function InventoryMRP() {
+function Reports() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [activeReport, setActiveReport] = useState();
   const [activeArray, setActiveArray]  = useState();
+  const [clusterId, setClusterId] = useState();
   const [isActive, setIsActive] = useState({
     cdo: true,
     sj: true,
     as: true,
-    pm: true
+    // pm: true,
+    ci: true
 })
   const [dateFrom, setDateFrom] = useState(moment());
   const [dateTo, setDateTo] = useState(moment());
@@ -36,8 +41,13 @@ function InventoryMRP() {
   const [dateToTemp, setDateToTemp] = useState(moment());
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const userDetails = useSelector((state) => state.login.userDetails);
+
+  console.log(clusterId);
+
 
   console.log("date from : ", dateFromTemp, dateToTemp)
+  console.log(activeArray);
   
   // RTK Query
   const { data: cdoReportData, isFetching: cdoFetching } =
@@ -46,6 +56,7 @@ function InventoryMRP() {
       PageSize: rowsPerPage,
       DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
       DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || ""
     }, {skip: isActive.cdo});
 
   const { data: sjReportData, isFetching: sjFetching } = useSJReportsQuery({
@@ -53,6 +64,7 @@ function InventoryMRP() {
     PageSize: rowsPerPage,
     DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
     DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.value || ""
   }, {skip: isActive.sj});
 
   const { data: asReportData, isFetching: asFetching } = useASReportsQuery({
@@ -60,14 +72,22 @@ function InventoryMRP() {
     PageSize: rowsPerPage,
     DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
     DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.value || ""
   }, {skip: isActive.as});
 
-  const { data: priceModeReportData, isFetching: priceModeFetching } =
-    usePriceModeReportQuery({
-      Page: page + 1,
-      PageSize: rowsPerPage,
-    }, {skip: isActive.pm});
+  // const { data: priceModeReportData, isFetching: priceModeFetching } =
+  //   usePriceModeReportQuery({
+  //     Page: page + 1,
+  //     PageSize: rowsPerPage,
+  //   }, {skip: isActive.pm});
 
+  const { data: checkInReportData, isFetching: checkInFetching } = useGetCheckInReportsQuery({
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
+    DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.value || ""
+  }, {});
   //functions
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
@@ -75,7 +95,13 @@ function InventoryMRP() {
     useDownloadExcel();
   };
 
-  console.log(rowsPerPage);
+  const onFilter = async ({ clusterId }) => {
+    try {
+      setClusterId(clusterId);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const useDownloadExcel = async () => {
     try {
@@ -126,10 +152,15 @@ function InventoryMRP() {
 
   //useEffect()
   useEffect(() => {
-    const reports = [cdoReportData, sjReportData, asReportData, priceModeReportData];
-    const keys = ['cdo', 'sj', 'as', 'pm'];
+    const reports = [cdoReportData, sjReportData, asReportData, 
+      // priceModeReportData, 
+      checkInReportData];
+    const keys = ['cdo', 'sj', 'as', 'ci'
+      // 'pm',
+      ];
   
     if (activeReport?.index !== undefined) {
+      console.log(reports[activeReport.index]?.value);
       setActiveArray(reports[activeReport.index]?.value);
       
       const newIsActive = keys.reduce((acc, key, idx) => {
@@ -144,7 +175,8 @@ function InventoryMRP() {
     cdoReportData,
     sjReportData,
     asReportData,
-    priceModeReportData,
+    checkInReportData,
+    // priceModeReportData,
     dateFromTemp,
     dateToTemp,
   ]);
@@ -177,6 +209,37 @@ function InventoryMRP() {
       "amount",
       "outlet",
     ],
+    [
+      "date",
+      "businessName",
+      "businessAddress",
+      "invoiceNo",
+      "amount",
+      "debit",
+      "credit",
+      "cluster"
+    ],
+    [
+      "date",
+      "businessName",
+      "customerName",
+      "invoiceNo",
+      "grossSales",
+      "netSales",
+      "cluster",
+    ],
+    [
+      "createdBy",
+      "createdDate",
+      "businessName",
+      "fullName",
+      "barangay",
+      "city",
+      "province",
+      "latitude",
+      "longitude",
+      "image",
+    ]
     
   ];
 
@@ -190,6 +253,37 @@ function InventoryMRP() {
       "Amount",
       "Outlet",
     ],
+    [
+      "Date",
+      "Business Name",
+      "Business Address",
+      "Invoice Number",
+      "Amount",
+      "Debit",
+      "Credit",
+      "Cluster"
+    ],
+    [
+      "Date",
+      "Business Name",
+      "Business Owner",
+      "Invoice Number",
+      "Gross Sales",
+      "Net Sales",
+      "Cluster",
+    ],
+    [
+      "CDO",
+      "Date",
+      "Business Name",
+      "Full Name",
+      "Barangay",
+      "City",
+      "Province",
+      "Latitude",
+      "Longitude",
+      "Image",
+    ]
   ];
 
   console.log("heads", customOrderKeys[activeReport?.index]);
@@ -215,6 +309,11 @@ function InventoryMRP() {
           )}
         />
         <Box className="mixin__right">
+        {(userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance") ? (
+          <CommonFilter
+          filter={onFilter}
+          clusterFilter
+        />) : ""}
           <LocalizationProvider dateAdapter={AdapterMoment}>
             <DatePicker
               label="Date From"
@@ -258,17 +357,20 @@ function InventoryMRP() {
           </SecondaryButton>
         </Box>
       </Box>
-      {cdoFetching || sjFetching || asFetching || priceModeFetching ? (
+      {cdoFetching || sjFetching || asFetching || 
+      // priceModeFetching || 
+      checkInFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
           lowerCompact
           moveNoDataUp
-          mapData={activeArray?.transactions}
-          // tableHeads={tableHeads[activeReport?.index]}
-          // customOrderKeys={customOrderKeys[activeReport?.index]}
+          mapData={activeArray?.transactions || activeArray?.checkIn}
+          tableHeads={tableHeads[activeReport?.index]}
+          customOrderKeys={customOrderKeys[activeReport?.index]}
           includeActions={false}
           count={count}
+          attachKey={"image"}
           rowsPerPage={rowsPerPage}
           setRowsPerPage={setRowsPerPage}
           page={page}
@@ -279,4 +381,4 @@ function InventoryMRP() {
   );
 }
 
-export default InventoryMRP;
+export default Reports;

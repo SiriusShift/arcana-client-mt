@@ -6,6 +6,7 @@ import { useState } from "react";
 import SecondaryButton from "../SecondaryButton";
 import { Search } from "@mui/icons-material";
 import * as _ from "lodash";
+import moment from "moment";
 
 const SearchDateRangeMixin = ({
   setSearch,
@@ -15,8 +16,8 @@ const SearchDateRangeMixin = ({
   dateFrom,
   dateTo,
 }) => {
-  const [dateFromTemp, setDateFromTemp] = useState(null);
-  const [dateToTemp, setDateToTemp] = useState(null);
+  const [dateFromTemp, setDateFromTemp] = useState(moment());
+  const [dateToTemp, setDateToTemp] = useState(moment());
 
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);

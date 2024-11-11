@@ -64,7 +64,6 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
     () => total - discountAmount - specialDiscountAmount,
     [total, discountAmount, specialDiscountAmount]
   );
-  console.log("total", total);
 
   //Constants
   const client = orderData?.clientId;
@@ -326,10 +325,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
 
               <Typography className="cashoutModal__transactionInfo__costBreakdown__net__value">
                 ₱
-                {netSales?.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionsDigits: 2,
-                })}
+                {netSales.toFixed(2)}
               </Typography>
             </Box>
           </Box>

@@ -5,12 +5,12 @@ export const navigationData = [
     name: "Dashboard",
     icon: "Dashboard",
   },
-  // {
-  //   id: 2,
-  //   path: "/",
-  //   name: "Dashboard",
-  //   icon: "Dashboard",
-  // },
+  {
+    id: 2,
+    path: "/check-in",
+    name: "Check In",
+    icon: "Today",
+  },
   {
     id: 3,
     path: "/user-management",
@@ -396,5 +396,12 @@ export const navigationData = [
     path:"/reports",
     icon: "Description",
     description: "Viewing and exporting of reports"
-  }
+  },
+  // {
+  //   id: 11,
+  //   name: "Cheque",
+  //   path:"/cheque",
+  //   icon: "AccountBalance",
+  //   description: "Viewing and exporting of reports"
+  // }
 ];

@@ -5,6 +5,7 @@ import {
   Checkbox,
   Divider,
   IconButton,
+  Input,
   Popover,
   Skeleton,
   TextField,
@@ -15,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete.jsx";
 import SecondaryButton from "../../components/SecondaryButton.jsx";
 import {
+  Edit,
   KeyboardDoubleArrowRight,
   NoPhotography,
   ShoppingCartCheckout,
@@ -22,7 +24,7 @@ import {
 } from "@mui/icons-material";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { salesTransactionSchema } from "../../schema/schema.js";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { debounce } from "../../utils/CustomFunctions.js";
 import { useDispatch } from "react-redux";
 import NoProductFound from "../../assets/images/NoProductFound.svg";
@@ -39,6 +41,7 @@ import SessionExpired from "../SessionExpired.jsx";
 
 function SalesTransaction() {
   const [search, setSearch] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const [quickAdd, setQuickAdd] = useState(false);
   const [viewFilters, setViewFilters] = useState(false);
   const [transactionsMode, setTransactionsMode] = useState(
@@ -87,8 +90,6 @@ function SalesTransaction() {
     name: "items",
   });
 
-  console.log(watch("clientId"));
-
   //Hook Form Constant Values
   const watchAllValues = watch();
   const watchClientId = watch("clientId");
@@ -121,9 +122,11 @@ function SalesTransaction() {
     }, 0);
   }, [watchAllValues]);
 
-  const handleAddItem = (item, quantity) => {
+  const handleAddItem = (item, quantity, price) => {
     const existingItemIndex = watch("items").findIndex(
-      (existingItem) => (existingItem.itemId.priceModeItemId === item.priceModeItemId && existingItem.itemId.currentPrice === item.currentPrice)
+      (existingItem) =>
+        existingItem.itemId.priceModeItemId === item.priceModeItemId &&
+        existingItem.itemId.currentPrice === price
     );
 
     if (existingItemIndex !== -1) {
@@ -138,8 +141,9 @@ function SalesTransaction() {
     } else {
       // Item with the itemCode does not exist, so add a new item with quantity 1
       append({
-        itemId: item,
-        quantity: quantity ? parseInt(quantity) : 1,
+        itemId: { ...item, currentPrice: price }, // Update currentPrice field
+        // itemId: item,
+        quantity: quantity ? parseFloat(quantity.toFixed(2)) : 1,
       });
     }
   };
@@ -165,6 +169,10 @@ function SalesTransaction() {
     // Clear the timeout if the component unmounts before the timeout
     return () => clearTimeout(timeoutId);
   }, [watchClientId]);
+
+  // useEffect(() => {
+  //   setValue("products", productFields || []);
+  // }, [watch("products")])
 
   return (
     <>
@@ -214,18 +222,23 @@ function SalesTransaction() {
                       control={control}
                       options={clientData || []}
                       disabled={watch("items")?.length > 0}
-                      getOptionLabel={(option) =>
-                        option.businessName?.toUpperCase() +
-                          " " +
-                          option.city?.toUpperCase() +
-                          ", " +
-                          option.province?.toUpperCase() +
-                          " - " +
-                          option.ownersName?.toUpperCase() || ""
-                      }
-                      // disableClearable
+                      getOptionLabel={(option) => {
+                        const businessName =
+                          option.businessName?.toUpperCase() || "";
+                        const city = option.city?.toUpperCase() || "";
+                        const province = option.province?.toUpperCase() || "";
+                        const ownersName =
+                          option.ownersName?.toUpperCase() || "";
+                        const clientId = option.clientId
+                          ? ` - ${option.clientId}`
+                          : ""; // Assuming option.clientId exists
+
+                        return `${businessName} ${city}, ${province} - ${ownersName}${clientId}`;
+                      }}
                       loading={isClientLoading}
-                      isOptionEqualToValue={() => true}
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value?.id
+                      } // Compare by unique ID
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -236,6 +249,7 @@ function SalesTransaction() {
                               watch("items")?.length > 0 ? "none" : "auto",
                           }}
                           data-tour="select-client"
+                          // Uncomment if needed
                           // helperText={errors?.clientId?.message}
                           // error={!!errors?.clientId}
                         />
@@ -268,6 +282,17 @@ function SalesTransaction() {
                       />
                       <Typography>Quick Add</Typography>
                     </Box>
+
+                    {/* <Tooltip title="Edit">
+                      <IconButton
+                        onClick={() => {
+                          setEditMode(!editMode);
+                        }}
+                        sx={{ height: "100%" }}
+                      >
+                        <Edit />
+                      </IconButton>
+                    </Tooltip> */}
 
                     <Tooltip title="Filters">
                       <Box ref={filterRef}>
@@ -346,7 +371,6 @@ function SalesTransaction() {
                     </Box>
                   ) : (
                     productData?.priceModeItems?.map((item, index) => {
-                      console.log(item.priceModeCode);
                       return (
                         <Button
                           className="salesTransaction__body__itemsForm__itemsList__itemCard"
@@ -386,9 +410,9 @@ function SalesTransaction() {
                               fontWeight="700"
                               textTransform="none"
                             >
-                              {item.itemCode} 
+                              {item.itemCode}
                             </Typography>
-                            
+
                             <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__labels__price">
                               <Typography
                                 fontWeight="700"
@@ -397,13 +421,15 @@ function SalesTransaction() {
                               >
                                 <span style={{ whiteSpace: "nowrap" }}>
                                   ₱
-                                  {item.currentPrice?.toLocaleString(
-                                    undefined,
-                                    {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    }
-                                  )}
+                                  <span>
+                                    {item.currentPrice?.toLocaleString(
+                                      undefined,
+                                      {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      }
+                                    )}
+                                  </span>
                                 </span>
                               </Typography>
                             </Box>
@@ -411,7 +437,8 @@ function SalesTransaction() {
 
                           <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__description">
                             <Typography fontSize="12px">
-                              {item.isClearPack === true ? "© " : ""}{item.itemDescription}
+                              {item.isClearPack === true ? "© " : ""}
+                              {item.itemDescription}
                             </Typography>
                           </Box>
                         </Button>
@@ -537,7 +564,7 @@ function SalesTransaction() {
       />
 
       <CashoutModal
-        total={totalAmount}
+        total={parseFloat(totalAmount).toFixed(2)}
         resetTransaction={reset}
         orderData={getValues()}
         open={isCashoutOpen}
