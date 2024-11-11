@@ -77,7 +77,7 @@ function CheckIn() {
 
   // RTK Query
   const { data, isFetching } = useGetCheckinQuery({
-    Page: page + 1,
+    PageNumber: page + 1,
     PageSize: rowsPerPage,
     Search: search,
   });
