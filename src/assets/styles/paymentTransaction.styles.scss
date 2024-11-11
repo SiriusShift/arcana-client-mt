@@ -130,7 +130,7 @@
 			&__transactionsList {
 				display: grid;
 				grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-				grid-auto-rows: px;
+				// grid-auto-rows: px;
 				gap: 10px;
 				overflow: auto;
 				// height: calc(100% - 30px);
