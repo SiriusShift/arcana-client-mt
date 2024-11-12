@@ -197,7 +197,7 @@ function CheckIn() {
   // CommonTable Props
   const tableHeads = [
     "User",
-    "Date",
+    "Time In",
     "Business Name",
     "Business Owner",
     "Barangay",
@@ -241,6 +241,7 @@ function CheckIn() {
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
+          checkIn
           evenLesserCompact
           moveNoDataUp
           mapData={data?.checkIn}

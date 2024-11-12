@@ -31,6 +31,7 @@ import moment from "moment";
 function CommonTable({
   actionsHead,
   actions,
+  checkIn,
   mt,
   mapData,
   tableHeads,

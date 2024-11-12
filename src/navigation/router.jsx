@@ -369,10 +369,10 @@ export const router = createBrowserRouter([
         path: "reports",
         element: <Reports />
       },
-      // {
-      //   path: "cheque",
-      //   element: <Cheque />
-      // }
+      {
+        path: "cheque",
+        element: <Cheque />
+      }
     ],
   },
 ]);
