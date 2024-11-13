@@ -41,6 +41,7 @@ function CommonTable({
   onArchive,
   onView,
   onFreebie,
+  onCheckout,
   onReleaseFreebie,
   onRegularRegister,
   onUpdateFreebies,
@@ -305,6 +306,31 @@ function CommonTable({
                   )}
 
                   {(customOrderKeys || dataToMapKeys).map((keys, k) => {
+                    //Special module to change color whether there is a time out data
+                    if (checkIn) {
+                      if (keys === "timeOut" || keys === "createdDate") {
+                        return (
+                          <TableCell sx={{ bgcolor: item["timeOut"] ? "#A2E4B8" : "#FF7276" }} key={k}>
+                            {item[keys] &&
+                            moment(item[keys]).format("MMM DD, YYYY HH:mm:ss") || "N/A"}
+                            {/* // H:mm a */}
+                          </TableCell>
+                        );
+                      }
+                      if (!item["timeOut"]) {
+                        return (
+                          <TableCell sx={{ bgcolor: "#FF7276" }} key={k}>
+                            {item[keys] || "N/A"}
+                          </TableCell>
+                        );
+                      }else{
+                        return (
+                          <TableCell sx={{ bgcolor: "#A2E4B8" }} key={k}>
+                            {item[keys] || "N/A"}
+                          </TableCell>
+                        );
+                      }
+                    }
                     if (
                       booleanDisplayOptions.some(
                         (option) => option.keyName === keys
@@ -500,15 +526,15 @@ function CommonTable({
                         </TableCell>
                       );
                     }
-                    
-                    if(keys === "createdDate"){
+
+                    if (keys === "createdDate") {
                       return (
                         <TableCell key={k}>
                           {item[keys] &&
-                            moment(item[keys]).format("MMM DD, YYYY HH:mm:ss")}
+                            moment(item[keys]).format("MMM DD, YYYY")}
                           {/* // H:mm a */}
                         </TableCell>
-                      )
+                      );
                     }
 
                     if (uppercaseKeys.includes(keys)) {
@@ -593,7 +619,7 @@ function CommonTable({
                       sx={{
                         position: "sticky",
                         right: 0,
-                        bgcolor: "white !important",
+                        bgcolor: checkIn ? item["timeOut"] ? "#A2E4B8" : "#FF7276" : "white !important",
                       }}
                     >
                       <CommonActions
@@ -635,6 +661,7 @@ function CommonTable({
                           onPaymentHistories && onPaymentHistories
                         }
                         onFile={onFile && onFile}
+                        onCheckout={onCheckout && onCheckout}
                         onPay={onPay && onPay}
                         onInspect={onInspect && onInspect}
                         item={item}

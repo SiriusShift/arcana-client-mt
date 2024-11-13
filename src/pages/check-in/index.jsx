@@ -24,10 +24,12 @@ import ViewTransactionModal from "../../components/modals/sales-management/ViewT
 import {
   useGetCheckinQuery,
   usePostCheckinMutation,
+  usePatchTimeOutMutation,
 } from "../../features/check-in/api/checkinApi";
 import CheckInModal from "../../components/modals/CheckInModal";
 import MapModal from "../../components/modals/MapModal";
 import useSnackbar from "../../hooks/useSnackbar";
+import useConfirm from "../../hooks/useConfirm";
 
 function CheckIn() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -35,9 +37,11 @@ function CheckIn() {
   const [typeCustomer, setTypeCustomer] = useState(null);
   const [search, setSearch] = useState("");
   const location = useGeolocation();
+  const confirm = useConfirm();
   const snackbar = useSnackbar();
   const webcamRef = useRef(null);
   const userData = useSelector((state) => state.login.userDetails);
+  const selectedRowData = useSelector((state) => state.selectedRow.value);
   console.log(typeCustomer);
 
   // Object for type
@@ -89,6 +93,8 @@ function CheckIn() {
 
   const [postCheckin, { isLoading: isPosting }] = usePostCheckinMutation();
 
+  const [patchCheckin] = usePatchTimeOutMutation();
+
   const {
     handleSubmit,
     formState: { isValid, isDirty },
@@ -121,7 +127,7 @@ function CheckIn() {
     try {
       const formData = new FormData();
 
-      if(typeCustomer?.label === "Others"){
+      if (typeCustomer?.label === "Others") {
         formData.append("image", data?.image);
         formData.append("latitude", data?.latitude);
         formData.append("longitude", data?.longitude);
@@ -130,15 +136,16 @@ function CheckIn() {
         formData.append("City", data?.city);
         formData.append("Province", data?.province);
         formData.append("barangay", data?.barangay);
-        formData.append("FullName", data?.ownersName)
+        formData.append("FullName", data?.ownersName);
         formData.append("Remarks", data?.remarks);
-      }else{
+      } else {
         data?.image && formData.append("image", data?.image);
         data?.latitude && formData.append("latitude", data?.latitude);
         data?.longitude && formData.append("longitude", data?.longitude);
         data?.remarks && formData.append("remarks", data?.remarks);
         data?.userId && formData.append("userId", data?.userId);
-        data?.storeName && formData.append("clientId", data?.storeName?.clientId);
+        data?.storeName &&
+          formData.append("clientId", data?.storeName?.clientId);
       }
       // Append current date in your preferred format (or use moment here)
       formData.append("date", moment().toISOString());
@@ -159,6 +166,36 @@ function CheckIn() {
     }
   };
 
+  /*************  ✨ Codeium Command ⭐  *************/
+  /**
+   * Handles the checkout process by prompting the user for confirmation.
+   * If confirmed, it proceeds to patch the check-in data for the current user.
+   * Displays a success message upon successful checkout or an error message if an exception occurs.
+   */
+  /******  a00bf1e3-54b4-4415-99dc-11182cac0b11  *******/ const onCheckout =
+    async () => {
+      try {
+        await confirm({
+          children: "Are you sure you want to checkout?",
+/*************  ✨ Codeium Command ⭐  *************/
+        /**
+         * Callback function called if the user confirms the checkout.
+         * Proceeds to patch the check-in data for the current user.
+         */
+/******  4936aa06-9bd6-4037-b93d-7014995298de  *******/          question: true,
+
+          callback: () => {
+            patchCheckin(selectedRowData?.id).unwrap();
+          },
+        });
+
+        snackbar({ message: "Checked out successfully", variant: "success" });
+      } catch (error) {
+        console.log(error);
+        snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
+      }
+    };
+
   const submitImage = (data) => {
     setValue("image", data, {
       shouldValidate: true,
@@ -171,7 +208,7 @@ function CheckIn() {
       shouldValidate: true,
       shouldDirty: true,
     });
-  }
+  };
 
   const handleAddOpen = () => {
     onDrawerOpen();
@@ -198,6 +235,7 @@ function CheckIn() {
   const tableHeads = [
     "User",
     "Time In",
+    "Time Out",
     "Business Name",
     "Business Owner",
     "Barangay",
@@ -205,12 +243,12 @@ function CheckIn() {
     "Province",
     "Latitude",
     "Longitude",
-    "Image",
   ];
 
   const customOrderKeys = [
     "createdBy",
     "createdDate",
+    "timeOut",
     "businessName",
     "fullName",
     "barangay",
@@ -218,7 +256,6 @@ function CheckIn() {
     "city",
     "latitude",
     "longitude",
-    "image",
   ];
 
   // UseEffect
@@ -242,7 +279,7 @@ function CheckIn() {
       ) : (
         <CommonTable
           checkIn
-          evenLesserCompact
+          compact
           moveNoDataUp
           mapData={data?.checkIn}
           tableHeads={tableHeads}
@@ -252,6 +289,7 @@ function CheckIn() {
           onView={onView}
           count={data?.totalCount || 0}
           rowsPerPage={rowsPerPage}
+          onCheckout={onCheckout}
           setRowsPerPage={setRowsPerPage}
           page={page}
           setPage={setPage}
@@ -264,8 +302,8 @@ function CheckIn() {
         drawerHeader={"Time in"}
         onSubmit={handleSubmit(onDrawerSubmit)}
         disableSubmit={!isValid}
-        isLoading={isPosting}      
-        >
+        isLoading={isPosting}
+      >
         <Autocomplete
           disablePortal
           name="type"
@@ -323,7 +361,7 @@ function CheckIn() {
                 />
               )}
             />
-             <Controller
+            <Controller
               control={control}
               name="city"
               render={({ field }) => (
@@ -335,7 +373,7 @@ function CheckIn() {
                 />
               )}
             />
-             <Controller
+            <Controller
               control={control}
               name="province"
               render={({ field }) => (

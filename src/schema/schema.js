@@ -1199,3 +1199,16 @@ export const othersAttendance = {
 		remarks: "",
 	},
 };
+
+export const reportsSchema = {
+	schema: yup.object({
+		clientId: yup.object(),
+		dateFrom: yup.date(),
+		dateTo: yup.date(),
+	}),
+	defaultValues: {
+		clientId: null,
+		dateFrom: moment(),
+		dateTo: moment(),
+	},
+};

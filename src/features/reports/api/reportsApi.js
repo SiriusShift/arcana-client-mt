@@ -2,7 +2,7 @@ import { api } from "../../api";
 
 const reportsApi = api
   .enhanceEndpoints({
-    addTagTypes: ["CDO Report", "Sales Journal Report", "AS Report"],
+    addTagTypes: ["CDO Report", "Sales Journal Report", "AS Report", "CheckIn Report", "SOA Report"],
   })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -30,14 +30,14 @@ const reportsApi = api
         }),
         providesTags: ["AS Report"],
       }),
-      PriceModeReport: builder.query({
-        query: (params) => ({
-          url: "/get-price-mode-reports",
-          method: "GET",
-          params,
-        }),
-        providesTags: ["Price Mode Report"],
-      }),
+      // PriceModeReport: builder.query({
+      //   query: (params) => ({
+      //     url: "/get-price-mode-reports",
+      //     method: "GET",
+      //     params,
+      //   }),
+      //   providesTags: ["Price Mode Report"],
+      // }),
       getCheckInReports: builder.query({
         query: (params) => ({
           url: "/get-check-in-reports",
@@ -46,7 +46,15 @@ const reportsApi = api
         }),
         providesTags: ["CheckIn Report"],
       }),
+      getSOAReports: builder.query({
+        query: (params) => ({
+          url: "/get-soa-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["SOA Report"],
+      }),
     }),
   });
 
-export const { useCDOReportsQuery, useSJReportsQuery, useASReportsQuery, usePriceModeReportQuery, useGetCheckInReportsQuery, useCheckInReportQuery } = reportsApi;
+export const { useCDOReportsQuery, useSJReportsQuery, useASReportsQuery, usePriceModeReportQuery, useGetCheckInReportsQuery, useCheckInReportQuery, useGetSOAReportsQuery } = reportsApi;

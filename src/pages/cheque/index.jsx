@@ -5,7 +5,13 @@ import {
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { Autocomplete, Box, TextField, Tooltip } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import { useEffect, useState } from "react";
 import {
@@ -27,12 +33,14 @@ import { listingToChequeSchema } from "../../schema/schema";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
 import useSnackbar from "../../hooks/useSnackbar";
 import { NumericFormat } from "react-number-format";
+import { useGetAllListingFeeQuery } from "../../features/listing-fee/api/listingFeeApi";
 
 function cheque() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
+  const [balance, setBalance] = useState(0);
   const [dateFrom, setDateFrom] = useState(moment());
   const [dateTo, setDateTo] = useState(moment());
   const snackbar = useSnackbar();
@@ -52,12 +60,21 @@ function cheque() {
     DateTo: moment(dateTo).format("MM-DD-YYYY"),
   });
 
-  const { data: RegisteredClients, isFetching: fetchingClients } =
-    useGetAllClientsQuery({
-      PageSize: 1000,
-      RegistrationStatus: "Approved",
-    });
-    
+  const {
+    data: listingFeeClients,
+    isFetching: listingFeeFetching,
+    error,
+  } = useGetAllListingFeeQuery(
+    {
+      Search: search,
+      Status: true,
+      ListingFeeStatus: "Approved",
+      PageSize: 10000,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const [postCheque, { isLoading }] = usePostChequeMutation();
 
@@ -74,6 +91,8 @@ function cheque() {
     defaultValues: listingToChequeSchema.defaultValues,
   });
 
+  console.log(watch());
+
   //Functions
   const handleDrawerClose = () => {
     onDrawerClose();
@@ -81,13 +100,14 @@ function cheque() {
   };
 
   const onSubmit = async (data) => {
+    console.log(data);
     const transformedData = {
-      clientId: data?.clientId?.id,
-      bankName: data?.bankName,
+      clientId: data?.clientId?.clientId,
+      bank: data?.bankName,
       chequeNo: data?.chequeNo,
       chequeDate: moment(data?.chequeDate).format("YYYY-MM-DD"),
       voucherNo: data?.voucherNo,
-      amount: parseInt(data?.amount),
+      amountToConvert: parseInt(data?.amount),
     };
 
     try {
@@ -97,6 +117,7 @@ function cheque() {
         message: "Successfully added cheque",
         variant: "success",
       });
+      setBalance(0);
     } catch (error) {
       if (error?.data?.error?.message) {
         snackbar({ message: error?.data?.error?.message, variant: "error" });
@@ -167,15 +188,23 @@ function cheque() {
         onSubmit={handleSubmit(onSubmit)}
         isLoading={isLoading}
       >
-        <ControlledAutocomplete
+        <Autocomplete
           name="clientId"
           control={control}
-          options={RegisteredClients?.regularClient}
+          options={listingFeeClients?.listingFees}
           getOptionLabel={(option) =>
-            option?.businessName?.toUpperCase() + " - " + String(option?.id)
+            option?.businessName?.toUpperCase() +
+            ", " +
+            option?.clientName.toUpperCase() +
+            " - " +
+            String(option?.clientId)
           }
           disableClearable
           isOptionEqualToValue={() => true}
+          onChange={(event, newValue) => {
+            setValue("clientId", newValue);
+            setBalance(newValue?.remainingBalance);
+          }}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -271,28 +300,47 @@ function cheque() {
         />
         <Controller
           control={control}
-          name={"amount"}
+          name="amount"
           render={({ field: { onChange, onBlur, value, ref } }) => (
             <NumericFormat
               label="Amount"
               type="text"
               size="small"
               customInput={TextField}
+              isAllowed={(values) => {
+                const { floatValue } = values;
+                if (floatValue > balance) {
+                  snackbar({
+                    message: "Insufficient balance",
+                    variant: "error",
+                    severity: "error",
+                    autoHide: true,
+                  });
+                  return false;
+                }
+                return true;
+              }}
               autoComplete="off"
               onValueChange={(e) => {
-                onChange(Number(e.value));
+                onChange(e.floatValue); // This directly passes the floatValue to onChange
               }}
               onBlur={onBlur}
-              value={value || ""}
+              value={value} // Ensure `value` here directly reflects the field's state
               ref={ref}
-              // required
               thousandSeparator=","
               prefix="₱"
               helperText={errors?.price?.message}
-              error={errors?.price}
+              error={Boolean(errors?.price)}
             />
           )}
         />
+        <Typography className="">
+          Listing Fee Balance : ₱
+          {balance.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </Typography>
       </CommonDrawer>
     </>
   );

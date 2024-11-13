@@ -20,6 +20,14 @@ const checkinApi = api.enhanceEndpoints({addTagTypes: ["Checkin"]}).injectEndpoi
             invalidatesTags: ["Checkin"],
             transformResponse: (response) => response.value,
         }),
+        patchTimeOut: builder.mutation({
+            query: (id) => ({
+                url: `/add-time-out/${id}`,
+                method: "PATCH",
+            }),
+            invalidatesTags: ["Checkin"],
+            transformResponse: (response) => response.value,
+        }),
     }),
 })
-export const {useGetCheckinQuery, usePostCheckinMutation} = checkinApi
+export const {useGetCheckinQuery, usePostCheckinMutation, usePatchTimeOutMutation} = checkinApi

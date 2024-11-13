@@ -53,6 +53,11 @@ export const reportNames = [
 		label: "Check In Reports",
 		index: 3,
 		value: "check-ins",
+	},
+	{
+		label: "Statement of Account Reports",
+		index: 4,
+		value: "SOA"
 	}
 ]
 

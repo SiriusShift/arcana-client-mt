@@ -17,63 +17,92 @@ import {
   useSJReportsQuery,
   useASReportsQuery,
   useGetCheckInReportsQuery,
-  useCheckInReportQuery
+  useGetSOAReportsQuery,
 } from "../../features/reports/api/reportsApi";
+import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
 import CommonFilter from "../../components/CommonFilter";
+import ControlledAutocomplete from "../../components/ControlledAutocomplete";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Controller, useForm } from "react-hook-form";
+import { reportsSchema } from "../../schema/schema";
 
 function Reports() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [activeReport, setActiveReport] = useState();
-  const [activeArray, setActiveArray]  = useState();
+  const [activeArray, setActiveArray] = useState();
   const [clusterId, setClusterId] = useState();
   const [isActive, setIsActive] = useState({
     cdo: true,
     sj: true,
     as: true,
     // pm: true,
-    ci: true
-})
-  const [dateFrom, setDateFrom] = useState(moment());
-  const [dateTo, setDateTo] = useState(moment());
+    ci: true,
+  });
   const [dateFromTemp, setDateFromTemp] = useState(moment());
   const [dateToTemp, setDateToTemp] = useState(moment());
   const [page, setPage] = useState(0);
+  const [client, setClient] = useState();
   const [search, setSearch] = useState("");
   const userDetails = useSelector((state) => state.login.userDetails);
+  const selectedRowData = useSelector((state) => state.selectedRow.value);
 
-  console.log(clusterId);
+  const {
+    handleSubmit,
+    formState: { isValid, isDirty, errors },
+    setValue,
+    reset,
+    control,
+    watch,
+  } = useForm({
+    resolver: yupResolver(reportsSchema.schema),
+    mode: "onChange",
+    defaultValues: reportsSchema.defaultValues,
+  });
 
+  console.log(watch());
 
-  console.log("date from : ", dateFromTemp, dateToTemp)
+  console.log("date from : ", dateFromTemp, dateToTemp);
   console.log(activeArray);
-  
+
   // RTK Query
-  const { data: cdoReportData, isFetching: cdoFetching } =
-    useCDOReportsQuery({
+
+  const { data: RegisteredClients } = useGetAllClientsQuery({
+    RegistrationStatus: "Approved",
+  });
+  const { data: cdoReportData, isFetching: cdoFetching } = useCDOReportsQuery(
+    {
       Page: page + 1,
       PageSize: rowsPerPage,
-      DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
+      DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") || "",
       DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || ""
-    }, {skip: isActive.cdo});
+      clusterId: clusterId?.value || "",
+    },
+    { skip: isActive.cdo }
+  );
 
-  const { data: sjReportData, isFetching: sjFetching } = useSJReportsQuery({
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
-    DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
-    clusterId: clusterId?.value || ""
-  }, {skip: isActive.sj});
+  const { data: sjReportData, isFetching: sjFetching } = useSJReportsQuery(
+    {
+      Page: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") || "",
+      DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || "",
+    },
+    { skip: isActive.sj }
+  );
 
-  const { data: asReportData, isFetching: asFetching } = useASReportsQuery({
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
-    DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
-    clusterId: clusterId?.value || ""
-  }, {skip: isActive.as});
+  const { data: asReportData, isFetching: asFetching } = useASReportsQuery(
+    {
+      Page: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") || "",
+      DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || "",
+    },
+    { skip: isActive.as }
+  );
 
   // const { data: priceModeReportData, isFetching: priceModeFetching } =
   //   usePriceModeReportQuery({
@@ -81,13 +110,22 @@ function Reports() {
   //     PageSize: rowsPerPage,
   //   }, {skip: isActive.pm});
 
-  const { data: checkInReportData, isFetching: checkInFetching } = useGetCheckInReportsQuery({
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") ||  "",
-    DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
-    clusterId: clusterId?.value || ""
-  }, {});
+  const { data: checkInReportData, isFetching: checkInFetching } =
+    useGetCheckInReportsQuery(
+      {
+        Page: page + 1,
+        PageSize: rowsPerPage,
+        DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") || "",
+        DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+        clusterId: clusterId?.value || "",
+      },
+      { skip: isActive.ci }
+    );
+
+  const { data: soaReportData, isFetching: soaFetching } =
+    useGetSOAReportsQuery({
+      ClientId: client?.id,
+    });
   //functions
   const handleSubmitDate = () => {
     setDateFrom(dateFromTemp);
@@ -110,7 +148,9 @@ function Reports() {
           activeReport.value
         }-reports?DateFrom=${moment(dateFromTemp).format(
           "MM-DD-YYYY"
-        )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}&ClusterId=${clusterId?.value}`,
+        )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}&ClusterId=${
+          clusterId?.value
+        }`,
         {
           method: "GET",
           headers: {
@@ -152,22 +192,30 @@ function Reports() {
 
   //useEffect()
   useEffect(() => {
-    const reports = [cdoReportData, sjReportData, asReportData, 
-      // priceModeReportData, 
-      checkInReportData];
-    const keys = ['cdo', 'sj', 'as', 'ci'
+    const reports = [
+      cdoReportData,
+      sjReportData,
+      asReportData,
+      // priceModeReportData,
+      checkInReportData,
+    ];
+    const keys = [
+      "cdo",
+      "sj",
+      "as",
+      "ci",
       // 'pm',
-      ];
-  
+    ];
+
     if (activeReport?.index !== undefined) {
       console.log(reports[activeReport.index]?.value);
       setActiveArray(reports[activeReport.index]?.value);
-      
+
       const newIsActive = keys.reduce((acc, key, idx) => {
         acc[key] = idx !== activeReport.index;
         return acc;
       }, {});
-      
+
       setIsActive(newIsActive);
     }
   }, [
@@ -217,7 +265,7 @@ function Reports() {
       "amount",
       "debit",
       "credit",
-      "cluster"
+      "cluster",
     ],
     [
       "date",
@@ -239,8 +287,7 @@ function Reports() {
       "latitude",
       "longitude",
       "image",
-    ]
-    
+    ],
   ];
 
   const tableHeads = [
@@ -261,7 +308,7 @@ function Reports() {
       "Amount",
       "Debit",
       "Credit",
-      "Cluster"
+      "Cluster",
     ],
     [
       "Date",
@@ -283,10 +330,8 @@ function Reports() {
       "Latitude",
       "Longitude",
       "Image",
-    ]
+    ],
   ];
-
-  console.log("heads", customOrderKeys[activeReport?.index]);
 
   return (
     <Box className="commonPageLayout" sx={{ gap: "0px" }}>
@@ -309,56 +354,94 @@ function Reports() {
           )}
         />
         <Box className="mixin__right">
-        {(userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance") ? (
-          <CommonFilter
-          filter={onFilter}
-          clusterFilter
-        />) : ""}
-          <LocalizationProvider dateAdapter={AdapterMoment}>
-            <DatePicker
-              label="Date From"
-              value={dateFromTemp}
-              onChange={setDateFromTemp}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-              sx={{ width: "200px" }}
-              maxDate={dateToTemp}
+          {(userDetails?.roleName === "Admin" ||
+            userDetails?.roleName === "Treasury" ||
+            userDetails?.roleName === "GAS" ||
+            userDetails?.roleName === "Finance") &&
+          activeReport?.value !== "SOA" ? (
+            <CommonFilter filter={onFilter} clusterFilter />
+          ) : (
+            <ControlledAutocomplete
+              name="clientId"
+              control={control}
+              options={RegisteredClients?.regularClient}
+              getOptionLabel={(option) =>
+                option?.businessName?.toUpperCase() +
+                " - " +
+                option?.ownersName +
+                " - " +
+                String(option?.id)
+              }
+              disableClearable
+              isOptionEqualToValue={() => true}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  label="Business Name"
+                  sx={{ width: "250px" }}
+                  helperText={errors?.clientId?.message}
+                  error={errors?.clientId}
+                />
+              )}
             />
-          </LocalizationProvider>
+          )}
+          {activeReport?.value != "SOA" && (
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <DatePicker
+                label="Date From"
+                value={dateFromTemp}
+                onChange={() => {
+                  setValue("dateFrom", dateFromTemp);
+                }}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+                sx={{ width: "200px" }}
+                maxDate={dateToTemp}
+              />
+            </LocalizationProvider>
+          )}
 
-          <LocalizationProvider dateAdapter={AdapterMoment}>
-            <DatePicker
-              label="Date To"
-              value={dateToTemp}
-              onChange={setDateToTemp}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-              sx={{ width: "200px" }}
-              minDate={dateFromTemp}
-            />
-          </LocalizationProvider>
+          <Controller
+            name="dateTo"
+            control={control}
+            render={({ field }) => (
+              <LocalizationProvider dateAdapter={AdapterMoment}>
+                <DatePicker
+                  {...field}
+                  label="Date To"
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                  sx={{ width: "200px" }}
+                  minDate={dateFromTemp} // Make sure dateFromTemp is in the correct format
+                />
+              </LocalizationProvider>
+            )}
+          />
 
           <SecondaryButton
             size="medium"
             onClick={handleSubmitDate}
             sx={{ mr: "10px", height: "100%" }}
-            disabled={
-              // isExportLoading ||
-              _.isEqual(dateFrom, dateFromTemp) && _.isEqual(dateTo, dateToTemp)
-            }
+            // disabled={
+            //   // isExportLoading ||
+            //   _.isEqual(dateFrom, dateFromTemp) && _.isEqual(dateTo, dateToTemp)
+            // }
           >
             <GetApp />
           </SecondaryButton>
         </Box>
       </Box>
-      {cdoFetching || sjFetching || asFetching || 
-      // priceModeFetching || 
+      {cdoFetching ||
+      sjFetching ||
+      asFetching ||
+      // priceModeFetching ||
       checkInFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (

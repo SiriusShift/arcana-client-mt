@@ -24,6 +24,7 @@ import {
   Print,
   Receipt,
   RemoveCircle,
+  Logout,
   RequestPage,
   Restore,
   ShoppingCart,
@@ -40,6 +41,7 @@ function CommonActions({
   onArchive,
   onView,
   onMap,
+  onCheckout,
   onTag,
   onFreebie,
   onReleaseFreebie,
@@ -86,6 +88,8 @@ function CommonActions({
       onTag();
     } else if (action === "map") {
       onMap();
+    }else if(action === "checkout"){
+      onCheckout();
     } else if (action === "requestFreebie") {
       onFreebie();
     } else if (action === "releaseFreebie") {
@@ -202,6 +206,23 @@ function CommonActions({
             Receive
           </MenuItem>
         )}
+
+        {
+          onCheckout && (
+            <MenuItem
+              className="actionsMenuItem"
+              onClick={() => {
+                handleAction("checkout");
+              }}
+              disabled={
+                disableActions ? disableActions?.includes("checkout") : false
+              }
+            >
+              <Logout />
+              Checkout
+            </MenuItem>
+          )
+        }
 
         {onInspect && (
           <MenuItem
