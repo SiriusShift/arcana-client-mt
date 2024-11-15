@@ -1,7 +1,3 @@
-import {
-  useGetChequeQuery,
-  usePostChequeMutation,
-} from "../../features/cheque/api/chequeApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
@@ -33,7 +29,11 @@ import { listingToChequeSchema } from "../../schema/schema";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
 import useSnackbar from "../../hooks/useSnackbar";
 import { NumericFormat } from "react-number-format";
-import { useGetAllListingFeeQuery } from "../../features/listing-fee/api/listingFeeApi";
+import {
+  useGetAllListingFeeQuery,
+  useGetChequeQuery,
+  usePostChequeMutation,
+} from "../../features/listing-fee/api/listingFeeApi";
 
 function cheque() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -52,13 +52,16 @@ function cheque() {
     onClose: onDrawerClose,
   } = useDisclosure();
 
-  const { data, isFetching } = useGetChequeQuery({
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    Search: search,
-    DateFrom: moment(dateFrom).format("MM-DD-YYYY"),
-    DateTo: moment(dateTo).format("MM-DD-YYYY"),
-  });
+  const { data, isFetching } = useGetChequeQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      Search: search,
+      DateFrom: moment(dateFrom).format("MM-DD-YYYY"),
+      DateTo: moment(dateTo).format("MM-DD-YYYY"),
+    },
+    { refetchOnMountOrArgChange: true }
+  );
 
   const {
     data: listingFeeClients,
@@ -146,7 +149,7 @@ function cheque() {
 
   useEffect(() => {
     setPage(0);
-  }, [rowsPerPage, data]);
+  }, [search, rowsPerPage]);
 
   return (
     <>
@@ -168,20 +171,19 @@ function cheque() {
           <CommonTableSkeleton evenLesserCompact />
         ) : (
           <CommonTable
-            lowerCompact
-            moveNoDataUp
-            mapData={data?.transactions}
-            includeActions={false}
-            count={count}
-            rowsPerPage={rowsPerPage}
-            setRowsPerPage={setRowsPerPage}
-            page={page}
-            setPage={setPage}
+          compact
+          moveNoDataUp
+          mapData={data?.transactions}
+          count={data?.totalCount || 0}
+          rowsPerPage={rowsPerPage}
+          setRowsPerPage={setRowsPerPage}
+          page={page}
+          setPage={setPage}
           />
         )}
       </Box>
       <CommonDrawer
-        drawerHeader="Listing Fee to Cheque"
+        drawerHeader="Listing Fee Payment"
         open={isDrawerOpen}
         onClose={handleDrawerClose}
         disableSubmit={!isValid || !isDirty}
@@ -311,7 +313,7 @@ function cheque() {
                 const { floatValue } = values;
                 if (floatValue > balance) {
                   snackbar({
-                    message: "Insufficient balance",
+                    message: "Maximum limit",
                     variant: "error",
                     severity: "error",
                     autoHide: true,

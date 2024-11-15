@@ -1,4 +1,4 @@
-import { Autocomplete, Box, TextField } from "@mui/material";
+import { Autocomplete, Box, Button, TextField } from "@mui/material";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
@@ -26,6 +26,11 @@ import ControlledAutocomplete from "../../components/ControlledAutocomplete";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import { reportsSchema } from "../../schema/schema";
+import Report from "../../components/page-components/reports/SOAreport";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+// import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
+import { useDispatch } from "react-redux";
+// import SOAReport from "../../utils/Excel"
 
 function Reports() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -40,13 +45,14 @@ function Reports() {
     // pm: true,
     ci: true,
   });
-  const [dateFromTemp, setDateFromTemp] = useState(moment());
-  const [dateToTemp, setDateToTemp] = useState(moment());
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
   const [search, setSearch] = useState("");
   const userDetails = useSelector((state) => state.login.userDetails);
-  const selectedRowData = useSelector((state) => state.selectedRow.value);
+  // const selectedRowData = useSelector((state) => state.selectedRow.value);
+  // const dispatch = useDispatch();
+
+  const pesoArray = ["charges", "payment", "remainingBalance"];
 
   const {
     handleSubmit,
@@ -62,21 +68,20 @@ function Reports() {
   });
 
   console.log(watch());
-
-  console.log("date from : ", dateFromTemp, dateToTemp);
   console.log(activeArray);
 
   // RTK Query
 
   const { data: RegisteredClients } = useGetAllClientsQuery({
     RegistrationStatus: "Approved",
+    PageSize: 10000
   });
   const { data: cdoReportData, isFetching: cdoFetching } = useCDOReportsQuery(
     {
       Page: page + 1,
       PageSize: rowsPerPage,
-      DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") || "",
-      DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
       clusterId: clusterId?.value || "",
     },
     { skip: isActive.cdo }
@@ -86,8 +91,8 @@ function Reports() {
     {
       Page: page + 1,
       PageSize: rowsPerPage,
-      DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") || "",
-      DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
       clusterId: clusterId?.value || "",
     },
     { skip: isActive.sj }
@@ -97,12 +102,13 @@ function Reports() {
     {
       Page: page + 1,
       PageSize: rowsPerPage,
-      DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") || "",
-      DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
       clusterId: clusterId?.value || "",
     },
     { skip: isActive.as }
   );
+  
 
   // const { data: priceModeReportData, isFetching: priceModeFetching } =
   //   usePriceModeReportQuery({
@@ -115,21 +121,25 @@ function Reports() {
       {
         Page: page + 1,
         PageSize: rowsPerPage,
-        DateFrom: moment(dateFromTemp).format("MM-DD-YYYY") || "",
-        DateTo: moment(dateToTemp).format("MM-DD-YYYY") || "",
+        DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+        DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
         clusterId: clusterId?.value || "",
       },
       { skip: isActive.ci }
     );
 
   const { data: soaReportData, isFetching: soaFetching } =
-    useGetSOAReportsQuery({
-      ClientId: client?.id,
-    });
+    useGetSOAReportsQuery(
+      {
+        ClientId: watch("clientId")?.id,
+      },
+      {
+        skip: isActive.soa,
+        refetchOnMountOrArgChange: true,
+      },
+    );
   //functions
   const handleSubmitDate = () => {
-    setDateFrom(dateFromTemp);
-    setDateTo(dateToTemp);
     useDownloadExcel();
   };
 
@@ -145,11 +155,11 @@ function Reports() {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASEURL}${
-          activeReport.value
-        }-reports?DateFrom=${moment(dateFromTemp).format(
+          activeReport?.value
+        }-reports?DateFrom=${moment(watch("dateFrom")).format(
           "MM-DD-YYYY"
-        )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}&ClusterId=${
-          clusterId?.value
+        )}&DateTo=${moment(watch("dateTo")).format("MM-DD-YYYY")}${
+          clusterId ? `&clusterId=${clusterId?.value}` : ""
         }`,
         {
           method: "GET",
@@ -172,9 +182,9 @@ function Reports() {
       link.href = url;
       link.setAttribute(
         "download",
-        `${activeReport.value}_Reports_${moment(dateFromTemp).format(
+        `${activeReport.value}_Reports_${moment(watch("dateFrom")).format(
           "YYYYMMDD"
-        )}_${moment(dateToTemp).format("YYYYMMDD")}.xlsx`
+        )}_${moment(watch("dateTo")).format("YYYYMMDD")}.xlsx`
       );
       document.body.appendChild(link);
       link.click();
@@ -198,13 +208,15 @@ function Reports() {
       asReportData,
       // priceModeReportData,
       checkInReportData,
+      soaReportData,
     ];
     const keys = [
       "cdo",
       "sj",
       "as",
       "ci",
-      // 'pm',
+      "soa",
+      // 'pm',/
     ];
 
     if (activeReport?.index !== undefined) {
@@ -224,10 +236,17 @@ function Reports() {
     sjReportData,
     asReportData,
     checkInReportData,
+    soaReportData,
     // priceModeReportData,
-    dateFromTemp,
-    dateToTemp,
+    watch("dateFrom"),
+    watch("dateTo"),
   ]);
+
+  // useEffect(() => {
+  //   if(soaReportData?.value?.pendingSoa.length > 0){
+  //     dispatch(setSelectedRow(soaReportData?.value));
+  //   }
+  // }, [soaReportData]);
 
   useEffect(() => {
     if (activeArray) {
@@ -288,6 +307,16 @@ function Reports() {
       "longitude",
       "image",
     ],
+    [
+      "deliveryDate",
+      "invoiceNo",
+      "aging",
+      "charges",
+      "taxWithheld",
+      "payment",
+      "remainingBalance",
+      "remarks",
+    ],
   ];
 
   const tableHeads = [
@@ -331,6 +360,16 @@ function Reports() {
       "Longitude",
       "Image",
     ],
+    [
+      "Delivery Date",
+      "Invoice Number",
+      "Aging",
+      "Charges",
+      "Tax Withheld",
+      "Payment",
+      "Remaining Balance",
+      "Remarks",
+    ],
   ];
 
   return (
@@ -342,6 +381,7 @@ function Reports() {
           getOptionLabel={(option) => option?.label}
           onChange={(_, value) => {
             setActiveReport(value);
+            setValue("clientId", null);
           }}
           value={activeReport}
           renderInput={(params) => (
@@ -361,50 +401,55 @@ function Reports() {
           activeReport?.value !== "SOA" ? (
             <CommonFilter filter={onFilter} clusterFilter />
           ) : (
-            <ControlledAutocomplete
-              name="clientId"
-              control={control}
-              options={RegisteredClients?.regularClient}
-              getOptionLabel={(option) =>
-                option?.businessName?.toUpperCase() +
-                " - " +
-                option?.ownersName +
-                " - " +
-                String(option?.id)
-              }
-              disableClearable
-              isOptionEqualToValue={() => true}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  label="Business Name"
-                  sx={{ width: "250px" }}
-                  helperText={errors?.clientId?.message}
-                  error={errors?.clientId}
-                />
-              )}
-            />
+            <>
+              <ControlledAutocomplete
+                name="clientId"
+                control={control}
+                options={RegisteredClients?.regularClient}
+                getOptionLabel={(option) =>
+                  option?.businessName?.toUpperCase() +
+                  " - " +
+                  option?.ownersName +
+                  " - " +
+                  String(option?.id)
+                }
+                disableClearable
+                isOptionEqualToValue={() => true}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    size="small"
+                    label="Business Name"
+                    sx={{ width: "250px" }}
+                    helperText={errors?.clientId?.message}
+                    error={errors?.clientId}
+                  />
+                )}
+              />
+            </>
           )}
           {activeReport?.value != "SOA" && (
-            <LocalizationProvider dateAdapter={AdapterMoment}>
-              <DatePicker
-                label="Date From"
-                value={dateFromTemp}
-                onChange={() => {
-                  setValue("dateFrom", dateFromTemp);
-                }}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-                sx={{ width: "200px" }}
-                maxDate={dateToTemp}
+            <>
+              <Controller
+                name="dateFrom"
+                control={control}
+                render={({ field }) => (
+                  <LocalizationProvider dateAdapter={AdapterMoment}>
+                    <DatePicker
+                      {...field}
+                      label="Date From"
+                      slotProps={{
+                        textField: {
+                          size: "small",
+                        },
+                      }}
+                      sx={{ width: "200px" }}
+                    />
+                  </LocalizationProvider>
+                )}
               />
-            </LocalizationProvider>
+            </>
           )}
-
           <Controller
             name="dateTo"
             control={control}
@@ -419,12 +464,16 @@ function Reports() {
                     },
                   }}
                   sx={{ width: "200px" }}
-                  minDate={dateFromTemp} // Make sure dateFromTemp is in the correct format
                 />
               </LocalizationProvider>
             )}
           />
-
+          {(activeReport?.value === "SOA" && !soaFetching) ? (
+          <PDFDownloadLink document={<Report client={soaReportData?.value} dateTo={watch("dateTo")}/>} fileName="SOA.pdf">
+            <SecondaryButton disabled={!watch("clientId") && !soaFetching } size="medium" variant="contained">
+              <GetApp />
+            </SecondaryButton>
+          </PDFDownloadLink>) :(
           <SecondaryButton
             size="medium"
             onClick={handleSubmitDate}
@@ -436,11 +485,13 @@ function Reports() {
           >
             <GetApp />
           </SecondaryButton>
+          )}
         </Box>
       </Box>
       {cdoFetching ||
       sjFetching ||
       asFetching ||
+      soaFetching ||
       // priceModeFetching ||
       checkInFetching ? (
         <CommonTableSkeleton evenLesserCompact />
@@ -448,7 +499,12 @@ function Reports() {
         <CommonTable
           lowerCompact
           moveNoDataUp
-          mapData={activeArray?.transactions || activeArray?.checkIn}
+          pesoArray={pesoArray}
+          mapData={
+            activeArray?.transactions ||
+            activeArray?.checkIn ||
+            activeArray?.pendingSoa
+          }
           tableHeads={tableHeads[activeReport?.index]}
           customOrderKeys={customOrderKeys[activeReport?.index]}
           includeActions={false}

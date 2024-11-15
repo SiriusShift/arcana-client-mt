@@ -234,28 +234,26 @@ function CheckIn() {
   // CommonTable Props
   const tableHeads = [
     "User",
-    "Time In",
-    "Time Out",
     "Business Name",
     "Business Owner",
     "Barangay",
     "City",
     "Province",
-    "Latitude",
-    "Longitude",
+    "Time In",
+    "Time Out",
+    "Duration",
   ];
 
   const customOrderKeys = [
     "createdBy",
-    "createdDate",
-    "timeOut",
     "businessName",
     "fullName",
     "barangay",
     "province",
     "city",
-    "latitude",
-    "longitude",
+    "createdDate",
+    "timeOut",
+    "duration"
   ];
 
   // UseEffect

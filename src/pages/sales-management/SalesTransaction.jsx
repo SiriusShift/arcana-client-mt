@@ -141,7 +141,7 @@ function SalesTransaction() {
     } else {
       // Item with the itemCode does not exist, so add a new item with quantity 1
       append({
-        itemId: { ...item, currentPrice: price }, // Update currentPrice field
+        itemId: { ...item, currentPrice: price || item?.currentPrice }, // Update currentPrice field
         // itemId: item,
         quantity: quantity ? parseFloat(quantity.toFixed(2)) : 1,
       });

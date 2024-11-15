@@ -516,7 +516,8 @@ function CommonTable({
                       keys === "createdAt" ||
                       keys === "updatedAt" ||
                       keys === "date" ||
-                      keys === "chequeDate"
+                      keys === "chequeDate" || 
+                      keys === "deliveryDate"
                     ) {
                       return (
                         <TableCell key={k}>

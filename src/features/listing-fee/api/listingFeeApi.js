@@ -9,6 +9,7 @@ const listingFeeApi = api
       "Clients For Listing",
       "Notification",
       "ListingFeeById",
+      "Cheque",
     ],
   })
   .injectEndpoints({
@@ -117,6 +118,26 @@ const listingFeeApi = api
         transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
       }),
+
+      getCheque: builder.query({
+        query: (params) => ({
+          url: `/listing-to-check`,
+          method: "GET",
+          params
+        }),
+        providesTags: ["Cheque"],
+        transformResponse: (response) => response.value
+      }),
+
+      postCheque: builder.mutation({
+        query: (body) => ({
+          url: '/listing-to-check',
+          method: 'POST',
+          body: body, // Pass the body object here
+        }),
+        invalidatesTags: ['Listing Fee', 'Cheque'], // Optional for cache invalidation
+        transformResponse: (response) => response.value
+      })
     }),
   });
 
@@ -129,6 +150,10 @@ export const {
   usePutRejectListingFeeMutation,
   usePutUpdateListingFeeMutation,
   useDeleteCancelListingFeeMutation,
+
+  //Listing Fee to Cheque
+  useGetChequeQuery, 
+  usePostChequeMutation,
 
   //Approval History
   useLazyGetListingFeeApprovalHistoriesByIdQuery,
