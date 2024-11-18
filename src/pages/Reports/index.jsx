@@ -132,6 +132,7 @@ function Reports() {
     useGetSOAReportsQuery(
       {
         ClientId: watch("clientId")?.id,
+        DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
       },
       {
         skip: isActive.soa,
