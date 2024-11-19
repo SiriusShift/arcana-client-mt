@@ -256,6 +256,8 @@ function CheckIn() {
     "duration"
   ];
 
+  const disabledActions = ["checkout"]
+
   // UseEffect
   useEffect(() => {
     setPage(0);
@@ -282,6 +284,7 @@ function CheckIn() {
           mapData={data?.checkIn}
           tableHeads={tableHeads}
           attachKey={"image"}
+          disableActions={selectedRowData?.timeOut && disabledActions}
           customOrderKeys={customOrderKeys}
           includeActions
           onView={onView}

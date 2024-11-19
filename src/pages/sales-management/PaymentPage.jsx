@@ -259,12 +259,12 @@ function PaymentPage({
   const handleTransactionClick = (transactionId, invoiceNo, ciAttachment) => {
     // Check if ciAttachment exists; if not, do nothing
     if (!ciAttachment) return;
-  
+
     const currentTransactionIds = watch("transactionId") || [];
     const currentInvoiceNos = watch("invoiceNo") || [];
     const transactionIndex = currentTransactionIds.indexOf(transactionId);
     const invoiceIndex = currentInvoiceNos.indexOf(invoiceNo);
-  
+
     if (transactionIndex === -1 && invoiceIndex === -1) {
       // If not already selected, add it to the array
       setValue("transactionId", [...currentTransactionIds, transactionId]);
@@ -281,7 +281,6 @@ function PaymentPage({
       );
     }
   };
-  
 
   const handleSelectAll = (e) => {
     const { checked } = e.target;
@@ -416,7 +415,7 @@ function PaymentPage({
                   ", " +
                   option.businessAddress?.province?.toUpperCase() +
                   " - " +
-                  option.ownersName?.toUpperCase() || ""
+                  option.ownersName?.toUpperCase() + " - " + option.id || "" 
               }
               disabled={watch("payments").length > 0}
               loading={isClientFetching}
@@ -712,7 +711,7 @@ function PaymentPage({
                         onChange(e.target.files[0]);
                       }}
                       type="file"
-                      inputProps={{ ref: receiptUploadRef }}
+                      inputProps={{ ref: receiptUploadRef, accept: "image/png, image/jpeg, image/jpg" }}
                       size="small"
                       label="Attachment"
                       helperText={errors?.attachment?.message}
@@ -827,7 +826,7 @@ function PaymentPage({
                 size="medium"
                 endIcon={<Payment />}
                 onClick={handleSubmit(onSubmit)}
-                disabled={paymentFields.length === 0 || !isValid || !isDirty}
+                disabled={paymentFields.length === 0 || !isValid || !isDirty || watch("invoiceNo").length < 1}
               >
                 Pay Now
               </SecondaryButton>

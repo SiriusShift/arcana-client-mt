@@ -49,6 +49,7 @@ function Reports() {
   const [client, setClient] = useState();
   const [search, setSearch] = useState("");
   const userDetails = useSelector((state) => state.login.userDetails);
+  const presentDay = moment();
   // const selectedRowData = useSelector((state) => state.selectedRow.value);
   // const dispatch = useDispatch();
 
@@ -74,7 +75,7 @@ function Reports() {
 
   const { data: RegisteredClients } = useGetAllClientsQuery({
     RegistrationStatus: "Approved",
-    PageSize: 10000
+    PageSize: 10000,
   });
   const { data: cdoReportData, isFetching: cdoFetching } = useCDOReportsQuery(
     {
@@ -108,7 +109,6 @@ function Reports() {
     },
     { skip: isActive.as }
   );
-  
 
   // const { data: priceModeReportData, isFetching: priceModeFetching } =
   //   usePriceModeReportQuery({
@@ -137,7 +137,7 @@ function Reports() {
       {
         skip: isActive.soa,
         refetchOnMountOrArgChange: true,
-      },
+      }
     );
   //functions
   const handleSubmitDate = () => {
@@ -383,6 +383,11 @@ function Reports() {
           onChange={(_, value) => {
             setActiveReport(value);
             setValue("clientId", null);
+            if(value?.value === "SOA"){
+              setValue("dateFrom", null);
+            }else{
+              setValue("dateFrom", moment());
+            }
           }}
           value={activeReport}
           renderInput={(params) => (
@@ -438,6 +443,7 @@ function Reports() {
                   <LocalizationProvider dateAdapter={AdapterMoment}>
                     <DatePicker
                       {...field}
+                      maxDate={moment()}
                       label="Date From"
                       slotProps={{
                         textField: {
@@ -457,6 +463,8 @@ function Reports() {
             render={({ field }) => (
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
+                minDate={watch("dateFrom")}
+                  maxDate={moment()}
                   {...field}
                   label="Date To"
                   slotProps={{
@@ -469,23 +477,37 @@ function Reports() {
               </LocalizationProvider>
             )}
           />
-          {(activeReport?.value === "SOA" && !soaFetching) ? (
-          <PDFDownloadLink document={<Report client={soaReportData?.value} dateTo={watch("dateTo")}/>} fileName="SOA.pdf">
-            <SecondaryButton disabled={!watch("clientId") && !soaFetching } size="medium" variant="contained">
+          {activeReport?.value === "SOA" && !soaFetching ? (
+            <PDFDownloadLink
+              document={
+                <Report
+                  client={soaReportData?.value}
+                  dateTo={watch("dateTo")}
+                />
+              }
+              fileName="SOA.pdf"
+            >
+              <SecondaryButton
+                disabled={(!watch("clientId") && !soaFetching) || activeArray?.pendingSoa < 1} 
+                size="medium"
+                variant="contained"
+              >
+                <GetApp />
+              </SecondaryButton>
+            </PDFDownloadLink>
+          ) : (
+            <SecondaryButton
+              size="medium"
+              onClick={handleSubmitDate}
+              sx={{ mr: "10px", height: "100%" }}
+              disabled={!watch("dateFrom") || !watch("dateTo") || activeArray?.transactions < 1 || activeArray?.checkIn < 1} 
+              // disabled={
+              //   // isExportLoading ||
+              //   _.isEqual(dateFrom, dateFromTemp) && _.isEqual(dateTo, dateToTemp)
+              // }
+            >
               <GetApp />
             </SecondaryButton>
-          </PDFDownloadLink>) :(
-          <SecondaryButton
-            size="medium"
-            onClick={handleSubmitDate}
-            sx={{ mr: "10px", height: "100%" }}
-            // disabled={
-            //   // isExportLoading ||
-            //   _.isEqual(dateFrom, dateFromTemp) && _.isEqual(dateTo, dateToTemp)
-            // }
-          >
-            <GetApp />
-          </SecondaryButton>
           )}
         </Box>
       </Box>

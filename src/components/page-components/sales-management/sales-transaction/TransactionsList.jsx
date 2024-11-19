@@ -371,6 +371,7 @@ function TransactionsList({ setTransactionsMode }) {
             <LocalizationProvider dateAdapter={AdapterMoment}>
               <DatePicker
                 label="Date To"
+                minDate={dateFromTemp}
                 value={dateToTemp}
                 onChange={setDateToTemp}
                 slotProps={{
@@ -379,7 +380,7 @@ function TransactionsList({ setTransactionsMode }) {
                   },
                 }}
                 sx={{ width: "200px" }}
-                minDate={dateFromTemp}
+                maxDate={moment()}
               />
             </LocalizationProvider>
 

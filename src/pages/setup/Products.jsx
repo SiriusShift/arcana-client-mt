@@ -373,6 +373,7 @@ function Products() {
               label="Product Image"
               size="small"
               type="file"
+              
               onChange={(event) => {
                 onChange(event.target.files[0]);
               }}

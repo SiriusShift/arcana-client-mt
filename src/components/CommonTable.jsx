@@ -681,7 +681,7 @@ function CommonTable({
       <TablePagination
         component="div"
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25, { label: "All", value: 2000 }]}
+        rowsPerPageOptions={[5, 10, 50, 100]}
         onRowsPerPageChange={(e) => {
           setRowsPerPage(e.target.value);
           // setRowsPerPageFiltered(searchData,clusterData);

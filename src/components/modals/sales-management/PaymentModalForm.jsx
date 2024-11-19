@@ -653,6 +653,7 @@ function PaymentModalForm({
                         type="file"
                         size="small"
                         label="Attachment"
+                        inputProps={{ accept: "image/jpeg, image/png, image/jpg"}}
                         helperText={errors?.attachment?.message}
                         error={errors?.attachment}
                         InputLabelProps={{ shrink: true }}
