@@ -137,7 +137,18 @@ const listingFeeApi = api
         }),
         invalidatesTags: ['Listing Fee', 'Cheque'], // Optional for cache invalidation
         transformResponse: (response) => response.value
-      })
+      }),
+
+      getListingFeeHistoryByClientId: builder.query({
+        query: (params) => ({
+          url: `/get-lf-history-per-client`,
+          method: "GET",
+          params
+        }),
+        providesTags: ["Clients For Listing"],
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
+      }),
     }),
   });
 
@@ -150,6 +161,7 @@ export const {
   usePutRejectListingFeeMutation,
   usePutUpdateListingFeeMutation,
   useDeleteCancelListingFeeMutation,
+  useLazyGetListingFeeHistoryByClientIdQuery,
 
   //Listing Fee to Cheque
   useGetChequeQuery, 

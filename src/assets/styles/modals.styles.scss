@@ -2191,6 +2191,45 @@
 	}
 }
 
+.listingHistoriesModal {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	height: 100%;
+	& &__title {
+		font-size: 1.1rem;
+		font-weight: 700;
+	}
+
+	&__body {
+		position: relative;
+		display: flex;
+		overflow: auto;
+		height: calc(100% - 50px);
+		&__stepContent {
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+
+			&__total {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+
+				& &__label {
+					font-size: 1.1rem;
+					// font-weight: 600;
+				}
+
+				& &__value {
+					font-size: 1.1rem;
+					font-weight: 500;
+				}
+			}
+		}
+	}
+}
+
 .paymentHistoriesBySalesInvoiceModal {
 	display: flex;
 	flex-direction: column;

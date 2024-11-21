@@ -335,6 +335,9 @@ function CheckIn() {
                   size="small"
                   label="Business Name"
                   autoComplete="off"
+                  onChange={(e) =>
+                    field.onChange(e.target.value.toUpperCase())
+                  }
                 />
               )}
             />
@@ -347,6 +350,9 @@ function CheckIn() {
                   size="small"
                   label="Owner's Name"
                   autoComplete="off"
+                  onChange={(e) =>
+                    field.onChange(e.target.value.toUpperCase())
+                  }
                 />
               )}
             />
@@ -359,6 +365,9 @@ function CheckIn() {
                   size="small"
                   label="Barangay"
                   autoComplete="off"
+                  onChange={(e) =>
+                    field.onChange(e.target.value.toUpperCase())
+                  }
                 />
               )}
             />
@@ -371,6 +380,9 @@ function CheckIn() {
                   size="small"
                   label="City"
                   autoComplete="off"
+                  onChange={(e) =>
+                    field.onChange(e.target.value.toUpperCase())
+                  }
                 />
               )}
             />
@@ -383,6 +395,9 @@ function CheckIn() {
                   size="small"
                   label="Province"
                   autoComplete="off"
+                  onChange={(e) =>
+                    field.onChange(e.target.value.toUpperCase())
+                  }
                 />
               )}
             />
@@ -423,6 +438,9 @@ function CheckIn() {
               label="Remarks"
               autoComplete="off"
               multiline
+              onChange={(e) =>
+                field.onChange(e.target.value.toUpperCase())
+              }
               maxRows={4}
             />
           )}

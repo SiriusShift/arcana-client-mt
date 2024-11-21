@@ -58,6 +58,49 @@ export const reportNames = [
 		label: "Statement of Account Reports",
 		index: 4,
 		value: "SOA"
+	},
+]
+
+export const regions = [
+	{
+		label: "REGION I",
+		value: "010000000",
+		name: "Ilocos Region",
+	},
+	{
+		label: "REGION II",
+		value: "020000000",
+		name: "Cagayan Valley Region",
+	},
+	{
+		label: "REGION III",
+		value: "030000000",
+		name: "Central Luzon Region",
+	},
+	{
+		label: "REGION IV-A",
+		value: "040000000",
+		name: "CALABARZON Region",
+	},
+	{
+		label: "Mimaropa",
+		value: "170000000",
+		name: "MIMAROPA Region",
+	},
+	{
+		label: "REGION V",
+		value: "050000000",
+		name: "Bicol Region",
+	},
+	{
+		label: "CAR",
+		value: "140000000",
+		name: "CAR Region",
+	}, 
+	{
+		label: "NCR",
+		value: "130000000",
+		name: "NCR Region",
 	}
 ]
 

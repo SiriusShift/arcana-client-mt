@@ -69,6 +69,7 @@ function CommonTable({
   onFile,
   onPay,
   onPaymentHistories,
+  onListingHistories,
   onInspect,
   page,
   setPage,
@@ -660,6 +661,9 @@ function CommonTable({
                         onClear={onClear && onClear}
                         onPaymentHistories={
                           onPaymentHistories && onPaymentHistories
+                        }
+                        onListingHistories={
+                          onListingHistories && onListingHistories
                         }
                         onFile={onFile && onFile}
                         onCheckout={onCheckout && onCheckout}

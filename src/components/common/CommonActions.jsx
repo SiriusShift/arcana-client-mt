@@ -69,6 +69,7 @@ function CommonActions({
   onClear,
   onFile,
   onPaymentHistories,
+  onListingHistories,
   onPay,
   onInspect,
   disableActions,
@@ -148,6 +149,8 @@ function CommonActions({
       onPay();
     } else if (action === "inspect") {
       onInspect();
+    } else if (action === "listingHistories"){
+      onListingHistories();
     }
 
     onClose();
@@ -636,6 +639,23 @@ function CommonActions({
           >
             <Receipt />
             Payment Histories
+          </MenuItem>
+        )}
+
+        {onListingHistories && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("listingHistories");
+            }}
+            disabled={
+              disableActions
+                ? disableActions?.includes("listingHistories")
+                : false
+            }
+          >
+            <Receipt />
+            Listing Fee History
           </MenuItem>
         )}
 

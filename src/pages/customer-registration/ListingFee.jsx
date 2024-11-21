@@ -21,6 +21,7 @@ import ListingFeeBalancesModal from "../../components/modals/registration/Listin
 import { Wallet } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import SessionExpired from "../SessionExpired";
+import ListingHistoriesModal from "../../components/modals/sales-management/ListingHistoriesModal";
 
 function ListingFee() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -35,6 +36,12 @@ function ListingFee() {
   const confirm = useConfirm();
   const snackbar = useSnackbar();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+
+  const {
+    isOpen: isListingHistoriesOpen,
+    onOpen: onListingHistoriesOpen,
+    onClose: onListingHistoriesClose,
+  } = useDisclosure();
 
   const { notifications, isNotificationFetching } = useContext(AppContext);
 
@@ -109,7 +116,7 @@ function ListingFee() {
     "Business Address",
     "Owner's Name",
     "Tx Number",
-    "Total Amount",
+    "Balance",
     // "Requested By",
   ];
 
@@ -246,6 +253,7 @@ function ListingFee() {
             onEdit={listingFeeStatus !== "Approved" && handleOpenEdit}
             onHistory={onHistoryOpen}
             onCancel={listingFeeStatus === "Rejected" && onCancel}
+            onListingHistories={listingFeeStatus === "Approved" && onListingHistoriesOpen}
             mt={"-20px"}
           />
         )}
@@ -277,6 +285,11 @@ function ListingFee() {
       <ListingFeeBalancesModal
         open={isBalancesOpen}
         onClose={onBalancesClose}
+      />
+
+      <ListingHistoriesModal
+        open={isListingHistoriesOpen}
+        onClose={onListingHistoriesClose}
       />
     </>
   );
