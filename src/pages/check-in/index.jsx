@@ -30,6 +30,8 @@ import CheckInModal from "../../components/modals/CheckInModal";
 import MapModal from "../../components/modals/MapModal";
 import useSnackbar from "../../hooks/useSnackbar";
 import useConfirm from "../../hooks/useConfirm";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 function CheckIn() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -177,12 +179,12 @@ function CheckIn() {
       try {
         await confirm({
           children: "Are you sure you want to checkout?",
-/*************  ✨ Codeium Command ⭐  *************/
-        /**
-         * Callback function called if the user confirms the checkout.
-         * Proceeds to patch the check-in data for the current user.
-         */
-/******  4936aa06-9bd6-4037-b93d-7014995298de  *******/          question: true,
+          /*************  ✨ Codeium Command ⭐  *************/
+          /**
+           * Callback function called if the user confirms the checkout.
+           * Proceeds to patch the check-in data for the current user.
+           */
+          /******  4936aa06-9bd6-4037-b93d-7014995298de  *******/ question: true,
 
           callback: () => {
             patchCheckin(selectedRowData?.id).unwrap();
@@ -253,10 +255,10 @@ function CheckIn() {
     "city",
     "createdDate",
     "timeOut",
-    "duration"
+    "duration",
   ];
 
-  const disabledActions = ["checkout"]
+  const disabledActions = ["checkout"];
 
   // UseEffect
   useEffect(() => {
@@ -273,6 +275,49 @@ function CheckIn() {
         removeArchive
         setSearch={setSearch}
       />
+      {/* <Box className="mixin" sx={{ justifyContent: "end"}}>
+        <Box className="mixin__right">
+          <Controller
+            name="dateFrom"
+            control={control}
+            render={({ field }) => (
+              <LocalizationProvider dateAdapter={AdapterMoment}>
+                <DatePicker
+                  {...field}
+                  maxDate={moment()}
+                  label="Date From"
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                  sx={{ width: "200px" }}
+                />
+                <Controller
+                  name="dateTo"
+                  control={control}
+                  render={({ field }) => (
+                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                      <DatePicker
+                        minDate={watch("dateFrom")}
+                        maxDate={moment()}
+                        {...field}
+                        label="Date To"
+                        slotProps={{
+                          textField: {
+                            size: "small",
+                          },
+                        }}
+                        sx={{ width: "200px" }}
+                      />
+                    </LocalizationProvider>
+                  )}
+                />
+              </LocalizationProvider>
+            )}
+          />
+        </Box>
+      </Box> */}
 
       {isFetching ? (
         <CommonTableSkeleton evenLesserCompact />
@@ -335,9 +380,7 @@ function CheckIn() {
                   size="small"
                   label="Business Name"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -350,9 +393,7 @@ function CheckIn() {
                   size="small"
                   label="Owner's Name"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -365,9 +406,7 @@ function CheckIn() {
                   size="small"
                   label="Barangay"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -380,9 +419,7 @@ function CheckIn() {
                   size="small"
                   label="City"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -395,9 +432,7 @@ function CheckIn() {
                   size="small"
                   label="Province"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -438,9 +473,7 @@ function CheckIn() {
               label="Remarks"
               autoComplete="off"
               multiline
-              onChange={(e) =>
-                field.onChange(e.target.value.toUpperCase())
-              }
+              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
               maxRows={4}
             />
           )}

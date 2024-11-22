@@ -1161,6 +1161,8 @@ export const attendanceSchema = {
 		storeName: yup.object().required("Store name is required"),
 		latitude: yup.number().required("Latitude is required"),
 		longitude: yup.number().required("Longitude is required"),
+		dateFrom: yup.date(),
+		dateTo: yup.date(),
 		remarks: yup.string().required("Remarks is required"),
 	}),
 	defaultValues: {
@@ -1169,6 +1171,8 @@ export const attendanceSchema = {
 		storeName: null,
 		latitude: null,
 		longitude: null,
+		dateFrom: moment(),
+		dateTo: moment(),
 		remarks: "",
 	},
 };

@@ -265,7 +265,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                   <CommonActions
                     icon={<MoreHoriz />}
                     onView={() => {
-                      onViewOpen();
+                      onViewPhotoOpen();
                       setInvoice(t?.paymentTransactionId);
                     }}
                   />
@@ -289,8 +289,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
                   <CommonActions
                     icon={<MoreHoriz />}
                     onView={() => {
-                      onViewOpen();
-                      setInvoice(t?.paymentTransactionId);
+                      onViewAttachmentOpen();
                     }}
                   />
                 ) : (
