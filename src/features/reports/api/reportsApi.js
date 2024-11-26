@@ -2,7 +2,13 @@ import { api } from "../../api";
 
 const reportsApi = api
   .enhanceEndpoints({
-    addTagTypes: ["CDO Report", "Sales Journal Report", "AS Report", "CheckIn Report", "SOA Report"],
+    addTagTypes: [
+      "CDO Report",
+      "Sales Journal Report",
+      "AS Report",
+      "CheckIn Report",
+      "SOA Report",
+    ],
   })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -54,7 +60,24 @@ const reportsApi = api
         }),
         providesTags: ["SOA Report"],
       }),
+      getCheckInFiloReports: builder.query({
+        query: (params) => ({
+          url: "/get-check-in-reports-filo",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["CheckIn Report"],
+      }),
     }),
   });
 
-export const { useCDOReportsQuery, useSJReportsQuery, useASReportsQuery, usePriceModeReportQuery, useGetCheckInReportsQuery, useCheckInReportQuery, useGetSOAReportsQuery } = reportsApi;
+export const {
+  useCDOReportsQuery,
+  useSJReportsQuery,
+  useASReportsQuery,
+  usePriceModeReportQuery,
+  useGetCheckInReportsQuery,
+  useCheckInReportQuery,
+  useGetSOAReportsQuery,
+  useGetCheckInFiloReportsQuery,
+} = reportsApi;

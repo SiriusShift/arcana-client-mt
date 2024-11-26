@@ -18,6 +18,7 @@ import {
   useASReportsQuery,
   useGetCheckInReportsQuery,
   useGetSOAReportsQuery,
+  useGetCheckInFiloReportsQuery
 } from "../../features/reports/api/reportsApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
@@ -30,6 +31,7 @@ import Report from "../../components/page-components/reports/SOAreport";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 // import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
 import { useDispatch } from "react-redux";
+import { useGetAllListingFeeQuery, useGetListingFeeHistoryByClientIdQuery } from "../../features/listing-fee/api/listingFeeApi";
 // import SOAReport from "../../utils/Excel"
 
 function Reports() {
@@ -42,8 +44,12 @@ function Reports() {
     cdo: true,
     sj: true,
     as: true,
-    // pm: true,
+    //Check in 
     ci: true,
+    //Listing Fee
+    lf: true,
+    //Checkin First in, Last out
+    cf: true,
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
@@ -73,13 +79,28 @@ function Reports() {
 
   // RTK Query
 
+  const {
+    data: listingFeeClients,
+    error,
+  } = useGetAllListingFeeQuery(
+    {
+      Search: search,
+      Status: true,
+      ListingFeeStatus: "Approved",
+      PageSize: 10000,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
   const { data: RegisteredClients } = useGetAllClientsQuery({
     RegistrationStatus: "Approved",
     PageSize: 10000,
   });
   const { data: cdoReportData, isFetching: cdoFetching } = useCDOReportsQuery(
     {
-      Page: page + 1,
+      PageNumber: page + 1,
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
@@ -90,7 +111,7 @@ function Reports() {
 
   const { data: sjReportData, isFetching: sjFetching } = useSJReportsQuery(
     {
-      Page: page + 1,
+      PageNumber: page + 1,
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
@@ -101,7 +122,7 @@ function Reports() {
 
   const { data: asReportData, isFetching: asFetching } = useASReportsQuery(
     {
-      Page: page + 1,
+      PageNumber: page + 1,
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
@@ -119,7 +140,7 @@ function Reports() {
   const { data: checkInReportData, isFetching: checkInFetching } =
     useGetCheckInReportsQuery(
       {
-        Page: page + 1,
+        PageNumber: page + 1,
         PageSize: rowsPerPage,
         DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
         DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
@@ -136,9 +157,27 @@ function Reports() {
       },
       {
         skip: isActive.soa,
-        refetchOnMountOrArgChange: true,
       }
     );
+  
+    const { data: listingFeeReportData, isFetching: listingFeeFetching } =
+    useGetListingFeeHistoryByClientIdQuery({
+      ClientId: watch("clientId")?.id || watch("clientId")?.clientId,
+    }, {
+      skip: isActive.lf,
+    });
+
+    const { data: checkInFiloReportData, isFetching: checkInFiloFetching } =
+    useGetCheckInFiloReportsQuery({
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      ClusterId: clusterId?.value || "",
+      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+    }, {
+      skip: isActive.cf
+    })
+
   //functions
   const handleSubmitDate = () => {
     useDownloadExcel();
@@ -161,7 +200,7 @@ function Reports() {
           "MM-DD-YYYY"
         )}&DateTo=${moment(watch("dateTo")).format("MM-DD-YYYY")}${
           clusterId ? `&clusterId=${clusterId?.value}` : ""
-        }`,
+        }${watch("clientId")?.id || watch("clientId")?.clientId ? `&clientId=${watch("clientId")?.id || watch("clientId")?.clientId}` : ""}`,
         {
           method: "GET",
           headers: {
@@ -210,6 +249,8 @@ function Reports() {
       // priceModeReportData,
       checkInReportData,
       soaReportData,
+      listingFeeReportData,
+      checkInFiloReportData
     ];
     const keys = [
       "cdo",
@@ -217,6 +258,8 @@ function Reports() {
       "as",
       "ci",
       "soa",
+      "lf",
+      "cf"
       // 'pm',/
     ];
 
@@ -238,6 +281,8 @@ function Reports() {
     asReportData,
     checkInReportData,
     soaReportData,
+    listingFeeReportData,
+    checkInFiloReportData,
     // priceModeReportData,
     watch("dateFrom"),
     watch("dateTo"),
@@ -382,10 +427,11 @@ function Reports() {
           getOptionLabel={(option) => option?.label}
           onChange={(_, value) => {
             setActiveReport(value);
+            setActiveArray([]);
             setValue("clientId", null);
-            if(value?.value === "SOA"){
+            if (value?.value === "SOA") {
               setValue("dateFrom", null);
-            }else{
+            } else {
               setValue("dateFrom", moment());
             }
           }}
@@ -404,20 +450,21 @@ function Reports() {
             userDetails?.roleName === "Treasury" ||
             userDetails?.roleName === "GAS" ||
             userDetails?.roleName === "Finance") &&
-          activeReport?.value !== "SOA" ? (
-            <CommonFilter filter={onFilter} clusterFilter />
-          ) : (
-            <>
+            (activeReport?.value !== "SOA" && activeReport?.value !== "listing-fee")&& (
+              <CommonFilter filter={onFilter} clusterFilter />
+            )}
+          {activeReport?.value === "SOA" ||
+            activeReport?.value === "listing-fee" ? (
               <ControlledAutocomplete
                 name="clientId"
                 control={control}
-                options={RegisteredClients?.regularClient}
+                options={activeReport?.value === "listing-fee" ? listingFeeClients?.listingFees : RegisteredClients?.regularClient || []}
                 getOptionLabel={(option) =>
                   option?.businessName?.toUpperCase() +
                   " - " +
-                  option?.ownersName +
+                  (option?.ownersName || option?.clientName) +
                   " - " +
-                  String(option?.id)
+                  String(option?.id || option?.clientId)
                 }
                 disableClearable
                 isOptionEqualToValue={() => true}
@@ -426,14 +473,13 @@ function Reports() {
                     {...params}
                     size="small"
                     label="Business Name"
-                    sx={{ width: "250px" }}
+                    sx={{ width: "200px" }}
                     helperText={errors?.clientId?.message}
                     error={errors?.clientId}
                   />
                 )}
               />
-            </>
-          )}
+            ) : ""}
           {activeReport?.value != "SOA" && (
             <>
               <Controller
@@ -450,7 +496,7 @@ function Reports() {
                           size: "small",
                         },
                       }}
-                      sx={{ width: "200px" }}
+                      sx={{ width: "150px" }}
                     />
                   </LocalizationProvider>
                 )}
@@ -463,7 +509,7 @@ function Reports() {
             render={({ field }) => (
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
-                minDate={watch("dateFrom")}
+                  minDate={watch("dateFrom")}
                   maxDate={moment()}
                   {...field}
                   label="Date To"
@@ -472,7 +518,7 @@ function Reports() {
                       size: "small",
                     },
                   }}
-                  sx={{ width: "200px" }}
+                  sx={{ width: "150px" }}
                 />
               </LocalizationProvider>
             )}
@@ -488,7 +534,10 @@ function Reports() {
               fileName="SOA.pdf"
             >
               <SecondaryButton
-                disabled={(!watch("clientId") && !soaFetching) || activeArray?.pendingSoa < 1} 
+                disabled={
+                  ((!watch("clientId") && !soaFetching) || (!watch("clientId") && !listingFeeFetching)) ||
+                  activeArray?.pendingSoa || activeArray?.transactions < 1
+                }
                 size="medium"
                 variant="contained"
               >
@@ -500,7 +549,12 @@ function Reports() {
               size="medium"
               onClick={handleSubmitDate}
               sx={{ mr: "10px", height: "100%" }}
-              disabled={!watch("dateFrom") || !watch("dateTo") || activeArray?.transactions < 1 || activeArray?.checkIn < 1} 
+              disabled={
+                !watch("dateFrom") ||
+                !watch("dateTo") ||
+                activeArray?.transactions < 1 ||
+                activeArray?.checkIn < 1
+              }
               // disabled={
               //   // isExportLoading ||
               //   _.isEqual(dateFrom, dateFromTemp) && _.isEqual(dateTo, dateToTemp)
@@ -516,7 +570,9 @@ function Reports() {
       asFetching ||
       soaFetching ||
       // priceModeFetching ||
-      checkInFetching ? (
+      checkInFetching || 
+      listingFeeFetching || 
+      checkInFiloFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
@@ -526,7 +582,9 @@ function Reports() {
           mapData={
             activeArray?.transactions ||
             activeArray?.checkIn ||
-            activeArray?.pendingSoa
+            activeArray?.pendingSoa || 
+            activeArray?.listingHistory || 
+            activeArray?.result
           }
           tableHeads={tableHeads[activeReport?.index]}
           customOrderKeys={customOrderKeys[activeReport?.index]}

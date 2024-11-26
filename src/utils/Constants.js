@@ -59,6 +59,16 @@ export const reportNames = [
 		index: 4,
 		value: "SOA"
 	},
+	{
+		label: "Listing Fee Reports",
+		index: 5,
+		value: "listing-fee"
+	},
+	{
+		label: "Check In, First in - Last out Reports",
+		index: 6,
+		value: "check-in-filo"
+	}
 ]
 
 export const regions = [

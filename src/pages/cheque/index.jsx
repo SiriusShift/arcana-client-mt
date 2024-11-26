@@ -173,6 +173,7 @@ function cheque() {
           <CommonTable
           compact
           moveNoDataUp
+          includeActions={false}
           mapData={data?.transactions}
           count={data?.totalCount || 0}
           rowsPerPage={rowsPerPage}

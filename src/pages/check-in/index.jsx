@@ -81,22 +81,6 @@ function CheckIn() {
     onClose: onMapClose,
   } = useDisclosure();
 
-  // RTK Query
-  const { data, isFetching } = useGetCheckinQuery({
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-    Search: search,
-  });
-
-  const { data: clients, isFetching: isFetchingClients } =
-    useGetAllClientsForCheckInQuery({
-      Origin: typeCustomer?.label,
-    });
-
-  const [postCheckin, { isLoading: isPosting }] = usePostCheckinMutation();
-
-  const [patchCheckin] = usePatchTimeOutMutation();
-
   const {
     handleSubmit,
     formState: { isValid, isDirty },
@@ -121,6 +105,24 @@ function CheckIn() {
   console.log(isValid);
   console.log("error", errors);
   console.log(watch());
+
+    // RTK Query
+    const { data, isFetching } = useGetCheckinQuery({
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      Search: search,
+      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD"),
+      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD"),
+    });
+  
+    const { data: clients, isFetching: isFetchingClients } =
+      useGetAllClientsForCheckInQuery({
+        Origin: typeCustomer?.label,
+      });
+  
+    const [postCheckin, { isLoading: isPosting }] = usePostCheckinMutation();
+  
+    const [patchCheckin] = usePatchTimeOutMutation();
 
   //Functions
   const onDrawerSubmit = async (data) => {
@@ -268,14 +270,14 @@ function CheckIn() {
   console.log("clients", clients);
 
   return (
-    <Box className="commonPageLayout">
+    <Box className="commonPageLayout" sx={{ gap: "0px" }}>
       <PageHeaderAdd
         onOpen={handleAddOpen}
         pageTitle="Check In"
         removeArchive
         setSearch={setSearch}
       />
-      {/* <Box className="mixin" sx={{ justifyContent: "end"}}>
+      <Box className="mixin" sx={{ justifyContent: "end"}}>
         <Box className="mixin__right">
           <Controller
             name="dateFrom"
@@ -317,14 +319,15 @@ function CheckIn() {
             )}
           />
         </Box>
-      </Box> */}
+      </Box>
 
       {isFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
-          checkIn
+          lowerCompact
           compact
+          checkIn
           moveNoDataUp
           mapData={data?.checkIn}
           tableHeads={tableHeads}

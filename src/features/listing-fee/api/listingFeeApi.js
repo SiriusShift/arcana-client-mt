@@ -146,8 +146,8 @@ const listingFeeApi = api
           params
         }),
         providesTags: ["Clients For Listing"],
-        transformResponse: (response) => response.value,
-        transformErrorResponse: (response) => response.value,
+        // transformResponse: (response) => response.value,
+        // transformErrorResponse: (response) => response.value,
       }),
     }),
   });
@@ -162,6 +162,7 @@ export const {
   usePutUpdateListingFeeMutation,
   useDeleteCancelListingFeeMutation,
   useLazyGetListingFeeHistoryByClientIdQuery,
+  useGetListingFeeHistoryByClientIdQuery,
 
   //Listing Fee to Cheque
   useGetChequeQuery, 
