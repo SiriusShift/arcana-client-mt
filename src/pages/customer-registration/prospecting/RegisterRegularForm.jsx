@@ -193,6 +193,10 @@ function RegisterRegularForm({ open, onClose }) {
             return true;
           }
 
+          if(key === "withholdingIssuance"){
+            return true;
+          }
+
           const value = termsAndConditions[key];
           return value !== null && value !== "";
         }) && !!signatureToCheck,

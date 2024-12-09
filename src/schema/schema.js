@@ -1003,7 +1003,7 @@ export const receivingItemsSchema = {
 	schema: yup.object({
 		items: yup.array().of(
 			yup.object({
-				itemId: yup.number().required("Item Code is required"),
+				itemCode: yup.number().required("Item Code is required"),
 				quantity: yup.number().required("Quantity is required"),
 				uom: yup.string().required("UOM is required"),
 				itemDescription: yup.string().required("Item Description is required"),
@@ -1014,7 +1014,7 @@ export const receivingItemsSchema = {
 	defaultValues: {
 		items: [
 			{
-				itemId: null,
+				itemCode: null,
 				quantity: null,
 				uom: "",
 				itemDescription: "",

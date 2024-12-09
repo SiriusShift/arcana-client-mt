@@ -17,6 +17,8 @@ function InventoryMRP() {
     Search: search,
   });
 
+  console.log(data);
+
   // CommonTable Props
   const tableHeads = [
     "Item Code",
@@ -64,7 +66,7 @@ function InventoryMRP() {
         <CommonTable
           evenLesserCompact
           moveNoDataUp
-          mapData={data?.inventoryMrp}
+          mapData={data?.mo}
           tableHeads={tableHeads}
           customOrderKeys={customOrderKeys}
           includeActions={false}

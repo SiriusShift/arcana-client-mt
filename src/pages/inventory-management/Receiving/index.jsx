@@ -28,7 +28,7 @@ function Receiving() {
   // Common Table Props
   const tableHeads = [
     "Move Order ID",
-    "Business Name",
+    "Customer Name",
     "Cluster",
     "Transaction Date",
     "Date Received",
@@ -36,7 +36,7 @@ function Receiving() {
 
   const customOrderKeys = [
     "moveOrderId",
-    "businessName",
+    "customerName",
     "cluster",
     "transactionDate",
     "dateReceived",
@@ -79,7 +79,7 @@ function Receiving() {
             <CommonTable
               evenLesserCompact
               moveNoDataUp
-              mapData={data?.receivedOrders || []}
+              mapData={data?.mo || []}
               tableHeads={tableHeads}
               customOrderKeys={customOrderKeys}
               dateTimeArray={dateTimeArray}

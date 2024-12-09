@@ -88,6 +88,8 @@ function WrongDeliver({
     defaultValue: [],
   });
 
+  console.log(wrongDeliver);
+
   const disableFields = wrongItems.length > 0;
 
   const handleAdd = () => {
@@ -136,8 +138,8 @@ function WrongDeliver({
         component={Paper}
         sx={{
           maxHeight: disableFields
-            ? "calc(100dvh - 30dvh - 360px)"
-            : "calc(100dvh - 30dvh - 400px)",
+            ? "calc(100dvh - 20dvh - 360px)"
+            : "calc(100dvh - 20dvh - 400px)",
         }}
       >
         <Table>
@@ -159,10 +161,10 @@ function WrongDeliver({
                         options={items}
                         getOptionDisabled={(option) =>
                           fields.some(
-                            (field) => field.item?.itemCode === option.itemCode
+                            (field) => field.item?.itemCode === option?.itemCode
                           )
                         }
-                        getOptionLabel={(option) => option.itemCode}
+                        getOptionLabel={(option) => option?.itemCode}
                         isOptionEqualToValue={() => true}
                         disabled={disableFields}
                         onChange={(_, value) => {

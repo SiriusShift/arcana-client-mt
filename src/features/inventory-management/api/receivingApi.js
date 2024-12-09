@@ -12,10 +12,11 @@ const receivingApi = api
     endpoints: (builder) => ({
       receiveMoveOrder: builder.mutation({
         // Uncomment this when the backend is ready
-        // query: (id) => ({
-        //   url: `/receiving`,
-        //   method: "POST",
-        // }),
+        query: (params) => ({
+          url: `/add-move-order-receivings`,
+          method: "POST",
+          params
+        }),
         invalidatesTags: ["Orders", "Order", "Generate"],
 
         // This is a dummy implementation of the request
@@ -25,12 +26,12 @@ const receivingApi = api
 
       getAllReceivedOrders: builder.query({
         // Uncomment this when the backend is ready
-        // query: (params) => ({
-        //   params: params,
-        //   url: "/receiving",
-        //   method: "GET",
-        // }),
-        // transformResponse: (response) => response.value,
+        query: (params) => ({
+          params: params,
+          url: "/get-move-order-arcana",
+          method: "GET",
+        }),
+        transformResponse: (response) => response.value,
         // transformErrorResponse: (response) => response.value,
         providesTags: ["Orders"],
 
@@ -55,18 +56,11 @@ const receivingApi = api
       }),
 
       generateMoveOrder: builder.query({
-        // Uncomment this when the backend is ready
-        // query: (id) => ({
-        //   url: `/receiving/generate/${id}`,
-        //   method: "GET",
-        // }),
-        // transformResponse: (response) => response.value,
-        // transformErrorResponse: (response) => response.value,
-        providesTags: ["Generate"],
-
-        // This is a dummy implementation of the response
-        // Remove this when the backend is ready
-        queryFn: dummyGenerateMoveOrder,
+        query: (params) => ({
+          url: `/get-mo-from-external/${params}`,
+          method: "GET",
+        }),
+        transformResponse: (response) => response.value,
       }),
     }),
   });

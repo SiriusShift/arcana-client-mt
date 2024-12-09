@@ -20,10 +20,13 @@ function ReceivingForm() {
     items: [],
     wrongDeliver: [],
   });
+
+  console.log(formData);
   const [isFormValid, setIsFormValid] = useState({
     isItemsValid: false,
     isWrongDeliverValid: false,
   });
+  console.log(isFormValid);
 
   const { data: receivingData } = useGenerateMoveOrderQuery(moveOrderSlipNo);
 
@@ -38,17 +41,17 @@ function ReceivingForm() {
   }
 
   return (
-    <Box className="commonPageLayout">
+    <Box className="commonPageLayout" sx={{ gap: "10px" }}>
       <ReceivingFormHeader data={receivingData} />
 
       <ReceivingItems
-        items={receivingData?.items}
+        items={receivingData?.moItems}
         handleFormValid={setIsFormValid}
         handleFormData={setFormData}
       />
 
       <WrongDeliver
-        items={receivingData?.items}
+        items={receivingData?.moItems}
         handleFormValid={setIsFormValid}
         handleFormData={setFormData}
       />

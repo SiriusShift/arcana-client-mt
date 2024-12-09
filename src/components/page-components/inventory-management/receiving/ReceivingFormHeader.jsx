@@ -38,7 +38,7 @@ const DataSkeleton = () => {
 
 function ReceivingFormHeader({
   data: {
-    businessName = "",
+    customerName = "",
     route = "",
     details = "",
     area = "",
@@ -86,7 +86,7 @@ function ReceivingFormHeader({
           >
             <Stack>
               <Typography variant="subtitle1" fontWeight="500">
-                Business Name: {businessName}
+                Business Name: {customerName}
               </Typography>
 
               <Typography variant="subtitle1" fontWeight="500">

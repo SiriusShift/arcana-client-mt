@@ -14,6 +14,7 @@ import {
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { receivingItemsSchema } from "../../../../schema/schema";
 import { useEffect } from "react";
+import useSnackbar from "../../../../hooks/useSnackbar";
 
 const ReceivingItemsTableSkeleton = () => {
   return (
@@ -50,19 +51,25 @@ function ReceivingItems({
   handleFormData,
   isFetching,
 }) {
+  const snackbar = useSnackbar();
   const {
     control,
     setValue,
-    formState: { isValid },
+    watch,
+    formState: { isValid, errors },
   } = useForm({
+    mode: "onChange",
     resolver: yupResolver(receivingItemsSchema.schema),
     defaultValues: receivingItemsSchema.defaultValues,
   });
+
+  console.log(isValid, errors)
 
   const { fields } = useFieldArray({
     control,
     name: "items",
   });
+  console.log(watch())
 
   const watchItems = useWatch({
     control,
@@ -93,7 +100,7 @@ function ReceivingItems({
     <Box sx={{ padding: "1px" }}>
       <TableContainer
         component={Paper}
-        sx={{ overflow: "auto", maxHeight: "calc(100dvh - 30dvh - 360px)" }}
+        sx={{ overflow: "auto", maxHeight: "calc(100dvh - 25dvh - 360px)" }}
       >
         <Table>
           <TableHead>
@@ -114,10 +121,10 @@ function ReceivingItems({
               {fields.map((item, index) => (
                 <TableRow key={index}>
                   <TableCell sx={{ py: 1 }}>{index + 1}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.itemCode}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.itemDescription}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.uom}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.quantity}</TableCell>
+                  <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
+                  <TableCell sx={{ py: 1 }}>{item?.itemDescription}</TableCell>
+                  <TableCell sx={{ py: 1 }}>{item?.uom}</TableCell>
+                  <TableCell sx={{ py: 1 }}>{item?.quantity}</TableCell>
                   <TableCell sx={{ py: 1 }}>
                     <Controller
                       control={control}
@@ -130,6 +137,12 @@ function ReceivingItems({
                           value={field.value || ""}
                           inputRef={field.ref}
                           disabled={disableFields}
+                          onChange={(e) => {
+                            if(parseFloat(e.target.value) > parseFloat(item.quantity)){
+                              return snackbar({ message: "Quantity received cannot be greater than quantity", variant: "error" })
+                            }
+                            field.onChange(parseFloat(e.target.value));
+                          }}
                         />
                       )}
                     />
