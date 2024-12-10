@@ -1007,7 +1007,7 @@ export const receivingItemsSchema = {
 				quantity: yup.number().required("Quantity is required"),
 				uom: yup.string().required("UOM is required"),
 				itemDescription: yup.string().required("Item Description is required"),
-				quantityReceived: yup.number().required("Quantity Received is required"),
+				actualQuantity: yup.number().required("Quantity Received is required"),
 			})
 		),
 	}),
@@ -1018,7 +1018,7 @@ export const receivingItemsSchema = {
 				quantity: null,
 				uom: "",
 				itemDescription: "",
-				quantityReceived: null,
+				actualQuantity: null,
 			},
 		],
 	},

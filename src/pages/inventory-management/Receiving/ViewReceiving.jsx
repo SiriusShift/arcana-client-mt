@@ -26,7 +26,7 @@ function ViewReceiving() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        await triggerData(id).unwrap();
+        await triggerData({MoveOrderId: id}).unwrap();
       } catch (error) {
         navigate("/inventory-management/receiving", { replace: true });
       }
@@ -40,9 +40,9 @@ function ViewReceiving() {
 
   return (
     <Box className="commonPageLayout">
-      <ReceivingFormHeader data={data} isFetching={isFetching} />
+      <ReceivingFormHeader data={data.mo[0]} isFetching={isFetching} />
 
-      <ReceivingItems items={data.items} isFetching={isFetching} />
+      <ReceivingItems items={data?.mo[0]?.moveItems} isFetching={isFetching} />
 
       <WrongDeliver wrongItems={data.wrongDeliver} isFetching={isFetching} />
     </Box>

@@ -12,10 +12,10 @@ const receivingApi = api
     endpoints: (builder) => ({
       receiveMoveOrder: builder.mutation({
         // Uncomment this when the backend is ready
-        query: (params) => ({
+        query: (body) => ({
           url: `/add-move-order-receivings`,
           method: "POST",
-          params
+          body
         }),
         invalidatesTags: ["Orders", "Order", "Generate"],
 
@@ -42,17 +42,17 @@ const receivingApi = api
 
       getReceivedOrderById: builder.query({
         // Uncomment this when the backend is ready
-        // query: (id) => ({
-        //   url: `/receiving/${id}`,
-        //   method: "GET",
-        // }),
-        // transformResponse: (response) => response.value,
+        query: (params) => ({
+          url: `/get-move-order-arcana`,
+          method: "GET",
+          params,
+        }),
+        transformResponse: (response) => response.value,
         // transformErrorResponse: (response) => response.value,
         providesTags: ["Order"],
 
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
-        queryFn: dummyGetReceivedOrderById,
       }),
 
       generateMoveOrder: builder.query({

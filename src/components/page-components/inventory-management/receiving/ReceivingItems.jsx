@@ -63,13 +63,11 @@ function ReceivingItems({
     defaultValues: receivingItemsSchema.defaultValues,
   });
 
-  console.log(isValid, errors)
 
   const { fields } = useFieldArray({
     control,
     name: "items",
   });
-  console.log(watch())
 
   const watchItems = useWatch({
     control,
@@ -77,7 +75,7 @@ function ReceivingItems({
     defaultValue: [],
   });
 
-  const disableFields = items.some((item) => item.quantityReceived);
+  const disableFields = items.some((item) => item.actualQuantity);
 
   useEffect(() => {
     setValue("items", items);
@@ -90,7 +88,7 @@ function ReceivingItems({
         ...prev,
         items: watchItems.map((item) => ({
           itemCode: item.itemCode,
-          quantityReceived: Number(item.quantityReceived),
+          actualQuantity: Number(item.actualQuantity),
         })),
       }));
     }
@@ -128,7 +126,7 @@ function ReceivingItems({
                   <TableCell sx={{ py: 1 }}>
                     <Controller
                       control={control}
-                      name={`items[${index}].quantityReceived`}
+                      name={`items[${index}].actualQuantity`}
                       render={({ field }) => (
                         <TextField
                           size="small"

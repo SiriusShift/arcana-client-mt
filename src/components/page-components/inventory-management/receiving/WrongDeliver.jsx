@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import SecondaryButton from "../../../SecondaryButton";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
+import useSnackbar from "../../../../hooks/useSnackbar";
 
 const WrongDeliverSkeleton = () => {
   return (
@@ -63,19 +64,24 @@ const WrongDeliverSkeleton = () => {
 
 function WrongDeliver({
   wrongItems = [],
+  formData = [],
   items = [],
   handleFormValid,
   handleFormData,
   isFetching,
 }) {
+  const snackbar = useSnackbar();
   const {
     control,
     setValue,
+    watch,
     formState: { errors, isValid },
   } = useForm({
     resolver: yupResolver(wrongDeliverSchema.schema),
     defaultValues: wrongDeliverSchema.defaultValues,
   });
+
+  console.log(formData);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -122,7 +128,7 @@ function WrongDeliver({
       handleFormData((prev) => ({
         ...prev,
         wrongDeliver: wrongDeliver.map((item) => ({
-          itemCode: item.item.itemCode,
+          itemCode: item?.item?.itemCode || "",
           quantity: Number(item.quantity),
           reason: item.reason,
         })),
@@ -158,12 +164,13 @@ function WrongDeliver({
                       <ControlledAutocomplete
                         control={control}
                         name={`wrongDeliver[${index}].item`}
-                        options={items}
+                        options={items || []}
                         getOptionDisabled={(option) =>
                           fields.some(
-                            (field) => field.item?.itemCode === option?.itemCode
+                            (field) => field.item?.itemCode && field.item?.itemCode === option?.itemCode
                           )
                         }
+                        
                         getOptionLabel={(option) => option?.itemCode}
                         isOptionEqualToValue={() => true}
                         disabled={disableFields}
@@ -234,7 +241,21 @@ function WrongDeliver({
                             label="Quantity"
                             size="small"
                             autoComplete="off"
-                            onChange={onChange}
+                            onChange={(e) => {
+                              watch("wrongDeliver").map((item) => {
+                                formData.items.map((data) => {
+                                  if(item.item.itemCode === data.itemCode) {
+                                    if(e.target.value > data?.actualQuantity){
+                                      console.log(item?.item?.quantity, data?.actualQuantity)
+                                      return snackbar({ message: "Quantity exceeds actual quantity", variant: "error" })
+                                    }
+                                    else{
+                                      onChange(e)
+                                    }
+                                  }
+                                })
+                              })
+                            }}
                             onBlur={onBlur}
                             value={value || ""}
                             inputRef={ref}

@@ -51,6 +51,7 @@ function ReceivingForm() {
       />
 
       <WrongDeliver
+        formData={formData}
         items={receivingData?.moItems}
         handleFormValid={setIsFormValid}
         handleFormData={setFormData}
