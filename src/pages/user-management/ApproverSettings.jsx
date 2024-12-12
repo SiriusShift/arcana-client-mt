@@ -77,6 +77,8 @@ function Approver() {
     defaultValues: approverSettingsSchema.defaultValues,
   });
 
+  console.log(errors);
+
   const {
     fields: approverFields,
     append: approverAppend,
@@ -97,6 +99,20 @@ function Approver() {
     control,
     name: "approversWithLimit",
   });
+
+  const {
+    fields: approverWithLimitDigitFields,
+    append: approverWithLimitDigitAppend,
+    remove: approverWithLimitDigitRemove,
+    swap: approverWithLimitDigitSwap,
+    update: approverWithLimitDigitUpdate,
+  } = useFieldArray({
+    control,
+    name: "approversWithLimitDigit",
+  });
+
+  console.log(watch());
+  console.log("errors: ", errors, isValid);
 
   const [parent] = useAutoAnimate();
 
@@ -171,21 +187,22 @@ function Approver() {
 
   const handleSwapApproverWithLimit = (indexA, indexB) => {
     // Get the current values of the items at indexA and indexB
-    const itemA = watch(`approversWithLimit[${indexA}]`);
-    const itemB = watch(`approversWithLimit[${indexB}]`);
+    const itemA = watch(watch("moduleName")?.name === "Sp. Discount Approval" ? `approversWithLimit[${indexA}]` : `approversWithLimitDigit[${indexA}]`);
+    const itemB = watch(watch("moduleName")?.name === "Sp. Discount Approval" ? `approversWithLimit[${indexB}]` : `approversWithLimitDigit[${indexB}]`);
 
     // // Update only the userId property between items at indexA and indexB
-    const updatedItemA = { ...itemA, userId: itemB.userId };
-    const updatedItemB = { ...itemB, userId: itemA.userId };
+    const updatedItemA = { ...itemB };
+    console.log(itemA, updatedItemA);
+    const updatedItemB = { ...itemA };
 
     // Use update to update the specific items in the array
     // setValue(`approversWithLimit[${indexA}]`, updatedItemA);
     // setValue(`approversWithLimit[${indexB}]`, updatedItemB);
-    approverWithLimitUpdate(indexA, updatedItemA);
-    approverWithLimitUpdate(indexB, updatedItemB);
+    watch("moduleName")?.name === "Sp. Discount Approval" ? approverWithLimitUpdate(indexA, updatedItemA) : approverWithLimitDigitUpdate(indexA, updatedItemA);
+    watch("moduleName")?.name === "Sp. Discount Approval" ? approverWithLimitUpdate(indexB, updatedItemB) : approverWithLimitDigitUpdate(indexB, updatedItemB);
 
     // Swap the items in the array
-    // approverWithLimitSwap(indexA, indexB);
+    approverWithLimitSwap(indexA, indexB);
   };
 
   const handleDrawerClose = () => {
@@ -249,130 +266,140 @@ function Approver() {
         level: index + 1,
       }));
 
+      console.log(transformedWithMinValue);
+
       setValue("approvers", withoutMinValue);
-      setValue("approversWithLimit", transformedWithMinValue);
+      if (watch("moduleName")?.name === "Sp. Discount Approval") {
+        setValue("approversWithLimit", transformedWithMinValue);
+      } else {
+        setValue("approversWithLimitDigit", transformedWithMinValue);
+      }
     }
   }, [approversByRangeData, data, selectedRowData, setValue]);
 
   return (
     <>
-   {error && <SessionExpired />}
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Approver Settings
-            <Settings />
-          </>
-        }
-        setStatus={setStatus}
-        removeArchive
-        removeSearch
-        removeAdd
-      />
-
-      <CommonTable
-        evenLesserCompact
-        mapData={approvalItem?.sub}
-        customOrderKeys={customOrderKeys}
-        tableHeads={tableHeads}
-        onManageApprovers={handleEditOpen}
-        page={page}
-        setPage={setPage}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-        count={approvalItem?.sub?.length}
-        status={status}
-      />
-
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader="Approver Settings"
-        onSubmit={handleSubmit(onSubmit)}
-        disableSubmit={!isValid}
-        width="1000px"
-        isLoading={isUpdateLoading}
-        isFetching={isApproverByRangeFetching}
-      >
-        <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
-          Module Name
-        </Typography>
-
-        <ControlledAutocomplete
-          name={"moduleName"}
-          control={control}
-          options={approvalItem?.sub || []}
-          getOptionLabel={(option) => option.name || ""}
-          disableClearable
-          loading={isLoading}
-          isOptionEqualToValue={() => true}
-          disabled
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              label="Module Name"
-              helperText={errors?.moduleName?.message}
-              error={errors?.moduleName}
-            />
-          )}
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Approver Settings
+              <Settings />
+            </>
+          }
+          setStatus={setStatus}
+          removeArchive
+          removeSearch
+          removeAdd
         />
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <CommonTable
+          evenLesserCompact
+          mapData={approvalItem?.sub}
+          customOrderKeys={customOrderKeys}
+          tableHeads={tableHeads}
+          onManageApprovers={handleEditOpen}
+          page={page}
+          setPage={setPage}
+          rowsPerPage={rowsPerPage}
+          setRowsPerPage={setRowsPerPage}
+          count={approvalItem?.sub?.length}
+          status={status}
+        />
+
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader="Approver Settings"
+          onSubmit={handleSubmit(onSubmit)}
+          disableSubmit={!isValid}
+          width="1000px"
+          isLoading={isUpdateLoading}
+          isFetching={isApproverByRangeFetching}
+        >
           <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
-            List of Approvers
+            Module Name
           </Typography>
 
-          <Box
-            sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
-            ref={parent}
-          >
-            {approverFields.map((item, index) => (
-              <Box
-                key={item.id}
-                sx={{
-                  display: "flex",
-                  gap: "10px",
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                <ControlledAutocomplete
-                  name={`approvers[${index}].userId`}
-                  control={control}
-                  options={data || []}
-                  getOptionLabel={(option) => option.fullname || ""}
-                  getOptionDisabled={(option) => {
-                    const approversWithLimit = watch("approversWithLimit");
-                    const approvers = watch("approvers");
+          <ControlledAutocomplete
+            name={"moduleName"}
+            control={control}
+            options={approvalItem?.sub || []}
+            getOptionLabel={(option) => option.name || ""}
+            disableClearable
+            loading={isLoading}
+            isOptionEqualToValue={() => true}
+            disabled
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                label="Module Name"
+                helperText={errors?.moduleName?.message}
+                error={errors?.moduleName}
+              />
+            )}
+          />
 
-                    const checkApprover =
-                      approversWithLimit?.some(
-                        (item) => item?.userId?.userId === option.userId
-                      ) ||
-                      approvers?.some(
-                        (item) => item?.userId?.userId === option.userId
-                      );
-                    return checkApprover;
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
+              List of Approvers
+            </Typography>
+
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
+              ref={parent}
+            >
+              {approverFields.map((item, index) => (
+                <Box
+                  key={item.id}
+                  sx={{
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "center",
+                    width: "100%",
                   }}
-                  sx={{ flex: 1 }}
-                  disableClearable
-                  disabled={!watch("moduleName")}
-                  loading={isLoading}
-                  isOptionEqualToValue={() => true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size="small"
-                      label="Approver Name"
-                      helperText={errors?.userId?.message}
-                      error={errors?.userId}
-                    />
-                  )}
-                />
+                >
+                  <ControlledAutocomplete
+                    name={`approvers[${index}].userId`}
+                    control={control}
+                    options={data || []}
+                    getOptionLabel={(option) => option.fullname || ""}
+                    getOptionDisabled={(option) => {
+                      const approversWithLimit = watch("approversWithLimit");
+                      const approvers = watch("approvers");
+                      const approversWithLimitDigit = watch("approversWithLimitDigit")
 
-                {/* {!isRegistrationApproval && (
+                      const checkApprover =
+                        approversWithLimit?.some(
+                          (item) => item?.userId?.userId === option.userId
+                        ) ||
+                        approvers?.some(
+                          (item) => item?.userId?.userId === option.userId
+                        );
+                        approversWithLimitDigit?.some(
+                          (item) => item?.userId?.userId === option.userId
+                        )
+                      return checkApprover;
+                    }}
+                    sx={{ flex: 1 }}
+                    disableClearable
+                    disabled={!watch("moduleName")}
+                    loading={isLoading}
+                    isOptionEqualToValue={() => true}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        size="small"
+                        label="Approver Name"
+                        helperText={errors?.userId?.message}
+                        error={errors?.userId}
+                      />
+                    )}
+                  />
+
+                  {/* {!isRegistrationApproval && (
                   <>
                     <Controller
                       control={control}
@@ -458,198 +485,247 @@ function Approver() {
                   </>
                 )} */}
 
-                <IconButton
-                  sx={{ color: "secondary.main" }}
-                  // onClick={() => {
-                  //   setValue(`approvers[${index}].level`, index);
-                  //   setValue(`approvers[${index - 1}].level`, index + 1);
-                  //   approverSwap(index, index - 1);
-                  // }}
-                  onClick={() => handleSwapApprover(index - 1, index)}
-                  disabled={index === 0}
-                >
-                  <KeyboardArrowUp sx={{ fontSize: "30px" }} />
-                </IconButton>
+                  <IconButton
+                    sx={{ color: "secondary.main" }}
+                    // onClick={() => {
+                    //   setValue(`approvers[${index}].level`, index);
+                    //   setValue(`approvers[${index - 1}].level`, index + 1);
+                    //   approverSwap(index, index - 1);
+                    // }}
+                    onClick={() => handleSwapApprover(index - 1, index)}
+                    disabled={index === 0}
+                  >
+                    <KeyboardArrowUp sx={{ fontSize: "30px" }} />
+                  </IconButton>
 
-                <IconButton
-                  sx={{ color: "secondary.main" }}
-                  // onClick={() => {
-                  //   setValue(`approvers[${index}].level`, index + 2);
-                  //   setValue(`approvers[${index + 1}].level`, index + 1);
-                  //   approverSwap(index, index + 1);
-                  // }}
-                  onClick={() => handleSwapApprover(index, index + 1)}
-                  disabled={index === approverFields.length - 1}
-                >
-                  <KeyboardArrowDown sx={{ fontSize: "30px" }} />
-                </IconButton>
+                  <IconButton
+                    sx={{ color: "secondary.main" }}
+                    // onClick={() => {
+                    //   setValue(`approvers[${index}].level`, index + 2);
+                    //   setValue(`approvers[${index + 1}].level`, index + 1);
+                    //   approverSwap(index, index + 1);
+                    // }}
+                    onClick={() => handleSwapApprover(index, index + 1)}
+                    disabled={index === approverFields.length - 1}
+                  >
+                    <KeyboardArrowDown sx={{ fontSize: "30px" }} />
+                  </IconButton>
 
-                <IconButton
-                  sx={{ color: "error.main" }}
-                  onClick={() => approverRemove(index)}
-                  // disabled={index !== approverFields.length - 1}
-                >
-                  <RemoveCircleOutline sx={{ fontSize: "30px" }} />
-                </IconButton>
-              </Box>
-            ))}
+                  <IconButton
+                    sx={{ color: "error.main" }}
+                    onClick={() => approverRemove(index)}
+                    // disabled={index !== approverFields.length - 1}
+                  >
+                    <RemoveCircleOutline sx={{ fontSize: "30px" }} />
+                  </IconButton>
+                </Box>
+              ))}
 
-            {approverWithLimitFields.map((item, index) => (
-              <Box
-                key={item.id}
-                sx={{
-                  display: "flex",
-                  gap: "10px",
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                <ControlledAutocomplete
-                  name={`approversWithLimit[${index}].userId`}
-                  control={control}
-                  options={data || []}
-                  getOptionLabel={(option) => option.fullname || ""}
-                  getOptionDisabled={(option) => {
-                    const approversWithLimit = watch("approversWithLimit");
-                    const approvers = watch("approvers");
-
-                    const checkApprover =
-                      approversWithLimit?.some(
-                        (item) => item?.userId?.userId === option.userId
-                      ) ||
-                      approvers?.some(
-                        (item) => item?.userId?.userId === option.userId
-                      );
-                    return checkApprover;
+              {(watch("moduleName")?.name === "Sp. Discount Approval"
+                ? approverWithLimitFields
+                : approverWithLimitDigitFields
+              ).map((item, index) => (
+                <Box
+                  key={item.id}
+                  sx={{
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "center",
+                    width: "100%",
                   }}
-                  sx={{ flex: 1 }}
-                  disableClearable
-                  disabled={!watch("moduleName")}
-                  loading={isLoading}
-                  isOptionEqualToValue={() => true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size="small"
-                      label="Approver Name"
-                      helperText={errors?.userId?.message}
-                      error={errors?.userId}
-                    />
-                  )}
-                />
-
-                {!isRegistrationApproval && (
-                  <Controller
+                >
+                  <ControlledAutocomplete
+                    name={
+                      watch("moduleName")?.name === "Sp. Discount Approval"
+                        ? `approversWithLimit[${index}].userId`
+                        : `approversWithLimitDigit[${index}].userId`
+                    }
                     control={control}
-                    name={`approversWithLimit[${index}].minValue`}
-                    render={({ field: { onChange, onBlur, value, ref } }) => (
-                      <NumericFormat
-                        label="Minimum Value"
-                        type="text"
+                    options={data || []}
+                    getOptionLabel={(option) => option.fullname || ""}
+                    getOptionDisabled={(option) => {
+                      const approversWithLimit = watch("approversWithLimit");
+                      const approvers = watch("approvers");
+
+                      const checkApprover =
+                        approversWithLimit?.some(
+                          (item) => item?.userId === option.userId
+                        ) ||
+                        approvers?.some(
+                          (item) => item?.userId === option.userId
+                        );
+                      return checkApprover;
+                    }}
+                    sx={{ flex: 1 }}
+                    disableClearable
+                    disabled={!watch("moduleName")}
+                    loading={isLoading}
+                    isOptionEqualToValue={(option, value) =>
+                      option.userId === value?.userId
+                    } // Compare userId properly
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
                         size="small"
-                        customInput={TextField}
-                        autoComplete="off"
-                        onValueChange={(e) => {
-                          onChange(Number(e.value));
-                        }}
-                        onBlur={onBlur}
-                        value={value || ""}
-                        inputRef={ref}
-                        thousandSeparator=","
-                        allowNegative={false}
-                        allowLeadingZeros={false}
-                        prefix={
-                          watch("moduleName")?.name ===
-                            "Listing Fee Approval" ||
-                          watch("moduleName")?.name ===
-                            "Other Expenses Approval"
-                            ? "₱"
-                            : ""
-                        }
-                        suffix={
-                          watch("moduleName")?.name === "Sp. Discount Approval"
-                            ? "%"
-                            : ""
-                        }
-                        sx={{ width: "180px" }}
+                        label="Approver Name"
+                        helperText={errors?.userId?.message}
+                        error={Boolean(errors?.userId)}
                       />
                     )}
+                    onChange={(_, newValue) => {
+                      if (newValue) {
+                        control.setValue(
+                          `approversWithLimit[${index}].userId`,
+                          newValue.userId
+                        );
+                      } else {
+                        control.setValue(
+                          `approversWithLimit[${index}].userId`,
+                          null
+                        );
+                      }
+                    }}
                   />
-                )}
 
-                <IconButton
-                  sx={{ color: "secondary.main" }}
-                  onClick={() => handleSwapApproverWithLimit(index - 1, index)}
-                  disabled={index === 0}
-                >
-                  <KeyboardArrowUp sx={{ fontSize: "30px" }} />
-                </IconButton>
+                  {!isRegistrationApproval && (
+                    <Controller
+                      control={control}
+                      name={
+                        watch("moduleName")?.name === "Sp. Discount Approval"
+                          ? `approversWithLimit[${index}].minValue`
+                          : `approversWithLimitDigit[${index}].minValue`
+                      }
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <NumericFormat
+                          label="Minimum Value"
+                          type="text"
+                          size="small"
+                          customInput={TextField}
+                          autoComplete="off"
+                          onValueChange={(e) => {
+                            onChange(parseInt(e.value));
+                          }}
+                          onBlur={onBlur}
+                          value={value || ""}
+                          inputRef={ref}
+                          thousandSeparator=","
+                          allowNegative={false}
+                          allowLeadingZeros={false}
+                          prefix={
+                            watch("moduleName")?.name ===
+                              "Listing Fee Approval" ||
+                            watch("moduleName")?.name ===
+                              "Other Expenses Approval"
+                              ? "₱"
+                              : ""
+                          }
+                          suffix={
+                            watch("moduleName")?.name ===
+                            "Sp. Discount Approval"
+                              ? "%"
+                              : ""
+                          }
+                          sx={{ width: "180px" }}
+                        />
+                      )}
+                    />
+                  )}
 
-                <IconButton
-                  sx={{ color: "secondary.main" }}
-                  // onClick={() => {
-                  //   setValue(`approvers[${index}].level`, index + 2);
-                  //   setValue(`approvers[${index + 1}].level`, index + 1);
-                  //   approverSwap(index, index + 1);
-                  // }}
-                  onClick={() => handleSwapApproverWithLimit(index, index + 1)}
-                  disabled={index === approverWithLimitFields.length - 1}
-                >
-                  <KeyboardArrowDown sx={{ fontSize: "30px" }} />
-                </IconButton>
+                  <IconButton
+                    sx={{ color: "secondary.main" }}
+                    onClick={() =>
+                      handleSwapApproverWithLimit(index - 1, index)
+                    }
+                    disabled={index === 0}
+                  >
+                    <KeyboardArrowUp sx={{ fontSize: "30px" }} />
+                  </IconButton>
 
-                <IconButton
-                  sx={{ color: "error.main" }}
-                  onClick={() => approverWithLimitRemove(index)}
-                >
-                  <RemoveCircleOutline sx={{ fontSize: "30px" }} />
-                </IconButton>
-              </Box>
-            ))}
+                  <IconButton
+                    sx={{ color: "secondary.main" }}
+                    // onClick={() => {
+                    //   setValue(`approvers[${index}].level`, index + 2);
+                    //   setValue(`approvers[${index + 1}].level`, index + 1);
+                    //   approverSwap(index, index + 1);
+                    // }}
+                    onClick={() =>
+                      handleSwapApproverWithLimit(index, index + 1)
+                    }
+                    disabled={watch("moduleName")?.name === "Sp. Discount Approval" ? index === approverWithLimitFields.length - 1 : index === approverWithLimitDigitFields.length - 1}
+                  >
+                    <KeyboardArrowDown sx={{ fontSize: "30px" }} />
+                  </IconButton>
+
+                  <IconButton
+                    sx={{ color: "error.main" }}
+                    onClick={() => {
+                      if(watch("moduleName")?.name === "Sp. Discount Approval"){
+                        approverWithLimitRemove(index)
+                      }
+                      else{
+                        approverWithLimitDigitRemove(index)
+                      }
+                    }}
+                  >
+                    <RemoveCircleOutline sx={{ fontSize: "30px" }} />
+                  </IconButton>
+                </Box>
+              ))}
+            </Box>
           </Box>
-        </Box>
 
-        <Stack direction="row" spacing={1}>
-          <SecondaryButton
-            sx={{ width: "150px" }}
-            onClick={() => {
-              if (withLimit) {
-                approverWithLimitAppend({
-                  userId: null,
-                  minValue: null,
-                  level: approverWithLimitFields.length + 1,
-                });
-              } else {
-                approverAppend({
-                  userId: null,
-                  minValue: null,
-                  level: approverFields.length + 1,
-                });
+          <Stack direction="row" spacing={1}>
+            <SecondaryButton
+              sx={{ width: "150px" }}
+              onClick={() => {
+                if (withLimit) {
+                  if (watch("moduleName")?.name === "Sp. Discount Approval") {
+                    approverWithLimitAppend({
+                      userId: null,
+                      minValue: null,
+                      level: approverWithLimitFields.length + 1,
+                    });
+                  } else {
+                    approverWithLimitDigitAppend({
+                      userId: null,
+                      minValue: null,
+                      level: approverWithLimitFields.length + 1,
+                    });
+                  }
+                } else {
+                  approverAppend({
+                    userId: null,
+                    minValue: null,
+                    level: approverFields.length + 1,
+                  });
+                }
+              }}
+              disabled={
+                !isValid &&
+                !errors &&
+                (approverFields.length > 0 ||
+                  approverWithLimitFields.length > 0 ||
+                  approverWithLimitFields.length > 0)
               }
-            }}
-            disabled={
-              !isValid &&
-              (approverFields.length > 0 || approverWithLimitFields.length > 0)
-            }
-            endIcon={<Add />}
-          >
-            Add Approver
-          </SecondaryButton>
+              endIcon={<Add />}
+            >
+              Add Approver
+            </SecondaryButton>
 
-          {!isRegistrationApproval && (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={!withLimit}
-                  onChange={(e) => setWithLimit(!e.target.checked)}
-                />
-              }
-              label="No Limit"
-            />
-          )}
-        </Stack>
-      </CommonDrawer>
-    </Box>
+            {!isRegistrationApproval && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={!withLimit}
+                    onChange={(e) => setWithLimit(!e.target.checked)}
+                  />
+                }
+                label="No Limit"
+              />
+            )}
+          </Stack>
+        </CommonDrawer>
+      </Box>
     </>
   );
 }

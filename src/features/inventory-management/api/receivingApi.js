@@ -24,6 +24,14 @@ const receivingApi = api
         queryFn: dummyReceiveMoveOrder,
       }),
 
+      getWrongItems: builder.query({
+        query : (params) => ({
+          params,
+          url: "/get-wrong-orders",
+          method: "GET",
+        })
+      }),
+
       getAllReceivedOrders: builder.query({
         // Uncomment this when the backend is ready
         query: (params) => ({
@@ -71,4 +79,5 @@ export const {
   useLazyGetReceivedOrderByIdQuery,
   useGenerateMoveOrderQuery,
   useLazyGenerateMoveOrderQuery,
+  useLazyGetWrongItemsQuery
 } = receivingApi;

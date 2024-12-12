@@ -56,7 +56,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
   const [trigger, { data, isFetching }] = useLazyGetPaymentOverviewQuery();
 
   const transaction = data?.[0];
-  console.log(transaction);
+  console.log(transaction?.receiptAttachment);
   const paymentTransactionIds = transaction?.transactions?.map(
     (t) => t.paymentTransactionId
   );
@@ -448,13 +448,13 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         </Stack>
       </CommonModal>
       <ViewPhotoModal
-        currentViewPhoto={transaction?.receiptAttachment}
+        currentViewPhoto={transaction?.attachment}
         open={isViewPhotoOpen}
         onClose={onViewPhotoClose}
         cloudified={true}
       />
       <ViewPhotoModal
-        currentViewPhoto={transaction?.attachment}
+        currentViewPhoto={transaction?.receiptAttachment}
         open={isViewAttachmentOpen}
         onClose={onViewAttachmentClose}
         cloudified={true}

@@ -18,10 +18,14 @@ const ViewReceivingSkeleton = () => {
 
 function ViewReceiving() {
   const { id } = useParams();
+  const items = []
+  const wrongDelivers = []
   const navigate = useNavigate();
 
   const [triggerData, { data, isFetching, isUninitialized }] =
     useLazyGetReceivedOrderByIdQuery();
+
+  console.log("data",data);
 
   useEffect(() => {
     const fetch = async () => {
@@ -34,6 +38,17 @@ function ViewReceiving() {
     fetch();
   }, [id, navigate, triggerData]);
 
+  data?.mo[0]?.moveItems?.map((item, index) => {
+    console.log("items", item, "index:", index);
+    if(item?.reason === null){
+      items.push(item);
+    }
+    else{
+      wrongDelivers.push(item);
+    }
+  })
+  console.log(items);
+
   if (!data || isFetching || isUninitialized) {
     return <ViewReceivingSkeleton />;
   }
@@ -42,9 +57,9 @@ function ViewReceiving() {
     <Box className="commonPageLayout">
       <ReceivingFormHeader data={data.mo[0]} isFetching={isFetching} />
 
-      <ReceivingItems items={data?.mo[0]?.moveItems} isFetching={isFetching} />
+      <ReceivingItems items={items} isFetching={isFetching} />
 
-      <WrongDeliver viewing={true} wrongItems={data.wrongDeliver} isFetching={isFetching} />
+      <WrongDeliver viewing={true} wrongItems={wrongDelivers} isFetching={isFetching} />
     </Box>
   );
 }

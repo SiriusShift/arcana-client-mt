@@ -82,7 +82,7 @@ function WrongDeliver({
     defaultValues: wrongDeliverSchema.defaultValues,
   });
 
-  console.log(formData);
+  console.log(watch());
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -95,7 +95,7 @@ function WrongDeliver({
     defaultValue: [],
   });
 
-  console.log(wrongDeliver);
+  // console.log(wrongDeliver);
 
   const disableFields = wrongItems.length > 0;
 
@@ -249,6 +249,8 @@ function WrongDeliver({
                                     if(e.target.value > data?.actualQuantity){
                                       console.log(item?.item?.quantity, data?.actualQuantity)
                                       return snackbar({ message: "Quantity exceeds actual quantity", variant: "error" })
+                                    }else if(e.target.value < 0){
+                                      return snackbar({message: "Quantity received must not be negative value", variant: "error"})
                                     }
                                     else{
                                       onChange(e)

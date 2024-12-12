@@ -54,6 +54,7 @@ function ReceivingItems({
   const snackbar = useSnackbar();
   const {
     control,
+    reset,
     setValue,
     watch,
     formState: { isValid, errors },
@@ -75,11 +76,13 @@ function ReceivingItems({
     defaultValue: [],
   });
 
+  console.log(watch("items"));
+
   const disableFields = items.some((item) => item.actualQuantity);
 
   useEffect(() => {
-    setValue("items", items);
-  }, [items, setValue]);
+    reset({items});
+  }, [items, reset]);
 
   useEffect(() => {
     if (handleFormValid && handleFormData) {
@@ -116,37 +119,42 @@ function ReceivingItems({
             <ReceivingItemsTableSkeleton />
           ) : (
             <TableBody>
-              {fields.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell sx={{ py: 1 }}>{index + 1}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item?.itemDescription}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item?.uom}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item?.quantity}</TableCell>
-                  <TableCell sx={{ py: 1 }}>
-                    <Controller
-                      control={control}
-                      name={`items[${index}].actualQuantity`}
-                      render={({ field }) => (
-                        <TextField
-                          size="small"
-                          type="number"
-                          {...field}
-                          value={field.value || ""}
-                          inputRef={field.ref}
-                          disabled={disableFields}
-                          onChange={(e) => {
-                            if(parseFloat(e.target.value) > parseFloat(item.quantity)){
-                              return snackbar({ message: "Quantity received cannot be greater than quantity", variant: "error" })
-                            }
-                            field.onChange(parseFloat(e.target.value));
-                          }}
-                        />
-                      )}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
+              {fields.map((item, index) => {
+                return ((
+                  <TableRow key={index}>
+                    <TableCell sx={{ py: 1 }}>{index + 1}</TableCell>
+                    <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
+                    <TableCell sx={{ py: 1 }}>{item?.itemDescription}</TableCell>
+                    <TableCell sx={{ py: 1 }}>{item?.uom}</TableCell>
+                    <TableCell sx={{ py: 1 }}>{item?.quantity}</TableCell>
+                    <TableCell sx={{ py: 1 }}>
+                      <Controller
+                        control={control}
+                        name={`items[${index}].actualQuantity`}
+                        render={({ field }) => (
+                          <TextField
+                            size="small"
+                            type="number"
+                            {...field}
+                            value={field.value || ""}
+                            inputRef={field.ref}
+                            disabled={disableFields}
+                            onChange={(e) => {
+                              console.log(`Updating index ${index}:`, e.target.value); // Debug log
+                              if(parseFloat(e.target.value) > parseFloat(item.quantity)){
+                                return snackbar({ message: "Quantity received cannot be greater than quantity", variant: "error" })
+                              }else if(parseFloat(e.target.value) < 0){
+                                return snackbar({message: "Quantity received must not be negative value", variant: "error"})
+                              }
+                              field.onChange(parseFloat(e.target.value));
+                            }}
+                          />
+                        )}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))
+              })}
             </TableBody>
           )}
         </Table>
