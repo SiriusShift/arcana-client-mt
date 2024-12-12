@@ -44,7 +44,7 @@ function ViewReceiving() {
 
       <ReceivingItems items={data?.mo[0]?.moveItems} isFetching={isFetching} />
 
-      <WrongDeliver wrongItems={data.wrongDeliver} isFetching={isFetching} />
+      <WrongDeliver viewing={true} wrongItems={data.wrongDeliver} isFetching={isFetching} />
     </Box>
   );
 }

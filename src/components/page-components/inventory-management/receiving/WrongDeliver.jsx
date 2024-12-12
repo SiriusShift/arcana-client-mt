@@ -69,6 +69,7 @@ function WrongDeliver({
   handleFormValid,
   handleFormData,
   isFetching,
+  viewing
 }) {
   const snackbar = useSnackbar();
   const {
@@ -297,7 +298,7 @@ function WrongDeliver({
                       endIcon={<Add />}
                       sx={{ width: "fit-content", alignSelf: "end" }}
                       onClick={handleAdd}
-                      disabled={!isValid}
+                      disabled={!isValid || viewing}
                     >
                       Add Wrong Deliver
                     </SecondaryButton>
