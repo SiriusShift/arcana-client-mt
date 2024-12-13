@@ -10,13 +10,14 @@ import moment from "moment";
 
 const SearchDateRangeMixin = ({
   setSearch,
+  removeSearch,
   setDateFrom,
   setDateTo,
   isDataFetching,
   dateFrom,
   dateTo,
 }) => {
-  const [dateFromTemp, setDateFromTemp] = useState(moment());
+  const [dateFromTemp, setDateFromTemp] = useState(moment().startOf("month"));
   const [dateToTemp, setDateToTemp] = useState(moment());
 
   const debouncedSetSearch = debounce((value) => {
@@ -31,18 +32,20 @@ const SearchDateRangeMixin = ({
 
   return (
     <Box className="mixin" sx={{ my: "-20px" }}>
+      {" "}
       <Box className="mixin__left">
-        <TextField
-          type="search"
-          size="small"
-          label="Search"
-          onChange={(e) => {
-            debouncedSetSearch(e.target.value);
-          }}
-          autoComplete="off"
-        />
+        {removeSearch !== true && (
+          <TextField
+            type="search"
+            size="small"
+            label="Search"
+            onChange={(e) => {
+              debouncedSetSearch(e.target.value);
+            }}
+            autoComplete="off"
+          />
+        )}
       </Box>
-
       <Box
         className="mixin__right"
         component="form"

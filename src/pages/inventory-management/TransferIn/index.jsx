@@ -28,8 +28,13 @@ function TransferIn() {
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransferInStatus:
-      tabViewing === 1 ? "Pending" : tabViewing === 2 ? "Received" : "Rejected",
+    Status:
+      tabViewing === 1
+        ? "For Receiving"
+        : tabViewing === 2
+        ? "Received"
+        : "Rejected",
+    // TransferType: "Out"
   });
 
   const tableHeads = [
@@ -89,6 +94,7 @@ function TransferIn() {
         />
 
         <SearchDateRangeMixin
+          removeSearch
           setSearch={setSearch}
           setDateFrom={setDateFrom}
           setDateTo={setDateTo}

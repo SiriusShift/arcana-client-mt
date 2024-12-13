@@ -89,8 +89,8 @@ const useItemsWithBbd = ({
 
   useEffect(() => {
     if (items.length > 0) {
-      const newItems = items.map((item) => ({
-        item: productData.items.find(
+      const newItems = items?.map((item) => ({
+        item: productData?.items?.find(
           (product) => product.itemId === item.itemId
         ),
         itemDescription: item.itemDescription,

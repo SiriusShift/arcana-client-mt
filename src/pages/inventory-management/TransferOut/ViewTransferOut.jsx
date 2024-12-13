@@ -5,12 +5,17 @@ import TransferOutFormDetails from "../../../components/page-components/inventor
 import TransferOutItems from "../../../components/page-components/inventory-management/transfer-out/TransferOutItems";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { transferOutSchema } from "../../../schema/schema";
-import { useGetTransferOutByIdQuery } from "../../../features/inventory-management/api/transferOutApi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useGetAllTransferOutsQuery, useGetTransferOutByIdQuery } from "../../../features/inventory-management/api/transferOutApi";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 
 const ViewTransferOut = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
+  const dateFrom = searchParams.get("dateFrom");
+  const dateTo = searchParams.get("dateTo");
   const navigate = useNavigate();
 
   const methods = useForm({
@@ -18,7 +23,13 @@ const ViewTransferOut = () => {
     defaultValues: transferOutSchema.defaultValues,
   });
 
-  const { data, isFetching, isError } = useGetTransferOutByIdQuery(id);
+  const { data, isFetching, isError } = useGetAllTransferOutsQuery({
+    TransferOrderId: id,
+    DateFrom: dateFrom,
+    DateTo: dateTo,
+  });
+
+  console.log(data?.to[0]);
 
   useEffect(() => {
     if (isError) {
@@ -33,7 +44,7 @@ const ViewTransferOut = () => {
       <FormProvider {...methods}>
         <TransferOutFormDetails details={data} isFetching={isFetching} />
 
-        <TransferOutItems items={data?.items} isFetching={isFetching} />
+        <TransferOutItems items={data?.to[0]?.transferItems || []} isFetching={isFetching} />
       </FormProvider>
     </Box>
   );

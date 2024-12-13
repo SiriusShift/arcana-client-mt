@@ -19,8 +19,10 @@ function TransferOut() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [dateFrom, setDateFrom] = useState(moment());
+  const [dateTo, setDateTo] = useState(moment());
+
+  console.log(dateFrom, dateTo);
 
   const { data, isFetching } = useGetAllTransferOutsQuery({
     Search: search,
@@ -28,8 +30,13 @@ function TransferOut() {
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransferOutStatus:
-      tabViewing === 1 ? "Pending" : tabViewing === 2 ? "Received" : "Rejected",
+    Status:
+      tabViewing === 1
+        ? ""
+        : tabViewing === 2
+        ? "Received"
+        : "Rejected",
+    // TransferType: "Out"
   });
 
   const tableHeads = [
@@ -42,7 +49,7 @@ function TransferOut() {
 
   const customOrderKeys = [
     "id",
-    "to",
+    "requestor",
     "cluster",
     "totalQuantity",
     "transactionDate",
@@ -70,7 +77,7 @@ function TransferOut() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}`);
+    navigate(`${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
   };
 
   const handleAdd = () => {
@@ -91,6 +98,7 @@ function TransferOut() {
         />
 
         <SearchDateRangeMixin
+          removeSearch={true}
           setSearch={setSearch}
           setDateFrom={setDateFrom}
           setDateTo={setDateTo}
@@ -104,7 +112,7 @@ function TransferOut() {
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.transferOuts}
+            mapData={data?.to}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             rowsPerPage={rowsPerPage}

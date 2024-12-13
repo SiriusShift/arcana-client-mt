@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ReceivingFormHeader from "../../../components/page-components/inventory-management/receiving/ReceivingFormHeader";
 import ReceivingItems from "../../../components/page-components/inventory-management/receiving/ReceivingItems";
 import WrongDeliver from "../../../components/page-components/inventory-management/receiving/WrongDeliver";
@@ -18,19 +18,24 @@ const ViewReceivingSkeleton = () => {
 
 function ViewReceiving() {
   const { id } = useParams();
-  const items = []
-  const wrongDelivers = []
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
+  const dateFrom = searchParams.get("dateFrom");
+  const dateTo = searchParams.get("dateTo");
+  const items = [];
+  const wrongDelivers = [];
   const navigate = useNavigate();
 
   const [triggerData, { data, isFetching, isUninitialized }] =
     useLazyGetReceivedOrderByIdQuery();
 
-  console.log("data",data);
+  console.log("data", data);
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        await triggerData({MoveOrderId: id}).unwrap();
+        await triggerData({ MoveOrderId: id, DateFrom: dateFrom, DateTo: dateTo }).unwrap();
       } catch (error) {
         navigate("/inventory-management/receiving", { replace: true });
       }
@@ -40,13 +45,12 @@ function ViewReceiving() {
 
   data?.mo[0]?.moveItems?.map((item, index) => {
     console.log("items", item, "index:", index);
-    if(item?.reason === null){
+    if (item?.reason === null) {
       items.push(item);
-    }
-    else{
+    } else {
       wrongDelivers.push(item);
     }
-  })
+  });
   console.log(items);
 
   if (!data || isFetching || isUninitialized) {
@@ -59,7 +63,11 @@ function ViewReceiving() {
 
       <ReceivingItems items={items} isFetching={isFetching} />
 
-      <WrongDeliver viewing={true} wrongItems={wrongDelivers} isFetching={isFetching} />
+      <WrongDeliver
+        viewing={true}
+        wrongItems={wrongDelivers}
+        isFetching={isFetching}
+      />
     </Box>
   );
 }

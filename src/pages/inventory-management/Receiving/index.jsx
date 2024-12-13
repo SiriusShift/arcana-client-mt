@@ -8,6 +8,8 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useGetAllReceivedOrdersQuery } from "../../../features/inventory-management/api/receivingApi";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
+import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
+import moment from "moment";
 
 function Receiving() {
   const navigate = useNavigate();
@@ -15,13 +17,17 @@ function Receiving() {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
   const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
 
   // RTK Query
   const { data, isFetching } = useGetAllReceivedOrdersQuery({
     Search: search,
-    Page: page + 1,
+    PageNumber: page + 1,
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     PageSize: rowsPerPage,
   });
 
@@ -53,7 +59,7 @@ function Receiving() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.moveOrderId}`);
+    navigate(`${selectedRowData?.moveOrderId}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
   };
 
   if (location.pathname === "/inventory-management/receiving") {
@@ -69,9 +75,17 @@ function Receiving() {
             pageTitle="Receiving"
             addTitle="New Delivery"
             removeArchive
+            removeSearch
             onOpen={onGenerateOpen}
             setSearch={setSearch}
           />
+          <SearchDateRangeMixin
+          removeSearch={true}
+          setDateFrom={setDateFrom}
+          setDateTo={setDateTo}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+        />
 
           {isFetching ? (
             <CommonTableSkeleton evenLesserCompact />

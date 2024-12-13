@@ -26,15 +26,18 @@ const TransferOutFormActions = () => {
     navigate("/inventory-management/transfer-out", { replace: true });
   };
 
+
+
   const onSubmit = async (data) => {
+    console.log(data);
     try {
       const transformedData = {
-        items: data.items.map((item) => ({
-          itemId: item.item.itemId,
+        transferItems: data.items.map((item) => ({
+          itemCode: item.item.itemCode,
           quantity: item.quantity,
-          bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
+          // bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
         })),
-        transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
+        // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
         to: data.to.id,
       };
 

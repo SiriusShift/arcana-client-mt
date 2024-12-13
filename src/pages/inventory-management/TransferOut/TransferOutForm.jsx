@@ -12,6 +12,10 @@ const TransferOutForm = () => {
     resolver: yupResolver(transferOutSchema.schema),
     defaultValues: transferOutSchema.defaultValues,
   });
+  
+  const {watch } = methods
+
+  console.log(watch());
 
   return (
     <Box className="commonPageLayout">
