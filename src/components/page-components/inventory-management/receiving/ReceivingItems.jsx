@@ -77,6 +77,7 @@ function ReceivingItems({
   });
 
   console.log(watch("items"));
+  console.log(errors);
 
   const disableFields = items.some((item) => item.actualQuantity);
 
