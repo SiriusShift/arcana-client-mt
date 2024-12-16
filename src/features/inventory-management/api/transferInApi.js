@@ -11,28 +11,30 @@ const transferInApi = api
   .injectEndpoints({
     endpoints: (builder) => ({
       receiveTransferIn: builder.mutation({
-        // query: (id) => ({
-        //   url: `/transfer-in/receive/${id}`,
-        //   method: "PUT",
-        // }),
+        query: (id) => ({
+          url: `/accept-transfer/${id}`,
+          method: "PATCH",
+          body: {},
+        }),
         invalidatesTags: ["Transfer In", "Transfer Ins"],
 
         // This is a dummy implementation of the request
         // Remove this when the backend is ready
-        queryFn: dummyReceiveTransferIn,
+        // queryFn: dummyReceiveTransferIn,
       }),
 
       rejectTransferIn: builder.mutation({
         // Uncomment this when the backend is ready
-        // query: (id) => ({
-        //   url: `/transfer-in/reject/${id}`,
-        //   method: "PUT",
-        // }),
+        query: (id) => ({
+          url: `/reject-transfer/${id}`,
+          method: "PATCH",
+          body: {},
+        }),
         invalidatesTags: ["Transfer In", "Transfer Ins"],
 
         // This is a dummy implementation of the request
         // Remove this when the backend is ready
-        queryFn: dummyRejectTransferIn,
+        // queryFn: dummyRejectTransferIn,
       }),
 
       getAllTransferIns: builder.query({
@@ -49,22 +51,23 @@ const transferInApi = api
 
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
-        queryFn: dummyGetAllTransferIns,
+        // queryFn: dummyGetAllTransferIns,
       }),
 
       getTransferInById: builder.query({
         // Uncomment this when the backend is ready
-        // query: (id) => ({
-        //   url: `/transfer-in/${id}`,
-        //   method: "GET",
-        // }),
-        // transformResponse: (response) => response.value,
+        query: (params) => ({
+          url: `/get-transfer`,
+          method: "GET",
+          params
+        }),
+        transformResponse: (response) => response.value,
         // transformErrorResponse: (response) => response.value,\
         providesTags: ["Transfer In"],
 
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
-        queryFn: dummyGetTransferInById,
+        // queryFn: dummyGetTransferInById,
       }),
     }),
   });

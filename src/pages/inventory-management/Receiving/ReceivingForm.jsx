@@ -18,7 +18,7 @@ function ReceivingForm() {
   const [formData, setFormData] = useState({
     moveOrderId: Number(moveOrderSlipNo),
     items: [],
-    wrongDeliver: [],
+    wrong: [],
   });
 
   console.log(formData);

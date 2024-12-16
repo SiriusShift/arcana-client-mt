@@ -49,8 +49,8 @@ function TransferOut() {
 
   const customOrderKeys = [
     "id",
-    "requestor",
-    "cluster",
+    "transferTo",
+    "transferToCluster",
     "totalQuantity",
     "transactionDate",
   ];

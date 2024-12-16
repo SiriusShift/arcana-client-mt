@@ -606,7 +606,7 @@ function CommonTable({
                               maximumFractionDigits: 2,
                             })
                           : !item[keys]
-                          ? "N/A"
+                          ? item[keys] === null ? "N/A" : item[keys]
                           : item[keys]}
 
                         {percentageArray &&

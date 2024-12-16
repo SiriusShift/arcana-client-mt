@@ -86,12 +86,12 @@ function WrongDeliver({
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "wrongDeliver",
+    name: "wrong",
   });
 
-  const wrongDeliver = useWatch({
+  const wrong = useWatch({
     control,
-    name: "wrongDeliver",
+    name: "wrong",
     defaultValue: [],
   });
 
@@ -119,7 +119,7 @@ function WrongDeliver({
         item: { itemCode: item.itemCode },
         ...item,
       }));
-      setValue("wrongDeliver", transfomedItems);
+      setValue("wrong", transfomedItems);
     }
   }, [wrongItems, setValue]);
 
@@ -128,14 +128,14 @@ function WrongDeliver({
       handleFormValid((prev) => ({ ...prev, isWrongDeliverValid: isValid }));
       handleFormData((prev) => ({
         ...prev,
-        wrongDeliver: wrongDeliver.map((item) => ({
+        wrong: wrong.map((item) => ({
           itemCode: item?.item?.itemCode || "",
           quantity: Number(item.quantity),
           reason: item.reason,
         })),
       }));
     }
-  }, [wrongDeliver, isValid, handleFormValid, handleFormData, disableFields]);
+  }, [wrong, isValid, handleFormValid, handleFormData, disableFields]);
 
   return isFetching ? (
     <WrongDeliverSkeleton />
@@ -164,7 +164,7 @@ function WrongDeliver({
                     <Stack direction="row" spacing={1.5} key={item.id}>
                       <ControlledAutocomplete
                         control={control}
-                        name={`wrongDeliver[${index}].item`}
+                        name={`wrong[${index}].item`}
                         options={items || []}
                         getOptionDisabled={(option) =>
                           fields.some(
@@ -177,10 +177,10 @@ function WrongDeliver({
                         disabled={disableFields}
                         onChange={(_, value) => {
                           setValue(
-                            `wrongDeliver[${index}].itemDescription`,
+                            `wrong[${index}].itemDescription`,
                             value?.itemDescription
                           );
-                          setValue(`wrongDeliver[${index}].uom`, value?.uom);
+                          setValue(`wrong[${index}].uom`, value?.uom);
                           return value;
                         }}
                         renderInput={(params) => (
@@ -197,7 +197,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrongDeliver[${index}].itemDescription`}
+                        name={`wrong[${index}].itemDescription`}
                         render={({ field }) => (
                           <TextField
                             label="Item Description"
@@ -214,7 +214,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrongDeliver[${index}].uom`}
+                        name={`wrong[${index}].uom`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -234,7 +234,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrongDeliver[${index}].quantity`}
+                        name={`wrong[${index}].quantity`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -243,7 +243,7 @@ function WrongDeliver({
                             size="small"
                             autoComplete="off"
                             onChange={(e) => {
-                              watch("wrongDeliver").map((item) => {
+                              watch("wrong").map((item) => {
                                 formData.items.map((data) => {
                                   if(item.item.itemCode === data.itemCode) {
                                     if(e.target.value > data?.actualQuantity){
@@ -270,7 +270,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrongDeliver[${index}].reason`}
+                        name={`wrong[${index}].reason`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (

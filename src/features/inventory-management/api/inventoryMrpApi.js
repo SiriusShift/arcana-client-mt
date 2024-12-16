@@ -12,6 +12,7 @@ const inventoryMrpApi = api
           url: "/get-inventory-mrp",
           method: "GET",
         }),
+        invalidatesTags: ["Inventory MRP"],
         transformResponse : (response) => response.value
       }),
     }),

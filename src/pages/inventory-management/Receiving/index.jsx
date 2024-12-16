@@ -80,7 +80,7 @@ function Receiving() {
             setSearch={setSearch}
           />
           <SearchDateRangeMixin
-          removeSearch={true}
+          setSearch={setSearch}
           setDateFrom={setDateFrom}
           setDateTo={setDateTo}
           dateFrom={dateFrom}

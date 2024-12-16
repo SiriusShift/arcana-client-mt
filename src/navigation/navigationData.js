@@ -312,13 +312,13 @@ export const navigationData = [
         description: "Track and transfer items out of your inventory",
         icon: "ArrowBack",
       },
-      {
-        id: 5,
-        name: "Pull Out",
-        path: "/inventory-management/pull-out",
-        description: "Track items pulled out of inventory",
-        icon: "ArrowUpward",
-      },
+      // {
+      //   id: 5,
+      //   name: "Pull Out",
+      //   path: "/inventory-management/pull-out",
+      //   description: "Track items pulled out of inventory",
+      //   icon: "ArrowUpward",
+      // },
       {
         id: 6,
         name: "Freebies",

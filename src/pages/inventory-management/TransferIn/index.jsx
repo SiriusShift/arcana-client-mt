@@ -47,8 +47,8 @@ function TransferIn() {
 
   const customOrderKeys = [
     "id",
-    "from",
-    "cluster",
+    "createdBy",
+    "createdByCluster",
     "totalQuantity",
     "transactionDate",
   ];
@@ -76,7 +76,7 @@ function TransferIn() {
   // Functions
   const handleView = () => {
     if (tabViewing === 1) {
-      navigate(`transfer-in-form/${selectedRowData?.id}`);
+      navigate(`transfer-in-form/${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
     } else {
       navigate(`${selectedRowData?.id}`);
     }
@@ -108,7 +108,7 @@ function TransferIn() {
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.transferIns}
+            mapData={data?.to}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             rowsPerPage={rowsPerPage}

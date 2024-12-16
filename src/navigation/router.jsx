@@ -291,10 +291,10 @@ export const router = createBrowserRouter([
               },
             ],
           },
-          {
-            path: "pull-out",
-            element: <PullOut />,
-          },
+          // {
+          //   path: "pull-out",
+          //   element: <PullOut />,
+          // },
           {
             path: "freebies",
             element: <Freebies />,
