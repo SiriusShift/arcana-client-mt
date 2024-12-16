@@ -37,11 +37,12 @@ const transferInApi = api
 
       getAllTransferIns: builder.query({
         // Uncomment this when the backend is ready
-        // query: (params) => ({
-        //   params: params,
-        //   url: "/transfer-in",
-        //   method: "GET",
-        // }),
+        query: (params) => ({
+          params,
+          url: "/get-transfer",
+          method: "GET",
+        }),
+        transformResponse: (response) => response.value,
         // transformResponse: (response) => response.value,
         // transformErrorResponse: (response) => response.value,
         providesTags: ["Transfer Ins"],

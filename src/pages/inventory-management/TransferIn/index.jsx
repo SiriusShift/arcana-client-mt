@@ -19,12 +19,12 @@ function TransferIn() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
 
   const { data, isFetching } = useGetAllTransferInsQuery({
     Search: search,
-    Page: page + 1,
+    PageNumber: page + 1,
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
@@ -34,7 +34,7 @@ function TransferIn() {
         : tabViewing === 2
         ? "Received"
         : "Rejected",
-    // TransferType: "Out"
+    TransferType: "Out"
   });
 
   const tableHeads = [

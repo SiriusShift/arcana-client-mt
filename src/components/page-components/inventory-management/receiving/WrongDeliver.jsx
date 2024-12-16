@@ -145,8 +145,8 @@ function WrongDeliver({
         component={Paper}
         sx={{
           maxHeight: disableFields
-            ? "calc(100dvh - 20dvh - 360px)"
-            : "calc(100dvh - 20dvh - 400px)",
+            ? "calc(100dvh - 17dvh - 360px)"
+            : "calc(100dvh - 17dvh - 400px)",
         }}
       >
         <Table>

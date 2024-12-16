@@ -4,7 +4,7 @@ import ReceivingFormHeader from "../../../components/page-components/inventory-m
 import ReceivingItems from "../../../components/page-components/inventory-management/receiving/ReceivingItems";
 import WrongDeliver from "../../../components/page-components/inventory-management/receiving/WrongDeliver";
 import { useEffect } from "react";
-import { useLazyGetReceivedOrderByIdQuery } from "../../../features/inventory-management/api/receivingApi";
+import { useLazyGetReceivedOrderByIdQuery, useLazyGetWrongItemsQuery } from "../../../features/inventory-management/api/receivingApi";
 
 const ViewReceivingSkeleton = () => {
   return (
@@ -29,6 +29,8 @@ function ViewReceiving() {
 
   const [triggerData, { data, isFetching, isUninitialized }] =
     useLazyGetReceivedOrderByIdQuery();
+  
+  const [triggerWrong, { data: wrongData, isFetching: wrongFetching}] = useLazyGetWrongItemsQuery();
 
   console.log("data", data);
 

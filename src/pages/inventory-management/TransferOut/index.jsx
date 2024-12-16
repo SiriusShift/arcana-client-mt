@@ -19,7 +19,7 @@ function TransferOut() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(moment());
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
   console.log(dateFrom, dateTo);
