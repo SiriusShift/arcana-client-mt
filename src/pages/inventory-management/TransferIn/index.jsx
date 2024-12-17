@@ -34,7 +34,7 @@ function TransferIn() {
         : tabViewing === 2
         ? "Received"
         : "Rejected",
-    TransferType: "Out"
+    TransferType: "In"
   });
 
   const tableHeads = [

@@ -32,11 +32,11 @@ function TransferOut() {
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     Status:
       tabViewing === 1
-        ? ""
+        ? "For Receiving"
         : tabViewing === 2
         ? "Received"
         : "Rejected",
-    // TransferType: "Out"
+    TransferType: "Out"
   });
 
   const tableHeads = [
