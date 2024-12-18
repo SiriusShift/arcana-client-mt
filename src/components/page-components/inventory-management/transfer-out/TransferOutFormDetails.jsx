@@ -19,12 +19,9 @@ const TransferOutFormDetailsSkeleton = () => {
 };
 const TransferOutFormDetails = ({ details, isFetching }) => {
   const currentUser = useSelector((state) => state.login.userDetails);
-  console.log(details);
 
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
-
-  console.log(viewOnly, details)
 
   // Get role CDO ID
   const { data: roleData, isFetching: isRolesFetching } =
@@ -63,7 +60,7 @@ const TransferOutFormDetails = ({ details, isFetching }) => {
     if (details) {
       setValue(
         "to",
-        cdoData?.users.find((user) => user.fullName === details.to.requestor)
+        cdoData?.users.find((user) => user.fullname === details.transferTo)
       );
       setValue("transactionDate", moment(details.transactionDate));
     }

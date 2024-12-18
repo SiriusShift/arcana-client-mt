@@ -91,7 +91,7 @@ const useItemsWithBbd = ({
     if (items.length > 0) {
       const newItems = items?.map((item) => ({
         item: productData?.items?.find(
-          (product) => product.itemId === item.itemId
+          (product) => product.itemCode === item.itemCode
         ),
         itemDescription: item.itemDescription,
         uom: item.uom,

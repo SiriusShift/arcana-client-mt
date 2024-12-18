@@ -78,7 +78,7 @@ function TransferIn() {
     if (tabViewing === 1) {
       navigate(`transfer-in-form/${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
     } else {
-      navigate(`${selectedRowData?.id}`);
+      navigate(`${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
     }
   };
 

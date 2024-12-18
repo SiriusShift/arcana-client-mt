@@ -29,6 +29,8 @@ const ViewTransferOut = () => {
     DateTo: dateTo,
   });
 
+  console.log(data);
+
   console.log(data?.to[0]);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ const ViewTransferOut = () => {
       <TransferOutFormHeader />
 
       <FormProvider {...methods}>
-        <TransferOutFormDetails details={data} isFetching={isFetching} />
+        <TransferOutFormDetails details={data?.to[0]} isFetching={isFetching} />
 
         <TransferOutItems items={data?.to[0]?.transferItems || []} isFetching={isFetching} />
       </FormProvider>

@@ -15,7 +15,7 @@ function InventoryMRP() {
     PageNumber: page + 1,
     PageSize: rowsPerPage,
     Search: search,
-  });
+  }, { refetchOnMountOrArgChange: true });
 
   console.log(data);
 

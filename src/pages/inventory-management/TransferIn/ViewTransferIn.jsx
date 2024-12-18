@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useGetTransferInByIdQuery } from "../../../features/inventory-management/api/transferInApi";
 import { useEffect } from "react";
 import { Box } from "@mui/material";
@@ -17,9 +17,18 @@ const ViewTransferInSkeleton = () => {
 const ViewTransferIn = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
+  const dateFrom = searchParams.get("dateFrom");
+  const dateTo = searchParams.get("dateTo");
 
   const { data, isFetching, isUninitialized, isError } =
-    useGetTransferInByIdQuery(id);
+    useGetTransferInByIdQuery({
+      Status: "For Receiving",
+      DateFrom: dateFrom,
+      DateTo: dateTo,
+    });
 
   useEffect(() => {
     if (isError) {
@@ -33,9 +42,11 @@ const ViewTransferIn = () => {
 
   return (
     <Box className="commonPageLayout">
-      <TransferInFormHeader data={data} />
-
-      <TransferInItems items={data.items} forViewing />
+      <TransferInFormHeader
+        data={data?.to[0]}
+        isFetching={isFetching || isUninitialized}
+      />
+      <TransferInItems items={data?.to[0]?.transferItems} isFetching={isFetching} />
     </Box>
   );
 };
