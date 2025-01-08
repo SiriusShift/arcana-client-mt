@@ -10,32 +10,32 @@ const freebiesApi = api
   .injectEndpoints({
     endpoints: (builder) => ({
       requestFreebies: builder.mutation({
-        // query: (body) => ({
-        //   url: `/freebies-inventory`,
-        //   method: "POST",
-        //   body,
-        // }),
+        query: (body) => ({
+          url: `/add-freebie-order`,
+          method: "POST",
+          body,
+        }),
         invalidatesTags: ["Freebie", "Freebies", "Items With BBD"],
 
         // This is a dummy implementation of the request
         // Remove this when the backend is ready
-        queryFn: dummyRequestFreebies,
+        // queryFn: dummyRequestFreebies,
       }),
 
       getAllFreebieRequests: builder.query({
         // Uncomment this when the backend is ready
-        // query: (params) => ({
-        //   params,
-        //   url: "/freebies-inventory",
-        //   method: "GET",
-        // }),
-        // transformResponse: (response) => response.value,
-        // transformErrorResponse: (response) => response.value,
+        query: (params) => ({
+          params,
+          url: "/get-freebie-order",
+          method: "GET",
+        }),
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
         providesTags: ["Freebies"],
 
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
-        queryFn: dummyGetAllFreebiesRequests,
+        // queryFn: dummyGetAllFreebiesRequests,
       }),
 
       getFreebieRequestById: builder.query({

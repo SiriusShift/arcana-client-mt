@@ -16,6 +16,7 @@ const SamplingFormDetailsSkeleton = () => {
   );
 };
 const SamplingFormDetails = ({ details, isFetching }) => {
+  console.log(details);
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
 
@@ -30,7 +31,7 @@ const SamplingFormDetails = ({ details, isFetching }) => {
       setValue(
         "client",
         clientData?.regularClient.find(
-          (client) => client.id === details.client.clientId
+          (client) => client.id === details?.clientId
         ) || null
       );
       setValue("transactionDate", moment(details.transactionDate));
@@ -47,6 +48,7 @@ const SamplingFormDetails = ({ details, isFetching }) => {
         control={control}
         options={clientData?.regularClient || []}
         getOptionLabel={(option) =>
+          option.id + " - " +
           option.businessName?.toUpperCase() +
             " " +
             option.businessAddress?.city?.toUpperCase() +

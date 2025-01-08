@@ -12,32 +12,32 @@ const samplingsApi = api
   .injectEndpoints({
     endpoints: (builder) => ({
       addSampling: builder.mutation({
-        // query: (body) => ({
-        //   url: `/sampling`,
-        //   method: "POST",
-        //   body,
-        // }),
+        query: (body) => ({
+          url: `/add-freebie-order`,
+          method: "POST",
+          body,
+        }),
         invalidatesTags: ["Sampling", "Samplings", "Items With BBD"],
 
         // This is a dummy implementation of the request
         // Remove this when the backend is ready
-        queryFn: dummyAddSampling,
+        // queryFn: dummyAddSampling,
       }),
 
       getAllSamplings: builder.query({
         // Uncomment this when the backend is ready
-        // query: (params) => ({
-        //   params,
-        //   url: "/sampling",
-        //   method: "GET",
-        // }),
-        // transformResponse: (response) => response.value,
-        // transformErrorResponse: (response) => response.value,
+        query: (params) => ({
+          params,
+          url: "/get-freebie-order",
+          method: "GET",
+        }),
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
         providesTags: ["Samplings"],
 
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
-        queryFn: dummyGetAllSamplings,
+        // queryFn: dummyGetAllSamplings,
       }),
 
       getSamplingById: builder.query({

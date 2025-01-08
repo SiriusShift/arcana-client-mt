@@ -19,8 +19,8 @@ function Freebies() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
 
   const { data, isFetching } = useGetAllFreebieRequestsQuery({
     Search: search,
@@ -28,9 +28,10 @@ function Freebies() {
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    FreebieStatus:
-      tabViewing === 1 ? "Pending" : tabViewing === 2 ? "Approved" : "Rejected",
+    TransactionType: "Freebie"
   });
+
+  console.log(data);
 
   const tableHeads = [
     "ID",
@@ -77,7 +78,7 @@ function Freebies() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}`);
+    navigate(`${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
   };
 
   const handleAdd = () => {
@@ -89,10 +90,10 @@ function Freebies() {
       <Box className="commonPageLayout">
         <PageHeaderAddTabs
           pageTitle="Freebies"
-          tabsList={tabs}
-          tabViewing={tabViewing}
-          setTabViewing={setTabViewing}
-          wide
+          // tabsList={tabs}
+          // tabViewing={tabViewing}
+          // setTabViewing={setTabViewing}
+          // wide
           addTitle="Add Freebie Request"
           onOpen={handleAdd}
         />
@@ -111,7 +112,7 @@ function Freebies() {
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.freebieRequests}
+            mapData={data?.to}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             nestedProperty={nestedProperty}

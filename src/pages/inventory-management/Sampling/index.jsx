@@ -18,8 +18,8 @@ function Sampling() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
 
   const { data, isFetching } = useGetAllSamplingsQuery({
     Search: search,
@@ -27,24 +27,23 @@ function Sampling() {
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    TransactionType: "Sampling"
   });
 
   const tableHeads = [
     "ID",
     "Owner's Name",
     "Business Name",
-    "Business Address",
     "Total Quantity",
     "Transaction Date",
   ];
 
   const customOrderKeys = [
     "id",
-    "ownersName",
+    "clientName",
     "businessName",
-    "businessAddress",
     "totalQuantity",
-    "transactionDate",
+    "createdDate",
   ];
 
   const nestedProperty = {
@@ -56,7 +55,7 @@ function Sampling() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}`);
+    navigate(`${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
   };
 
   const handleAdd = () => {
@@ -88,7 +87,7 @@ function Sampling() {
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.samplings}
+            mapData={data?.to}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             nestedProperty={nestedProperty}

@@ -13,6 +13,8 @@ const FreebiesForm = () => {
     defaultValues: freebiesSchema.defaultValues,
   });
 
+  const { watch } = methods;
+
   return (
     <Box className="commonPageLayout">
       <FreebiesFormHeader />

@@ -29,13 +29,14 @@ const SamplingFormActions = () => {
   const onSubmit = async (data) => {
     try {
       const transformedData = {
-        items: data.items.map((item) => ({
+        freebieOrderItems: data.items.map((item) => ({
           itemId: item.item.itemId,
           quantity: item.quantity,
-          bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
+          // bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
         })),
-        transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
+        // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
         clientId: data.client.id,
+        transactionType: "Sampling"
       };
 
       await confirm({
