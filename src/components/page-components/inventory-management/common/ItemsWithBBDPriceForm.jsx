@@ -26,6 +26,7 @@ const ItemsWithBBDPriceForm = ({
   const viewOnly = items.length > 0 || isFetching;
 
   const [parent] = useAutoAnimate();
+  console.log(itemsFieldName);
 
   const {
     bbdCache,
@@ -57,7 +58,7 @@ const ItemsWithBBDPriceForm = ({
 
   const { invalid } = itemsFieldState;
 
-  // console.log("itemsFieldState", itemsFieldState);
+  console.log(watchItems);
 
   // Remove duplicates
   const uniqueBBDs = new Set(items.map((item) => item.bbd));
@@ -189,7 +190,7 @@ const ItemsWithBBDPriceForm = ({
                         value={value || ""}
                         inputRef={ref}
                         sx={{ maxWidth: "140px" }}
-                        disabled
+                        disabled={viewOnly || itemsFieldName !== "returnItems"}
                         customInput={TextField}
                         thousandSeparator
                         allowLeadingZeros={false}

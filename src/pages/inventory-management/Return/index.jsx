@@ -18,8 +18,8 @@ function Return() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
 
   const { data, isFetching } = useGetAllReturnsQuery({
     Search: search,
@@ -33,20 +33,18 @@ function Return() {
     "ID",
     "Owner's Name",
     "Business Name",
-    "Business Address",
-    "Return Price",
-    "Replace Price",
+    "Total Return Price",
+    "Total Exchange Price",
     "Transaction Date",
   ];
 
   const customOrderKeys = [
-    "id",
-    "ownersName",
+    "returnId",
+    "clientName",
     "businessName",
-    "businessAddress",
     "totalReturnPrice",
-    "totalReplacePrice",
-    "transactionDate",
+    "totalExchangePrice",
+    "createdDate",
   ];
 
   const nestedProperty = {
@@ -56,7 +54,7 @@ function Return() {
 
   const dateTimeArray = ["transactionDate"];
 
-  const pesoArray = ["totalReturnPrice", "totalReplacePrice"];
+  const pesoArray = ["totalReturnPrice", "totalExchangePrice"];
 
   // Functions
   const handleView = () => {
@@ -92,7 +90,7 @@ function Return() {
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.returns}
+            mapData={data?.to}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             nestedProperty={nestedProperty}

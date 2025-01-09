@@ -24,18 +24,18 @@ const returnApi = api
 
       getAllReturns: builder.query({
         // Uncomment this when the backend is ready
-        // query: (params) => ({
-        //   params,
-        //   url: "/return",
-        //   method: "GET",
-        // }),
-        // transformResponse: (response) => response.value,
-        // transformErrorResponse: (response) => response.value,
+        query: (params) => ({
+          params,
+          url: "/get-return-order",
+          method: "GET",
+        }),
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
         providesTags: ["Returns"],
 
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
-        queryFn: dummyGetAllReturns,
+        // queryFn: dummyGetAllReturns,
       }),
 
       getReturnById: builder.query({

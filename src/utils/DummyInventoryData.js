@@ -10,15 +10,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 20,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 10,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 5,
+          quantity: 20,
         },
       ],
     },
@@ -31,15 +31,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 15,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 10,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 5,
+          quantity: 20,
         },
       ],
     },
@@ -52,15 +52,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 25,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 20,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 10,
+          quantity: 20,
         },
       ],
     },
@@ -73,15 +73,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 30,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 25,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 15,
+          quantity: 20,
         },
       ],
     },
@@ -94,15 +94,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 10,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 8,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 5,
+          quantity: 20,
         },
       ],
     },
@@ -115,15 +115,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 18,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 15,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 10,
+          quantity: 20,
         },
       ],
     },
@@ -136,15 +136,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 12,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 10,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 8,
+          quantity: 20,
         },
       ],
     },
