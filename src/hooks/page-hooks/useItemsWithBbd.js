@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useFieldArray, useWatch, useFormContext } from "react-hook-form";
 import { useGetAllItemsWithBbdQuery } from "../../features/inventory-management/api/inventoryApi";
 import useConfirm from "../../hooks/useConfirm";
+import moment from "moment";
 
 const useItemsWithBbd = ({
   items = [],
@@ -89,17 +90,36 @@ const useItemsWithBbd = ({
 
   useEffect(() => {
     if (items.length > 0) {
-      const newItems = items?.map((item) => ({
-        item: productData?.items?.find(
-          (product) => product.itemCode === item.itemCode
-        ),
-        itemDescription: item.itemDescription,
-        uom: item.uom,
-        quantity: item.quantity,
-        bbd: { bbd: item.bbd },
-      }));
-
-      setValue("items", newItems);
+      if(itemsFieldName === "replaceItems" || itemsFieldName === "returnItems"){
+        const newItems = items?.map((item) => {
+          const momentBBD = item.bbd ? moment(item.bbd, "YYYY-MM-DD", true) : null;
+          console.log(momentBBD);
+      
+          return {
+            item: productData?.items?.find(
+              (product) => product.itemCode === item.itemCode
+            ),
+            itemDescription: item.itemDescription,
+            price: item.price,
+            netPrice: item.net,
+            uom: item.uom,
+            quantity: item.quantity,
+            bbd: momentBBD,
+          };
+        });
+        setValue(itemsFieldName, newItems);
+      }else{
+        const newItems = items?.map((item) => ({
+          item: productData?.items?.find(
+            (product) => product.itemCode === item.itemCode
+          ),
+          itemDescription: item.itemDescription,
+          uom: item.uom,
+          quantity: item.quantity,
+          bbd: { bbd: item.bbd },
+        }));
+        setValue("items", newItems); 
+      }
     }
   }, [items, productData, setValue]);
 

@@ -25,7 +25,10 @@ const ReturnFormActions = ({
   const {
     formState: { isValid },
     handleSubmit,
+    watch,
   } = useFormContext();
+
+  console.log(watch());
 
   const [returnItems] = useReturnItemsMutation();
 
@@ -109,6 +112,7 @@ const ReturnFormActions = ({
           <SecondaryButton
             onClick={handleNext}
             endIcon={<KeyboardDoubleArrowRight />}
+            disabled={watch("client") === null}
           >
             Next
           </SecondaryButton>
@@ -118,6 +122,7 @@ const ReturnFormActions = ({
           <SecondaryButton
             onClick={handleSubmit(onSubmit)}
             endIcon={<SaveOutlined />}
+            disabled={!isValid}
           >
             Submit
           </SecondaryButton>

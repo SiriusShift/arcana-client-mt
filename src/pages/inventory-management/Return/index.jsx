@@ -58,7 +58,7 @@ function Return() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}`);
+    navigate(`${selectedRowData?.returnId}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
   };
 
   const handleAdd = () => {

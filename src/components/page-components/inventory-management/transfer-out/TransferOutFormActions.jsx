@@ -26,8 +26,6 @@ const TransferOutFormActions = () => {
     navigate("/inventory-management/transfer-out", { replace: true });
   };
 
-
-
   const onSubmit = async (data) => {
     console.log(data);
     try {

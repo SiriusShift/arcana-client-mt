@@ -27,6 +27,8 @@ const ItemsWithBBDPriceForm = ({
 }) => {
   const viewOnly = items.length > 0 || isFetching;
 
+  console.log(items);
+
   const [parent] = useAutoAnimate();
   console.log(itemsFieldName);
 
@@ -68,6 +70,8 @@ const ItemsWithBBDPriceForm = ({
     bbd: bbd,
   }));
 
+  console.log(viewOnlyBBDs);
+
   return (
     <Stack sx={{ padding: "1px" }}>
       <Stack component={Paper}>
@@ -108,7 +112,15 @@ const ItemsWithBBDPriceForm = ({
 
         <Stack
           p={2}
-          height={viewOnly ? "calc(100dvh - 322px)" : "calc(100dvh - 370px)"}
+          height={
+            viewOnly
+              ? itemsFieldName === "returnItems"
+                ? "calc(100dvh - 30dvh - 400px)"
+                : itemsFieldName === "replaceItems"
+                ? "calc(100dvh - 35dvh - 400px)"
+                : "calc(100dvh - 322px)"
+              : "calc(100dvh - 370px)"
+          }
           overflow="auto"
           boxSizing="border-box"
           gap={1}
@@ -236,9 +248,7 @@ const ItemsWithBBDPriceForm = ({
                           ? viewOnlyBBDs
                           : watchItems?.[index]?.item?.bbds || []
                       }
-                      getOptionLabel={(option) =>
-                        moment(option.bbd).format("MMM DD, YYYY") || ""
-                      }
+                      getOptionLabel={(option) => moment(option.bbd).format("MMM DD, YYYY")}
                       getOptionDisabled={(option) => {
                         // Check if the bbd is already selected
                         const bbdMap = bbdCache.get(

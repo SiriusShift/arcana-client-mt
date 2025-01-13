@@ -59,7 +59,11 @@ function Receiving() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.moveOrderId}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
+    navigate(
+      `${selectedRowData?.moveOrderId}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   if (location.pathname === "/inventory-management/receiving") {
@@ -80,18 +84,18 @@ function Receiving() {
             setSearch={setSearch}
           />
           <SearchDateRangeMixin
-          setSearch={setSearch}
-          setDateFrom={setDateFrom}
-          setDateTo={setDateTo}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-        />
+            setSearch={setSearch}
+            setDateFrom={setDateFrom}
+            setDateTo={setDateTo}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+          />
 
           {isFetching ? (
-            <CommonTableSkeleton evenLesserCompact />
+            <CommonTableSkeleton lowerCompact />
           ) : (
             <CommonTable
-              evenLesserCompact
+              lowerCompact
               moveNoDataUp
               mapData={data?.mo || []}
               tableHeads={tableHeads}

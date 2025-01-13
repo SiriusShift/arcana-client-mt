@@ -1151,7 +1151,7 @@ export const samplingSchema = {
 export const returnSchema = {
   schema: yup.object({
     client: yup.object().required("Client is required"),
-    transactionDate: yup.date().required("Transaction Date is required"),
+    transactionDate: yup.date(),
     returnItems: yup
       .array()
       .of(

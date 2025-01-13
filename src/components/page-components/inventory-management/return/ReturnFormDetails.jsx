@@ -30,10 +30,10 @@ const ReturnFormDetails = ({ details, isFetching }) => {
       setValue(
         "client",
         clientData?.regularClient.find(
-          (client) => client.id === details.client.clientId
+          (client) => client.id === details.clientId
         ) || null
       );
-      setValue("transactionDate", moment(details.transactionDate));
+      setValue("transactionDate", moment(details.createdDate));
     }
   }, [details, setValue, clientData]);
 
