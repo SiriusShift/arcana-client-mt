@@ -16,6 +16,8 @@ import moment from "moment";
 import { NumericFormat } from "react-number-format";
 import SecondaryButton from "../../../SecondaryButton";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 const ItemsWithBBDPriceForm = ({
   items = [],
@@ -225,68 +227,106 @@ const ItemsWithBBDPriceForm = ({
                     )}
                   />
 
-                  <ControlledAutocomplete
-                    name={`${itemsFieldName}[${index}].bbd`}
-                    control={control}
-                    options={
-                      viewOnly
-                        ? viewOnlyBBDs
-                        : watchItems?.[index]?.item?.bbds || []
-                    }
-                    getOptionLabel={(option) =>
-                      moment(option.bbd).format("MMM DD, YYYY") || ""
-                    }
-                    getOptionDisabled={(option) => {
-                      // Check if the bbd is already selected
-                      const bbdMap = bbdCache.get(
-                        watchItems[index].item.itemCode
-                      );
-                      return bbdMap?.has(option.bbd);
-                    }}
-                    disabled={viewOnly || !watchItems?.[index]?.item}
-                    isOptionEqualToValue={() => true}
-                    loading={isItemsWithBBDFetching}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        label="BBD"
-                        sx={{ width: "200px" }}
-                      />
-                    )}
-                    onChange={(_, value) => {
-                      // Add the item code to bbds cache
+                  {itemsFieldName !== "returnItems" ? (
+                    <ControlledAutocomplete
+                      name={`${itemsFieldName}[${index}].bbd`}
+                      control={control}
+                      options={
+                        viewOnly
+                          ? viewOnlyBBDs
+                          : watchItems?.[index]?.item?.bbds || []
+                      }
+                      getOptionLabel={(option) =>
+                        moment(option.bbd).format("MMM DD, YYYY") || ""
+                      }
+                      getOptionDisabled={(option) => {
+                        // Check if the bbd is already selected
+                        const bbdMap = bbdCache.get(
+                          watchItems[index].item.itemCode
+                        );
+                        return bbdMap?.has(option.bbd);
+                      }}
+                      disabled={viewOnly || !watchItems?.[index]?.item}
+                      isOptionEqualToValue={() => true}
+                      loading={isItemsWithBBDFetching}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          label="BBD"
+                          sx={{ width: "200px" }}
+                        />
+                      )}
+                      onChange={(_, value) => {
+                        // Add the item code to bbds cache
 
-                      setBbdCache((prev) => {
-                        const newCache = new Map(prev);
+                        setBbdCache((prev) => {
+                          const newCache = new Map(prev);
 
-                        // Remove the previous bbd if it exists
-                        if (watchItems[index].bbd) {
+                          // Remove the previous bbd if it exists
+                          if (watchItems[index].bbd) {
+                            const bbdMap =
+                              newCache.get(watchItems[index].item.itemCode) ||
+                              new Map();
+                            bbdMap.delete(watchItems[index].bbd.bbd);
+                          }
+
+                          // If the item code is not in the cache, initialize empty map
                           const bbdMap =
                             newCache.get(watchItems[index].item.itemCode) ||
                             new Map();
-                          bbdMap.delete(watchItems[index].bbd.bbd);
-                        }
 
-                        // If the item code is not in the cache, initialize empty map
-                        const bbdMap =
-                          newCache.get(watchItems[index].item.itemCode) ||
-                          new Map();
+                          if (value) {
+                            // If the bbd is not in the map, add it
+                            bbdMap.set(value.bbd, true);
+                          }
 
-                        if (value) {
-                          // If the bbd is not in the map, add it
-                          bbdMap.set(value.bbd, true);
-                        }
+                          // Set the new cache
+                          newCache.set(watchItems[index].item.itemCode, bbdMap);
+                          return newCache;
+                        });
 
-                        // Set the new cache
-                        newCache.set(watchItems[index].item.itemCode, bbdMap);
-                        return newCache;
-                      });
-
-                      setValue(`${itemsFieldName}[${index}].quantity`, null);
-                      return value;
-                    }}
-                  />
+                        setValue(`${itemsFieldName}[${index}].quantity`, null);
+                        return value;
+                      }}
+                    />
+                  ) : (
+                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                      {" "}
+                      {/* Wrap in LocalizationProvider */}
+                      <Controller
+                        control={control}
+                        name={`${itemsFieldName}[${index}].bbd`}
+                        render={({
+                          field: { onChange, onBlur, value, ref },
+                        }) => (
+                          <DatePicker
+                            label="BBD"
+                            size="small"
+                            slotProps={{
+                              textField: {
+                                size: "small",
+                              },
+                            }}
+                            inputFormat="MM/dd/yyyy"
+                            value={value || null} // Ensure null value for DatePicker when empty
+                            onChange={(newValue) => onChange(newValue)} // Handle date changes
+                            inputRef={ref}
+                            sx={{ width: "200px" }}
+                            disabled={viewOnly || !watchItems?.[index]?.item}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                size="small"
+                                autoComplete="off"
+                                onBlur={onBlur} // Pass blur event
+                              />
+                            )}
+                          />
+                        )}
+                      />
+                    </LocalizationProvider>
+                  )}
 
                   <Stack gap={0.6} alignItems="center">
                     <Controller

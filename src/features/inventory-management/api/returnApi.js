@@ -10,16 +10,16 @@ const returnApi = api
   .injectEndpoints({
     endpoints: (builder) => ({
       returnItems: builder.mutation({
-        // query: (body) => ({
-        //   url: `/return`,
-        //   method: "POST",
-        //   body,
-        // }),
+        query: (body) => ({
+          url: `/add-return-order`,
+          method: "POST",
+          body,
+        }),
         invalidatesTags: ["Return", "Returns", "Items With BBD"],
 
         // This is a dummy implementation of the request
         // Remove this when the backend is ready
-        queryFn: dummyReturn,
+        // queryFn: dummyReturn,
       }),
 
       getAllReturns: builder.query({

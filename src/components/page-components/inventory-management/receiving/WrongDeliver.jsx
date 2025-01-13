@@ -144,9 +144,10 @@ function WrongDeliver({
       <TableContainer
         component={Paper}
         sx={{
+          minHeight: "calc(100dvh - 36dvh - 360px)",
           maxHeight: disableFields
-            ? "calc(100dvh - 17dvh - 360px)"
-            : "calc(100dvh - 17dvh - 400px)",
+            ? "calc(100dvh - 32dvh - 360px)"
+            : "calc(100dvh - 32dvh - 400px)",
         }}
       >
         <Table>

@@ -32,21 +32,21 @@ const ReturnFormActions = ({
   const onSubmit = async (data) => {
     try {
       const transformedData = {
-        returnItems: data.returnItems.map((item) => ({
+        returnOrders: data.returnItems.map((item) => ({
           itemId: item.item.itemId,
           price: item.price,
-          netPrice: item.netPrice,
+          // netPrice: item.netPrice,
           quantity: item.quantity,
           bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
         })),
-        replaceItems: data.replaceItems.map((item) => ({
+        replaceOrders: data.replaceItems.map((item) => ({
           itemId: item.item.itemId,
           price: item.price,
-          netPrice: item.netPrice,
+          // netPrice: item.netPrice,
           quantity: item.quantity,
           bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
         })),
-        transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
+        // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
         clientId: data.client.id,
       };
 
