@@ -146,7 +146,7 @@ const ItemsWithBBDPriceForm = ({
                     control={control}
                     options={
                       itemsFieldName === "returnItems"
-                        ? products?.items
+                        ? products?.items || []
                         : productData?.items || []
                     }
                     getOptionLabel={(option) => option.itemCode || ""}
@@ -403,12 +403,12 @@ const ItemsWithBBDPriceForm = ({
                               });
                               return false; // Disallow the value from being input
                             } else {
-                              return true;
+                              return (
+                                floatValue == null || floatValue <= maxQuantity
+                              ); // Allow values within max quantity
                             }
 
-                            return (
-                              floatValue == null || floatValue <= maxQuantity
-                            ); // Allow values within max quantity
+
                           }}
                           onBlur={onBlur}
                           inputRef={ref}
