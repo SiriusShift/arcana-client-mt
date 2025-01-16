@@ -11,26 +11,29 @@ import useItemsWithBbd from "../../../../hooks/page-hooks/useItemsWithBbd";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import FormItemsSkeleton from "./FormItemsSkeleton";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
-import { Controller } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import moment from "moment";
 import { NumericFormat } from "react-number-format";
 import SecondaryButton from "../../../SecondaryButton";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-
+import { useGetAllProductsQuery } from "../../../../features/setup/api/productsApi";
+import useSnackbar from "../../../../hooks/useSnackbar";
 const ItemsWithBBDPriceForm = ({
   items = [],
   isFetching,
   itemsFieldName = "items",
   itemsFormTitle = "Product Information",
 }) => {
-  const viewOnly = items.length > 0 || isFetching;
-
-  console.log(items);
+  const viewOnly = items?.length > 0 || isFetching;
+  const snackbar = useSnackbar();
 
   const [parent] = useAutoAnimate();
   console.log(itemsFieldName);
+
+  const { watch } = useFormContext();
+  console.log(watch());
 
   const {
     bbdCache,
@@ -60,6 +63,12 @@ const ItemsWithBBDPriceForm = ({
     // persistGlobally: true,
   });
 
+  console.log(watchItems);
+
+  const { data: products, isFetching: isProductsFetching } = useGetAllProductsQuery({
+    PageSize: 1000,
+  });
+  console.log(products);
   const { invalid } = itemsFieldState;
 
   console.log(watchItems);
@@ -101,7 +110,7 @@ const ItemsWithBBDPriceForm = ({
                 variant="outlined"
                 endIcon={<RemoveCircleOutline />}
                 onClick={handleRemoveAll}
-                disabled={fields.length === 0 || !dirtyFields[itemsFieldName]}
+                disabled={fields?.length === 0 || !dirtyFields[itemsFieldName]}
                 size="small"
               >
                 Clear All
@@ -126,7 +135,7 @@ const ItemsWithBBDPriceForm = ({
           gap={1}
           ref={parent}
         >
-          {isFetching ? (
+          {isFetching && isProductsFetching ? (
             <FormItemsSkeleton />
           ) : (
             <>
@@ -135,12 +144,21 @@ const ItemsWithBBDPriceForm = ({
                   <ControlledAutocomplete
                     name={`${itemsFieldName}[${index}].item`}
                     control={control}
-                    options={productData?.items || []}
+                    options={
+                      itemsFieldName === "returnItems"
+                        ? products?.items
+                        : productData?.items || []
+                    }
                     getOptionLabel={(option) => option.itemCode || ""}
                     getOptionDisabled={(option) => {
-                      // For each bbd of the item, check if all are already selected with the same item
-                      const bbdMap = bbdCache.get(option.itemCode) || new Map();
-                      return option.bbds.every((bbd) => bbdMap?.has(bbd.bbd));
+                      // Retrieve a mapping of BBDs (Best Before Dates) for the item using its itemCode.
+                      const bbdMap = bbdCache.get(option?.itemCode) || new Map();
+
+                      // If `itemsFieldName` is not "returnItems," disable the option if all BBDs for the item already exist in the `bbdMap`.
+                      return (
+                        itemsFieldName !== "returnItems" &&
+                        option?.bbds?.every((bbd) => bbdMap?.has(bbd.bbd))
+                      );
                     }}
                     disabled={viewOnly}
                     isOptionEqualToValue={() => true}
@@ -248,7 +266,9 @@ const ItemsWithBBDPriceForm = ({
                           ? viewOnlyBBDs
                           : watchItems?.[index]?.item?.bbds || []
                       }
-                      getOptionLabel={(option) => moment(option.bbd).format("MMM DD, YYYY")}
+                      getOptionLabel={(option) =>
+                        moment(option.bbd).format("MMM DD, YYYY")
+                      }
                       getOptionDisabled={(option) => {
                         // Check if the bbd is already selected
                         const bbdMap = bbdCache.get(
@@ -348,25 +368,49 @@ const ItemsWithBBDPriceForm = ({
                           size="small"
                           autoComplete="off"
                           onValueChange={(e) => {
-                            onChange(e.value === "" ? null : Number(e.value));
+                            const enteredValue =
+                              e.value === "" ? null : Number(e.value);
+                            const itemPrice = watchItems?.[index]?.price || 0;
+                            const net = enteredValue * itemPrice || 0;
+                            const returnNetPrice =
+                              watch("returnItems")?.[index]?.netPrice || 0;
+
+                            // Update the value and net price if valid
+                            onChange(enteredValue);
                             setValue(
                               `${itemsFieldName}[${index}].netPrice`,
-                              e.value * watchItems[index].price || 0
+                              net
                             );
                           }}
-                          isAllowed={(values) => {
-                            const { floatValue } = values;
+                          value={value || ""}
+                          isAllowed={({ floatValue }) => {
+                            const itemPrice = watchItems?.[index]?.price || 0;
+                            const maxQuantity =
+                              watchItems?.[index]?.bbd?.quantity || 0;
+                            const net = (floatValue || 0) * itemPrice;
+                            const returnNetPrice =
+                              watch("returnItems")?.[index]?.netPrice || 0;
 
+                            // Prevent invalid values based on net and max quantity
                             if (
-                              floatValue != null &&
-                              floatValue > watchItems?.[index]?.bbd?.quantity
+                              itemsFieldName === "replaceItems" &&
+                              net > returnNetPrice
                             ) {
-                              return false;
+                              snackbar({
+                                message:
+                                  "Net price should be higher than return net price",
+                                variant: "error",
+                              });
+                              return false; // Disallow the value from being input
+                            } else {
+                              return true;
                             }
-                            return true;
+
+                            return (
+                              floatValue == null || floatValue <= maxQuantity
+                            ); // Allow values within max quantity
                           }}
                           onBlur={onBlur}
-                          value={value || ""}
                           inputRef={ref}
                           sx={{ maxWidth: "120px" }}
                           disabled={viewOnly || !watchItems?.[index]?.bbd}
@@ -407,7 +451,7 @@ const ItemsWithBBDPriceForm = ({
                   endIcon={<Add />}
                   sx={{ width: "fit-content", alignSelf: "end" }}
                   onClick={handleAddItem}
-                  disabled={invalid && fields.length > 0}
+                  disabled={invalid && fields?.length > 0}
                 >
                   Add Item
                 </SecondaryButton>

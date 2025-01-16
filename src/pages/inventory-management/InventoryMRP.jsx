@@ -26,7 +26,7 @@ function InventoryMRP() {
     "Receiving",
     "Transfer In",
     "Transfer Out",
-    "Freebie",
+    "Freebies",
     "Sampling",
     "Replace",
     "Return CDO",

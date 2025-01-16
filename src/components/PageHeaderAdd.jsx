@@ -8,6 +8,7 @@ function PageHeaderAdd({
   onOpen,
   pageTitle,
   addTitle,
+  children,
   setStatus,
   setSearch,
   removeAdd,
@@ -35,6 +36,7 @@ function PageHeaderAdd({
           )}
         </Box>
         <Box className="pageHeader__right">
+          {children}
           {!removeArchive && (
             <>
               <Checkbox

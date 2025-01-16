@@ -69,7 +69,7 @@ function WrongDeliver({
   handleFormValid,
   handleFormData,
   isFetching,
-  viewing
+  viewing,
 }) {
   const snackbar = useSnackbar();
   const {
@@ -143,7 +143,11 @@ function WrongDeliver({
     <Box sx={{ padding: "1px" }}>
       <TableContainer
         component={Paper}
-        sx={{ overflow: "auto", minHeight: "calc(100dvh - 40dvh - 360px)", maxHeight: "calc(100dvh - 35dvh - 360px)" }}
+        sx={{
+          overflow: "auto",
+          minHeight: "calc(100dvh - 76dvh)",
+          maxHeight: "calc(100dvh - 85dvh)",
+        }}
       >
         <Table>
           <TableHead>
@@ -164,10 +168,11 @@ function WrongDeliver({
                         options={items || []}
                         getOptionDisabled={(option) =>
                           fields.some(
-                            (field) => field.item?.itemCode && field.item?.itemCode === option?.itemCode
+                            (field) =>
+                              field.item?.itemCode &&
+                              field.item?.itemCode === option?.itemCode
                           )
                         }
-                        
                         getOptionLabel={(option) => option?.itemCode}
                         isOptionEqualToValue={() => true}
                         disabled={disableFields}
@@ -241,19 +246,29 @@ function WrongDeliver({
                             onChange={(e) => {
                               watch("wrong").map((item) => {
                                 formData.items.map((data) => {
-                                  if(item.item.itemCode === data.itemCode) {
-                                    if(e.target.value > data?.actualQuantity){
-                                      console.log(item?.item?.quantity, data?.actualQuantity)
-                                      return snackbar({ message: "Quantity exceeds actual quantity", variant: "error" })
-                                    }else if(e.target.value < 0){
-                                      return snackbar({message: "Quantity received must not be negative value", variant: "error"})
-                                    }
-                                    else{
-                                      onChange(e)
+                                  if (item.item.itemCode === data.itemCode) {
+                                    if (e.target.value > data?.actualQuantity) {
+                                      console.log(
+                                        item?.item?.quantity,
+                                        data?.actualQuantity
+                                      );
+                                      return snackbar({
+                                        message:
+                                          "Quantity exceeds actual quantity",
+                                        variant: "error",
+                                      });
+                                    } else if (e.target.value < 0) {
+                                      return snackbar({
+                                        message:
+                                          "Quantity received must not be negative value",
+                                        variant: "error",
+                                      });
+                                    } else {
+                                      onChange(e);
                                     }
                                   }
-                                })
-                              })
+                                });
+                              });
                             }}
                             onBlur={onBlur}
                             value={value || ""}

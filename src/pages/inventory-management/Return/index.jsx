@@ -1,4 +1,11 @@
-import { Box } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Input,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import CommonTable from "../../../components/CommonTable";
 import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
@@ -8,16 +15,25 @@ import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import { useGetAllReturnsQuery } from "../../../features/inventory-management/api/returnApi";
+import { Add, Remove, Settings } from "@mui/icons-material";
+import useDisclosure from "../../../hooks/useDisclosure";
+import CommonModal from "../../../components/CommonModal";
 
 function Return() {
   const navigate = useNavigate();
   const location = useLocation();
-
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+
+  const {
+    isOpen: isSettingsOpen,
+    onOpen: onSettingsOpen,
+    onClose: onSettingsClose,
+  } = useDisclosure();
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const [margin, setMargin] = useState(0);
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
@@ -58,7 +74,11 @@ function Return() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.returnId}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
+    navigate(
+      `${selectedRowData?.returnId}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   const handleAdd = () => {
@@ -74,7 +94,11 @@ function Return() {
           onOpen={handleAdd}
           removeArchive
           removeSearch
-        />
+        >
+          <IconButton onClick={onSettingsOpen} size="small">
+            <Settings />
+          </IconButton>
+        </PageHeaderAdd>
 
         <SearchDateRangeMixin
           setSearch={setSearch}
@@ -104,6 +128,33 @@ function Return() {
             onView={handleView}
           />
         )}
+        <CommonModal
+          open={isSettingsOpen}
+          onClose={onSettingsClose}
+          title="Settings"
+          closeTopRight
+          closeOnBackdropClick
+          width={"400px"}
+        >
+          <Typography fontSize="1.2rem" fontWeight="600">
+            Return Settings
+          </Typography>
+          <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+            <IconButton onClick={() => setMargin(margin - 1)}>
+              <Remove />
+            </IconButton>
+            <TextField
+              type="number"
+              onChange={(e) => setMargin(e.target.value)}
+              size="small"
+              value={margin}
+              sx={{ width: "150px" }}
+            />
+            <IconButton onClick={() => setMargin(margin + 1)}>
+              <Add />
+            </IconButton>
+          </div>
+        </CommonModal>
       </Box>
     );
   }

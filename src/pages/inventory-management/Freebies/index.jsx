@@ -37,18 +37,16 @@ function Freebies() {
     "ID",
     "Owner's Name",
     "Business Name",
-    "Business Address",
     "Total Quantity",
     "Transaction Date",
   ];
 
   const customOrderKeys = [
     "id",
-    "ownersName",
+    "clientName",
     "businessName",
-    "businessAddress",
     "totalQuantity",
-    "transactionDate",
+    "createdDate",
   ];
 
   const nestedProperty = {
