@@ -33,7 +33,7 @@ function Return() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [margin, setMargin] = useState(0);
+  const [margin, setMargin] = useState(50);
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
@@ -139,20 +139,38 @@ function Return() {
           <Typography fontSize="1.2rem" fontWeight="600">
             Return Settings
           </Typography>
-          <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-            <IconButton onClick={() => setMargin(margin - 1)}>
-              <Remove />
-            </IconButton>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              marginTop: "20px",
+            }}
+          >
             <TextField
               type="number"
               onChange={(e) => setMargin(e.target.value)}
               size="small"
+              label="Margin"
+              fullWidth={true}
               value={margin}
-              sx={{ width: "150px" }}
             />
-            <IconButton onClick={() => setMargin(margin + 1)}>
-              <Add />
-            </IconButton>
+            <div
+              style={{ display: "flex", justifyContent: "end", gap: "10px" }}
+            >
+              <Button onClick={onSettingsClose} variant="outlined">
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setMargin(0);
+                  onSettingsClose();
+                }}
+                variant="contained"
+              >
+                Save
+              </Button>
+            </div>
           </div>
         </CommonModal>
       </Box>

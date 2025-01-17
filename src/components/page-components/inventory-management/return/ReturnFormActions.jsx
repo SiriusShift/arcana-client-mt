@@ -112,7 +112,11 @@ const ReturnFormActions = ({
           <SecondaryButton
             onClick={handleNext}
             endIcon={<KeyboardDoubleArrowRight />}
-            disabled={watch("client") === null}
+            disabled={
+              watch("client") === null ||
+              !watch("returnItems")[0].quantity ||
+              !watch("replaceItems")[0].netPrice
+            }
           >
             Next
           </SecondaryButton>

@@ -372,8 +372,6 @@ const ItemsWithBBDPriceForm = ({
                               e.value === "" ? null : Number(e.value);
                             const itemPrice = watchItems?.[index]?.price || 0;
                             const net = enteredValue * itemPrice || 0;
-                            const returnNetPrice =
-                              watch("returnItems")?.[index]?.netPrice || 0;
 
                             // Update the value and net price if valid
                             onChange(enteredValue);
@@ -398,16 +396,19 @@ const ItemsWithBBDPriceForm = ({
                             ) {
                               snackbar({
                                 message:
-                                  "Net price should be higher than return net price",
+                                  "The net replace price should not be higher than return net price",
                                 variant: "error",
                               });
                               return false; // Disallow the value from being input
-                            } else {
-                              return (
-                                floatValue == null || floatValue <= maxQuantity
-                              ); // Allow values within max quantity
                             }
 
+                            if (
+                              floatValue != null &&
+                              floatValue > watchItems?.[index]?.bbd?.quantity
+                            ) {
+                              return false;
+                            }
+                            return true;
 
                           }}
                           onBlur={onBlur}
