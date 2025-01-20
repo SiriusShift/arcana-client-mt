@@ -1019,9 +1019,9 @@ export const generateMoveOrderSchema = {
   },
 };
 
-export const wrongDeliverSchema = {
+export const additionalDeliverSchema = {
   schema: yup.object({
-    wrong: yup.array().of(
+    additional: yup.array().of(
       yup.object({
         item: yup.object().required("Product Code is required"),
         quantity: yup.number().required("Quantity is required"),
@@ -1032,7 +1032,7 @@ export const wrongDeliverSchema = {
     ),
   }),
   defaultValues: {
-    wrong: [],
+    additional: [],
   },
 };
 
@@ -1072,6 +1072,7 @@ export const transferOutSchema = {
       .array()
       .of(
         yup.object({
+          reason: yup.string(),
           item: yup.object().required("Item Code is required"),
           bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),

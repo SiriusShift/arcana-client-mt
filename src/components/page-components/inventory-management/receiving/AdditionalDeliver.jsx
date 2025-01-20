@@ -14,14 +14,15 @@ import {
   TextField,
 } from "@mui/material";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
-import { wrongDeliverSchema } from "../../../../schema/schema";
+import { additionalDeliverSchema } from "../../../../schema/schema";
 import { useEffect } from "react";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import SecondaryButton from "../../../SecondaryButton";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
 import useSnackbar from "../../../../hooks/useSnackbar";
+import { useGetAllProductsQuery } from "../../../../features/setup/api/productsApi";
 
-const WrongDeliverSkeleton = () => {
+const AdditionalOrderSkeleton = () => {
   return (
     <Box sx={{ padding: "1px" }}>
       <TableContainer
@@ -31,7 +32,7 @@ const WrongDeliverSkeleton = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Wrong Deliver</TableCell>
+              <TableCell>Additional Order</TableCell>
             </TableRow>
           </TableHead>
 
@@ -62,7 +63,7 @@ const WrongDeliverSkeleton = () => {
   );
 };
 
-function WrongDeliver({
+function AdditionalDeliver({
   wrongItems = [],
   formData = [],
   items = [],
@@ -78,20 +79,25 @@ function WrongDeliver({
     watch,
     formState: { errors, isValid },
   } = useForm({
-    resolver: yupResolver(wrongDeliverSchema.schema),
-    defaultValues: wrongDeliverSchema.defaultValues,
+    resolver: yupResolver(additionalDeliverSchema.schema),
+    defaultValues: additionalDeliverSchema.defaultValues,
   });
+
+  const { data: products, isFetching: isProductsFetching } =
+    useGetAllProductsQuery({
+      PageSize: 1000,
+    });
 
   console.log(watch());
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "wrong",
+    name: "additional",
   });
 
-  const wrong = useWatch({
+  const additional = useWatch({
     control,
-    name: "wrong",
+    name: "additional",
     defaultValue: [],
   });
 
@@ -119,7 +125,7 @@ function WrongDeliver({
         item: { itemCode: item.itemCode },
         ...item,
       }));
-      setValue("wrong", transfomedItems);
+      setValue("additional", transfomedItems);
     }
   }, [wrongItems, setValue]);
 
@@ -128,17 +134,17 @@ function WrongDeliver({
       handleFormValid((prev) => ({ ...prev, isWrongDeliverValid: isValid }));
       handleFormData((prev) => ({
         ...prev,
-        wrong: wrong.map((item) => ({
+        additional: additional.map((item) => ({
           itemCode: item?.item?.itemCode || "",
           quantity: Number(item.quantity),
           reason: item.reason,
         })),
       }));
     }
-  }, [wrong, isValid, handleFormValid, handleFormData, disableFields]);
+  }, [additional, isValid, handleFormValid, handleFormData, disableFields]);
 
   return isFetching ? (
-    <WrongDeliverSkeleton />
+    <AdditionalOrderSkeleton />
   ) : (
     <Box sx={{ padding: "1px" }}>
       <TableContainer
@@ -152,7 +158,7 @@ function WrongDeliver({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Wrong Deliver</TableCell>
+              <TableCell>Additional Order</TableCell>
             </TableRow>
           </TableHead>
 
@@ -164,8 +170,8 @@ function WrongDeliver({
                     <Stack direction="row" spacing={1.5} key={item.id}>
                       <ControlledAutocomplete
                         control={control}
-                        name={`wrong[${index}].item`}
-                        options={items || []}
+                        name={`additional[${index}].item`}
+                        options={products.items || []}
                         getOptionDisabled={(option) =>
                           fields.some(
                             (field) =>
@@ -178,10 +184,10 @@ function WrongDeliver({
                         disabled={disableFields}
                         onChange={(_, value) => {
                           setValue(
-                            `wrong[${index}].itemDescription`,
+                            `additional[${index}].itemDescription`,
                             value?.itemDescription
                           );
-                          setValue(`wrong[${index}].uom`, value?.uom);
+                          setValue(`additional[${index}].uom`, value?.uom);
                           return value;
                         }}
                         renderInput={(params) => (
@@ -198,7 +204,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrong[${index}].itemDescription`}
+                        name={`additional[${index}].itemDescription`}
                         render={({ field }) => (
                           <TextField
                             label="Item Description"
@@ -215,7 +221,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrong[${index}].uom`}
+                        name={`additional[${index}].uom`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -235,7 +241,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrong[${index}].quantity`}
+                        name={`additional[${index}].quantity`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -244,31 +250,32 @@ function WrongDeliver({
                             size="small"
                             autoComplete="off"
                             onChange={(e) => {
-                              watch("wrong").map((item) => {
-                                formData.items.map((data) => {
-                                  if (item.item.itemCode === data.itemCode) {
-                                    if (e.target.value > data?.actualQuantity) {
-                                      console.log(
-                                        item?.item?.quantity,
-                                        data?.actualQuantity
-                                      );
-                                      return snackbar({
-                                        message:
-                                          "Quantity exceeds actual quantity",
-                                        variant: "error",
-                                      });
-                                    } else if (e.target.value < 0) {
-                                      return snackbar({
-                                        message:
-                                          "Quantity received must not be negative value",
-                                        variant: "error",
-                                      });
-                                    } else {
-                                      onChange(e);
-                                    }
-                                  }
+                              const newValue = e.target.value;
+
+                              // Validate input
+                              if (parseFloat(newValue) < 0) {
+                                snackbar({
+                                  message:
+                                    "Quantity received must not be a negative value",
+                                  variant: "error",
                                 });
-                              });
+                              } else {
+                                // Update the field with valid value
+                                onChange(newValue);
+
+                                // Optionally check if this value affects other fields, e.g.:
+                                watch("additional").forEach((item) => {
+                                  formData.items.forEach((data) => {
+                                    if (item.item?.itemCode === data.itemCode) {
+                                      // Your logic here, e.g., comparing quantities if needed
+                                      console.log(
+                                        "Quantity updated for item",
+                                        item
+                                      );
+                                    }
+                                  });
+                                });
+                              }
                             }}
                             onBlur={onBlur}
                             value={value || ""}
@@ -281,7 +288,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrong[${index}].reason`}
+                        name={`additional[${index}].reason`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -313,7 +320,7 @@ function WrongDeliver({
                       onClick={handleAdd}
                       disabled={!isValid || viewing}
                     >
-                      Add Wrong Deliver
+                      Add Item
                     </SecondaryButton>
                   )}
                 </Stack>
@@ -326,4 +333,4 @@ function WrongDeliver({
   );
 }
 
-export default WrongDeliver;
+export default AdditionalDeliver;

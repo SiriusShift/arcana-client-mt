@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ReceivingFormHeader from "../../../components/page-components/inventory-management/receiving/ReceivingFormHeader";
 import ReceivingItems from "../../../components/page-components/inventory-management/receiving/ReceivingItems";
-import WrongDeliver from "../../../components/page-components/inventory-management/receiving/WrongDeliver";
+import WrongDeliver from "../../../components/page-components/inventory-management/receiving/AdditionalDeliver";
 import { useEffect } from "react";
 import { useLazyGetReceivedOrderByIdQuery, useLazyGetWrongItemsQuery } from "../../../features/inventory-management/api/receivingApi";
 

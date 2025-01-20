@@ -142,7 +142,7 @@ function ReceivingItems({
                             disabled={disableFields}
                             onChange={(e) => {
                               console.log(`Updating index ${index}:`, e.target.value); // Debug log
-                              if(parseFloat(e.target.value) > parseFloat(item.quantity)){
+                              if(parseFloat(e.target.value) > parseFloat(item.quantity * 1.1)){
                                 return snackbar({ message: "Quantity received cannot be greater than quantity", variant: "error" })
                               }else if(parseFloat(e.target.value) < 0){
                                 return snackbar({message: "Quantity received must not be negative value", variant: "error"})

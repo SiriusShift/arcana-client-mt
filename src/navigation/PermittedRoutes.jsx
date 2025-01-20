@@ -11,10 +11,12 @@ const PermittedRoutes = () => {
   const allowedNavigationData = navigationData.filter((item) => {
     return permissions?.includes(item.name);
   });
+  console.log(allowedNavigationData);
 
   const currentNavItem = allowedNavigationData.find(
     (item) => pathname?.includes(item.path) && item.path !== "/"
   );
+  console.log(currentNavItem);
 
   const currentSubNav = currentNavItem?.sub?.filter((subItem) =>
     permissions?.includes(subItem.name)

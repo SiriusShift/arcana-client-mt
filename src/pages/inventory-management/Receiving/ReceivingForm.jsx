@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import ReceivingFormHeader from "../../../components/page-components/inventory-management/receiving/ReceivingFormHeader";
 import ReceivingItems from "../../../components/page-components/inventory-management/receiving/ReceivingItems";
-import WrongDeliver from "../../../components/page-components/inventory-management/receiving/WrongDeliver";
+import AdditionalDeliver from "../../../components/page-components/inventory-management/receiving/AdditionalDeliver";
 import { useSelector } from "react-redux";
 import ReceivingFormSubmit from "../../../components/page-components/inventory-management/receiving/ReceivingFormSubmit";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,7 @@ function ReceivingForm() {
   const [formData, setFormData] = useState({
     moveOrderId: Number(moveOrderSlipNo),
     items: [],
-    wrong: [],
+    additional: [],
   });
 
   console.log(formData);
@@ -50,7 +50,7 @@ function ReceivingForm() {
         handleFormData={setFormData}
       />
 
-      <WrongDeliver
+      <AdditionalDeliver
         formData={formData}
         items={receivingData?.moItems}
         handleFormValid={setIsFormValid}

@@ -95,9 +95,9 @@ function Return() {
           removeArchive
           removeSearch
         >
-          <IconButton onClick={onSettingsOpen} size="small">
+          {/* <IconButton onClick={onSettingsOpen} size="small">
             <Settings />
-          </IconButton>
+          </IconButton> */}
         </PageHeaderAdd>
 
         <SearchDateRangeMixin

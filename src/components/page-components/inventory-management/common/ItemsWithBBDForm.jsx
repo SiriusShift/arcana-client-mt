@@ -276,6 +276,19 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                     )}
                   </Stack>
 
+                  <Controller
+                    control={control}
+                    name={`items[${index}].remarks`}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        size="small"
+                        label="Remarks*"
+                        sx={{ minWidth: "100px" }}
+                      />
+                    )}
+                  />
+
                   {!viewOnly && (
                     <IconButton
                       color="error"

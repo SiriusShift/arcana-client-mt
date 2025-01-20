@@ -16,6 +16,8 @@ function ReceivingFormSubmit({
   handleFormData,
   handleFormValid,
 }) {
+
+  console.log(formData);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const snackbar = useSnackbar();
