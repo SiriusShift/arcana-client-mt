@@ -383,24 +383,24 @@ const ItemsWithBBDPriceForm = ({
                           value={value || ""}
                           isAllowed={({ floatValue }) => {
                             const itemPrice = watchItems?.[index]?.price || 0;
-                            const maxQuantity =
-                              watchItems?.[index]?.bbd?.quantity || 0;
-                            const net = (floatValue || 0) * itemPrice;
-                            const returnNetPrice =
-                              watch("returnItems")?.[index]?.netPrice || 0;
+                            // const maxQuantity =
+                            //   watchItems?.[index]?.bbd?.quantity || 0;
+                            // const net = (floatValue || 0) * itemPrice;
+                            // const returnNetPrice =
+                            //   watch("returnItems")?.[index]?.netPrice || 0;
 
-                            // Prevent invalid values based on net and max quantity
-                            if (
-                              itemsFieldName === "replaceItems" &&
-                              net > returnNetPrice
-                            ) {
-                              snackbar({
-                                message:
-                                  "The net replace price should not be higher than return net price",
-                                variant: "error",
-                              });
-                              return false; // Disallow the value from being input
-                            }
+                            // // Prevent invalid values based on net and max quantity
+                            // if (
+                            //   itemsFieldName === "replaceItems" &&
+                            //   net > returnNetPrice
+                            // ) {
+                            //   snackbar({
+                            //     message:
+                            //       "The net replace price should not be higher than return net price",
+                            //     variant: "error",
+                            //   });
+                            //   return false; // Disallow the value from being input
+                            // }
 
                             if (
                               floatValue != null &&

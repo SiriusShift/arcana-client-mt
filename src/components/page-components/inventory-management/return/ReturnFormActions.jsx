@@ -115,7 +115,7 @@ const ReturnFormActions = ({
             disabled={
               watch("client") === null ||
               !watch("returnItems")[0].quantity ||
-              !watch("replaceItems")[0].netPrice
+              !watch("returnItems")[0].netPrice
             }
           >
             Next
