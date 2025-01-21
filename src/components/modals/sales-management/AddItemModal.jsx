@@ -30,9 +30,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
         variant: "error",
       });
     } else {
-      onSubmit(selectedRowData, quantity,
-         price
-        );
+      onSubmit(selectedRowData, quantity, price);
       handleClose();
     }
   };
@@ -42,7 +40,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
       setTimeout(() => {
         quantityRef.current.select();
       }, 0);
-      setPrice(selectedRowData?.currentPrice)
+      setPrice(selectedRowData?.currentPrice);
     }
   }, [open]);
 
@@ -64,8 +62,26 @@ function AddItemModal({ onSubmit, ...otherProps }) {
           type="text"
           sx={{ mt: "10px", width: "100%" }}
           customInput={TextField}
-          onValueChange={(e) => {
-            e.value !== "" && setQuantity(Number(e.value));
+          onValueChange={(values) => {
+            const { value } = values; // Extract the numeric value
+            const numericValue = Number(value);
+
+            if (numericValue <= selectedRowData?.availQuantity) {
+              setQuantity(numericValue); // Update quantity only if valid
+            }
+            
+          }}
+          isAllowed={(values) => {
+            const { value } = values;
+            const numericValue = Number(value);
+            if(numericValue > selectedRowData?.availQuantity){
+              snackbar({
+                message: `Quantity should be less than available quantity`,
+                variant: "error",
+              });
+              return
+            }
+            return numericValue <= selectedRowData?.availQuantity; // Block invalid input
           }}
           value={quantity}
           thousandSeparator=","
@@ -75,6 +91,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
           allowNegative={false}
           allowLeadingZeros={false}
         />
+
         <NumericFormat
           label="Price"
           size="small"
@@ -103,10 +120,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
           className="roleTaggingModal__actions"
         >
           <DangerButton onClick={handleClose}>Close</DangerButton>
-          <SecondaryButton type="submit" disabled={!quantity 
-            || price <= 0
-          }
-            >
+          <SecondaryButton type="submit" disabled={!quantity || price <= 0}>
             Add Item
           </SecondaryButton>
         </Box>

@@ -282,6 +282,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                     render={({ field }) => (
                       <TextField
                         {...field}
+                        disabled={items}
                         size="small"
                         label="Remarks*"
                         sx={{ minWidth: "100px" }}

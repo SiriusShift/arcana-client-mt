@@ -8,6 +8,8 @@ import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import { useGetAllTransferOutsQuery } from "../../../features/inventory-management/api/transferOutApi";
 import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
+import { pdf } from "@react-pdf/renderer";
+import TransferOutSlip from "../../../components/page-components/inventory-management/transfer-out/TransferOutSlip";
 
 function TransferOut() {
   const navigate = useNavigate();
@@ -36,7 +38,7 @@ function TransferOut() {
         : tabViewing === 2
         ? "Received"
         : "Rejected",
-    TransferType: "Out"
+    TransferType: "Out",
   });
 
   const tableHeads = [
@@ -77,11 +79,33 @@ function TransferOut() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
+    navigate(
+      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   const handleAdd = () => {
     navigate("transfer-out-form");
+  };
+
+  const handleDownload = async () => {
+    const blob = await pdf(<TransferOutSlip data={selectedRowData}/>).toBlob();
+    const link = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `Internal_Transfer_${moment(selectedRowData?.transactionDate).format(
+        "YYYYMMDD"
+      )}.pdf`
+    );
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up and revoke the object URL
+    link.parentNode.removeChild(link);
   };
 
   if (location.pathname === "/inventory-management/transfer-out") {
@@ -119,6 +143,7 @@ function TransferOut() {
             setRowsPerPage={setRowsPerPage}
             page={page}
             setPage={setPage}
+            onDownload={handleDownload}
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
             onView={handleView}

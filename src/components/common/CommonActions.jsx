@@ -32,6 +32,7 @@ import {
   Update,
   Visibility,
   ZoomIn,
+  Download,
 } from "@mui/icons-material";
 
 function CommonActions({
@@ -72,6 +73,7 @@ function CommonActions({
   onListingHistories,
   onPay,
   onInspect,
+  onDownload,
   disableActions,
   item,
   status,
@@ -151,6 +153,8 @@ function CommonActions({
       onInspect();
     } else if (action === "listingHistories"){
       onListingHistories();
+    } else if (action === "download"){
+      onDownload();
     }
 
     onClose();
@@ -607,6 +611,21 @@ function CommonActions({
           >
             <Attachment />
             Invoice Attachment
+          </MenuItem>
+        )}
+
+        {onDownload && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("download");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("download") : false
+            }
+          >
+            <Download />
+            Download
           </MenuItem>
         )}
 

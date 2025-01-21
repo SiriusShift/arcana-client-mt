@@ -18,7 +18,7 @@ import SecondaryButton from "../../../SecondaryButton";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import { useGetAllProductsQuery } from "../../../../features/setup/api/productsApi";
+import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi.js";
 import useSnackbar from "../../../../hooks/useSnackbar";
 const ItemsWithBBDPriceForm = ({
   items = [],
@@ -65,9 +65,14 @@ const ItemsWithBBDPriceForm = ({
 
   console.log(watchItems);
 
-  const { data: products, isFetching: isProductsFetching } = useGetAllProductsQuery({
-    PageSize: 1000,
-  });
+  const { data: products, isFetching: isProductFetching } =
+    useGetAllItemsByPriceModeIdQuery({
+      Status: true,
+      Page: 1,
+      PageSize: 1000,
+      PriceModeId: -1,
+    });
+
   console.log(products);
   const { invalid } = itemsFieldState;
 
@@ -146,7 +151,7 @@ const ItemsWithBBDPriceForm = ({
                     control={control}
                     options={
                       itemsFieldName === "returnItems"
-                        ? products?.items || []
+                        ? products?.priceModeItems || []
                         : productData?.items || []
                     }
                     getOptionLabel={(option) => option.itemCode || ""}
@@ -178,7 +183,7 @@ const ItemsWithBBDPriceForm = ({
                       );
                       setValue(
                         `${itemsFieldName}[${index}].price`,
-                        value?.price
+                        value?.currentPrice
                       );
                       setValue(
                         `${itemsFieldName}[${index}].netPrice`,

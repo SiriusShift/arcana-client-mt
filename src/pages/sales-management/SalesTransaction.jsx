@@ -440,7 +440,11 @@ function SalesTransaction() {
                               {item.isClearPack === true ? "© " : ""}
                               {item.itemDescription}
                             </Typography>
+                            <Typography fontSize="12px">
+                              Available: {item.availQuantity}
+                            </Typography>
                           </Box>
+                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__description"></Box>
                         </Button>
                       );
                     })

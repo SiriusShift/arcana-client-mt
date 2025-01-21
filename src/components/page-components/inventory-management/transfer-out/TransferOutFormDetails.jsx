@@ -118,6 +118,20 @@ const TransferOutFormDetails = ({ details, isFetching }) => {
           </LocalizationProvider>
         )}
       />
+
+      <Controller
+        control={control}
+        name="documentNo"
+        render={({ field }) => (
+          <TextField
+            {...field}
+            size="small"
+            label="Document No"
+            sx={{ minWidth: "180px" }}
+            disabled={viewOnly}
+          />
+        )}
+      />
     </Stack>
   );
 };

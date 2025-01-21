@@ -1068,6 +1068,7 @@ export const transferOutSchema = {
     to: yup.object().required("To is required"),
     // transactionType: yup.object().required("Transaction Type is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
+    documentNo: yup.string().required("Document No. is required"),
     items: yup
       .array()
       .of(
@@ -1082,6 +1083,7 @@ export const transferOutSchema = {
   }),
   defaultValues: {
     to: null,
+    documentNo: null,
     transactionDate: moment(),
     items: [
       {

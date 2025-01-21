@@ -68,6 +68,7 @@ function CommonTable({
   onClear,
   onFile,
   onPay,
+  onDownload,
   onPaymentHistories,
   onListingHistories,
   onInspect,
@@ -669,6 +670,7 @@ function CommonTable({
                         onCheckout={onCheckout && onCheckout}
                         onPay={onPay && onPay}
                         onInspect={onInspect && onInspect}
+                        onDownload={onDownload && onDownload}
                         item={item}
                         status={status}
                         disableActions={disableActions}
