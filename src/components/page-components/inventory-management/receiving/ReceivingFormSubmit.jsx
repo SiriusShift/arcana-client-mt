@@ -23,6 +23,28 @@ function ReceivingFormSubmit({
   const snackbar = useSnackbar();
   const confirm = useConfirm();
 
+  formData = {
+    ...formData,
+    additional: formData.items
+      .filter(item => item.quantity === 0 || item.actualQuantity === 0)  // Filter for items with 0 quantity or actualQuantity
+      .map(item => ({
+        itemCode: item.itemCode,
+        actualQuantity: item.actualQuantity,
+      })),
+    items: formData.items
+      .filter(item => item.quantity > 0)  // Filter for items with quantity > 0
+      .map(item => ({
+        itemCode: item.itemCode,
+        actualQuantity: item.actualQuantity,
+      })),
+  };
+  
+  console.log(formData);
+  
+
+  console.log(formData);
+  
+
   // RTK Query
   const [receiveMoveOrder] = useReceiveMoveOrderMutation();
 

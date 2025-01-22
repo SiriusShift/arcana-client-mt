@@ -109,6 +109,7 @@ function ReceivingItems({
         ...prev,
         items: watchItems.map((item) => ({
           itemCode: item?.itemCode,
+          quantity: Number(item?.quantity),
           actualQuantity: Number(item?.actualQuantity),
         })),
       }));
@@ -249,14 +250,7 @@ function ReceivingItems({
                           value={value || ""}
                           inputRef={ref}
                           sx={{ maxWidth: "120px" }}
-                          disabled={
-                            disableFields ||
-                            items.some(
-                              (item) =>
-                                item.itemCode ===
-                                watch(`items[${index}].itemCode`)
-                            )
-                          }
+                          disabled
                         />
                       )}
                     />
