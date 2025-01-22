@@ -77,7 +77,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
             if(numericValue > selectedRowData?.availQuantity){
               snackbar({
                 message: `Quantity should be less than available quantity`,
-                variant: "error",
+                variant: "warning",
               });
               return
             }

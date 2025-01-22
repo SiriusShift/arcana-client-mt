@@ -70,10 +70,11 @@ const ReasonConfirmProvider = ({ children }) => {
           ...result,
         });
       } catch (error) {
+        console.log(error);
         reject({
           isConfirmed: true,
           isCancelled: false,
-          ...error,
+          error: error?.data?.error,
         });
       }
 

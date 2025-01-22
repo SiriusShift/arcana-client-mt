@@ -196,9 +196,12 @@ export const formatPhoneNumber = (inputNumber) => {
 
 //Error Handling
 export const handleCatchErrorMessage = (error) => {
+  console.log(error);
   if (error?.data?.error?.message) {
     return error?.data?.error?.message;
-  } else if (error?.status === 400) {
+  } else if (error?.error?.message) {
+    return error?.error?.message;
+  }else if (error?.status === 400) {
     return "Something went wrong with your request.";
   } else if (error?.status === 401) {
     return "Authentication required.";

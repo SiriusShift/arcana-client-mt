@@ -15,7 +15,15 @@ const inventoryMrpApi = api
         invalidatesTags: ["Inventory MRP"],
         transformResponse : (response) => response.value
       }),
+      getAllItemsInventory: builder.query({
+        query: (params) => ({
+          params: params,
+          url: "/get-all-items-inventory",
+          method: "GET",
+        }),
+        transformResponse: (response) => response.value
+      })
     }),
   });
 
-export const { useGetInventoryMrpQuery } = inventoryMrpApi;
+export const { useGetInventoryMrpQuery, useGetAllItemsInventoryQuery } = inventoryMrpApi;

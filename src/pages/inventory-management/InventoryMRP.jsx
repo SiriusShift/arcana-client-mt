@@ -11,11 +11,14 @@ function InventoryMRP() {
   const [search, setSearch] = useState("");
 
   // RTK Query
-  const { data, isFetching } = useGetInventoryMrpQuery({
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-    Search: search,
-  }, { refetchOnMountOrArgChange: true });
+  const { data, isFetching } = useGetInventoryMrpQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      Search: search,
+    },
+    { refetchOnMountOrArgChange: true }
+  );
 
   console.log(data);
 
@@ -29,7 +32,6 @@ function InventoryMRP() {
     "Freebies",
     "Sampling",
     "Replace",
-    "Return CDO",
     "Return Client",
     "SOH",
   ];
@@ -43,7 +45,6 @@ function InventoryMRP() {
     "freebie",
     "sampling",
     "replace",
-    "returnByCdo",
     "returnByClient",
     "soh",
   ];

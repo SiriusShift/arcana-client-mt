@@ -21,6 +21,8 @@ import {
 } from "../../../utils/CustomFunctions";
 import { NumericFormat } from "react-number-format";
 import { useGetAllDiscountTypesQuery } from "../../../features/setup/api/discountTypeApi";
+import { priceModeItemsApi } from "../../../features/setup/api/priceModeItemsApi";
+import { useDispatch } from "react-redux";
 
 function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   const { onClose, open } = props;
@@ -28,6 +30,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   //Hooks
   const reasonConfirm = useReasonConfirm();
   const snackbar = useSnackbar();
+  const dispatch = useDispatch();
   const chargeInvoiceRef = useRef();
   const discountRef = useRef();
 
@@ -120,9 +123,22 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
         question: true,
         inputLabel: "Remarks (Optional)",
         requireReason: false,
-        callback: (remarks) =>
-          createSalesTransaction({ ...combinedData, remarks }).unwrap(),
+        callback: async (remarks) => {
+          try {
+            // Wait for the createSalesTransaction to complete
+            const response = await createSalesTransaction({ ...combinedData, remarks }).unwrap();
+      
+            // Once the transaction is successful, invalidate the tags
+            dispatch(priceModeItemsApi.util.invalidateTags(["Price Mode Items"]));
+      
+            return response; // Return the response so it can be handled as necessary
+          } catch (error) {
+            // Handle errors appropriately
+            throw error; // You can throw the error or handle it differently
+          }
+        },
       });
+      
 
       resetTransaction();
       handleClose();

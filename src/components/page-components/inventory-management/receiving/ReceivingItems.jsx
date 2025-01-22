@@ -9,12 +9,18 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Stack,
   TextField,
+  IconButton,
 } from "@mui/material";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { receivingItemsSchema } from "../../../../schema/schema";
 import { useEffect } from "react";
 import useSnackbar from "../../../../hooks/useSnackbar";
+import ControlledAutocomplete from "../../../ControlledAutocomplete";
+import { useGetAllProductsQuery } from "../../../../features/setup/api/productsApi";
+import { Add, RemoveCircleOutline } from "@mui/icons-material";
+import SecondaryButton from "../../../SecondaryButton";
 
 const ReceivingItemsTableSkeleton = () => {
   return (
@@ -64,8 +70,14 @@ function ReceivingItems({
     defaultValues: receivingItemsSchema.defaultValues,
   });
 
+  const { data: products, isFetching: isProductsFetching } =
+    useGetAllProductsQuery({
+      PageSize: 1000,
+    });
 
-  const { fields } = useFieldArray({
+  console.log(watch());
+
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "items",
   });
@@ -76,13 +88,18 @@ function ReceivingItems({
     defaultValue: [],
   });
 
-  console.log(watch("items"));
-  console.log(errors);
-
   const disableFields = items.some((item) => item.actualQuantity);
 
   useEffect(() => {
-    reset({items});
+    reset({
+      items: items?.map((item) => ({
+        itemCode: item?.itemCode || "",
+        itemDescription: item?.itemDescription || "",
+        uom: item?.uom || "",
+        quantity: item?.quantity || null,
+        actualQuantity: item?.actualQuantity || null,
+      })),
+    });
   }, [items, reset]);
 
   useEffect(() => {
@@ -91,12 +108,23 @@ function ReceivingItems({
       handleFormData((prev) => ({
         ...prev,
         items: watchItems.map((item) => ({
-          itemCode: item.itemCode,
-          actualQuantity: Number(item.actualQuantity),
+          itemCode: item?.itemCode,
+          actualQuantity: Number(item?.actualQuantity),
         })),
       }));
     }
   }, [watchItems, isValid, handleFormValid, handleFormData, disableFields]);
+
+  const handleAdd = () => {
+    append({
+      itemCode: "",
+      itemDescription: "",
+      uom: "",
+      quantity: null,
+      actualQuantity: null,
+      reason: "",
+    });
+  };
 
   return (
     <Box sx={{ padding: "1px" }}>
@@ -108,55 +136,168 @@ function ReceivingItems({
           <TableHead>
             <TableRow>
               <TableCell>Line</TableCell>
-              <TableCell>Item Code</TableCell>
-              <TableCell>Item Description</TableCell>
-              <TableCell>UOM</TableCell>
-              <TableCell>Quantity</TableCell>
-              <TableCell>Quantity Received</TableCell>
             </TableRow>
           </TableHead>
 
           {isFetching ? (
             <ReceivingItemsTableSkeleton />
           ) : (
-            <TableBody>
-              {fields.map((item, index) => {
-                return ((
-                  <TableRow key={index}>
-                    <TableCell sx={{ py: 1 }}>{index + 1}</TableCell>
-                    <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
-                    <TableCell sx={{ py: 1 }}>{item?.itemDescription}</TableCell>
-                    <TableCell sx={{ py: 1 }}>{item?.uom}</TableCell>
-                    <TableCell sx={{ py: 1 }}>{item?.quantity}</TableCell>
-                    <TableCell sx={{ py: 1 }}>
-                      <Controller
-                        control={control}
-                        name={`items[${index}].actualQuantity`}
-                        render={({ field }) => (
-                          <TextField
-                            size="small"
-                            type="number"
-                            {...field}
-                            value={field.value || ""}
-                            inputRef={field.ref}
-                            disabled={disableFields}
-                            onChange={(e) => {
-                              console.log(`Updating index ${index}:`, e.target.value); // Debug log
-                              if(parseFloat(e.target.value) > parseFloat(item.quantity * 1.1)){
-                                return snackbar({ message: "Quantity received cannot be greater than quantity", variant: "error" })
-                              }else if(parseFloat(e.target.value) < 0){
-                                return snackbar({message: "Quantity received must not be negative value", variant: "error"})
-                              }
-                              field.onChange(parseFloat(e.target.value));
-                            }}
-                          />
-                        )}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              })}
-            </TableBody>
+            <TableCell sx={{ borderBottom: "none" }}>
+              <Stack spacing={1}>
+                {fields.map((item, index) => (
+                  <Stack direction="row" spacing={1.5} key={item.id}>
+                    {/* ControlledAutocomplete for itemCode */}
+                    <ControlledAutocomplete
+                      control={control}
+                      name={`items[${index}].itemCode`}
+                      options={products?.items || []}
+                      getOptionLabel={(option) => option?.itemCode || option}
+                      isOptionEqualToValue={(option, value) =>
+                        option?.itemCode === value?.itemCode
+                      }
+                      disabled={
+                        disableFields ||
+                        items?.some(
+                          (item, itemIndex) =>
+                            item.itemCode === watch(`items[${index}].itemCode`) &&
+                            itemIndex === index // Disable rows with the same itemCode except the current row
+                        )
+                      }
+                      onChange={(_, value) => {
+                        console.log(value);
+                        // Set relevant fields when a product is selected
+                        setValue(
+                          `items[${index}].itemDescription`,
+                          value?.itemDescription || ""
+                        );
+                        setValue(`items[${index}].uom`, value?.uom || "");
+                        return value?.itemCode;
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          label="Item Code"
+                          helperText={
+                            errors?.items?.[index]?.itemCode?.message || ""
+                          }
+                          error={!!errors?.items?.[index]?.itemCode}
+                          sx={{ width: "140px" }}
+                          value={params.value?.itemCode || ""} // Ensure itemCode is displayed correctly
+                        />
+                      )}
+                    />
+
+                    {/* Controlled TextFields for other fields */}
+                    <Controller
+                      control={control}
+                      name={`items[${index}].itemDescription`}
+                      render={({ field }) => (
+                        <TextField
+                          label="Item Description"
+                          size="small"
+                          autoComplete="off"
+                          {...field}
+                          value={field.value || ""}
+                          inputRef={field.ref}
+                          disabled
+                          sx={{ flex: 1 }}
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
+                      name={`items[${index}].uom`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <TextField
+                          label="UOM"
+                          size="small"
+                          autoComplete="off"
+                          onChange={onChange}
+                          onBlur={onBlur}
+                          value={value || ""}
+                          inputRef={ref}
+                          sx={{ maxWidth: "120px" }}
+                          disabled
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
+                      name={`items[${index}].quantity`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <TextField
+                          label="Quantity"
+                          size="small"
+                          autoComplete="off"
+                          type="number"
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            if (parseFloat(newValue) < 0) {
+                              snackbar({
+                                message:
+                                  "Quantity received must not be a negative value",
+                                variant: "error",
+                              });
+                            } else {
+                              onChange(newValue);
+                            }
+                          }}
+                          onBlur={onBlur}
+                          value={value || ""}
+                          inputRef={ref}
+                          sx={{ maxWidth: "120px" }}
+                          disabled={
+                            disableFields ||
+                            items.some(
+                              (item) =>
+                                item.itemCode ===
+                                watch(`items[${index}].itemCode`)
+                            )
+                          }
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
+                      name={`items[${index}].actualQuantity`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <TextField
+                          label="Actual Quantity"
+                          size="small"
+                          autoComplete="off"
+                          onChange={onChange}
+                          onBlur={onBlur}
+                          value={value || ""}
+                          inputRef={ref}
+                          disabled={disableFields}
+                        />
+                      )}
+                    />
+
+                    {!disableFields && (
+                      <IconButton color="error" onClick={() => remove(index)}>
+                        <RemoveCircleOutline />
+                      </IconButton>
+                    )}
+                  </Stack>
+                ))}
+
+                {!disableFields && (
+                  <SecondaryButton
+                    endIcon={<Add />}
+                    sx={{ width: "fit-content", alignSelf: "end" }}
+                    onClick={handleAdd}
+                    disabled={!isValid}
+                  >
+                    Add Item
+                  </SecondaryButton>
+                )}
+              </Stack>
+            </TableCell>
           )}
         </Table>
       </TableContainer>

@@ -1019,9 +1019,9 @@ export const generateMoveOrderSchema = {
   },
 };
 
-export const additionalDeliverSchema = {
+export const wrongDeliverSchema = {
   schema: yup.object({
-    additional: yup.array().of(
+    wrong: yup.array().of(
       yup.object({
         item: yup.object().required("Product Code is required"),
         quantity: yup.number().required("Quantity is required"),
@@ -1032,7 +1032,7 @@ export const additionalDeliverSchema = {
     ),
   }),
   defaultValues: {
-    additional: [],
+    wrong: [],
   },
 };
 
@@ -1041,7 +1041,7 @@ export const receivingItemsSchema = {
     items: yup.array().of(
       yup.object({
         itemCode: yup.string().required("Item Code is required"),
-        quantity: yup.number().required("Quantity is required"),
+        quantity: yup.number().nullable(),
         productionDate: yup.string(),
         uom: yup.string().required("UOM is required"),
         itemDescription: yup.string().required("Item Description is required"),
@@ -1052,7 +1052,7 @@ export const receivingItemsSchema = {
   defaultValues: {
     items: [
       {
-        itemCode: null,
+        itemCode: "",
         quantity: null,
         productionDate: "",
         uom: "",
@@ -1068,7 +1068,6 @@ export const transferOutSchema = {
     to: yup.object().required("To is required"),
     // transactionType: yup.object().required("Transaction Type is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
-    documentNo: yup.string().required("Document No. is required"),
     items: yup
       .array()
       .of(
@@ -1083,7 +1082,6 @@ export const transferOutSchema = {
   }),
   defaultValues: {
     to: null,
-    documentNo: null,
     transactionDate: moment(),
     items: [
       {

@@ -93,7 +93,7 @@ const useItemsWithBbd = ({
       if(itemsFieldName === "replaceItems" || itemsFieldName === "returnItems"){
         const newItems = items?.map((item) => {
           const momentBBD = item.bbd ? moment(item.bbd, "YYYY-MM-DD", true) : null;
-          console.log(momentBBD);
+          console.log(item);
       
           return {
             item: productData?.items?.find(
@@ -105,6 +105,7 @@ const useItemsWithBbd = ({
             uom: item.uom,
             quantity: item.quantity,
             bbd: momentBBD,
+            // remarks: item.remarks
           };
         });
         setValue(itemsFieldName, newItems);

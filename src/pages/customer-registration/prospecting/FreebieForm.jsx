@@ -6,7 +6,7 @@ import {
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import CommonDrawer from "../../../components/CommonDrawer";
-import { Box, IconButton, TextField } from "@mui/material";
+import { Box, IconButton, TextField, Typography, Stack } from "@mui/material";
 import ControlledAutocomplete from "../../../components/ControlledAutocomplete";
 import {
   usePostRequestFreebiesMutation,
@@ -26,6 +26,7 @@ import { setFreebies } from "../../../features/registration/reducers/regularRegi
 import useSnackbar from "../../../hooks/useSnackbar";
 import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
 import { RemoveCircleOutline } from "@mui/icons-material";
+import { useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
 
 function FreebieForm({
   isFreebieFormOpen,
@@ -113,9 +114,16 @@ function FreebieForm({
   const [putFreebiesInformation, { isLoading: isUpdateLoading }] =
     usePutFreebiesInformationMutation();
 
-  const { data: productData, isLoading: isProductDataLoading } =
-    useGetAllProductsQuery({ Status: true, page: 1, pageSize: 1000 });
+  const { data: productData, isFetching: isProductDataLoading } =
+  useGetAllItemsByPriceModeIdQuery({
+    Status: true,
+    Page: 1,
+    PageSize: 1000,
+    PriceModeId: 1,
+  }, {
+    refetchOnMountOrArgChange: true,});
 
+    console.log(watch("freebies"));
   //IF store type is distributor
   const lengthArray = selectedRowData?.storeType === "Distributor" ? 10 : 5;
   
@@ -146,7 +154,7 @@ function FreebieForm({
         response = await postRequestFreebies({
           clientId: data.clientId,
           freebies: data.freebies.map((freebie) => ({
-            itemId: freebie.itemId.id,
+            itemId: freebie.itemId.itemId,
             quantity: freebie.quantity,
           })),
         }).unwrap();
@@ -242,7 +250,7 @@ function FreebieForm({
           selectedRowData?.freebies?.[freebiesLength - 1]?.freebieItems || [];
 
         const transformedFreebies = originalFreebies.map((item) => ({
-          itemId: item,
+          itemId: item, 
           quantity: 1,
           itemDescription: item.itemDescription,
           uom: item.uom,
@@ -314,7 +322,7 @@ function FreebieForm({
             <ControlledAutocomplete
               name={`freebies[${index}].itemId`}
               control={control}
-              options={productData?.items || []}
+              options={productData?.priceModeItems  || []}
               getOptionLabel={(option) => option.itemCode || ""}
               getOptionDisabled={(option) => {
                 const freebies = watch("freebies");
@@ -393,6 +401,7 @@ function FreebieForm({
               helperText={errors?.freebies?.quantity?.message}
               error={errors?.freebies?.quantity}
             /> */}
+                  <Stack gap={0.6} paddingTop={1} alignItems="center">
 
             <Controller
               control={control}
@@ -403,7 +412,16 @@ function FreebieForm({
                   size="small"
                   autoComplete="off"
                   // disabled = {selectedRowData?.storeType !== "Distributor" ? true : false}
-                  onChange={(e) => {onChange(e); setTotalQuantity( 
+                  onChange={(e) => {
+                    if(e.target.value > productData?.priceModeItems[index]?.availQuantity){
+                      snackbar({
+                        message: `Quantity cannot exceed available stock (${availQuantity})`,
+                        variant: "error",
+                      });
+                      return; // Prevent state update
+                    }
+                    onChange(e); 
+                    setTotalQuantity( 
                     watch("freebies").reduce((acc, curr) => {
                       return acc + parseInt(curr.quantity);
                     }, 0)
@@ -414,6 +432,17 @@ function FreebieForm({
                 />
               )}
             />
+
+                      <Typography
+                        variant="caption"
+                        color="gray"
+                        lineHeight="0.5"
+                      >
+                        {watch("freebies")[index]?.itemId
+                          ? `Available: ${productData?.priceModeItems[index]?.availQuantity}`
+                          : "Select product first"}
+                      </Typography>
+                      </Stack>
 
             <IconButton
               sx={{ color: "error.main" }}

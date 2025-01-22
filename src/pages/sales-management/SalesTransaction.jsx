@@ -109,7 +109,8 @@ function SalesTransaction() {
       PageSize: 1000,
       Search: search,
       PriceModeId: watch("clientId") ? watch("clientId").priceModeId : -1,
-    });
+    }, {
+      refetchOnMountOrArgChange: true,});
 
   //Functions
   const debouncedSetSearch = debounce((value) => {

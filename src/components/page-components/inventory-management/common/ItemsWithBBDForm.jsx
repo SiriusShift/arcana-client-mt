@@ -16,9 +16,14 @@ import { NumericFormat } from "react-number-format";
 import useItemsWithBbd from "../../../../hooks/page-hooks/useItemsWithBbd";
 import FormItemsSkeleton from "./FormItemsSkeleton";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi";
+import useSnackbar from "../../../../hooks/useSnackbar";
 
 const ItemsWithBBDForm = ({ items = [], isFetching }) => {
   const viewOnly = items.length > 0 || isFetching;
+  const snackbar = useSnackbar();
 
   const [parent] = useAutoAnimate();
 
@@ -30,13 +35,24 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
     handleRemove,
     handleRemoveAll,
     watchItems,
-    productData,
+    // productData,
     isItemsWithBBDFetching,
     isValid,
     dirtyFields,
     setValue,
     control,
   } = useItemsWithBbd({ items });
+
+  const { data: productData, isFetching: isProductFetching } =
+  useGetAllItemsByPriceModeIdQuery({
+    Status: true,
+    Page: 1,
+    PageSize: 1000,
+    PriceModeId: 1,
+  }, {
+    refetchOnMountOrArgChange: true,});
+
+    console.log("test",productData)
 
   // Remove duplicates
   const uniqueBBDs = new Set(items.map((item) => item.bbd));
@@ -99,13 +115,21 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                   <ControlledAutocomplete
                     name={`items[${index}].item`}
                     control={control}
-                    options={productData?.items || []}
+                    options={productData?.priceModeItems || []}
                     getOptionLabel={(option) => option.itemCode || ""}
                     getOptionDisabled={(option) => {
-                      // For each bbd of the item, check if all are already selected with the same item
-                      const bbdMap = bbdCache.get(option.itemCode) || new Map();
-                      return option.bbds.every((bbd) => bbdMap?.has(bbd.bbd));
+                      // Get all selected items across all rows
+                      const selectedItems = watchItems || []; // Watch all items
+                    
+                      // Extract the itemCodes of the selected items, excluding the current row's itemCode
+                      const selectedCodes = selectedItems
+                        .filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
+                        .map((item) => item?.item?.itemCode);
+                    
+                      // Disable the option if its itemCode is already selected in other rows
+                      return selectedCodes.includes(option.itemCode);
                     }}
+                    
                     disabled={viewOnly}
                     isOptionEqualToValue={() => true}
                     loading={isItemsWithBBDFetching}
@@ -164,7 +188,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                     )}
                   />
 
-                  <ControlledAutocomplete
+                  {/* <ControlledAutocomplete
                     name={`items[${index}].bbd`}
                     control={control}
                     options={
@@ -225,7 +249,41 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                       setValue(`items[${index}].quantity`, null);
                       return value;
                     }}
-                  />
+                  /> */}
+
+                  <LocalizationProvider dateAdapter={AdapterMoment}>
+                    {" "}
+                    {/* Wrap in LocalizationProvider */}
+                    <Controller
+                      control={control}
+                      name={`items[${index}].bbd`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <DatePicker
+                          label="BBD"
+                          size="small"
+                          slotProps={{
+                            textField: {
+                              size: "small",
+                            },
+                          }}
+                          inputFormat="MM/dd/yyyy"
+                          value={value ? moment(value) : null} // Convert value to a Moment object
+                          onChange={(newValue) => onChange(newValue)} // Handle date changes
+                          inputRef={ref}
+                          sx={{ width: "200px" }}
+                          disabled={viewOnly || !watchItems?.[index]?.item}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              size="small"
+                              autoComplete="off"
+                              onBlur={onBlur} // Pass blur event
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
 
                   <Stack gap={0.6} alignItems="center">
                     <Controller
@@ -242,13 +300,26 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                           isAllowed={(values) => {
                             const { floatValue } = values;
 
-                            if (
+                            if(
                               floatValue != null &&
-                              floatValue > watchItems?.[index]?.bbd?.quantity
+                              floatValue > productData.priceModeItems[index].availQuantity
                             ) {
-                              return false;
+                              snackbar({
+                                message: "Quantity should be less than available quantity",
+                                variant: "warning",
+                              })
+                              return false
                             }
-                            return true;
+                            return true
+                            
+
+                            // if (
+                            //   floatValue != null &&
+                            //   floatValue > watchItems?.[index]?.bbd?.quantity
+                            // ) {
+                            //   return false;
+                            // }
+                            // return true;
                           }}
                           onBlur={onBlur}
                           value={value || ""}
@@ -269,8 +340,8 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                         color="gray"
                         lineHeight="0.5"
                       >
-                        {+watchItems?.[index]?.bbd?.quantity
-                          ? `Available: ${watchItems?.[index]?.bbd?.quantity}`
+                        {productData?.priceModeItems[index]
+                          ? `Available: ${productData?.priceModeItems[index]?.availQuantity}`
                           : "Select BBD first"}
                       </Typography>
                     )}
@@ -282,7 +353,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                     render={({ field }) => (
                       <TextField
                         {...field}
-                        disabled={items}
+                        disabled={viewOnly}
                         size="small"
                         label="Remarks*"
                         sx={{ minWidth: "100px" }}
