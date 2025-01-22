@@ -111,6 +111,7 @@ function ReceivingItems({
           itemCode: item?.itemCode,
           quantity: Number(item?.quantity),
           actualQuantity: Number(item?.actualQuantity),
+          reason: item?.reason,
         })),
       }));
     }
@@ -160,7 +161,8 @@ function ReceivingItems({
                         disableFields ||
                         items?.some(
                           (item, itemIndex) =>
-                            item.itemCode === watch(`items[${index}].itemCode`) &&
+                            item.itemCode ===
+                              watch(`items[${index}].itemCode`) &&
                             itemIndex === index // Disable rows with the same itemCode except the current row
                         )
                       }
@@ -263,11 +265,59 @@ function ReceivingItems({
                           label="Actual Quantity"
                           size="small"
                           autoComplete="off"
-                          onChange={onChange}
+                          type="number"
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            const quantity = watch(`items[${index}].quantity`); // Watch the quantity field
+
+                            if (
+                              parseFloat(newValue) > parseFloat(quantity) &&
+                              items?.some(
+                                (item, itemIndex) =>
+                                  item.itemCode ===
+                                    watch(`items[${index}].itemCode`) &&
+                                  itemIndex === index // Disable rows with the same itemCode except the current row
+                              )
+                            ) {
+                              snackbar({
+                                message:
+                                  "Actual Quantity must not exceed Quantity",
+                                variant: "error",
+                              });
+                            } else {
+                              onChange(newValue); // Only update if the value is valid
+                            }
+                          }}
                           onBlur={onBlur}
                           value={value || ""}
                           inputRef={ref}
                           disabled={disableFields}
+                          sx={{ maxWidth: "120px" }}
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
+                      name={`items[${index}].reason`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <TextField
+                          label="Reason"
+                          size="small"
+                          autoComplete="off"
+                          onChange={onChange}
+                          onBlur={onBlur}
+                          value={value || ""}
+                          inputRef={ref}
+                          disabled={
+                            disableFields ||
+                            items?.some(
+                              (item, itemIndex) =>
+                                item.itemCode ===
+                                  watch(`items[${index}].itemCode`) &&
+                                itemIndex === index // Disable rows with the same itemCode except the current row
+                            )
+                          }
                         />
                       )}
                     />

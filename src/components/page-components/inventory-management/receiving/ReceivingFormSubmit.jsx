@@ -30,6 +30,7 @@ function ReceivingFormSubmit({
       .map(item => ({
         itemCode: item.itemCode,
         actualQuantity: item.actualQuantity,
+        reason: item.reason,
       })),
     items: formData.items
       .filter(item => item.quantity > 0)  // Filter for items with quantity > 0

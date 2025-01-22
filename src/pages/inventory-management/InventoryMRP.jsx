@@ -32,6 +32,8 @@ function InventoryMRP() {
     "Freebies",
     "Sampling",
     "Replace",
+    "Sales",
+    "Return CDO",
     "Return Client",
     "SOH",
   ];
@@ -45,6 +47,8 @@ function InventoryMRP() {
     "freebie",
     "sampling",
     "replace",
+    "sales",
+    "returnCdo",
     "returnByClient",
     "soh",
   ];
