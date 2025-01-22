@@ -29,7 +29,7 @@ function ReceivingFormSubmit({
       .filter(item => item.quantity === 0 || item.actualQuantity === 0)  // Filter for items with 0 quantity or actualQuantity
       .map(item => ({
         itemCode: item.itemCode,
-        actualQuantity: item.actualQuantity,
+        quantity: item.actualQuantity,
         reason: item.reason,
       })),
     items: formData.items
