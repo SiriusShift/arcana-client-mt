@@ -47,13 +47,18 @@ function ViewReceiving() {
 
   data?.mo[0]?.moveItems?.map((item, index) => {
     console.log("items", item, "index:", index);
-    if (item?.reason === null) {
-      items.push(item);
-    } else {
+  
+    // If quantity > 0, actualQuantity is null, and reason is not null
+    if (item?.quantity > 0 && item?.actualQuantity === null && item?.reason !== null) {
       wrongDelivers.push(item);
+    } else {
+      items.push(item);
     }
   });
-  console.log(items);
+  
+  console.log("Items:", items);
+  console.log("Wrong Delivers:", wrongDelivers);
+  
 
   if (!data || isFetching || isUninitialized) {
     return <ViewReceivingSkeleton />;

@@ -98,6 +98,7 @@ function ReceivingItems({
         uom: item?.uom || "",
         quantity: item?.quantity || null,
         actualQuantity: item?.actualQuantity || null,
+        reason: item?.reason || "",
       })),
     });
   }, [items, reset]);
