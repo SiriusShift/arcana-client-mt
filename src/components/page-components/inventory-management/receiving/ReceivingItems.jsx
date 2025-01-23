@@ -136,7 +136,7 @@ function ReceivingItems({
         sx={{ overflow: "auto", maxHeight: "calc(100dvh - 25dvh - 360px)" }}
       >
         <Table>
-          <TableHead>
+          <TableHead sx={{ position: "sticky", top: 0, zIndex: 10 }}>
             <TableRow>
               <TableCell>Line</TableCell>
             </TableRow>
@@ -272,7 +272,7 @@ function ReceivingItems({
                             const quantity = watch(`items[${index}].quantity`); // Watch the quantity field
 
                             if (
-                              parseFloat(newValue) > parseFloat(quantity) &&
+                              parseFloat(newValue) > (parseFloat(quantity) * 1.1) &&
                               items?.some(
                                 (item, itemIndex) =>
                                   item.itemCode ===
@@ -283,7 +283,7 @@ function ReceivingItems({
                               snackbar({
                                 message:
                                   "Actual Quantity must not exceed Quantity",
-                                variant: "error",
+                                variant: "warning",
                               });
                             } else {
                               onChange(newValue); // Only update if the value is valid

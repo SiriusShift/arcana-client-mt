@@ -4,11 +4,16 @@ import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import { useEffect, useState } from "react";
 import { useGetInventoryMrpQuery } from "../../features/inventory-management/api/inventoryMrpApi";
+import PageHeaderFilterAdd from "../../components/PageHeaderFilterAdd";
+import { clusterOptions } from "../../utils/constants";
+import { useSelector } from "react-redux";
 
 function InventoryMRP() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
+  const [clusterId, setClusterId] = useState(1);
+  const userDetails = useSelector((state) => state.login.userDetails);
 
   // RTK Query
   const { data, isFetching } = useGetInventoryMrpQuery(
@@ -16,6 +21,7 @@ function InventoryMRP() {
       PageNumber: page + 1,
       PageSize: rowsPerPage,
       Search: search,
+      ClusterId: clusterId,
     },
     { refetchOnMountOrArgChange: true }
   );
@@ -26,15 +32,15 @@ function InventoryMRP() {
   const tableHeads = [
     "Item Code",
     "Item Description",
-    "Receiving +",
-    "Transfer In +",
-    "Transfer Out -",
-    "Freebies -",
-    "Sampling -",
-    "Replace -",
-    "Sales +",
-    "Return CDO -",
-    "Return Client +",
+    "Receiving (+)",
+    "Transfer In (+)",
+    "Transfer Out (-)",
+    "Freebies (-)",
+    "Sampling (-)",
+    "Replace (-)",
+    "Sales (-)",
+    "Return CDO (-)",
+    "Return Client (+)",
     "SOH",
   ];
 
@@ -60,11 +66,17 @@ function InventoryMRP() {
 
   return (
     <Box className="commonPageLayout">
-      <PageHeaderAdd
+      <PageHeaderFilterAdd
         pageTitle="Inventory MRP"
         removeArchive
         removeAdd
+        removeAllItem
+        removeFilter={userDetails?.roleName.includes("CDO")}
+        filterChoices={clusterOptions}
         setSearch={setSearch}
+        setFilter={setClusterId}
+        choiceLabel="label"
+        choiceValue="value"
       />
 
       {isFetching ? (

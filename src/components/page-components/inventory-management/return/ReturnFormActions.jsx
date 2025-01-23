@@ -36,7 +36,7 @@ const ReturnFormActions = ({
     try {
       const transformedData = {
         returnOrders: data.returnItems.map((item) => ({
-          itemId: item.item.priceModeItemId,
+          itemId: item.item.itemId,
           price: item.price,
           // netPrice: item.netPrice,
           quantity: item.quantity,

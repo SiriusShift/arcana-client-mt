@@ -110,10 +110,8 @@ const useItemsWithBbd = ({
         });
         setValue(itemsFieldName, newItems);
       }else{
-        const newItems = items?.map((item) => ({
-          item: productData?.items?.find(
-            (product) => product.itemCode === item.itemCode
-          ),
+        const newItems = items?.map((item, index) => ({
+          item: item,
           itemDescription: item.itemDescription,
           uom: item.uom,
           quantity: item.quantity,

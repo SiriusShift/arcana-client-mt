@@ -27,6 +27,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
 
   const [parent] = useAutoAnimate();
 
+
   const {
     bbdCache,
     setBbdCache,
@@ -43,22 +44,28 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
     control,
   } = useItemsWithBbd({ items });
 
-  const { data: productData, isFetching: isProductFetching } =
-  useGetAllItemsByPriceModeIdQuery({
-    Status: true,
-    Page: 1,
-    PageSize: 1000,
-    PriceModeId: 1,
-  }, {
-    refetchOnMountOrArgChange: true,});
+  console.log(watchItems)
 
-    console.log("test",productData)
+  const { data: productData, isFetching: isProductFetching } =
+    useGetAllItemsByPriceModeIdQuery(
+      {
+        Status: true,
+        Page: 1,
+        PageSize: 1000,
+        PriceModeId: 1,
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
 
   // Remove duplicates
   const uniqueBBDs = new Set(items.map((item) => item.bbd));
   const viewOnlyBBDs = [...uniqueBBDs].map((bbd) => ({
     bbd: bbd,
   }));
+
+  console.log(watchItems.length, productData?.priceModeItems?.length);
 
   return (
     <Stack sx={{ padding: "1px" }}>
@@ -116,20 +123,19 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                     name={`items[${index}].item`}
                     control={control}
                     options={productData?.priceModeItems || []}
-                    getOptionLabel={(option) => option.itemCode || ""}
+                    getOptionLabel={(option) => option?.itemCode || ""}
                     getOptionDisabled={(option) => {
                       // Get all selected items across all rows
                       const selectedItems = watchItems || []; // Watch all items
-                    
+
                       // Extract the itemCodes of the selected items, excluding the current row's itemCode
                       const selectedCodes = selectedItems
                         .filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
                         .map((item) => item?.item?.itemCode);
-                    
+
                       // Disable the option if its itemCode is already selected in other rows
                       return selectedCodes.includes(option.itemCode);
                     }}
-                    
                     disabled={viewOnly}
                     isOptionEqualToValue={() => true}
                     loading={isItemsWithBBDFetching}
@@ -259,7 +265,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                       name={`items[${index}].bbd`}
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <DatePicker
-                          label="BBD"
+                          label="BBD*"
                           size="small"
                           slotProps={{
                             textField: {
@@ -294,24 +300,30 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                           label="Quantity"
                           size="small"
                           autoComplete="off"
+                          required
                           onValueChange={(e) => {
                             onChange(e.value === "" ? null : Number(e.value));
                           }}
                           isAllowed={(values) => {
                             const { floatValue } = values;
 
-                            if(
+                            if (
                               floatValue != null &&
-                              floatValue > productData.priceModeItems[index].availQuantity
+                              floatValue >
+                                productData?.priceModeItems.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.item?.itemCode
+                                )?.availQuantity
                             ) {
                               snackbar({
-                                message: "Quantity should be less than available quantity",
+                                message:
+                                  "Quantity should be less than available quantity",
                                 variant: "warning",
-                              })
-                              return false
+                              });
+                              return false;
                             }
-                            return true
-                            
+                            return true;
 
                             // if (
                             //   floatValue != null &&
@@ -334,14 +346,24 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                       )}
                     />
 
+                    {console.log(
+                      productData?.priceModeItems[index]?.availQuantity
+                    )}
+
                     {!viewOnly && (
                       <Typography
                         variant="caption"
                         color="gray"
                         lineHeight="0.5"
                       >
-                        {productData?.priceModeItems[index]
-                          ? `Available: ${productData?.priceModeItems[index]?.availQuantity}`
+                        {watchItems[index]?.item?.itemCode
+                          ? `Available: ${
+                              productData?.priceModeItems.find(
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.item?.itemCode
+                              )?.availQuantity
+                            }`
                           : "Select BBD first"}
                       </Typography>
                     )}
@@ -355,7 +377,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                         {...field}
                         disabled={viewOnly}
                         size="small"
-                        label="Remarks*"
+                        label="Remarks"
                         sx={{ minWidth: "100px" }}
                       />
                     )}
@@ -372,16 +394,17 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                 </Stack>
               ))}
 
-              {!viewOnly && (
-                <SecondaryButton
-                  endIcon={<Add />}
-                  sx={{ width: "fit-content", alignSelf: "end" }}
-                  onClick={handleAddItem}
-                  disabled={!isValid && fields.length > 0}
-                >
-                  Add Item
-                </SecondaryButton>
-              )}
+              {!viewOnly &&
+                watchItems.length !== productData?.priceModeItems?.length && (
+                  <SecondaryButton
+                    endIcon={<Add />}
+                    sx={{ width: "fit-content", alignSelf: "end" }}
+                    onClick={handleAddItem}
+                    disabled={!isValid && fields.length > 0}
+                  >
+                    Add Item
+                  </SecondaryButton>
+                )}
             </>
           )}
         </Stack>

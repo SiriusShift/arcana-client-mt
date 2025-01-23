@@ -15,19 +15,20 @@ const styles = StyleSheet.create({
     display: "flex",
     backgroundColor: "white",
     justifyContent: "space-between",
-    padding: 10, // Adjust padding around the page
-    minHeight: "100%", // Ensure the page height is at least full
-    position: "relative", // Allow absolute positioning of footer
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+    minHeight: "100%",
+    position: "relative",
   },
   row: {
     display: "flex",
     flexDirection: "row",
-    marginBottom: 5, // Reduced space between rows
+    marginBottom: 5,
   },
   header: {
     display: "flex",
     flexDirection: "column",
-    paddingHorizontal: 5, // Reduced horizontal padding
+    paddingVertical: 10,
   },
   text: {
     fontSize: 10,
@@ -35,48 +36,55 @@ const styles = StyleSheet.create({
   table: {
     display: "table",
     width: "100%",
-    border: "1px solid black", // Ensure the table has borders
+    border: "1px solid black",
     borderRight: "0px",
     borderBottom: "0px",
-    marginTop: 10,
   },
   tableRow: {
     width: "100%",
     display: "table-row",
     flexDirection: "row",
+    pageBreakInside: "avoid", // Ensures row won't split across pages
   },
   tableCell: {
     display: "table-cell",
     padding: 5,
-    fontSize: 7, // Font size set to 7
-    textAlign: "center", // Center-align the cell content
-    borderRight: "1px solid black", // Add right border for each cell
-    borderBottom: "1px solid black", // Add bottom border for each cell
+    fontSize: 7,
+    textAlign: "center",
+    borderRight: "1px solid black",
+    borderBottom: "1px solid black",
+    wordBreak: "break-word", // Allow text to wrap
+    overflowWrap: "break-word", // Ensure wrapping within the cell
   },
   tableHeader: {
     fontSize: 7,
     backgroundColor: "#f0f0f0",
-    textAlign: "center", // Center-align the header text
-    fontWeight: "bold", // Bold header text
+    textAlign: "center",
+    fontWeight: "bold",
   },
-  // Adjusted column widths
   tableCellQty: {
-    width: "10%", // Reduced Delivery Date column width
+    width: "10%",
+    height: 20,
   },
   tableCellUnit: {
-    width: "10%", // Reduced Invoice No. column width
+    width: "10%",
+    height: 20,
   },
   tableCellProductCode: {
-    width: "20%", // Slightly increased Product Code column width
+    width: "20%",
+    height: 20,
   },
   tableCellDescription: {
-    width: "20%", // Slightly increased Description column width
+    width: "30%",
+    height: 20,
   },
   tableCellUnitPrice: {
-    width: "20%", // Slightly increased Unit Price column width
+    width: "15%",
+    height: 20,
   },
   tableCellAmount: {
-    width: "20%", // Slightly increased Amount column width
+    width: "15%",
+    height: 20,
   },
   textBold: {
     fontSize: 8,
@@ -84,30 +92,57 @@ const styles = StyleSheet.create({
   },
   footerBackground: {
     display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-end",
+    flexDirection: "row",
+    justifyContent: "space-between", // Adjust alignment
     width: "100%",
+    position: "absolute",
+    bottom: 0,
+    left: 20,
+    right: 0,
   },
   footerBox: {
-    width: "75%",
-    gap: 5,
+    width: "84%", // Uncomment and adjust as necessary
     display: "flex",
+    gap: 5,
     flexDirection: "column",
     justifyContent: "flex-start",
   },
+  footerSign: {
+    width: "20%", // Adjust width
+    gap: 5,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
   footerFrom: {
-    width: "40%",
+    width: "42%",
     height: 25,
     paddingHorizontal: 5,
     paddingVertical: 3,
     border: "1px solid black",
   },
+  footerTotal: {
+    width: "150px",
+    height: 20,
+    paddingHorizontal: 5,
+    paddingVertical: 3,
+    border: "1px solid black",
+  },
+  footerSignature: {
+    borderTop: "1px solid black",
+    width: "150px",
+    height: 35,
+    paddingHorizontal: 5,
+    paddingVertical: 3,
+    marginTop: 15,
+    alignContent: "center",
+  },
   footerBoxTextHeader: {
     fontSize: 6,
     paddingBottom: 2,
     fontWeight: "bold",
-    textAlign: "left"
-  }
+    textAlign: "left",
+  },
 });
 
 const TransferOutSlip = ({ data }) => {
@@ -117,13 +152,11 @@ const TransferOutSlip = ({ data }) => {
         <View>
           <View fixed style={styles.header}>
             <View style={[styles.row, { justifyContent: "space-between" }]}>
-              <Text style={[styles.text, { fontWeight: "bold" }]}>
-                Internal Transfer
-              </Text>
-              <Text style={styles.text}>No. {data?.id}</Text>
+              <Text style={[styles.textBold]}>Internal Transfer</Text>
+              <Text style={[styles.textBold, { fontWeight: "extrabold" }]}>No. {data?.id}</Text>
             </View>
             <View style={[styles.row, { justifyContent: "flex-end" }]}>
-              <Text style={[styles.text, { fontWeight: "bold" }]}>
+              <Text style={[styles.textBold]}>
                 Date: {moment(data?.transactionDate).format("MMMM DD, YYYY")}
               </Text>
             </View>
@@ -131,7 +164,7 @@ const TransferOutSlip = ({ data }) => {
 
           {/* Table with Transfer Items */}
           <View style={styles.table}>
-            <View style={styles.tableRow}>
+            <View fixed style={styles.tableRow}>
               <Text
                 style={[
                   styles.tableCell,
@@ -190,7 +223,11 @@ const TransferOutSlip = ({ data }) => {
 
             {/* Iterate through the transfer items */}
             {data?.transferItems?.map((item, index) => (
-              <View key={index} style={styles.tableRow}>
+              <View
+                wrap
+                key={index}
+                style={[styles.tableRow, { break: "auto" }]}
+              >
                 <Text style={[styles.tableCell, styles.tableCellQty]}>
                   {item?.quantity}
                 </Text>
@@ -217,41 +254,51 @@ const TransferOutSlip = ({ data }) => {
           <View style={styles.footerBox}>
             <View style={{ display: "flex", flexDirection: "row", gap: 5 }}>
               <View style={styles.footerFrom}>
-                <Text
-                  style={styles.footerBoxTextHeader}
-                >
-                  From:
-                </Text>
+                <Text style={styles.footerBoxTextHeader}>From:</Text>
                 <Text style={{ fontSize: 7 }}>{data?.createdBy}</Text>
               </View>
               <View style={styles.footerFrom}>
-                <Text
-                  style={styles.footerBoxTextHeader}
-                >
-                  Delivered by:
-                </Text>
-                <Text style={{ fontSize: 7 }}>{data?.createdBy}</Text>
+                <Text style={styles.footerBoxTextHeader}>Delivered by:</Text>
+                <Text></Text>
+              </View>
+              <View style={styles.footerTotal}>
+                <Text style={{ fontSize: 9 }}>Total</Text>
+                <Text></Text>
               </View>
             </View>
             <View style={{ display: "flex", flexDirection: "row", gap: 5 }}>
               <View style={styles.footerFrom}>
-                <Text
-                  style={styles.footerBoxTextHeader}
-                >
-                  To:
-                </Text>
+                <Text style={styles.footerBoxTextHeader}>To:</Text>
                 <Text style={{ fontSize: 7 }}>{data?.transferTo}</Text>
               </View>
               <View style={styles.footerFrom}>
-                <Text
-                  style={styles.footerBoxTextHeader}
-                >
-                  Prepared By:
-                </Text>
+                <Text style={styles.footerBoxTextHeader}>Prepared By:</Text>
                 <Text style={{ fontSize: 7 }}>{data?.createdBy}</Text>
+              </View>
+              <View style={styles.footerSignature}>
+                <Text style={{ fontSize: 7, textAlign: "center" }}>
+                  Received the above items in good condition
+                </Text>
+                {/* <Text style={{ fontSize: 7, textAlign: "center" }}>
+                in good condition
+              </Text> */}
               </View>
             </View>
           </View>
+          {/* <View styles={styles.footerSign}>
+            <View style={styles.footerTotal}>
+              <Text style={{ fontSize: 9 }}>Total</Text>
+              <Text></Text>
+            </View>
+            <View style={styles.footerSignature}>
+              <Text style={{ fontSize: 7, textAlign: "center" }}>
+                Received the above items
+              </Text>
+              <Text style={{ fontSize: 7, textAlign: "center" }}>
+                in good condition
+              </Text>
+            </View>
+          </View> */}
         </View>
       </Page>
     </Document>

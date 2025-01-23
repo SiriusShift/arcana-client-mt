@@ -17,8 +17,10 @@ function PageHeaderFilterAdd({
   pageTitle,
   setStatus,
   setSearch,
+  removeAllItem,
   removeAdd,
   removeArchive,
+  removeFilter,
   filterChoices,
   choiceLabel,
   choiceValue,
@@ -44,24 +46,27 @@ function PageHeaderFilterAdd({
           )}
         </Box>
         <Box className="pageHeader__right">
-          <Select
-            size="small"
-            // select
-            // label="Role"
-            onChange={(e) =>
-              setFilter && e.target.value === " "
-                ? setFilter("")
-                : setFilter(e.target.value)
-            }
-            defaultValue={" "}
-          >
-            <MenuItem value=" ">All</MenuItem>
-            {filterChoices?.map((choice) => (
-              <MenuItem key={choice.id} value={choice[choiceValue]}>
-                {choice[choiceLabel]}
-              </MenuItem>
-            ))}
-          </Select>
+          {!removeFilter && (
+            <Select
+              size="small"
+              // select
+              // label="Role"
+              onChange={(e) =>
+                setFilter && e.target.value === " "
+                  ? setFilter("")
+                  : setFilter(e.target.value)
+              }
+              defaultValue={removeAllItem ? 1 : " "}
+            >
+              {!removeAllItem && <MenuItem value=" ">All</MenuItem>}
+              {filterChoices?.map((choice) => (
+                <MenuItem key={choice.id} value={choice[choiceValue]}>
+                  {choice[choiceLabel]}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+
           {!removeArchive && (
             <>
               <Checkbox

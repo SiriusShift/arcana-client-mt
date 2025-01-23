@@ -391,18 +391,6 @@ const ItemsWithBBDPriceForm = ({
                               watchItems[index]?.item?.availQuantity || 0;
 
                             console.log(watchItems[index]?.item?.availQuantity);
-                            
-                            if (
-                              enteredValue != null &&
-                              enteredValue > availQuantity
-                              && itemsFieldName === "replaceItems"
-                            ) {
-                              snackbar({
-                                message: `Quantity cannot exceed available stock (${availQuantity})`,
-                                variant: "error",
-                              });
-                              return; // Prevent state update
-                            }
 
                             // Update the value and net price
                             onChange(enteredValue);
@@ -415,13 +403,25 @@ const ItemsWithBBDPriceForm = ({
                           isAllowed={({ floatValue }) => {
                             const itemPrice = watchItems?.[index]?.price || 0;
                             const net = (floatValue || 0) * itemPrice;
+                            const availQuantity =
+                            watchItems[index]?.item?.availQuantity || 0;
+                            
 
-                            // if (
-                            //   floatValue != null &&
-                            //   floatValue > availQuantity
-                            // ) {
-                            //   return false; // Disallow input
-                            // }
+                            if (
+                              floatValue != null &&
+                              floatValue >                               productData?.priceModeItems.find(
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.item?.itemCode
+                              )?.availQuantity
+                              && itemsFieldName === "replaceItems"
+                            ) {
+                              snackbar({
+                                message: `Quantity cannot exceed available stock (${availQuantity})`,
+                                variant: "error",
+                              });
+                              return; // Prevent state update
+                            }
 
                             // Calculate total net prices for replaceItems
                             const replaceItems = watch("replaceItems") || [];
@@ -443,7 +443,7 @@ const ItemsWithBBDPriceForm = ({
                             );
 
                             // Ensure replacement net does not exceed return net
-                            if (totalReplacementNet > (totalReturnNet + 50) && itemsFieldName === "replaceItems") {
+                            if (totalReplacementNet > (totalReturnNet + 40) && itemsFieldName === "replaceItems") {
                               snackbar({
                                 message:
                                   "The total net price of replace items cannot exceed the total net price of return items",
@@ -472,8 +472,13 @@ const ItemsWithBBDPriceForm = ({
                         color="gray"
                         lineHeight="0.5"
                       >
-                        {productData?.priceModeItems[index]
-                          ? `Available: ${productData?.priceModeItems[index]?.availQuantity}`
+                        {watchItems[index]?.item?.itemCode
+                          ?  `Available: ${                              productData?.priceModeItems.find(
+                            (item) =>
+                              item.itemCode ===
+                              watchItems[index]?.item?.itemCode
+                          )?.availQuantity}`
+
                           : "Select BBD first"}
                       </Typography>
                     )}

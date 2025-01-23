@@ -41,7 +41,9 @@ const PermittedRoutes = () => {
   // Workaround for children :id
   const hasParamsPermission =
     permittedParentPath?.includes("/inventory-management/receiving") ||
-    permittedSubPath?.includes("/inventory-management/receiving");
+    permittedSubPath?.includes("/inventory-management/receiving") ||
+    permittedParentPath?.includes("/inventory-management/transfer-in") ||
+    permittedSubPath?.includes("/inventory-management/transfer-in");
 
   if (hasParamsPermission) {
     return <MainLayout />;

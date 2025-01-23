@@ -115,18 +115,22 @@ function FreebieForm({
     usePutFreebiesInformationMutation();
 
   const { data: productData, isFetching: isProductDataLoading } =
-  useGetAllItemsByPriceModeIdQuery({
-    Status: true,
-    Page: 1,
-    PageSize: 1000,
-    PriceModeId: 1,
-  }, {
-    refetchOnMountOrArgChange: true,});
+    useGetAllItemsByPriceModeIdQuery(
+      {
+        Status: true,
+        Page: 1,
+        PageSize: 1000,
+        PriceModeId: 1,
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
 
-    console.log(watch("freebies"));
+  console.log(watch("freebies"));
   //IF store type is distributor
   const lengthArray = selectedRowData?.storeType === "Distributor" ? 10 : 5;
-  
+
   //Drawer Functions
   const onFreebieSubmit = async (data) => {
     if (hasDuplicateItemCodes(watch("freebies"))) {
@@ -196,10 +200,9 @@ function FreebieForm({
 
   const snackbar = useSnackbar();
 
-  if(total > 10){
+  if (total > 10) {
     snackbar({ message: "Maximum of 10 freebies only", variant: "error" });
   }
-
 
   const onDirectFreebieSave = (data) => {
     if (hasDuplicateItemCodes(watch("freebies"))) {
@@ -220,7 +223,10 @@ function FreebieForm({
   const handleFreebieError = () => {
     if (fields.length === 1 && selectedRowData?.storeType !== "Distributor") {
       snackbar({ message: "Must have at least 1 freebie", variant: "error" });
-    } else if (fields.length === 5 && selectedRowData?.storeType !== "Distributor") {
+    } else if (
+      fields.length === 5 &&
+      selectedRowData?.storeType !== "Distributor"
+    ) {
       snackbar({ message: "Maximum of 5 freebies only", variant: "error" });
     }
   };
@@ -250,7 +256,7 @@ function FreebieForm({
           selectedRowData?.freebies?.[freebiesLength - 1]?.freebieItems || [];
 
         const transformedFreebies = originalFreebies.map((item) => ({
-          itemId: item, 
+          itemId: item,
           quantity: 1,
           itemDescription: item.itemDescription,
           uom: item.uom,
@@ -303,7 +309,9 @@ function FreebieForm({
         onClose={isDirty ? onConfirmCancelOpen : handleDrawerClose}
         width="1000px"
         disableSubmit={
-          direct ? !isValid || !photoProofDirect || !signatureDirect : !isValid || total > 10
+          direct
+            ? !isValid || !photoProofDirect || !signatureDirect
+            : !isValid || total > 10
         }
         onSubmit={onConfirmSubmitOpen}
         submitLabel={direct && "Save"}
@@ -322,7 +330,7 @@ function FreebieForm({
             <ControlledAutocomplete
               name={`freebies[${index}].itemId`}
               control={control}
-              options={productData?.priceModeItems  || []}
+              options={productData?.priceModeItems || []}
               getOptionLabel={(option) => option.itemCode || ""}
               getOptionDisabled={(option) => {
                 const freebies = watch("freebies");
@@ -401,48 +409,58 @@ function FreebieForm({
               helperText={errors?.freebies?.quantity?.message}
               error={errors?.freebies?.quantity}
             /> */}
-                  <Stack gap={0.6} paddingTop={1} alignItems="center">
-
-            <Controller
-              control={control}
-              name={`freebies[${index}].quantity`}
-              render={({ field: { onChange, onBlur, value, ref } }) => (
-                <TextField
-                  label="Quantity"
-                  size="small"
-                  autoComplete="off"
-                  // disabled = {selectedRowData?.storeType !== "Distributor" ? true : false}
-                  onChange={(e) => {
-                    if(e.target.value > productData?.priceModeItems[index]?.availQuantity){
-                      snackbar({
-                        message: `Quantity cannot exceed available stock (${availQuantity})`,
-                        variant: "error",
-                      });
-                      return; // Prevent state update
+            <Stack gap={0.6} paddingTop={1} alignItems="center">
+              <Controller
+                control={control}
+                name={`freebies[${index}].quantity`}
+                render={({ field: { onChange, onBlur, value, ref } }) => (
+                  <TextField
+                    label="Quantity"
+                    size="small"
+                    autoComplete="off"
+                    // disabled = {selectedRowData?.storeType !== "Distributor" ? true : false}
+                    onChange={(e) => {
+                      if (
+                        e.target.value >
+                        productData?.priceModeItems.find(
+                          (item) =>
+                            item.itemCode === watch("freebies")[index]?.itemId?.itemCode
+                        )?.availQuantity
+                      ) {
+                        snackbar({
+                          message: `Quantity cannot exceed available stock (${availQuantity})`,
+                          variant: "error",
+                        });
+                        return; // Prevent state update
+                      }
+                      onChange(e);
+                      setTotalQuantity(
+                        watch("freebies").reduce((acc, curr) => {
+                          return acc + parseInt(curr.quantity);
+                        }, 0)
+                      );
+                    }}
+                    onBlur={onBlur}
+                    disabled={
+                      !watch("freebies")[index]?.itemId
                     }
-                    onChange(e); 
-                    setTotalQuantity( 
-                    watch("freebies").reduce((acc, curr) => {
-                      return acc + parseInt(curr.quantity);
-                    }, 0)
-                  )}}
-                  onBlur={onBlur}
-                  value={value || ""}
-                  ref={ref}
-                />
-              )}
-            />
+                    value={value || ""}
+                    ref={ref}
+                  />
+                )}
+              />
 
-                      <Typography
-                        variant="caption"
-                        color="gray"
-                        lineHeight="0.5"
-                      >
-                        {watch("freebies")[index]?.itemId
-                          ? `Available: ${productData?.priceModeItems[index]?.availQuantity}`
-                          : "Select product first"}
-                      </Typography>
-                      </Stack>
+              <Typography variant="caption" color="gray" lineHeight="0.5">
+                {watch("freebies")[index]?.itemId
+                  ? `Available: ${
+                      productData?.priceModeItems.find(
+                        (item) =>
+                          item.itemCode === watch("freebies")[index]?.itemId?.itemCode
+                      )?.availQuantity
+                    }`
+                  : "Select product first"}
+              </Typography>
+            </Stack>
 
             <IconButton
               sx={{ color: "error.main" }}
@@ -464,7 +482,8 @@ function FreebieForm({
             alignItems: "center",
           }}
         >
-          {(((total < 5 && selectedRowData?.storeType !== "Distributor")) ||  (total < 10 && selectedRowData?.storeType === "Distributor"))  && (
+          {((total < 5 && selectedRowData?.storeType !== "Distributor") ||
+            (total < 10 && selectedRowData?.storeType === "Distributor")) && (
             <SecondaryButton
               sx={{ width: "150px" }}
               onClick={() => {
@@ -474,7 +493,8 @@ function FreebieForm({
                   : handleFreebieError();
               }}
               disabled={
-                !watch("freebies")[watch("freebies").length - 1]?.itemId || total > 10
+                !watch("freebies")[watch("freebies").length - 1]?.itemId ||
+                total > 10
               }
             >
               Add Freebie
