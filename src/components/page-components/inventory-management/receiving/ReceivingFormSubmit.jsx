@@ -37,6 +37,7 @@ function ReceivingFormSubmit({
       .map(item => ({
         itemCode: item.itemCode,
         actualQuantity: item.actualQuantity,
+        reason: item.reason,
       })),
   };
   

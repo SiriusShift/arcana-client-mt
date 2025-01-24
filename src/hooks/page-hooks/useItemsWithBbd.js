@@ -4,6 +4,8 @@ import { useFieldArray, useWatch, useFormContext } from "react-hook-form";
 import { useGetAllItemsWithBbdQuery } from "../../features/inventory-management/api/inventoryApi";
 import useConfirm from "../../hooks/useConfirm";
 import moment from "moment";
+import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi";
+import { useGetAllItemsInventoryQuery } from "../../features/inventory-management/api/inventoryMrpApi";
 
 const useItemsWithBbd = ({
   items = [],
@@ -41,10 +43,11 @@ const useItemsWithBbd = ({
   const itemsFieldState = getFieldState(itemsFieldName);
 
   const { data: productData, isFetching: isItemsWithBBDFetching } =
-    useGetAllItemsWithBbdQuery({
-      PageSize: 2000,
-      Page: 1,
-    });
+  useGetAllItemsInventoryQuery();
+
+
+  console.log("test 1", productData);
+  console.log(items);
 
   const handleAddItem = () => {
     append(appendFields);
@@ -90,13 +93,18 @@ const useItemsWithBbd = ({
 
   useEffect(() => {
     if (items.length > 0) {
-      if(itemsFieldName === "replaceItems" || itemsFieldName === "returnItems"){
+      if (
+        itemsFieldName === "replaceItems" ||
+        itemsFieldName === "returnItems"
+      ) {
         const newItems = items?.map((item) => {
-          const momentBBD = item.bbd ? moment(item.bbd, "YYYY-MM-DD", true) : null;
-          console.log(item);
-      
+          console.log("testing123",item);
+          // const momentBBD = item.bbd
+          //   ? moment(item.bbd, "YYYY-MM-DD", true)
+          //   : null;
+
           return {
-            item: productData?.items?.find(
+            item: productData?.find(
               (product) => product.itemCode === item.itemCode
             ),
             itemDescription: item.itemDescription,
@@ -104,20 +112,25 @@ const useItemsWithBbd = ({
             netPrice: item.net,
             uom: item.uom,
             quantity: item.quantity,
-            bbd: momentBBD,
+            bbd: item.bbd,
+            reason: item.reason,
             // remarks: item.remarks
           };
         });
         setValue(itemsFieldName, newItems);
-      }else{
-        const newItems = items?.map((item, index) => ({
-          item: item,
-          itemDescription: item.itemDescription,
-          uom: item.uom,
-          quantity: item.quantity,
-          bbd: { bbd: item.bbd },
-        }));
-        setValue("items", newItems); 
+      } else {
+        const newItems = items?.map((item, index) => {
+          console.log("test view", item, itemsFieldName);
+          return {
+            item: item,
+            itemDescription: item.itemDescription,
+            uom: item.uom,
+            quantity: item.quantity,
+            bbd: item.bbd,
+            // reason: item.reason
+          };
+        });
+        setValue("items", newItems);
       }
     }
   }, [items, productData, setValue]);

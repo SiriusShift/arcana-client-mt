@@ -12,8 +12,9 @@ function InventoryMRP() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [clusterId, setClusterId] = useState(1);
   const userDetails = useSelector((state) => state.login.userDetails);
+  const [clusterId, setClusterId] = useState(userDetails?.roleName === "CDO" ? " " : 1);
+
 
   // RTK Query
   const { data, isFetching } = useGetInventoryMrpQuery(

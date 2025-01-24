@@ -21,6 +21,14 @@ const returnApi = api
         // Remove this when the backend is ready
         // queryFn: dummyReturn,
       }),
+      replaceItems: builder.mutation({
+        query: (body) => ({ 
+          url: `/add-replace-order`,
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["Return", "Returns", "Items With BBD"],
+      }),
 
       getAllReturns: builder.query({
         // Uncomment this when the backend is ready
@@ -58,5 +66,7 @@ const returnApi = api
 export const {
   useReturnItemsMutation,
   useGetAllReturnsQuery,
+  useLazyGetAllReturnsQuery,
   useGetReturnByIdQuery,
+  useReplaceItemsMutation
 } = returnApi;

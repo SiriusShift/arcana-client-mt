@@ -1078,6 +1078,7 @@ export const transferOutSchema = {
           item: yup.object().required("Item Code is required"),
           bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
+          reason: yup.string(),
         })
       )
       .min(1, "At least one product is required"),
@@ -1090,6 +1091,7 @@ export const transferOutSchema = {
         item: null,
         bbd: null,
         quantity: null,
+        reason: "",
       },
     ],
   },
@@ -1106,6 +1108,7 @@ export const freebiesSchema = {
           item: yup.object().required("Item Code is required"),
           bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
+          reason: yup.string(),
         })
       )
       .min(1, "At least one product is required"),
@@ -1118,6 +1121,7 @@ export const freebiesSchema = {
         item: null,
         bbd: null,
         quantity: null,
+        reason: "",
       },
     ],
   },
@@ -1134,6 +1138,7 @@ export const samplingSchema = {
           item: yup.object().required("Item Code is required"),
           bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
+          reason: yup.string(),
         })
       )
       .min(1, "At least one product is required"),
@@ -1146,6 +1151,7 @@ export const samplingSchema = {
         item: null,
         bbd: null,
         quantity: null,
+        reason: "",
       },
     ],
   },
@@ -1162,6 +1168,7 @@ export const returnSchema = {
           item: yup.object().required("Item Code is required"),
           bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
+          reason: yup.string(),
         })
       )
       .min(1, "At least one product is required"),
@@ -1172,6 +1179,7 @@ export const returnSchema = {
           item: yup.object().required("Item Code is required"),
           bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
+          reason: yup.string(),
         })
       )
       .min(1, "At least one product is required"),
@@ -1184,6 +1192,7 @@ export const returnSchema = {
         item: null,
         bbd: null,
         quantity: null,
+        reason: "",
       },
     ],
     replaceItems: [
@@ -1191,6 +1200,7 @@ export const returnSchema = {
         item: null,
         bbd: null,
         quantity: null,
+        reason: ""
       },
     ],
   },

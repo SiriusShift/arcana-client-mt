@@ -371,13 +371,13 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
 
                   <Controller
                     control={control}
-                    name={`items[${index}].remarks`}
+                    name={`items[${index}].reason`}
                     render={({ field }) => (
                       <TextField
                         {...field}
                         disabled={viewOnly}
                         size="small"
-                        label="Remarks"
+                        label="Remarks (optional)"
                         sx={{ minWidth: "100px" }}
                       />
                     )}

@@ -37,8 +37,10 @@ const ViewReturn = () => {
       <ReturnFormHeader noStep />
       <FormProvider {...methods}>
         <ReturnFormDetails details={data?.to[0]} />
-        <ReturnItems items={data?.to[0]?.returnItems}/>
-        <ReplaceItems items={data?.to[0]?.replaceItems}/>
+        <ReturnItems items={data?.to[0]?.returnItems} />
+        {data?.to[0]?.replaceItems?.length > 0 && (
+          <ReplaceItems items={data?.to[0]?.replaceItems} />
+        )}
       </FormProvider>
     </Box>
   );

@@ -32,7 +32,8 @@ const FreebiesFormActions = () => {
         freebieOrderItems: data.items.map((item) => ({
           itemId: item.item.itemId,
           quantity: item.quantity,
-          // bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
+          reason: item.reason,
+          bbd: moment(item.bbd).format("YYYY-MM-DD"),
         })),
         transactionType: "Freebie",
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),

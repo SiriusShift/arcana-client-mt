@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import CommonTable from "../../../components/CommonTable";
 import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -18,10 +18,13 @@ import { useGetAllReturnsQuery } from "../../../features/inventory-management/ap
 import { Add, Remove, Settings } from "@mui/icons-material";
 import useDisclosure from "../../../hooks/useDisclosure";
 import CommonModal from "../../../components/CommonModal";
+import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 
 function Return() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [tabViewing, setTabViewing] = useState(1);
+  console.log(tabViewing);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
   const {
@@ -37,13 +40,23 @@ function Return() {
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
-  const { data, isFetching } = useGetAllReturnsQuery({
-    Search: search,
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-  });
+  const paymentNavigation = useMemo(
+    () => [
+      {
+        case: 1,
+        name: "Pending",
+        transactionStatus: "Pending",
+        // badge: notifications["receivableTransaction"],
+      },
+      {
+        case: 2,
+        name: "Received",
+        transactionStatus: "Received",
+        // badge: notifications["paidTransaction"],
+      },
+    ]
+    // [notifications]
+  );
 
   const tableHeads = [
     "ID",
@@ -72,6 +85,15 @@ function Return() {
 
   const pesoArray = ["totalReturnPrice", "totalExchangePrice"];
 
+  const { data, isFetching } = useGetAllReturnsQuery({
+    Search: search,
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    Status: paymentNavigation.find((item) => item.case === tabViewing)?.name,
+  });
+
   // Functions
   const handleView = () => {
     navigate(
@@ -81,24 +103,38 @@ function Return() {
     );
   };
 
+  const handleReplace = () => {
+    navigate(
+      `${selectedRowData?.returnId}?replace=true&dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
+  }
+
   const handleAdd = () => {
-    navigate("return-form");
+    navigate(`return-form?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
   };
 
   if (location.pathname === "/inventory-management/return") {
     return (
       <Box className="commonPageLayout">
-        <PageHeaderAdd
+        <PageHeaderAddTabs
           pageTitle="Return"
           addTitle="Add Return"
           onOpen={handleAdd}
+          tabsList={paymentNavigation}
+          setTabViewing={setTabViewing}
+          tabViewing={tabViewing}
+          small
           removeArchive
           removeSearch
         >
           {/* <IconButton onClick={onSettingsOpen} size="small">
             <Settings />
           </IconButton> */}
-        </PageHeaderAdd>
+        </PageHeaderAddTabs>
 
         <SearchDateRangeMixin
           setSearch={setSearch}
@@ -125,6 +161,7 @@ function Return() {
             setPage={setPage}
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
+            onReplace={handleReplace}
             onView={handleView}
           />
         )}

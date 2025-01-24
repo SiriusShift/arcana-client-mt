@@ -21,13 +21,21 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi.js";
 import useSnackbar from "../../../../hooks/useSnackbar";
 import { useGetAllItemsInventoryQuery } from "../../../../features/inventory-management/api/inventoryMrpApi.js";
+import { useLazyGetAllReturnsQuery } from "../../../../features/inventory-management/api/returnApi.js";
+import { useEffect } from "react";
+import { useLocation, useParams } from "react-router-dom";
 const ItemsWithBBDPriceForm = ({
   items = [],
   isFetching,
   itemsFieldName = "items",
   itemsFormTitle = "Product Information",
 }) => {
-  const viewOnly = items?.length > 0 || isFetching;
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);  
+  const replace = searchParams.get('replace');
+  console.log(replace);
+
+  const viewOnly = (items?.length > 0  || isFetching) && replace !== 'true';
   const snackbar = useSnackbar();
 
   const [parent] = useAutoAnimate();
@@ -35,6 +43,8 @@ const ItemsWithBBDPriceForm = ({
 
   const { watch } = useFormContext();
   console.log(watch());
+
+
 
   const {
     bbdCache,
@@ -81,7 +91,7 @@ const ItemsWithBBDPriceForm = ({
     }
   );
 
-  console.log(products);
+
   const { invalid } = itemsFieldState;
 
   console.log(watchItems);
@@ -91,8 +101,6 @@ const ItemsWithBBDPriceForm = ({
   const viewOnlyBBDs = [...uniqueBBDs].map((bbd) => ({
     bbd: bbd,
   }));
-
-  console.log(viewOnlyBBDs);
 
   return (
     <Stack sx={{ padding: "1px" }}>
@@ -483,6 +491,24 @@ const ItemsWithBBDPriceForm = ({
                       </Typography>
                     )}
                   </Stack>
+
+                  <Controller
+                  control={control}
+                  name={`${itemsFieldName}[${index}].reason`}
+                  render={({ field: { onChange, onBlur, value, ref } }) => (
+                    <TextField
+                      label="Remarks (optional)"
+                      size="small"
+                      autoComplete="off"
+                      onChange={onChange}
+                      onBlur={onBlur}
+                      value={value}
+                      ref={ref}
+                      sx={{ maxWidth: "200px" }}
+                      disabled={viewOnly}
+                    />
+                  )}
+                  />
 
                   {!viewOnly && (
                     <IconButton

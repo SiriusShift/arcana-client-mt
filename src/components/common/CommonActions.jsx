@@ -33,6 +33,7 @@ import {
   Visibility,
   ZoomIn,
   Download,
+  ContentCopy,
 } from "@mui/icons-material";
 
 function CommonActions({
@@ -74,6 +75,7 @@ function CommonActions({
   onPay,
   onInspect,
   onDownload,
+  onReplace,
   disableActions,
   item,
   status,
@@ -155,6 +157,8 @@ function CommonActions({
       onListingHistories();
     } else if (action === "download"){
       onDownload();
+    } else if (action === "replace"){
+      onReplace();
     }
 
     onClose();
@@ -735,6 +739,21 @@ function CommonActions({
           >
             <Cancel />
             Cancel
+          </MenuItem>
+        )}
+
+        {onReplace && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("replace");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("replace") : false
+            }
+          >
+            <ContentCopy />
+            Replace
           </MenuItem>
         )}
       </Menu>

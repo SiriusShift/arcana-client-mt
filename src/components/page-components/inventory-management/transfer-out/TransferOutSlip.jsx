@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingBottom: 100,
+    paddingBottom: 25,
     minHeight: "100%",
     position: "relative",
   },
@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
   header: {
     display: "flex",
     flexDirection: "column",
+    borderBottom: "1px solid black",
     paddingVertical: 10,
   },
   text: {
@@ -36,9 +37,6 @@ const styles = StyleSheet.create({
   table: {
     display: "table",
     width: "100%",
-    border: "1px solid black",
-    borderRight: "0px",
-    borderBottom: "0px",
   },
   tableRow: {
     width: "100%",
@@ -64,27 +62,27 @@ const styles = StyleSheet.create({
   },
   tableCellQty: {
     width: "10%",
-    height: 20,
+    height: 20.5,
   },
   tableCellUnit: {
     width: "10%",
-    height: 20,
+    height: 20.5,
   },
   tableCellProductCode: {
     width: "20%",
-    height: 20,
+    height: 20.5,
   },
   tableCellDescription: {
     width: "30%",
-    height: 20,
+    height: 20.5,
   },
   tableCellUnitPrice: {
     width: "15%",
-    height: 20,
+    height: 20.5,
   },
   tableCellAmount: {
     width: "15%",
-    height: 20,
+    height: 20.5,
   },
   textBold: {
     fontSize: 8,
@@ -93,36 +91,35 @@ const styles = StyleSheet.create({
   footerBackground: {
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-between", // Adjust alignment
+    justifyContent: "space-between",
     width: "100%",
-    position: "absolute",
-    bottom: 0,
-    left: 20,
-    right: 0,
+    marginTop: 20, // Add some spacing from the content
   },
   footerBox: {
-    width: "84%", // Uncomment and adjust as necessary
+    width: "90%",
     display: "flex",
     gap: 5,
     flexDirection: "column",
     justifyContent: "flex-start",
   },
   footerSign: {
-    width: "20%", // Adjust width
+    width: "10%",
     gap: 5,
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
   },
   footerFrom: {
-    width: "42%",
+    width: "45%",
     height: 25,
     paddingHorizontal: 5,
     paddingVertical: 3,
     border: "1px solid black",
   },
   footerTotal: {
-    width: "150px",
+    width: "100px",
+    display: "flex",
+    flexDirection: "row",
     height: 20,
     paddingHorizontal: 5,
     paddingVertical: 3,
@@ -130,7 +127,7 @@ const styles = StyleSheet.create({
   },
   footerSignature: {
     borderTop: "1px solid black",
-    width: "150px",
+    width: "100px",
     height: 35,
     paddingHorizontal: 5,
     paddingVertical: 3,
@@ -143,6 +140,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "left",
   },
+  footer: {
+    position: "absolute",
+    bottom: 10, // Position at the very bottom of the page
+    right: 20,
+    textAlign: "right",
+    fontSize: 8,
+    color: "gray",
+  },
 });
 
 const TransferOutSlip = ({ data }) => {
@@ -150,10 +155,13 @@ const TransferOutSlip = ({ data }) => {
     <Document>
       <Page size="A6" orientation="landscape" style={styles.page}>
         <View>
+          {/* Header */}
           <View fixed style={styles.header}>
             <View style={[styles.row, { justifyContent: "space-between" }]}>
               <Text style={[styles.textBold]}>Internal Transfer</Text>
-              <Text style={[styles.textBold, { fontWeight: "extrabold" }]}>No. {data?.id}</Text>
+              <Text style={[styles.textBold, { fontWeight: "extrabold" }]}>
+                No. {data?.id}
+              </Text>
             </View>
             <View style={[styles.row, { justifyContent: "flex-end" }]}>
               <Text style={[styles.textBold]}>
@@ -162,7 +170,7 @@ const TransferOutSlip = ({ data }) => {
             </View>
           </View>
 
-          {/* Table with Transfer Items */}
+          {/* Table */}
           <View style={styles.table}>
             <View fixed style={styles.tableRow}>
               <Text
@@ -170,6 +178,7 @@ const TransferOutSlip = ({ data }) => {
                   styles.tableCell,
                   styles.tableHeader,
                   styles.tableCellQty,
+                  { borderLeft: "1px solid black" },
                 ]}
               >
                 QTY
@@ -221,14 +230,15 @@ const TransferOutSlip = ({ data }) => {
               </Text>
             </View>
 
-            {/* Iterate through the transfer items */}
             {data?.transferItems?.map((item, index) => (
-              <View
-                wrap
-                key={index}
-                style={[styles.tableRow, { break: "auto" }]}
-              >
-                <Text style={[styles.tableCell, styles.tableCellQty]}>
+              <View key={index} style={styles.tableRow} wrap={false}>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    styles.tableCellQty,
+                    { borderLeft: "1px solid black" },
+                  ]}
+                >
                   {item?.quantity}
                 </Text>
                 <Text style={[styles.tableCell, styles.tableCellUnit]}>
@@ -241,16 +251,18 @@ const TransferOutSlip = ({ data }) => {
                   {item?.itemDescription}
                 </Text>
                 <Text style={[styles.tableCell, styles.tableCellUnitPrice]}>
-                  {/* Unit price can be added here */}
+                  {item?.currentPrice}
                 </Text>
                 <Text style={[styles.tableCell, styles.tableCellAmount]}>
-                  {/* Amount can be added here */}
+                  {item?.currentPrice * item?.quantity}
                 </Text>
               </View>
             ))}
           </View>
         </View>
-        <View fixed style={styles.footerBackground}>
+
+        {/* Footer */}
+        <View style={styles.footerBackground}>
           <View style={styles.footerBox}>
             <View style={{ display: "flex", flexDirection: "row", gap: 5 }}>
               <View style={styles.footerFrom}>
@@ -262,8 +274,14 @@ const TransferOutSlip = ({ data }) => {
                 <Text></Text>
               </View>
               <View style={styles.footerTotal}>
-                <Text style={{ fontSize: 9 }}>Total</Text>
-                <Text></Text>
+                <Text style={{ fontSize: 9 }}>Total: </Text>
+                <Text style={{ fontSize: 9 }}>
+                  {data?.transferItems?.reduce(
+                    (total, item) =>
+                      total + (item.currentPrice || 0) * (item.quantity || 0),
+                    0
+                  )}
+                </Text>
               </View>
             </View>
             <View style={{ display: "flex", flexDirection: "row", gap: 5 }}>
@@ -279,27 +297,17 @@ const TransferOutSlip = ({ data }) => {
                 <Text style={{ fontSize: 7, textAlign: "center" }}>
                   Received the above items in good condition
                 </Text>
-                {/* <Text style={{ fontSize: 7, textAlign: "center" }}>
-                in good condition
-              </Text> */}
               </View>
             </View>
           </View>
-          {/* <View styles={styles.footerSign}>
-            <View style={styles.footerTotal}>
-              <Text style={{ fontSize: 9 }}>Total</Text>
-              <Text></Text>
-            </View>
-            <View style={styles.footerSignature}>
-              <Text style={{ fontSize: 7, textAlign: "center" }}>
-                Received the above items
-              </Text>
-              <Text style={{ fontSize: 7, textAlign: "center" }}>
-                in good condition
-              </Text>
-            </View>
-          </View> */}
         </View>
+        <Text
+          render={({ pageNumber, totalPages }) =>
+            `Page ${pageNumber} of ${totalPages}`
+          }
+          style={styles.footer}
+          fixed
+        />
       </Page>
     </Document>
   );

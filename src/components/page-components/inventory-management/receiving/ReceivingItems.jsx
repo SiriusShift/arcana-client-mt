@@ -272,7 +272,8 @@ function ReceivingItems({
                             const quantity = watch(`items[${index}].quantity`); // Watch the quantity field
 
                             if (
-                              parseFloat(newValue) > (parseFloat(quantity) * 1.1) &&
+                              parseFloat(newValue) >
+                                parseFloat(quantity) * 1.1 &&
                               items?.some(
                                 (item, itemIndex) =>
                                   item.itemCode ===
@@ -303,7 +304,7 @@ function ReceivingItems({
                       name={`items[${index}].reason`}
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <TextField
-                          label="Reason"
+                          label="Remarks (optional)"
                           size="small"
                           autoComplete="off"
                           onChange={onChange}

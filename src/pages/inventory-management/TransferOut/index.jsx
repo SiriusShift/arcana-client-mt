@@ -10,6 +10,7 @@ import { useGetAllTransferOutsQuery } from "../../../features/inventory-manageme
 import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 import { pdf } from "@react-pdf/renderer";
 import TransferOutSlip from "../../../components/page-components/inventory-management/transfer-out/TransferOutSlip";
+import { useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
 
 function TransferOut() {
   const navigate = useNavigate();
@@ -40,6 +41,29 @@ function TransferOut() {
         : "Rejected",
     TransferType: "Out",
   });
+
+  const { data: productData, isFetching: isProductFetching } =
+    useGetAllItemsByPriceModeIdQuery(
+      {
+        Status: true,
+        Page: 1,
+        PageSize: 1000,
+        PriceModeId: 1,
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
+
+  const dataWithPrice = data?.to?.map((itemData) => ({
+    ...itemData,
+    transferItems: itemData.transferItems.map((item, index) => ({
+      ...item,
+      currentPrice: productData?.priceModeItems[index]?.currentPrice,
+    }))
+  }));
+
+  console.log(data);
 
   const tableHeads = [
     "ID",
@@ -91,7 +115,7 @@ function TransferOut() {
   };
 
   const handleDownload = async () => {
-    const blob = await pdf(<TransferOutSlip data={selectedRowData}/>).toBlob();
+    const blob = await pdf(<TransferOutSlip data={selectedRowData} />).toBlob();
     const link = document.createElement("a");
     const url = window.URL.createObjectURL(blob);
     link.href = url;
@@ -136,7 +160,7 @@ function TransferOut() {
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.to}
+            mapData={dataWithPrice}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             rowsPerPage={rowsPerPage}
