@@ -1,0 +1,41 @@
+@import "./index.styles.scss";
+
+.inventory{
+    &__callsheet{
+        &__summaryHeader{
+            display: flex;
+            gap: 50px;
+            &__title{
+                font-weight: 600;
+                font-size: 1.1rem;
+            }
+            &__redBox{
+                display: flex; 
+                gap: 10px;
+                &__red {
+                    width: 10px;
+                    padding: 10px;
+                    background-color: red;
+                }
+            }
+            &__orangeBox{
+                display: flex; 
+                gap: 10px;
+                &__orange {
+                    width: 10px;
+                    padding: 10px;
+                    background-color: orange;
+                }
+            }
+            &__greenBox{
+                display: flex; 
+                gap: 10px;
+                &__green {
+                    width: 10px;
+                    padding: 10px;
+                    background-color: green;
+                }
+            }
+        }
+    }
+}
