@@ -27,6 +27,7 @@ import useSnackbar from "../../../hooks/useSnackbar";
 import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
 import { RemoveCircleOutline } from "@mui/icons-material";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
+import { NumericFormat } from "react-number-format";
 
 function FreebieForm({
   isFreebieFormOpen,
@@ -91,6 +92,7 @@ function FreebieForm({
     formState: { errors, isValid, isDirty },
     setValue,
     reset,
+    trigger,
     control,
     watch,
   } = useForm({
@@ -359,6 +361,7 @@ function FreebieForm({
                   value?.itemDescription
                 );
                 setValue(`freebies[${index}].uom`, value?.uom);
+                trigger();
                 return value;
               }}
             />
@@ -418,34 +421,40 @@ function FreebieForm({
                     label="Quantity"
                     size="small"
                     autoComplete="off"
-                    // disabled = {selectedRowData?.storeType !== "Distributor" ? true : false}
                     onChange={(e) => {
-                      if (
-                        e.target.value >
+                      const inputValue = parseInt(e.target.value, 10);
+                      console.log(
+                        "watch",
+                        watch("freebies")[index]?.itemId?.availQuantity
+                      );
+
+                      const availableQuantity =
                         productData?.priceModeItems.find(
                           (item) =>
-                            item.itemCode === watch("freebies")[index]?.itemId?.itemCode
-                        )?.availQuantity
-                      ) {
+                            item.itemCode ===
+                            watch("freebies")[index]?.itemId?.itemCode
+                        )?.availQuantity || 0; // Default to 0 if undefined
+
+                      if (inputValue > availableQuantity) {
                         snackbar({
-                          message: `Quantity cannot exceed available stock (${availQuantity})`,
+                          message: `Quantity cannot exceed available stock (${availableQuantity})`,
                           variant: "error",
                         });
                         return; // Prevent state update
                       }
-                      onChange(e);
+
+                      onChange({ target: { value: inputValue } }); // Update the value with numeric input
                       setTotalQuantity(
                         watch("freebies").reduce((acc, curr) => {
-                          return acc + parseInt(curr.quantity);
+                          return acc + (parseInt(curr.quantity, 10) || 0); // Ensure numeric summing
                         }, 0)
                       );
                     }}
                     onBlur={onBlur}
-                    disabled={
-                      !watch("freebies")[index]?.itemId
-                    }
+                    disabled={!watch("freebies")[index]?.itemId?.itemCode}
                     value={value || ""}
                     ref={ref}
+                    type="number" // Ensures numeric input
                   />
                 )}
               />
@@ -455,7 +464,8 @@ function FreebieForm({
                   ? `Available: ${
                       productData?.priceModeItems.find(
                         (item) =>
-                          item.itemCode === watch("freebies")[index]?.itemId?.itemCode
+                          item.itemCode ===
+                          watch("freebies")[index]?.itemId?.itemCode
                       )?.availQuantity
                     }`
                   : "Select product first"}

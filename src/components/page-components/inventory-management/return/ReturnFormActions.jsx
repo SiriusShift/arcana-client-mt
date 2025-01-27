@@ -108,25 +108,25 @@ const ReturnFormActions = ({
       await confirm({
         children: confirmationMessage,
         question: true,
+        callback: async () => {
+          if (replace) {
+            console.log("Replacing items with payload:", replaceItemsPayload);
+            await updateReturn({
+              id: returnData?.to[0]?.returnId,
+              returnItems: returnItemsPayload, // Pass `id` and `returnItems`
+            }).unwrap();
+            await replaceItems(replaceItemsPayload).unwrap();
+            console.log("Replace items successful.");
+          } else {
+            console.log("Replacing and returning items...");
+            console.log("Replace payload:", replaceItemsPayload);
+            console.log("Return payload:", returnItemsPayload);
+
+            await replaceItems(replaceItemsPayload).unwrap();
+            console.log("Replace and return items successful.");
+          }
+        },
       });
-
-      // Perform actions based on `replace` flag
-      if (replace) {
-        console.log("Replacing items with payload:", replaceItemsPayload);
-        await updateReturn({
-          id: returnData?.to[0]?.returnId,
-          returnItems: returnItemsPayload, // Pass `id` and `returnItems`
-        }).unwrap();
-        await replaceItems(replaceItemsPayload).unwrap();
-        console.log("Replace items successful.");
-      } else {
-        console.log("Replacing and returning items...");
-        console.log("Replace payload:", replaceItemsPayload);
-        console.log("Return payload:", returnItemsPayload);
-
-        await replaceItems(replaceItemsPayload).unwrap();
-        console.log("Replace and return items successful.");
-      }
 
       // Show success message
       snackbar({
