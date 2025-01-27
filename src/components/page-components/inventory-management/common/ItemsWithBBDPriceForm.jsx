@@ -172,16 +172,16 @@ const ItemsWithBBDPriceForm = ({
                     getOptionLabel={(option) => option.itemCode || ""}
                     getOptionDisabled={(option) => {
                       // Get all selected items across all rows
-                      const selectedItems = watchItems || []; // Watch all items
-
+                      const selectedItems = watchItems || []; // Default to an empty array if watchItems is undefined
+                    
                       // Extract the itemCodes of the selected items, excluding the current row's itemCode
-                      const selectedCodes = selectedItems?
+                      const selectedCodes = selectedItems
                         .filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
-                        .map((item) => item?.item?.itemCode);
-
+                        .map((item) => item?.item?.itemCode) || []; // Ensure no errors if item or itemCode is undefined
+                    
                       // Disable the option if its itemCode is already selected in other rows
                       return selectedCodes.includes(option.itemCode);
-                    }}
+                    }}                    
                     disabled={viewOnly}
                     isOptionEqualToValue={() => true}
                     loading={isItemsWithBBDFetching}
