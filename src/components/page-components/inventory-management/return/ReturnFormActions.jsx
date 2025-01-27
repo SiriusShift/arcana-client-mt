@@ -10,6 +10,7 @@ import {
   useLazyGetAllReturnsQuery,
   useReplaceItemsMutation,
   useReturnItemsMutation,
+  useUpdateReturnMutation,
 } from "../../../../features/inventory-management/api/returnApi";
 import moment from "moment";
 import {
@@ -25,7 +26,7 @@ import { replace } from "lodash";
 import { useEffect } from "react";
 
 const ReturnFormActions = ({
-  replace, 
+  replace,
   StepProps: { currentStep = 0, setCurrentStep, steps = [] },
 }) => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const ReturnFormActions = ({
   } = useDisclosure();
 
   const {
-    formState: { isValid },
+    formState: { isValid, errors },
     handleSubmit,
     watch,
   } = useFormContext();
@@ -55,6 +56,9 @@ const ReturnFormActions = ({
     useReturnItemsMutation();
   const [replaceItems, { isLoading: replaceItemsLoading }] =
     useReplaceItemsMutation();
+
+  const [updateReturn, { isLoading: updateReturnLoading }] =
+    useUpdateReturnMutation();
 
   const [trigger, { data: returnData }] = useLazyGetAllReturnsQuery();
 
@@ -68,10 +72,11 @@ const ReturnFormActions = ({
         Status: "Pending",
       });
     }
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, currentStep]);
 
   const onSubmit = async (data) => {
     try {
+      // Prepare the payload for replace items
       const replaceItemsPayload = {
         replaceOrders: data.replaceItems.map((item) => ({
           itemId: item.item.itemId,
@@ -84,29 +89,57 @@ const ReturnFormActions = ({
         clientId: data.client.id,
       };
 
-      console.log(replaceItemsPayload);
+      // Prepare the payload for return items
+      const returnItemsPayload = {
+        returnItems: data.returnItems.map((item) => ({
+          itemId: item.item.itemId,
+          price: item.price,
+          quantity: item.quantity,
+          bbd: moment(item.bbd).format("YYYY-MM-DD"),
+          reason: item.reason,
+        })),
+        returnOrderId: returnData?.to[0]?.returnId,
+      };
 
-      // Confirm before proceeding
+      // Confirm action
+      const confirmationMessage = replace
+        ? "Are you sure you want to update return and replace these items?"
+        : "Are you sure you want to return and replace these items?";
       await confirm({
-        children: "Are you sure you want to return and replace these items?",
+        children: confirmationMessage,
         question: true,
-        callback: () => {
-          replaceItems(replaceItemsPayload).unwrap();
-        },
       });
+
+      // Perform actions based on `replace` flag
+      if (replace) {
+        console.log("Replacing items with payload:", replaceItemsPayload);
+        await updateReturn({
+          id: returnData?.to[0]?.returnId,
+          returnItems: returnItemsPayload, // Pass `id` and `returnItems`
+        }).unwrap();
+        await replaceItems(replaceItemsPayload).unwrap();
+        console.log("Replace items successful.");
+      } else {
+        console.log("Replacing and returning items...");
+        console.log("Replace payload:", replaceItemsPayload);
+        console.log("Return payload:", returnItemsPayload);
+
+        await replaceItems(replaceItemsPayload).unwrap();
+        console.log("Replace and return items successful.");
+      }
 
       // Show success message
       snackbar({
-        message: "Return and replace operations successful!",
+        message: "Operation completed successfully!",
         variant: "success",
       });
 
-      // Navigate to a different page after success
+      // Navigate after success
       navigate("/inventory-management/return", { replace: true });
     } catch (error) {
       console.error("Error in onSubmit:", error);
 
-      // Show error message to the user
+      // Display error message
       snackbar({
         message: handleCatchErrorMessage(error),
         variant: "error",
@@ -172,7 +205,11 @@ const ReturnFormActions = ({
 
   return (
     <>
-      <Stack direction="row" justifyContent={`${replace ? "space-between" : "flex-end"}`} gap={1.5}>
+      <Stack
+        direction="row"
+        justifyContent={`${replace ? "space-between" : "flex-end"}`}
+        gap={1.5}
+      >
         <Stack>
           {currentStep !== 0 && (
             <DangerButton

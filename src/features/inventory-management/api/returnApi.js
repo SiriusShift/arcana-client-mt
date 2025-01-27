@@ -4,6 +4,7 @@ import {
   dummyGetReturnById,
   dummyReturn,
 } from "../../../utils/DummyQueryFn";
+import { update } from "lodash";
 
 const returnApi = api
   .enhanceEndpoints({ addTagTypes: ["Return", "Returns", "Items With BBD"] })
@@ -46,6 +47,16 @@ const returnApi = api
         // queryFn: dummyGetAllReturns,
       }),
 
+      updateReturn: builder.mutation({
+        query: ({ id, returnItems }) => ({
+          url: `/update-return-order/${id}`, // Use the `id` for the endpoint
+          method: "PUT",
+          body: returnItems, // Pass only `returnItems` as the request body
+        }),
+        invalidatesTags: ["Return", "Returns", "Items With BBD"],
+      }),
+      
+
       getReturnById: builder.query({
         // Uncomment this when the backend is ready
         // query: (id) => ({
@@ -68,5 +79,6 @@ export const {
   useGetAllReturnsQuery,
   useLazyGetAllReturnsQuery,
   useGetReturnByIdQuery,
-  useReplaceItemsMutation
+  useReplaceItemsMutation,
+  useUpdateReturnMutation
 } = returnApi;

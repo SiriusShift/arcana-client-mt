@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const ReturnFormHeader = ({ StepProps = {}, noStep }) => {
+const ReturnFormHeader = ({ replace, StepProps = {}, noStep }) => {
   const { currentStep = 0, steps = [] } = StepProps || {}; // Default destructuring ensures no TypeError
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ const ReturnFormHeader = ({ StepProps = {}, noStep }) => {
             <IconButton onClick={handleBack}>
               <KeyboardDoubleArrowLeft />
             </IconButton>
-            <Typography className="pageHeader__title">Return Form</Typography>
+            <Typography className="pageHeader__title">{replace && "Update "}Return Form</Typography>
           </Box>
 
           {!noStep && (
