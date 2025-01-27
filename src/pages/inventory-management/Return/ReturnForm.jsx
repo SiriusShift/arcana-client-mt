@@ -8,9 +8,15 @@ import ReturnItems from "../../../components/page-components/inventory-managemen
 import ReturnFormActions from "../../../components/page-components/inventory-management/return/ReturnFormActions";
 import { useState } from "react";
 import ReplaceItems from "../../../components/page-components/inventory-management/return/ReplaceItems";
+import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 
 const ReturnForm = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);  
+  const replace = searchParams.get('replace');
 
   const steps = [
     {
@@ -34,12 +40,13 @@ const ReturnForm = () => {
       <ReturnFormHeader StepProps={{ currentStep, steps }} />
 
       <FormProvider {...methods}>
-        <ReturnFormDetails />
+        <ReturnFormDetails details={replace && selectedRowData}/>
 
-        {steps[currentStep].label === "Return" && <ReturnItems />}
+        {steps[currentStep].label === "Return" && <ReturnItems items={replace && selectedRowData?.returnItems || []}/>}
         {steps[currentStep].label === "Replace" && <ReplaceItems />}
 
         <ReturnFormActions
+          replace={replace}
           StepProps={{
             currentStep,
             setCurrentStep,

@@ -33,13 +33,12 @@ const ItemsWithBBDPriceForm = ({
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);  
   const replace = searchParams.get('replace');
-  console.log(replace);
-
-  const viewOnly = (items?.length > 0  || isFetching) && replace !== 'true';
+  
+  const viewOnly = (items?.length > 0 || isFetching )  && !Boolean(replace);
   const snackbar = useSnackbar();
 
   const [parent] = useAutoAnimate();
-  console.log(itemsFieldName);
+  console.log(viewOnly);
 
   const { watch } = useFormContext();
   console.log(watch());

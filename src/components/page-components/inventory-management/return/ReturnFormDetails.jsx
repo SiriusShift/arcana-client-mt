@@ -15,7 +15,7 @@ const ReturnFormDetailsSkeleton = () => {
     </Stack>
   );
 };
-const ReturnFormDetails = ({ details, isFetching }) => {
+const ReturnFormDetails = ({ details, items, isFetching }) => {
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
 

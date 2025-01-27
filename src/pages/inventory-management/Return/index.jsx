@@ -83,6 +83,9 @@ function Return() {
 
   const dateTimeArray = ["transactionDate"];
 
+  const disableActions = ["replace"];
+
+
   const pesoArray = ["totalReturnPrice", "totalExchangePrice"];
 
   const { data, isFetching } = useGetAllReturnsQuery({
@@ -105,7 +108,7 @@ function Return() {
 
   const handleReplace = () => {
     navigate(
-      `${selectedRowData?.returnId}?replace=true&dateFrom=${moment(dateFrom).format(
+      `return-form?${selectedRowData?.returnId}&replace=true&dateFrom=${moment(dateFrom).format(
         "YYYY-MM-DD"
       )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
     );
@@ -161,7 +164,8 @@ function Return() {
             setPage={setPage}
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
-            onReplace={handleReplace}
+            onReplace={tabViewing === 1 && handleReplace}
+            disabledActions={tabViewing !== 1 ? disableActions : []}
             onView={handleView}
           />
         )}

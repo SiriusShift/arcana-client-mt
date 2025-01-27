@@ -25,6 +25,7 @@ import { replace } from "lodash";
 import { useEffect } from "react";
 
 const ReturnFormActions = ({
+  replace, 
   StepProps: { currentStep = 0, setCurrentStep, steps = [] },
 }) => {
   const navigate = useNavigate();
@@ -143,6 +144,10 @@ const ReturnFormActions = ({
     }
   };
 
+  const handleReplaceNext = () => {
+    setCurrentStep((prev) => prev + 1);
+  };
+
   const handleNext = async () => {
     const transformedData = {
       returnOrders: watch("returnItems").map((item) => ({
@@ -167,8 +172,8 @@ const ReturnFormActions = ({
 
   return (
     <>
-      <Stack direction="row" justifyContent="flex-end" gap={1.5}>
-        {/* <Stack>
+      <Stack direction="row" justifyContent={`${replace ? "space-between" : "flex-end"}`} gap={1.5}>
+        <Stack>
           {currentStep !== 0 && (
             <DangerButton
               onClick={handleBack}
@@ -178,7 +183,7 @@ const ReturnFormActions = ({
               Back
             </DangerButton>
           )}
-        </Stack> */}
+        </Stack>
 
         <Stack direction="row" justifyContent="flex-end" gap={1.5}>
           <DangerButton
@@ -192,7 +197,7 @@ const ReturnFormActions = ({
 
           {currentStep !== steps.length - 1 && (
             <SecondaryButton
-              onClick={onContinueOpen}
+              onClick={replace ? handleReplaceNext : onContinueOpen}
               endIcon={<KeyboardDoubleArrowRight />}
               disabled={
                 watch("client") === null ||
