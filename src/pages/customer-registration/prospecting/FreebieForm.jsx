@@ -38,6 +38,8 @@ function FreebieForm({
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [total, setTotalQuantity] = useState(1);
 
+  console.log(total);
+
   //Redux States
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const clientId = selectedRowData?.id || selectedRowData?.clientId;
@@ -417,44 +419,106 @@ function FreebieForm({
                 control={control}
                 name={`freebies[${index}].quantity`}
                 render={({ field: { onChange, onBlur, value, ref } }) => (
-                  <TextField
-                    label="Quantity"
+                  <NumericFormat
+                    customInput={TextField}
+                    type="text"
                     size="small"
+                    label="Quantity"
                     autoComplete="off"
-                    onChange={(e) => {
-                      const inputValue = parseInt(e.target.value, 10);
-                      console.log(
-                        "watch",
-                        watch("freebies")[index]?.itemId?.availQuantity
+                    onValueChange={(values) => {
+                      const { value: numericValue } = values; // Extract numeric value from the input
+                      const inputValue = parseInt(numericValue) || 0;
+
+                      // Get the current total of all quantities, excluding the current item
+                      const currentTotal = watch("freebies").reduce(
+                        (acc, curr, idx) =>
+                          idx !== index
+                            ? acc + (parseInt(curr.quantity, 10) || 0)
+                            : acc,
+                        0
                       );
 
+                      const tempTotal = currentTotal + inputValue;
+
+                      // Get available quantity for this item
                       const availableQuantity =
                         productData?.priceModeItems.find(
                           (item) =>
                             item.itemCode ===
                             watch("freebies")[index]?.itemId?.itemCode
-                        )?.availQuantity || 0; // Default to 0 if undefined
+                        )?.availQuantity || 0;
 
-                      if (inputValue > availableQuantity) {
-                        snackbar({
-                          message: `Quantity cannot exceed available stock (${availableQuantity})`,
-                          variant: "error",
-                        });
-                        return; // Prevent state update
+                      // Check for validation errors
+                      let errorMessage = "";
+                      if (tempTotal > lengthArray) {
+                        errorMessage = `Maximum of ${lengthArray} freebies allowed`;
+                      } else if (inputValue > availableQuantity) {
+                        errorMessage = `Quantity cannot exceed available stock (${availableQuantity})`;
                       }
 
-                      onChange({ target: { value: inputValue } }); // Update the value with numeric input
+                      // Only show snackbar if there's an error
+                      if (errorMessage) {
+                        snackbar({
+                          message: errorMessage,
+                          variant: "error",
+                        });
+                        return; // Prevent state update if error occurs
+                      }
+
+                      // Update value in the form state if no validation error
+                      onChange({ target: { value: inputValue } });
+
+                      // Update the total quantity after validation
                       setTotalQuantity(
                         watch("freebies").reduce((acc, curr) => {
-                          return acc + (parseInt(curr.quantity, 10) || 0); // Ensure numeric summing
+                          return acc + (parseInt(curr.quantity, 10) || 0);
                         }, 0)
                       );
                     }}
                     onBlur={onBlur}
-                    disabled={!watch("freebies")[index]?.itemId?.itemCode}
                     value={value || ""}
                     ref={ref}
-                    type="number" // Ensures numeric input
+                    allowNegative={false}
+                    isAllowed={({ value }) => {
+                      const inputValue = parseInt(value) || 0;
+
+                      // Get the current total of all quantities, excluding the current item
+                      const currentTotal = watch("freebies").reduce(
+                        (acc, curr, idx) =>
+                          idx !== index
+                            ? acc + (parseInt(curr.quantity, 10) || 0)
+                            : acc,
+                        0
+                      );
+
+                      const tempTotal = currentTotal + inputValue;
+
+                      // Get available quantity for this item
+                      const availableQuantity =
+                        productData?.priceModeItems.find(
+                          (item) =>
+                            item.itemCode ===
+                            watch("freebies")[index]?.itemId?.itemCode
+                        )?.availQuantity || 0;
+
+                      // Check for validation errors
+                      if (
+                        tempTotal > lengthArray ||
+                        inputValue > availableQuantity
+                      ) {
+                        snackbar({
+                          message:
+                            tempTotal > lengthArray
+                              ? `Maximum of ${lengthArray} freebies allowed`
+                              : `Quantity cannot exceed available stock (${availableQuantity})`,
+                          variant: "error",
+                        });
+                        return false; // Block invalid input
+                      }
+
+                      return true; // Allow valid input
+                    }}
+                    error={!!errors?.freebies?.[index]?.quantity}
                   />
                 )}
               />
