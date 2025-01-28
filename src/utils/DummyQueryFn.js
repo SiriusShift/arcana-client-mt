@@ -16,6 +16,7 @@ import {
   dummySamplingData,
   dummyTransferInData,
   dummyTransferOutData,
+  dummyCallsheetData,
 } from "./DummyInventoryData";
 
 // Inventory (Common)
@@ -387,6 +388,21 @@ export const dummyGetFreebieRequestById = async (id) => {
     return { error: { message: error.message } };
   }
 };
+
+export const dummyGetAllCallsheet = async () => {
+  try {
+    const response = await dummyPromise({
+      type: "success",
+      dummyData: dummyCallsheetData, // Use the dummy data directly
+    });
+
+    // Return in RTK Query's expected format
+    return { data: response.dummyData };
+  } catch (error) {
+    return { error: { message: error.message } };
+  }
+};
+
 
 // Sampling
 export const dummyAddSampling = async (body) => {

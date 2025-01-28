@@ -10,6 +10,7 @@ import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 import { useGetAllFreebieRequestsQuery } from "../../../features/inventory-management/api/freebiesApi";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import "../../../assets/styles/inventory.styles.scss";
+import { useGetAllCallsheetsQuery } from "../../../features/inventory-management/api/callsheetApi";
 
 function Callsheet() {
   const navigate = useNavigate();
@@ -24,14 +25,7 @@ function Callsheet() {
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
-  const { data, isFetching } = useGetAllFreebieRequestsQuery({
-    Search: search,
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransactionType: "Freebie",
-  });
+  const {data, isFetching} = useGetAllCallsheetsQuery();
 
   console.log(data);
 

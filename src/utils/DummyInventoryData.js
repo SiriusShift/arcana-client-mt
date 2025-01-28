@@ -2051,3 +2051,38 @@ export const dummyDetailedReturnData = [
     ],
   },
 ];
+
+export const dummyCallsheetData = {
+  callsheet: [
+    {
+      id: 1,
+      customerName: "John Kenneth Marquez",
+      businessName: "JK's Supermarket",
+      callsheetDate: "2025-01-28T16:55:30",
+      items: [
+        {
+          id: 1,
+          itemCode: "52319",
+          itemDescription: "RAPSARAP CHICKEN NUGGETS 200G",
+          salesIn: 3,
+          bbd: [
+            {
+              id: 1,
+              bbd: "2025-02-15T16:55:30",
+            },
+          ],
+        },
+        {
+          itemCode: "52320",
+          itemDescription: "RAPSARAP TIPID PACK CHICKEN NUGGETS 100G",
+          salesIn: 2,
+        },
+        {
+          itemCode: "52321",
+          itemDescription: "RAPSARAP CHEESY CHICKEN NUGGETS 200G",
+          salesIn: 1,
+        },
+      ],
+    },
+  ],
+};
