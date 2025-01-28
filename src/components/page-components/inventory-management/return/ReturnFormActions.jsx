@@ -76,7 +76,7 @@ const ReturnFormActions = ({
 
   const onSubmit = async (data) => {
     try {
-      // Prepare the payload for replace items
+      // Prepare the payloads
       const replaceItemsPayload = {
         replaceOrders: data.replaceItems.map((item) => ({
           itemId: item.item.itemId,
@@ -88,8 +88,7 @@ const ReturnFormActions = ({
         returnOrderId: returnData?.to[0]?.returnId,
         clientId: data.client.id,
       };
-
-      // Prepare the payload for return items
+  
       const returnItemsPayload = {
         returnItems: data.returnItems.map((item) => ({
           itemId: item.item.itemId,
@@ -100,45 +99,55 @@ const ReturnFormActions = ({
         })),
         returnOrderId: returnData?.to[0]?.returnId,
       };
-
+  
       // Confirm action
       const confirmationMessage = replace
         ? "Are you sure you want to update return and replace these items?"
         : "Are you sure you want to return and replace these items?";
-      await confirm({
-        children: confirmationMessage,
-        question: true,
-        callback: async () => {
-          if (replace) {
-            console.log("Replacing items with payload:", replaceItemsPayload);
-            await updateReturn({
-              id: returnData?.to[0]?.returnId,
-              returnItems: returnItemsPayload, // Pass `id` and `returnItems`
-            }).unwrap();
-            await replaceItems(replaceItemsPayload).unwrap();
-            console.log("Replace items successful.");
-          } else {
-            console.log("Replacing and returning items...");
-            console.log("Replace payload:", replaceItemsPayload);
-            console.log("Return payload:", returnItemsPayload);
-
-            await replaceItems(replaceItemsPayload).unwrap();
-            console.log("Replace and return items successful.");
-          }
-        },
-      });
-
-      // Show success message
-      snackbar({
-        message: "Operation completed successfully!",
-        variant: "success",
-      });
-
-      // Navigate after success
-      navigate("/inventory-management/return", { replace: true });
+  
+      try {
+        await confirm({
+          children: confirmationMessage,
+          question: true,
+          callback: async () => {
+            if (replace) {
+              console.log("Replacing items with payload:", replaceItemsPayload);
+              await updateReturn({
+                id: returnData?.to[0]?.returnId,
+                returnItems: returnItemsPayload,
+              }).unwrap();
+              await replaceItems(replaceItemsPayload).unwrap();
+              console.log("Replace items successful.");
+            } else {
+              console.log("Replacing and returning items...");
+              console.log("Replace payload:", replaceItemsPayload);
+              console.log("Return payload:", returnItemsPayload);
+  
+              await replaceItems(replaceItemsPayload).unwrap();
+              console.log("Replace and return items successful.");
+            }
+          },
+        });
+  
+        // Show success message
+        snackbar({
+          message: "Operation completed successfully!",
+          variant: "success",
+        });
+  
+        // Navigate after success
+        navigate("/inventory-management/return", { replace: true });
+      } catch (confirmationError) {
+        // Handle dialog cancellation
+        if (confirmationError.isCancelled) {
+          console.log("User canceled the confirmation dialog.");
+          return; // Exit the function if canceled
+        }
+        throw confirmationError; // Re-throw any other error
+      }
     } catch (error) {
       console.error("Error in onSubmit:", error);
-
+  
       // Display error message
       snackbar({
         message: handleCatchErrorMessage(error),
@@ -146,6 +155,8 @@ const ReturnFormActions = ({
       });
     }
   };
+  
+  
 
   const handleCancel = () => {
     navigate("/inventory-management/return", { replace: true });
@@ -211,7 +222,7 @@ const ReturnFormActions = ({
         gap={1.5}
       >
         <Stack>
-          {currentStep !== 0 && (
+          {currentStep !== 0 && replace && (
             <DangerButton
               onClick={handleBack}
               size="small"

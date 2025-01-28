@@ -43,8 +43,6 @@ const ItemsWithBBDPriceForm = ({
   const { watch } = useFormContext();
   console.log(watch());
 
-
-
   const {
     bbdCache,
     setBbdCache,
@@ -244,7 +242,7 @@ const ItemsWithBBDPriceForm = ({
                         value={value || ""}
                         inputRef={ref}
                         sx={{ maxWidth: "140px" }}
-                        disabled={viewOnly || itemsFieldName !== "returnItems"}
+                        disabled={viewOnly}
                         customInput={TextField}
                         thousandSeparator
                         allowLeadingZeros={false}
@@ -453,7 +451,7 @@ const ItemsWithBBDPriceForm = ({
                             if (totalReplacementNet > (totalReturnNet + 40) && itemsFieldName === "replaceItems") {
                               snackbar({
                                 message:
-                                  "The total net price of replace items cannot exceed the total net price of return items",
+                                  "The total net price of replace items cannot exceed the total net price plus 40 pesos of return items",
                                 variant: "error",
                               });
                               return false; // Disallow input
