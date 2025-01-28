@@ -40,7 +40,7 @@ const ReturnForm = () => {
       <ReturnFormHeader replace={replace} StepProps={{ currentStep, steps }} />
 
       <FormProvider {...methods}>
-        <ReturnFormDetails details={replace && selectedRowData}/>
+        <ReturnFormDetails currentStep={currentStep} details={replace && selectedRowData}/>
 
         {steps[currentStep].label === "Return" && <ReturnItems items={replace && selectedRowData?.returnItems || []}/>}
         {steps[currentStep].label === "Replace" && <ReplaceItems />}

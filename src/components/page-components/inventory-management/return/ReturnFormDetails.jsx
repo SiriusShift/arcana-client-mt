@@ -15,7 +15,7 @@ const ReturnFormDetailsSkeleton = () => {
     </Stack>
   );
 };
-const ReturnFormDetails = ({ details, items, isFetching }) => {
+const ReturnFormDetails = ({ currentStep, details, items, isFetching }) => {
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
 
@@ -59,7 +59,7 @@ const ReturnFormDetails = ({ details, items, isFetching }) => {
           }
           loading={isClientFetching}
           isOptionEqualToValue={() => true}
-          disabled={viewOnly}
+          disabled={viewOnly || currentStep !== 0}
           renderInput={(params) => (
             <TextField
               {...params}
