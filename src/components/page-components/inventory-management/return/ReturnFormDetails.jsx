@@ -15,9 +15,16 @@ const ReturnFormDetailsSkeleton = () => {
     </Stack>
   );
 };
-const ReturnFormDetails = ({ details, items, isFetching }) => {
+const ReturnFormDetails = ({
+  details,
+  items,
+  isFetching,
+  currentStep,
+}) => {
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
+
+  console.log(currentStep)
 
   const { data: clientData, isFetching: isClientFetching } =
     useGetAllClientsQuery({
@@ -59,7 +66,7 @@ const ReturnFormDetails = ({ details, items, isFetching }) => {
           }
           loading={isClientFetching}
           isOptionEqualToValue={() => true}
-          disabled={viewOnly}
+          disabled={viewOnly || currentStep !== 0}
           renderInput={(params) => (
             <TextField
               {...params}

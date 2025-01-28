@@ -15,8 +15,8 @@ const ReturnForm = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);  
-  const replace = searchParams.get('replace');
+  const searchParams = new URLSearchParams(location.search);
+  const replace = searchParams.get("replace");
 
   const steps = [
     {
@@ -33,16 +33,20 @@ const ReturnForm = () => {
     resolver: yupResolver(returnSchema.schema),
     defaultValues: returnSchema.defaultValues,
   });
-
+  console.log(currentStep);
 
   return (
     <Box className="commonPageLayout">
       <ReturnFormHeader StepProps={{ currentStep, steps }} />
 
       <FormProvider {...methods}>
-        <ReturnFormDetails details={replace && selectedRowData}/>
+        <ReturnFormDetails currentStep={currentStep} details={replace && selectedRowData} />
 
-        {steps[currentStep].label === "Return" && <ReturnItems items={replace && selectedRowData?.returnItems || []}/>}
+        {steps[currentStep].label === "Return" && (
+          <ReturnItems
+            items={(replace && selectedRowData?.returnItems) || []}
+          />
+        )}
         {steps[currentStep].label === "Replace" && <ReplaceItems />}
 
         <ReturnFormActions

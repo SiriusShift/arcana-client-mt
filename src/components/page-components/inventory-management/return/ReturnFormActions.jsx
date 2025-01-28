@@ -174,7 +174,7 @@ const ReturnFormActions = ({
     <>
       <Stack direction="row" justifyContent={`${replace ? "space-between" : "flex-end"}`} gap={1.5}>
         <Stack>
-          {currentStep !== 0 && (
+          {currentStep !== 0 && replace && (
             <DangerButton
               onClick={handleBack}
               size="small"

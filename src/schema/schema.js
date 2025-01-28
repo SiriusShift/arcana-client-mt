@@ -1166,7 +1166,7 @@ export const returnSchema = {
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
-          bbd: yup.object().required("BBD is required"),
+          bbd: yup.string().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
         })
@@ -1177,7 +1177,7 @@ export const returnSchema = {
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
-          bbd: yup.object().required("BBD is required"),
+          bbd: yup.string().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
         })

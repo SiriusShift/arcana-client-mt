@@ -244,7 +244,7 @@ const ItemsWithBBDPriceForm = ({
                         value={value || ""}
                         inputRef={ref}
                         sx={{ maxWidth: "140px" }}
-                        disabled={viewOnly || itemsFieldName !== "returnItems"}
+                        disabled={viewOnly}
                         customInput={TextField}
                         thousandSeparator
                         allowLeadingZeros={false}
