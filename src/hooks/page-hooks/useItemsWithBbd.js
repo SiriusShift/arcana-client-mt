@@ -125,6 +125,7 @@ const useItemsWithBbd = ({
             item: item,
             itemDescription: item.itemDescription,
             uom: item.uom,
+            price: item.amount,
             quantity: item.quantity,
             bbd: item.bbd,
             // reason: item.reason
