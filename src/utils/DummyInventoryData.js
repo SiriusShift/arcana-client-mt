@@ -2071,6 +2071,18 @@ export const dummyCallsheetData = [
           },
         ],
       },
+      {
+        id: 2,
+        itemCode: "52320",
+        itemDescription: "RAPSARAP TIPID PACK CHICKEN NUGGETS 100G",
+        salesIn: 1,
+        bbd: [
+          {
+            id: 2,
+            bbd: "2025-02-15T16:55:30", // Correct date format
+          },
+        ],
+      }
       // Other items...
     ],
   },

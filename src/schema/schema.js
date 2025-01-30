@@ -1271,7 +1271,6 @@ export const reportsSchema = {
 
 export const callsheetSchema = {
   schema: yup.object({
-    client: yup.object().required("Client is required"),
     items: yup.array().of(
       yup.object({
         item: yup.object().required("Item is required"),
@@ -1286,7 +1285,6 @@ export const callsheetSchema = {
     )
   }),
   defaultValues: {
-    client: null,
     items: [
       {
         item: null,

@@ -2531,6 +2531,9 @@
 }
 
 .callsheetModal{
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
 	&__callsheetHeader{
 		display: flex;
 		justify-content: space-between;
