@@ -390,16 +390,17 @@ export const dummyGetFreebieRequestById = async (id) => {
 };
 
 export const dummyGetAllCallsheet = async () => {
+  console.log("dummyGetAllCallsheet called");
   try {
     const response = await dummyPromise({
       type: "success",
-      dummyData: dummyCallsheetData, // Use the dummy data directly
+      dummyData: dummyCallsheetData,
     });
 
-    // Return in RTK Query's expected format
-    return { data: response.dummyData };
+    return { data: response }; // Correct structure for RTK Query
   } catch (error) {
-    return { error: { message: error.message } };
+    console.error("dummyGetAllCallsheet error:", error);
+    return { error: { message: error.message } }; // Correct error structure
   }
 };
 

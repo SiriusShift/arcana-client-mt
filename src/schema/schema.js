@@ -1268,3 +1268,36 @@ export const reportsSchema = {
     dateTo: moment(),
   },
 };
+
+export const callsheetSchema = {
+  schema: yup.object({
+    client: yup.object().required("Client is required"),
+    items: yup.array().of(
+      yup.object({
+        item: yup.object().required("Item is required"),
+        bbd: yup.array().of(
+          yup.object({
+            bbd: yup.string().required("BBD is required"),
+            quantity: yup.number().required("Quantity is required").min(1),
+          })
+        ),
+        remainingInv: yup.number().required("Remaining Inventory is required"),
+      })
+    )
+  }),
+  defaultValues: {
+    client: null,
+    items: [
+      {
+        item: null,
+        bbd: [
+          {
+            bbd: null,
+            quantity: null,
+          },
+        ],
+        remainingInv: null,
+      },
+    ],
+  },
+};

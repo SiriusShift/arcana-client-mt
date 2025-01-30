@@ -11,10 +11,19 @@ import { useGetAllFreebieRequestsQuery } from "../../../features/inventory-manag
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import "../../../assets/styles/inventory.styles.scss";
 import { useGetAllCallsheetsQuery } from "../../../features/inventory-management/api/callsheetApi";
+import CallsheetModal from "../../../components/modals/inventory-management/Callsheet/CallsheetModal";
+import useDisclosure from "../../../hooks/useDisclosure";
 
 function Callsheet() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const {
+    onOpen: onCallsheetOpen,
+    onClose: onCallsheetClose,
+    isOpen: isCallsheetOpen,
+  } = useDisclosure();
+  
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -25,7 +34,7 @@ function Callsheet() {
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
-  const {data, isFetching} = useGetAllCallsheetsQuery();
+  const { data, isFetching } = useGetAllCallsheetsQuery();
 
   console.log(data);
 
@@ -33,19 +42,21 @@ function Callsheet() {
     "ID",
     "Customer Name",
     "Business Name",
-    "Expiration Date",
+    "Callsheet Date",
+    "Expiration date",
   ];
 
   const customOrderKeys = [
     "id",
-    "clientName",
+    "customerName",
     "businessName",
+    "callsheetDate",
     "expirationDate",
   ];
 
   const nestedProperty = {
-    key: "businessAddress",
-    nestedKeys: ["city", "province"],
+    key: "expirationDate",
+    nestedKeys: ["bbd"],
   };
 
   const dateTimeArray = ["transactionDate"];
@@ -68,51 +79,45 @@ function Callsheet() {
     },
   ];
 
-  // Functions
-  const handleView = () => {
-    navigate(
-      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
-        "YYYY-MM-DD"
-      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
-    );
-  };
-
   const handleAdd = () => {
     navigate("freebies-form");
   };
 
   if (location.pathname === "/inventory-management/callsheet") {
     return (
-      <Box className="commonPageLayout">
-        <div className="inventory__callsheet__summaryHeader">
-          <Typography className="inventory__callsheet__summaryHeader__title">Color Summmary</Typography>
-          <div className="inventory__callsheet__summaryHeader__redBox">
-            <div className="inventory__callsheet__summaryHeader__redBox__red"/>
-            <Typography>1 - 10 Days</Typography>
+      <>
+        <Box className="commonPageLayout">
+          <div className="inventory__callsheet__summaryHeader">
+            <Typography className="inventory__callsheet__summaryHeader__title">
+              Color Summmary
+            </Typography>
+            <div className="inventory__callsheet__summaryHeader__redBox">
+              <div className="inventory__callsheet__summaryHeader__redBox__red" />
+              <Typography>1 - 10 Days</Typography>
+            </div>
+            <div className="inventory__callsheet__summaryHeader__orangeBox">
+              <div className="inventory__callsheet__summaryHeader__orangeBox__orange" />
+              <Typography>11 - 15 Days</Typography>
+            </div>
+            <div className="inventory__callsheet__summaryHeader__greenBox">
+              <div className="inventory__callsheet__summaryHeader__greenBox__green" />
+              <Typography>16 & above</Typography>
+            </div>
           </div>
-          <div className="inventory__callsheet__summaryHeader__orangeBox">
-            <div className="inventory__callsheet__summaryHeader__orangeBox__orange"/>
-            <Typography>11 - 15 Days</Typography>
-          </div>
-          <div className="inventory__callsheet__summaryHeader__greenBox">
-            <div className="inventory__callsheet__summaryHeader__greenBox__green"/>
-            <Typography>16 & above</Typography>
-          </div>
-        </div>
-        <PageHeaderAdd
-          pageTitle="Callsheet"
-          setSearch={setSearch}
-          removeArchive
-          // tabsList={tabs}
-          // tabViewing={tabViewing}
-          // setTabViewing={setTabViewing}
-          // wide
-          removeAdd
-          // addTitle="Add Freebie Request"
-          // onOpen={handleAdd}
-        />
+          <PageHeaderAdd
+            pageTitle="Callsheet"
+            setSearch={setSearch}
+            removeArchive
+            // tabsList={tabs}
+            // tabViewing={tabViewing}
+            // setTabViewing={setTabViewing}
+            // wide
+            removeAdd
+            // addTitle="Add Freebie Request"
+            // onOpen={handleAdd}
+          />
 
-        {/* <SearchDateRangeMixin
+          {/* <SearchDateRangeMixin
           setSearch={setSearch}
           setDateFrom={setDateFrom}
           setDateTo={setDateTo}
@@ -120,30 +125,30 @@ function Callsheet() {
           dateTo={dateTo}
         /> */}
 
-        {isFetching ? (
-          <CommonTableSkeleton lowerCompact />
-        ) : (
-          <CommonTable
-            moveNoDataUp
-            lowerCompact
-            mapData={data?.to}
-            tableHeads={tableHeads}
-            customOrderKeys={customOrderKeys}
-            nestedProperty={nestedProperty}
-            rowsPerPage={rowsPerPage}
-            setRowsPerPage={setRowsPerPage}
-            page={page}
-            setPage={setPage}
-            count={data?.totalCount}
-            dateTimeArray={dateTimeArray}
-            onView={handleView}
-          />
-        )}
-      </Box>
+          {isFetching ? (
+            <CommonTableSkeleton lowerCompact />
+          ) : (
+            <CommonTable
+              moveNoDataUp
+              lowerCompact
+              mapData={data?.data}
+              tableHeads={tableHeads}
+              customOrderKeys={customOrderKeys}
+              nestedProperty={nestedProperty}
+              rowsPerPage={rowsPerPage}
+              setRowsPerPage={setRowsPerPage}
+              page={page}
+              setPage={setPage}
+              count={data?.totalCount}
+              dateTimeArray={dateTimeArray}
+              onView={onCallsheetOpen}
+            />
+          )}
+        </Box>
+        <CallsheetModal width={"50%"} open={isCallsheetOpen} onClose={onCallsheetClose} />
+      </>
     );
   }
-
-  return <Outlet />;
 }
 
 export default Callsheet;
