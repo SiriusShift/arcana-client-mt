@@ -22,6 +22,8 @@ import useSnackbar from "../../../../hooks/useSnackbar";
 
 function CallsheetModal({ width, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const [endingInv, setEndingInv] = React.useState(0);
+  const [salesOut, setSalesOut] = React.useState(0);
   const snackbar = useSnackbar();
 
   const {
@@ -42,7 +44,7 @@ function CallsheetModal({ width, ...props }) {
     name: "items",
   });
 
-  console.log(fields);
+  console.log(watch("items"));
 
   useEffect(() => {
     if (selectedRowData) {
@@ -114,13 +116,46 @@ function CallsheetModal({ width, ...props }) {
                             {...field}
                             value={field.value || ""}
                             onValueChange={(data) => {
+                              const saleOut = item?.salesIn - data.value;
+                              setValue(`items[${index}].salesOut`, saleOut);
+                              setValue(
+                                `items[${index}].endingInv`,
+                                data.value - saleOut
+                              );
                               field.onChange(data.value);
                             }}
                           />
                         )}
                       />
                     </TableCell>
-                    <TableCell sx={{ py: 1 }}>{item?.quantity}</TableCell>
+                    <TableCell sx={{ py: 1 }}>
+                      <Controller
+                        control={control}
+                        name={`items[${index}].salesOut`}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            size="small"
+                            type="number"
+                            disabled
+                          />
+                        )}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ py: 1 }}>
+                      <Controller
+                        control={control}
+                        name={`items[${index}].endingInv`}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            size="small"
+                            type="number"
+                            disabled
+                          />
+                        )}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
