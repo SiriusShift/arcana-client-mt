@@ -23,7 +23,6 @@ function Callsheet() {
     onClose: onCallsheetClose,
     isOpen: isCallsheetOpen,
   } = useDisclosure();
-  
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -56,32 +55,10 @@ function Callsheet() {
 
   const nestedProperty = {
     key: "expirationDate",
-    nestedKeys: ["bbd"],
+    nestedKeys: ["red", "orange", "green"],
   };
 
-  const dateTimeArray = ["transactionDate"];
-
-  const tabs = [
-    {
-      case: 1,
-      name: "Pending Freebies",
-      status: "Pending",
-    },
-    {
-      case: 2,
-      name: "Approved Freebies",
-      status: "Approved",
-    },
-    {
-      case: 3,
-      name: "Rejected Freebies",
-      status: "Rejected",
-    },
-  ];
-
-  const handleAdd = () => {
-    navigate("freebies-form");
-  };
+  const dateTimeArray = ["callsheetDate"];
 
   if (location.pathname === "/inventory-management/callsheet") {
     return (
@@ -145,7 +122,11 @@ function Callsheet() {
             />
           )}
         </Box>
-        <CallsheetModal width={"50%"} open={isCallsheetOpen} onClose={onCallsheetClose} />
+        <CallsheetModal
+          width={"50%"}
+          open={isCallsheetOpen}
+          onClose={onCallsheetClose}
+        />
       </>
     );
   }

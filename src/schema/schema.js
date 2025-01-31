@@ -1273,13 +1273,7 @@ export const callsheetSchema = {
   schema: yup.object({
     items: yup.array().of(
       yup.object({
-        item: yup.object().required("Item is required"),
-        bbd: yup.array().of(
-          yup.object({
-            bbd: yup.string().required("BBD is required"),
-            quantity: yup.number().required("Quantity is required").min(1),
-          })
-        ),
+        itemCode: yup.string().required("Item Code is required"),
         remainingInv: yup.number().required("Remaining Inventory is required"),
       })
     )

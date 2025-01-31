@@ -11,6 +11,7 @@ import {
   TablePagination,
   TableRow,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import React from "react";
 import { transformKey } from "../utils/CustomFunctions";
@@ -313,9 +314,17 @@ function CommonTable({
                     if (checkIn) {
                       if (keys === "timeOut" || keys === "createdDate") {
                         return (
-                          <TableCell sx={{ bgcolor: item["timeOut"] ? "#A2E4B8" : "#FF7276" }} key={k}>
-                            {item[keys] &&
-                            moment(item[keys]).format("MMM DD, YYYY HH:mm:ss") || "N/A"}
+                          <TableCell
+                            sx={{
+                              bgcolor: item["timeOut"] ? "#A2E4B8" : "#FF7276",
+                            }}
+                            key={k}
+                          >
+                            {(item[keys] &&
+                              moment(item[keys]).format(
+                                "MMM DD, YYYY HH:mm:ss"
+                              )) ||
+                              "N/A"}
                             {/* // H:mm a */}
                           </TableCell>
                         );
@@ -326,7 +335,7 @@ function CommonTable({
                             {item[keys] || "N/A"}
                           </TableCell>
                         );
-                      }else{
+                      } else {
                         return (
                           <TableCell sx={{ bgcolor: "#A2E4B8" }} key={k}>
                             {item[keys] || "N/A"}
@@ -396,19 +405,83 @@ function CommonTable({
                       nestedProperty?.key === keys &&
                       nestedProperty.nestedKeys
                     ) {
-                      const nestedValues = item[nestedProperty.key]
-                        ? Object.entries(item[nestedProperty.key])
-                            .filter(([key]) =>
-                              nestedProperty.nestedKeys.includes(key)
-                            )
-                            .map(([_, value]) => value) // Using destructuring to directly get the value
-                        : null;
+                      if (keys === "expirationDate") {
+                        const nestedValues = item[nestedProperty.key]
+                          ? Object.entries(item[nestedProperty.key])
+                              .filter(([key]) =>
+                                nestedProperty.nestedKeys.includes(key)
+                              )
+                              .map(([key, value]) => ({ key, value })) // Store both key (color) and value
+                          : [];
 
-                      return (
-                        <TableCell key={k}>
-                          {nestedValues ? nestedValues.join(", ") : "N/A"}
-                        </TableCell>
-                      );
+                        return (
+                          <TableCell key={k}>
+                            <Box display="flex" gap={1}>
+                              {nestedValues.length > 0 ? (
+                                nestedValues.map(({ key, value }, index) => (
+                                  <Box
+                                    key={index}
+                                    sx={{
+                                      padding: "2px 15px",
+                                      backgroundColor: key ? key : "#FF7276", // Use key as background color
+                                      textAlign: "center",
+                                    }}
+                                  >
+                                    <Typography
+                                      sx={{
+                                        color: "white !important",
+                                      }}
+                                    >
+                                      {value || 0}
+                                    </Typography>
+                                  </Box>
+                                ))
+                              ) : (
+                                <>
+                                  <Box
+                                    sx={{
+                                      width: "38px",
+                                      height: "28px",
+                                      backgroundColor: "grey", // Use key as background color
+                                      textAlign: "center",
+                                    }}
+                                  />
+                                  <Box
+                                    sx={{
+                                      width: "38px",
+                                      height: "28px",
+                                      backgroundColor: "grey", // Use key as background color
+                                      textAlign: "center",
+                                    }}
+                                  />
+                                  <Box
+                                    sx={{
+                                      width: "38px",
+                                      height: "28px",
+                                      backgroundColor: "grey", // Use key as background color
+                                      textAlign: "center",
+                                    }}
+                                  />
+                                </>
+                              )}
+                            </Box>
+                          </TableCell>
+                        );
+                      } else {
+                        const nestedValues = item[nestedProperty.key]
+                          ? Object.entries(item[nestedProperty.key])
+                              .filter(([key]) =>
+                                nestedProperty.nestedKeys.includes(key)
+                              )
+                              .map(([_, value]) => value)
+                          : null;
+
+                        return (
+                          <TableCell key={k}>
+                            {nestedValues ? nestedValues.join(", ") : "N/A"}
+                          </TableCell>
+                        );
+                      }
                     }
 
                     if (item[keys] === true && keys !== attachKey) {
@@ -519,7 +592,7 @@ function CommonTable({
                       keys === "createdAt" ||
                       keys === "updatedAt" ||
                       keys === "date" ||
-                      keys === "chequeDate" || 
+                      keys === "chequeDate" ||
                       keys === "deliveryDate"
                     ) {
                       return (
@@ -608,7 +681,9 @@ function CommonTable({
                               maximumFractionDigits: 2,
                             })
                           : !item[keys]
-                          ? item[keys] === null ? "N/A" : item[keys]
+                          ? item[keys] === null
+                            ? "N/A"
+                            : item[keys]
                           : item[keys]}
 
                         {percentageArray &&
@@ -623,7 +698,11 @@ function CommonTable({
                       sx={{
                         position: "sticky",
                         right: 0,
-                        bgcolor: checkIn ? item["timeOut"] ? "#A2E4B8" : "#FF7276" : "white !important",
+                        bgcolor: checkIn
+                          ? item["timeOut"]
+                            ? "#A2E4B8"
+                            : "#FF7276"
+                          : "white !important",
                       }}
                     >
                       <CommonActions
