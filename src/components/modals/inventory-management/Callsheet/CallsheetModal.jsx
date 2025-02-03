@@ -15,7 +15,7 @@ import {
   TableRow,
   TextField,
   Typography,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import { Visibility } from "@mui/icons-material";
 
@@ -30,11 +30,11 @@ function CallsheetModal({ width, onClose, ...props }) {
   const [salesOut, setSalesOut] = React.useState(0);
   const snackbar = useSnackbar();
 
-  console.log(selectedRowData)
+  console.log(selectedRowData);
 
   const {
     handleSubmit,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isValid, dirtyFields, isDirty },
     setValue,
     reset,
     control,
@@ -60,7 +60,10 @@ function CallsheetModal({ width, onClose, ...props }) {
   useEffect(() => {
     if (selectedRowData) {
       reset({
-        ...selectedRowData?.transactionItemsDtos,
+        ...selectedRowData,
+        items: selectedRowData?.transactionItemsDtos?.map((item) => ({
+          ...item,
+        })),
       });
     }
   }, [selectedRowData]);
@@ -111,104 +114,113 @@ function CallsheetModal({ width, onClose, ...props }) {
             <ReceivingItemsTableSkeleton />
           ) : ( */}
               <TableBody>
-                {fields.map((item, index) => (
-                  <TableRow sx={{ height: "50px" }} key={index}>
-                    <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
-                    <TableCell sx={{ py: 1 }}>
-                      {item?.itemDescription}
-                    </TableCell>
-                    <TableCell sx={{ py: 1 }}>{item?.salesIn}</TableCell>
-                    <TableCell sx={{ py: 1 }}>
-                      <Controller
-                        control={control}
-                        name={`items[${index}].remainingInv`}
-                        render={({ field }) => (
-                          <NumericFormat
-                            customInput={TextField}
-                            size="small"
-                            type="number"
-                            {...field}
-                            value={field.value || ""}
-                            onValueChange={(data) => {
-                              const saleOut = item?.salesIn - data.value;
-                              console.log(saleOut);
-                              setValue(`items[${index}].salesOut`, saleOut);
-                              setValue(
-                                `items[${index}].endingInv`,
-                                data.value - saleOut
-                              );
-                              setValue(`items[${index}].suggestPO`, saleOut);
-                              setValue(`items[${index}].avgSales`, saleOut);
-                              field.onChange(data.value);
-                            }}
-                          />
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ py: 1 }}>
-                      <Controller
-                        control={control}
-                        name={`items[${index}].endingInv`}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            size="small"
-                            type="number"
-                            disabled
-                          />
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ py: 1 }}>
-                      <Controller
-                        control={control}
-                        name={`items[${index}].salesOut`}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            size="small"
-                            type="number"
-                            disabled
-                          />
-                        )}
-                      />
-                    </TableCell>
+                {fields.map((item, index) => {
+                  const isRowDirty = !!dirtyFields.items?.[index];
 
-                    <TableCell sx={{ py: 1 }}>
-                      <Controller
-                        control={control}
-                        name={`items[${index}].suggestPO`}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            size="small"
-                            type="number"
-                            disabled
-                          />
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ py: 1 }}>
-                      <Controller
-                        control={control}
-                        name={`items[${index}].avgSales`}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            size="small"
-                            type="number"
-                            disabled
-                          />
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ py: 1 }}>
-                      <IconButton>
-                        <Visibility />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                  return (
+                    <TableRow sx={{ height: "50px" }} key={index}>
+                      <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        {item?.itemDescription}
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }}>{item?.salesIn}</TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <Controller
+                          control={control}
+                          name={`items[${index}].remainingInv`}
+                          render={({ field }) => (
+                            <NumericFormat
+                              customInput={TextField}
+                              size="small"
+                              type="number"
+                              {...field}
+                              value={field.value || ""}
+                              onValueChange={(data) => {
+                                const saleOut = item?.salesIn - data.value;
+                                const endingInv = data.value - salesOut;
+                                console.log(saleOut);
+                                setValue(`items[${index}].salesOut`, saleOut);
+                                if (endingInv >= 0) {
+                                  setValue(
+                                    `items[${index}].endingInv`,
+                                    endingInv
+                                  );
+                                } else {
+                                  setValue(`items[${index}].endingInv`, 0);
+                                }
+                                setValue(`items[${index}].suggestPO`, saleOut);
+                                setValue(`items[${index}].avgSales`, saleOut);
+                                field.onChange(data.value);
+                              }}
+                            />
+                          )}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <Controller
+                          control={control}
+                          name={`items[${index}].endingInv`}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              size="small"
+                              type="number"
+                              disabled
+                            />
+                          )}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <Controller
+                          control={control}
+                          name={`items[${index}].salesOut`}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              size="small"
+                              type="number"
+                              disabled
+                            />
+                          )}
+                        />
+                      </TableCell>
+
+                      <TableCell sx={{ py: 1 }}>
+                        <Controller
+                          control={control}
+                          name={`items[${index}].suggestedPo`}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              size="small"
+                              type="number"
+                              disabled
+                            />
+                          )}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <Controller
+                          control={control}
+                          name={`items[${index}].averageSales`}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              size="small"
+                              type="number"
+                              disabled
+                            />
+                          )}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <IconButton disabled={isRowDirty}>
+                          <Visibility />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
               {/* )} */}
             </Table>
