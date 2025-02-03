@@ -25,8 +25,13 @@ function ReceivingFormSubmit({
 
   formData = {
     ...formData,
+    wrong: formData.wrong.map((item) => ({
+      itemCode: item.item,
+      quantity: item.quantity,
+      reason: item.reason,
+    })), 
     additional: formData.items
-      .filter(item => item.quantity === 0 || item.actualQuantity === 0)  // Filter for items with 0 quantity or actualQuantity
+      .filter(item => item.quantity === null || item.actualQuantity === 0)  // Filter for items with 0 quantity or actualQuantity
       .map(item => ({
         itemCode: item.itemCode,
         quantity: item.actualQuantity,
@@ -41,9 +46,6 @@ function ReceivingFormSubmit({
       })),
   };
   
-  console.log(formData);
-  
-
   console.log(formData);
   
 
@@ -64,6 +66,7 @@ function ReceivingFormSubmit({
 
   const handleSubmit = async () => {
     try {
+      console.log(formData);
       await confirm({
         children: "Are you sure you want to submit this receiving form?",
         question: true,

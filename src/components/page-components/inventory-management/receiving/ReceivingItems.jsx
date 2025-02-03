@@ -70,12 +70,12 @@ function ReceivingItems({
     defaultValues: receivingItemsSchema.defaultValues,
   });
 
+  console.log("watching",watch());
+
   const { data: products, isFetching: isProductsFetching } =
     useGetAllProductsQuery({
       PageSize: 1000,
     });
-
-  console.log(watch());
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -109,10 +109,11 @@ function ReceivingItems({
       handleFormData((prev) => ({
         ...prev,
         items: watchItems.map((item) => ({
-          itemCode: item?.itemCode,
+          // itemCode: item?.itemCode,
           quantity: Number(item?.quantity),
           actualQuantity: Number(item?.actualQuantity),
           reason: item?.reason,
+          ...item
         })),
       }));
     }
@@ -287,7 +288,7 @@ function ReceivingItems({
                                 variant: "warning",
                               });
                             } else {
-                              onChange(newValue); // Only update if the value is valid
+                              onChange(parseFloat(newValue)); // Only update if the value is valid
                             }
                           }}
                           onBlur={onBlur}
