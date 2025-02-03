@@ -96,18 +96,11 @@ const styles = StyleSheet.create({
     marginTop: 20, // Add some spacing from the content
   },
   footerBox: {
-    width: "90%",
+    width: "100%",
     display: "flex",
     gap: 5,
     flexDirection: "column",
     justifyContent: "flex-start",
-  },
-  footerSign: {
-    width: "10%",
-    gap: 5,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
   },
   footerFrom: {
     width: "45%",
@@ -117,7 +110,7 @@ const styles = StyleSheet.create({
     border: "1px solid black",
   },
   footerTotal: {
-    width: "100px",
+    width: "125px",
     display: "flex",
     flexDirection: "row",
     height: 20,
@@ -127,7 +120,7 @@ const styles = StyleSheet.create({
   },
   footerSignature: {
     borderTop: "1px solid black",
-    width: "100px",
+    width: "125px",
     height: 35,
     paddingHorizontal: 5,
     paddingVertical: 3,
@@ -149,6 +142,8 @@ const styles = StyleSheet.create({
     color: "gray",
   },
 });
+
+
 
 const TransferOutSlip = ({ data }) => {
   return (
@@ -251,10 +246,10 @@ const TransferOutSlip = ({ data }) => {
                   {item?.itemDescription}
                 </Text>
                 <Text style={[styles.tableCell, styles.tableCellUnitPrice]}>
-                  {item?.currentPrice}
+                  {item?.amount}
                 </Text>
                 <Text style={[styles.tableCell, styles.tableCellAmount]}>
-                  {item?.currentPrice * item?.quantity}
+                  {item?.amount * item?.quantity}
                 </Text>
               </View>
             ))}
@@ -276,11 +271,7 @@ const TransferOutSlip = ({ data }) => {
               <View style={styles.footerTotal}>
                 <Text style={{ fontSize: 9 }}>Total: </Text>
                 <Text style={{ fontSize: 9 }}>
-                  {data?.transferItems?.reduce(
-                    (total, item) =>
-                      total + (item.currentPrice || 0) * (item.quantity || 0),
-                    0
-                  )}
+                  {data?.totalAmount}
                 </Text>
               </View>
             </View>

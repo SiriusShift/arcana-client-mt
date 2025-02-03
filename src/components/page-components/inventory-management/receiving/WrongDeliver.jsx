@@ -152,7 +152,7 @@ function WrongDeliver({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Wrong Deliver</TableCell>
+              <TableCell>Return to Depot</TableCell>
             </TableRow>
           </TableHead>
 

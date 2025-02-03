@@ -25,6 +25,8 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
   const viewOnly = items.length > 0 || isFetching;
   const snackbar = useSnackbar();
 
+  console.log(items)
+
   const [parent] = useAutoAnimate();
 
   const {
@@ -382,7 +384,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                     {!viewOnly && (
                       <Typography
                         variant="caption"
-                        color="gray"
+                        color={`${watchItems[index]?.item?.itemCode ? "green" : "grey"}`}
                         lineHeight="0.5"
                       >
                         {watchItems[index]?.item?.itemCode

@@ -523,7 +523,7 @@ function FreebieForm({
                 )}
               />
 
-              <Typography variant="caption" color="gray" lineHeight="0.5">
+              <Typography variant="caption" color={`${watch("freebies")[index]?.itemId ? "green" : "gray"}`} lineHeight="0.5">
                 {watch("freebies")[index]?.itemId
                   ? `Available: ${
                       productData?.priceModeItems.find(

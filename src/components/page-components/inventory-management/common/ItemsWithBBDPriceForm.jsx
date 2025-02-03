@@ -31,10 +31,10 @@ const ItemsWithBBDPriceForm = ({
   itemsFormTitle = "Product Information",
 }) => {
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);  
-  const replace = searchParams.get('replace');
-  
-  const viewOnly = (items?.length > 0 || isFetching )  && !Boolean(replace);
+  const searchParams = new URLSearchParams(location.search);
+  const replace = searchParams.get("replace");
+
+  const viewOnly = (items?.length > 0 || isFetching) && !Boolean(replace);
   const snackbar = useSnackbar();
 
   const [parent] = useAutoAnimate();
@@ -87,7 +87,6 @@ const ItemsWithBBDPriceForm = ({
       refetchOnMountOrArgChange: true,
     }
   );
-
 
   const { invalid } = itemsFieldState;
 
@@ -171,15 +170,16 @@ const ItemsWithBBDPriceForm = ({
                     getOptionDisabled={(option) => {
                       // Get all selected items across all rows
                       const selectedItems = watchItems || []; // Default to an empty array if watchItems is undefined
-                    
+
                       // Extract the itemCodes of the selected items, excluding the current row's itemCode
-                      const selectedCodes = selectedItems
-                        .filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
-                        .map((item) => item?.item?.itemCode) || []; // Ensure no errors if item or itemCode is undefined
-                    
+                      const selectedCodes =
+                        selectedItems
+                          .filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
+                          .map((item) => item?.item?.itemCode) || []; // Ensure no errors if item or itemCode is undefined
+
                       // Disable the option if its itemCode is already selected in other rows
                       return selectedCodes.includes(option.itemCode);
-                    }}                    
+                    }}
                     disabled={viewOnly}
                     isOptionEqualToValue={() => true}
                     loading={isItemsWithBBDFetching}
@@ -409,17 +409,17 @@ const ItemsWithBBDPriceForm = ({
                             const itemPrice = watchItems?.[index]?.price || 0;
                             const net = (floatValue || 0) * itemPrice;
                             const availQuantity =
-                            watchItems[index]?.item?.availQuantity || 0;
-                            
+                              watchItems[index]?.item?.availQuantity || 0;
 
                             if (
                               floatValue != null &&
-                              floatValue >                               productData?.priceModeItems.find(
-                                (item) =>
-                                  item.itemCode ===
-                                  watchItems[index]?.item?.itemCode
-                              )?.availQuantity
-                              && itemsFieldName === "replaceItems"
+                              floatValue >
+                                productData?.priceModeItems.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.item?.itemCode
+                                )?.availQuantity &&
+                              itemsFieldName === "replaceItems"
                             ) {
                               snackbar({
                                 message: `Quantity cannot exceed available stock (${availQuantity})`,
@@ -448,7 +448,10 @@ const ItemsWithBBDPriceForm = ({
                             );
 
                             // Ensure replacement net does not exceed return net
-                            if (totalReplacementNet > (totalReturnNet + 40) && itemsFieldName === "replaceItems") {
+                            if (
+                              totalReplacementNet > totalReturnNet + 40 &&
+                              itemsFieldName === "replaceItems"
+                            ) {
                               snackbar({
                                 message:
                                   "The total net price of replace items cannot exceed the total net price plus 40 pesos of return items",
@@ -474,37 +477,39 @@ const ItemsWithBBDPriceForm = ({
                     {!viewOnly && itemsFieldName !== "returnItems" && (
                       <Typography
                         variant="caption"
-                        color="gray"
+                        color={`${
+                          watchItems[index]?.item?.availQuantity > 0 ? "green" : "gray"}`}
                         lineHeight="0.5"
                       >
                         {watchItems[index]?.item?.itemCode
-                          ?  `Available: ${                              productData?.priceModeItems.find(
-                            (item) =>
-                              item.itemCode ===
-                              watchItems[index]?.item?.itemCode
-                          )?.availQuantity}`
-
+                          ? `Available: ${
+                              productData?.priceModeItems.find(
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.item?.itemCode
+                              )?.availQuantity
+                            }`
                           : "Select BBD first"}
                       </Typography>
                     )}
                   </Stack>
 
                   <Controller
-                  control={control}
-                  name={`${itemsFieldName}[${index}].reason`}
-                  render={({ field: { onChange, onBlur, value, ref } }) => (
-                    <TextField
-                      label="Remarks (optional)"
-                      size="small"
-                      autoComplete="off"
-                      onChange={onChange}
-                      onBlur={onBlur}
-                      value={value}
-                      ref={ref}
-                      sx={{ maxWidth: "200px" }}
-                      disabled={viewOnly}
-                    />
-                  )}
+                    control={control}
+                    name={`${itemsFieldName}[${index}].reason`}
+                    render={({ field: { onChange, onBlur, value, ref } }) => (
+                      <TextField
+                        label="Remarks (optional)"
+                        size="small"
+                        autoComplete="off"
+                        onChange={onChange}
+                        onBlur={onBlur}
+                        value={value}
+                        ref={ref}
+                        sx={{ maxWidth: "200px" }}
+                        disabled={viewOnly}
+                      />
+                    )}
                   />
 
                   {!viewOnly && (

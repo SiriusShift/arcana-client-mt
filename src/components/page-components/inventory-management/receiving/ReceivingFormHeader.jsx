@@ -44,7 +44,7 @@ function ReceivingFormHeader({
     area = "",
     transactionDate = "",
     moveOrderId = "",
-    deliveryDate = "",
+    dateReceived = "",
   } = {},
   isFetching,
 }) {
@@ -108,7 +108,7 @@ function ReceivingFormHeader({
                 Move Order ID: {moveOrderId}
               </Typography>
               <Typography variant="subtitle1" fontWeight="500">
-                Delivery Date: {moment(deliveryDate).format("MM/DD/YYYY")}
+                Delivery Date: {moment(dateReceived).format("MM/DD/YYYY")}
               </Typography>
             </Stack>
           </Box>

@@ -15,6 +15,7 @@ const useItemsWithBbd = ({
     uom: "",
     quantity: null,
     bbd: null,
+    reason: "",
   },
   itemsFieldName = "items",
   persistGlobally = false,
@@ -128,7 +129,7 @@ const useItemsWithBbd = ({
             price: item.amount,
             quantity: item.quantity,
             bbd: item.bbd,
-            // reason: item.reason
+            reason: item.reason
           };
         });
         setValue("items", newItems);
