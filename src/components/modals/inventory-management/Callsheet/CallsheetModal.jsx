@@ -30,6 +30,8 @@ function CallsheetModal({ width, onClose, ...props }) {
   const [salesOut, setSalesOut] = React.useState(0);
   const snackbar = useSnackbar();
 
+  console.log(selectedRowData)
+
   const {
     handleSubmit,
     formState: { errors, isValid, isDirty },
@@ -58,7 +60,7 @@ function CallsheetModal({ width, onClose, ...props }) {
   useEffect(() => {
     if (selectedRowData) {
       reset({
-        ...selectedRowData,
+        ...selectedRowData?.transactionItemsDtos,
       });
     }
   }, [selectedRowData]);

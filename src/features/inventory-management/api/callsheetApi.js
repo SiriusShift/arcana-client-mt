@@ -7,7 +7,15 @@ const callsheetApi = api
   .injectEndpoints({
     endpoints: (builder) => ({
       getAllCallsheets: builder.query({
-        queryFn: dummyGetAllCallsheet,
+        // Uncomment this when the backend is ready
+        query: (params) => ({
+          params,
+          url: "/get-callsheet",
+          method: "GET",
+        }),
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
+        // queryFn: dummyGetAllCallsheet,
         providesTags: ["Callsheet"],
       }),
     }),

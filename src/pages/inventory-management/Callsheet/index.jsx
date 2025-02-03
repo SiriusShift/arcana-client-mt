@@ -6,13 +6,13 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
-import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 import { useGetAllFreebieRequestsQuery } from "../../../features/inventory-management/api/freebiesApi";
-import PageHeaderAdd from "../../../components/PageHeaderAdd";
+import PageHeaderFilterAdd from "../../../components/PageHeaderFilterAdd";
 import "../../../assets/styles/inventory.styles.scss";
 import { useGetAllCallsheetsQuery } from "../../../features/inventory-management/api/callsheetApi";
 import CallsheetModal from "../../../components/modals/inventory-management/Callsheet/CallsheetModal";
 import useDisclosure from "../../../hooks/useDisclosure";
+import { transform } from "lodash";
 
 function Callsheet() {
   const navigate = useNavigate();
@@ -24,18 +24,25 @@ function Callsheet() {
     isOpen: isCallsheetOpen,
   } = useDisclosure();
 
-  const selectedRowData = useSelector((state) => state.selectedRow.value);
-
-  const [tabViewing, setTabViewing] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
-  const { data, isFetching } = useGetAllCallsheetsQuery();
+  const { data, isFetching } = useGetAllCallsheetsQuery({
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+  });
 
   console.log(data);
+
+  const transformedData = data?.to?.map(({ red, orange, green, ...item }) => ({
+    ...item,
+    expirationDate: red || orange || green ? { red, orange, green } : {},
+  }));
 
   const tableHeads = [
     "ID",
@@ -46,10 +53,10 @@ function Callsheet() {
   ];
 
   const customOrderKeys = [
-    "id",
+    "transactionId",
     "customerName",
     "businessName",
-    "callsheetDate",
+    "callSheetDate",
     "expirationDate",
   ];
 
@@ -58,7 +65,7 @@ function Callsheet() {
     nestedKeys: ["red", "orange", "green"],
   };
 
-  const dateTimeArray = ["callsheetDate"];
+  const dateTimeArray = ["callSheetDate"];
 
   if (location.pathname === "/inventory-management/callsheet") {
     return (
@@ -81,10 +88,11 @@ function Callsheet() {
               <Typography>16 & above</Typography>
             </div>
           </div>
-          <PageHeaderAdd
+          <PageHeaderFilterAdd
             pageTitle="Callsheet"
             setSearch={setSearch}
             removeArchive
+            removeFilter
             // tabsList={tabs}
             // tabViewing={tabViewing}
             // setTabViewing={setTabViewing}
@@ -92,6 +100,14 @@ function Callsheet() {
             removeAdd
             // addTitle="Add Freebie Request"
             // onOpen={handleAdd}
+          />
+
+          <SearchDateRangeMixin
+            setDateFrom={setDateFrom}
+            setDateTo={setDateTo}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            removeSearch
           />
 
           {/* <SearchDateRangeMixin
@@ -107,8 +123,8 @@ function Callsheet() {
           ) : (
             <CommonTable
               moveNoDataUp
-              lowerCompact
-              mapData={data?.data}
+              moreCompact
+              mapData={transformedData}
               tableHeads={tableHeads}
               customOrderKeys={customOrderKeys}
               nestedProperty={nestedProperty}
