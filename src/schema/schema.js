@@ -676,9 +676,7 @@ export const approverSettingsSchema = {
         yup.object().shape({
           userId: yup.object().required("User is required"),
           level: yup.number().required("Level is required"),
-          minValue: yup
-            .number()
-            .required("Minimum value is required")
+          minValue: yup.number().required("Minimum value is required"),
         })
       )
       .test(
@@ -1200,7 +1198,7 @@ export const returnSchema = {
         item: null,
         bbd: null,
         quantity: null,
-        reason: ""
+        reason: "",
       },
     ],
   },
@@ -1276,19 +1274,34 @@ export const callsheetSchema = {
         itemCode: yup.string().required("Item Code is required"),
         remainingInv: yup.number().required("Remaining Inventory is required"),
       })
-    )
+    ),
   }),
   defaultValues: {
     items: [
       {
-        item: null,
-        bbd: [
-          {
-            bbd: null,
-            quantity: null,
-          },
-        ],
+        itemCode: null,
         remainingInv: null,
+      },
+    ],
+  },
+};
+
+export const bbdCallsheet = {
+  schema: yup.object({
+    bbdList: yup.array().of(
+      yup.object({
+        itemCode: yup.string().required("Item Code is required"),
+        quantity: yup.number().required("Remaining Inventory is required"),
+        bbd: yup.string().required("BBD is required"),
+      })
+    ),
+  }),
+  defaultValues: {
+    bbdList: [
+      {
+        itemCode: "",
+        bbd: "",
+        quantity: null
       },
     ],
   },

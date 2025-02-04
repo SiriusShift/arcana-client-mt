@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import CommonModalForm from "../../../CommonModalForm";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -19,18 +19,23 @@ import {
 } from "@mui/material";
 import { Visibility } from "@mui/icons-material";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CommonTable from "../../../../components/CommonTable";
 import { NumericFormat } from "react-number-format";
 import useSnackbar from "../../../../hooks/useSnackbar";
+import useDisclosure from "../../../../hooks/useDisclosure";
+import BBDCallsheetModal from "./BBDCallsheetModal";
+import { setSelectedRow } from "../../../../features/misc/reducers/selectedRowSlice";
 
 function CallsheetModal({ width, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  const [endingInv, setEndingInv] = React.useState(0);
-  const [salesOut, setSalesOut] = React.useState(0);
-  const snackbar = useSnackbar();
-
-  console.log(selectedRowData);
+  const [data, setData] = useState([]);
+  const dispatch = useDispatch();
+  const {
+    onOpen: onBbdOpen,
+    onClose: onBbdClose,
+    isOpen: isBbdOpen,
+  } = useDisclosure();
 
   const {
     handleSubmit,
@@ -55,6 +60,31 @@ function CallsheetModal({ width, onClose, ...props }) {
   const handleClose = () => {
     reset();
     onClose();
+  };
+
+  const handleOpen = (index) => {
+    // Ensure selectedRowData and transactionItemsDtos exist
+    if (
+      !selectedRowData ||
+      !Array.isArray(selectedRowData.transactionItemsDtos)
+    ) {
+      console.error(
+        "selectedRowData or transactionItemsDtos is undefined or not an array"
+      );
+      return;
+    }
+
+    // Ensure index is within bounds
+    if (index < 0 || index >= selectedRowData.transactionItemsDtos.length) {
+      console.error("Index out of bounds:", index);
+      return;
+    }
+
+    // Set the data correctly using the index
+    setData(index);
+
+    // Open the modal
+    onBbdOpen();
   };
 
   useEffect(() => {
@@ -137,7 +167,7 @@ function CallsheetModal({ width, onClose, ...props }) {
                               value={field.value || ""}
                               onValueChange={(data) => {
                                 const saleOut = item?.salesIn - data.value;
-                                const endingInv = data.value - salesOut;
+                                const endingInv = data.value - saleOut;
                                 console.log(saleOut);
                                 setValue(`items[${index}].salesOut`, saleOut);
                                 if (endingInv >= 0) {
@@ -151,6 +181,18 @@ function CallsheetModal({ width, onClose, ...props }) {
                                 setValue(`items[${index}].suggestPO`, saleOut);
                                 setValue(`items[${index}].avgSales`, saleOut);
                                 field.onChange(data.value);
+                              }}
+                              isAllowed={({ value }) => {
+                                if (value > item?.salesIn) {
+                                  snackbar({
+                                    message:
+                                      "Value can't be greater than Sales In",
+                                    variant: "error",
+                                  });
+                                  return false;
+                                } else {
+                                  return true;
+                                }
                               }}
                             />
                           )}
@@ -214,7 +256,10 @@ function CallsheetModal({ width, onClose, ...props }) {
                         />
                       </TableCell>
                       <TableCell sx={{ py: 1 }}>
-                        <IconButton disabled={isRowDirty}>
+                        <IconButton
+                          onClick={() => handleOpen(index)}
+                          disabled={isRowDirty}
+                        >
                           <Visibility />
                         </IconButton>
                       </TableCell>
@@ -227,6 +272,12 @@ function CallsheetModal({ width, onClose, ...props }) {
           </TableContainer>
         </Box>
       </CommonModalForm>
+      <BBDCallsheetModal
+        data={data}
+        width={"50%"}
+        open={isBbdOpen}
+        onClose={onBbdClose}
+      />
     </>
   );
 }

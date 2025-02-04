@@ -139,7 +139,7 @@ function Callsheet() {
           )}
         </Box>
         <CallsheetModal
-          width={"50%"}
+          width={"1250px"}
           open={isCallsheetOpen}
           onClose={onCallsheetClose}
         />
