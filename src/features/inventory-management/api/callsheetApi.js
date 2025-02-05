@@ -18,11 +18,28 @@ const callsheetApi = api
         // queryFn: dummyGetAllCallsheet,
         providesTags: ["Callsheet"],
       }),
+      updateRemainingInventory: builder.mutation({
+        query: ({body, id}) => ({
+          url: `/update-callsheet-items/${id}`,
+          method: "PUT",
+          body: body,
+        }),
+        invalidatesTags: ["Callsheet"],
+      }),
+      updateItemsWithBBD: builder.mutation({
+        query: ({id, body}) => ({
+          url: `/update-bbd/${id}`,
+          method: "PUT",
+          body: body,
+        }),
+        invalidatesTags: ["Callsheet"],
+      }),
     }),
   });
 
-
 export const {
-    useGetAllCallsheetsQuery,
-    // useGetCallSheetByIdQuery,
+  useGetAllCallsheetsQuery,
+  useUpdateRemainingInventoryMutation,
+  useUpdateItemsWithBBDMutation,
+  // useGetCallSheetByIdQuery,
 } = callsheetApi;

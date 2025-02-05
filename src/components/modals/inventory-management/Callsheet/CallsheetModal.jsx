@@ -26,11 +26,13 @@ import useSnackbar from "../../../../hooks/useSnackbar";
 import useDisclosure from "../../../../hooks/useDisclosure";
 import BBDCallsheetModal from "./BBDCallsheetModal";
 import { setSelectedRow } from "../../../../features/misc/reducers/selectedRowSlice";
+import { useUpdateRemainingInventoryMutation } from "../../../../features/inventory-management/api/callsheetApi";
+import useConfirm from "../../../../hooks/useConfirm";
 
 function CallsheetModal({ width, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const [data, setData] = useState([]);
-  const dispatch = useDispatch();
+  const confirm = useConfirm();
   const {
     onOpen: onBbdOpen,
     onClose: onBbdClose,
@@ -55,7 +57,36 @@ function CallsheetModal({ width, onClose, ...props }) {
     name: "items",
   });
 
+  //RTK QUERY
+  const [updateItems] = useUpdateRemainingInventoryMutation();
+
   console.log(watch("items"));
+
+  //FUNCTIONS
+
+  const onSubmit = (data) => {
+    console.log(data);
+    try {
+      confirm({
+        children: "Are you sure you want to update the remaining inventory?",
+        question: true,
+        callback: () => {
+          updateItems({
+            body: {
+              transactionItems: data.items.map((item) => ({
+                transactionItemsId: item?.transactionItemId,
+                remainingInv: item?.remainingInv,
+              })),
+            },
+            id: selectedRowData?.transactionId,
+          }).unwrap();
+          onClose();
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleClose = () => {
     reset();
@@ -104,6 +135,7 @@ function CallsheetModal({ width, onClose, ...props }) {
         title={"Call Sheet"}
         disableSubmit={!isValid || !isDirty}
         submitText="Update"
+        onSubmit={handleSubmit(onSubmit)}
         onClose={handleClose}
         width={width}
         {...props}

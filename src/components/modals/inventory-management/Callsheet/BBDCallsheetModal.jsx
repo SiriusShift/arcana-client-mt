@@ -27,15 +27,20 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import useSnackbar from "../../../../hooks/useSnackbar";
 import { NumericFormat } from "react-number-format";
+import { useUpdateItemsWithBBDMutation } from "../../../../features/inventory-management/api/callsheetApi";
+import useConfirm from "../../../../hooks/useConfirm";
 
 function BBDCallsheetModal({ width, onClose, data, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const snackbar = useSnackbar();
+  const confirm = useConfirm();
   const [totalQuantity, setTotalQuantity] = useState(0);
   console.log(totalQuantity);
   const validDataKey = data !== undefined && data !== null ? data : "";
   const dataInformation =
     selectedRowData?.transactionItemsDtos?.[validDataKey] || {};
+
+  console.log(dataInformation);
 
   const {
     handleSubmit,
@@ -54,11 +59,41 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
     control,
     name: "bbdList",
   });
+  //RTK QUERY
 
+  const [triggerBBD] = useUpdateItemsWithBBDMutation();
+
+  //FUNCTIONS
+  const onSubmit = (data) => {
+    console.log(data);
+    try {
+      confirm({
+        children: "Are you sure you want to update the remaining inventory?",
+        question: true,
+        callback: () => {
+          triggerBBD({
+            body: {
+              itemBbds: data?.bbdList?.map((item) => ({
+                quantity: item?.quantity,
+                bbd: moment(item?.bbd).format("YYYY-MM-DD"),
+              })),
+            },
+            id: dataInformation?.transactionItemId,
+          }).unwrap();
+          console.log("test");
+          onClose();
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
   console.log(watch());
 
   const handleClose = () => {
-    reset();
+    reset(bbdCallsheet.defaultValues);
+    console.log(watch());
+    setTotalQuantity(0);
     onClose();
   };
 
@@ -76,17 +111,28 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
     if (dataInformation) {
       reset({
         bbdList: [
-          {
-            itemCode: dataInformation.itemCode || "",
-            itemDescription: dataInformation.itemDescription || "",
-            salesIn: dataInformation.salesIn || "",
-            quantity: null,
-            bbd: "",
-          },
+          ...(Array.isArray(dataInformation?.bbbDtos) &&
+          dataInformation?.bbbDtos.length > 0
+            ? dataInformation.bbbDtos.map((item) => ({
+                itemCode: dataInformation.itemCode || "",
+                itemDescription: dataInformation.itemDescription || "",
+                salesIn: dataInformation.salesIn || "",
+                quantity: item?.quantity ?? null,
+                bbd: item?.bbd ?? "",
+              }))
+            : []),
+
+          // {
+          //   itemCode: dataInformation.itemCode || "",
+          //   itemDescription: dataInformation.itemDescription || "",
+          //   salesIn: dataInformation.salesIn || "",
+          //   quantity: null,
+          //   bbd: "",
+          // },
         ],
       });
     }
-  }, [data]);
+  }, [data, reset]);
 
   const disableFields = fields.some((item) => item.actualQuantity);
 
@@ -96,6 +142,7 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
         title={"BBD Monitoring"}
         disableSubmit={!isValid || !isDirty}
         submitText="Update"
+        onSubmit={handleSubmit(onSubmit)}
         onClose={handleClose}
         width={width}
         {...props}
