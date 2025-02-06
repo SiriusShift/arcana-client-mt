@@ -186,14 +186,17 @@ function Approver() {
   };
 
   const handleSwapApproverWithLimit = (indexA, indexB) => {
+    console.log("hello")
     // Get the current values of the items at indexA and indexB
     const itemA = watch(watch("moduleName")?.name === "Sp. Discount Approval" ? `approversWithLimit[${indexA}]` : `approversWithLimitDigit[${indexA}]`);
     const itemB = watch(watch("moduleName")?.name === "Sp. Discount Approval" ? `approversWithLimit[${indexB}]` : `approversWithLimitDigit[${indexB}]`);
 
     // // Update only the userId property between items at indexA and indexB
-    const updatedItemA = { ...itemB };
-    console.log(itemA, updatedItemA);
-    const updatedItemB = { ...itemA };
+    const updatedItemA = { ...itemB, level: itemA.level };
+    const updatedItemB = { ...itemA, level: itemB.level };
+
+    console.log(updatedItemA, updatedItemB);
+
 
     // Use update to update the specific items in the array
     // setValue(`approversWithLimit[${indexA}]`, updatedItemA);
@@ -202,7 +205,7 @@ function Approver() {
     watch("moduleName")?.name === "Sp. Discount Approval" ? approverWithLimitUpdate(indexB, updatedItemB) : approverWithLimitDigitUpdate(indexB, updatedItemB);
 
     // Swap the items in the array
-    approverWithLimitSwap(indexA, indexB);
+    // approverWithLimitSwap(indexA, indexB);
   };
 
   const handleDrawerClose = () => {
@@ -541,11 +544,17 @@ function Approver() {
                         : `approversWithLimitDigit[${index}].userId`
                     }
                     control={control}
-                    options={data || []}
+                    options={
+                      data || []
+                    }
                     getOptionLabel={(option) => option.fullname || ""}
                     getOptionDisabled={(option) => {
                       const approversWithLimit = watch("approversWithLimit");
+                      const approversWithLimitDigit = watch(
+                        "approversWithLimitDigit"
+                      )
                       const approvers = watch("approvers");
+                      console.log(approversWithLimit, option);
 
                       const checkApprover =
                         approversWithLimit?.some(
@@ -554,6 +563,9 @@ function Approver() {
                         approvers?.some(
                           (item) => item?.userId === option.userId
                         );
+                        approversWithLimitDigit?.some(
+                          (item) => item?.userId === option.userId
+                        )
                       return checkApprover;
                     }}
                     sx={{ flex: 1 }}
@@ -572,19 +584,19 @@ function Approver() {
                         error={Boolean(errors?.userId)}
                       />
                     )}
-                    onChange={(_, newValue) => {
-                      if (newValue) {
-                        control.setValue(
-                          `approversWithLimit[${index}].userId`,
-                          newValue.userId
-                        );
-                      } else {
-                        control.setValue(
-                          `approversWithLimit[${index}].userId`,
-                          null
-                        );
-                      }
-                    }}
+                    // onChange={(_, newValue) => {
+                    //   if (newValue) {
+                    //     setValue(
+                    //       `approversWithLimit[${index}].userId`,
+                    //       newValue.userId
+                    //     );
+                    //   } else {
+                    //     setValue(
+                    //       `approversWithLimit[${index}].userId`,
+                    //       null
+                    //     );
+                    //   }
+                    // }}
                   />
 
                   {!isRegistrationApproval && (
@@ -689,7 +701,7 @@ function Approver() {
                     approverWithLimitDigitAppend({
                       userId: null,
                       minValue: null,
-                      level: approverWithLimitFields.length + 1,
+                      level: approverWithLimitDigitAppend.length + 1,
                     });
                   }
                 } else {

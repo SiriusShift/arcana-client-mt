@@ -685,14 +685,22 @@ export const approverSettingsSchema = {
         "minValue-greater-than-previous",
         "Each item's minimum value must be greater than the previous item's minimum value",
         function (value) {
+          console.log("Validating approversWithLimitDigit:", value); // Debugging
+      
+          if (!Array.isArray(value) || value.length === 0) return true; // Allow empty array
+      
           for (let i = 1; i < value.length; i++) {
-            if (value[i].minValue < value[i - 1].minValue) {
+            console.log(
+              `Comparing: ${value[i].minValue} (current) vs ${value[i - 1].minValue} (previous)`
+            );
+            if (value[i].minValue <= value[i - 1].minValue) {
               return false;
             }
           }
           return true;
         }
-      ),
+      )
+      
   }),
   defaultValues: {
     moduleName: "",
