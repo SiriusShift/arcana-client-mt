@@ -132,6 +132,7 @@ function Approver() {
 
   //Drawer Functions
   const onSubmit = async (values) => {
+    console.log("test",values);
     const approvers = values.approvers.map((item) => ({
       userId: item.userId.userId,
       minValue: null,
@@ -146,7 +147,14 @@ function Approver() {
       level: item.level + values.approvers.length,
     }));
 
-    const combinedApprovers = [...approvers, ...approversWithLimit];
+    const approversWithLimitDigit = values.approversWithLimitDigit.map((item) => ({
+      userId: item.userId.userId,
+      minValue: item.minValue,
+      // maxValue: item.maxValue,
+      level: item.level + values.approvers.length + values.approversWithLimit.length,
+    }));
+
+    const combinedApprovers = [...approvers, ...approversWithLimit, ...approversWithLimitDigit];
 
     try {
       await updateApprovers({
