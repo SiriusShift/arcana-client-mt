@@ -317,24 +317,38 @@ function ReceivingItems({
                           />
                         )}
                       />
-                      
-                    {!disableFields && (
-                      <Typography
-                        variant="caption"
-                        color="gray"
-                        lineHeight="0.5"
-                      >
-                        {watchItems[index]?.itemCode
-                          ? `SOH: ${
-                              data?.mo.find(
+
+                      {!disableFields && (
+                        <Typography
+                          variant="caption"
+                          color={
+                            !watchItems[index]?.itemCode
+                              ? "gray"
+                              : data?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.itemCode
+                                )?.soh
+                              ? data?.mo?.find(
                                 (item) =>
                                   item.itemCode ===
                                   watchItems[index]?.itemCode
-                              )?.soh
-                            }`
-                          : "Select Item first"}
-                      </Typography>
-                    )}
+                              )?.soh < 5 ? "orange" : "green"
+                              : "red"
+                          }
+                          lineHeight="0.5"
+                        >
+                          {watchItems[index]?.itemCode
+                            ? `SOH: ${
+                                data?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.itemCode
+                                )?.soh ?? "NONE"
+                              }`
+                            : "Select Item first"}
+                        </Typography>
+                      )}
                     </Stack>
 
                     <Controller
