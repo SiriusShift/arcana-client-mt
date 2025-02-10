@@ -23,6 +23,7 @@ import { useGetAllProductsQuery } from "../../../../features/setup/api/productsA
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import SecondaryButton from "../../../SecondaryButton";
 import { useGetInventoryMrpQuery } from "../../../../features/inventory-management/api/inventoryMrpApi";
+import { NumericFormat } from "react-number-format";
 
 const ReceivingItemsTableSkeleton = () => {
   return (
@@ -279,16 +280,18 @@ function ReceivingItems({
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
-                          <TextField
+                          <NumericFormat
+                            customInput={TextField}
                             label="Actual Quantity"
                             size="small"
                             autoComplete="off"
-                            type="number"
-                            onChange={(e) => {
-                              const newValue = e.target.value;
+                            type="text"
+                            value={value || ""}
+                            onValueChange={(values) => {
+                              const { value: newValue } = values;
                               const quantity = watch(
                                 `items[${index}].quantity`
-                              ); // Watch the quantity field
+                              );
 
                               if (
                                 parseFloat(newValue) >
@@ -297,7 +300,7 @@ function ReceivingItems({
                                   (item, itemIndex) =>
                                     item.itemCode ===
                                       watch(`items[${index}].itemCode`) &&
-                                    itemIndex === index // Disable rows with the same itemCode except the current row
+                                    itemIndex === index
                                 )
                               ) {
                                 snackbar({
@@ -306,35 +309,53 @@ function ReceivingItems({
                                   variant: "warning",
                                 });
                               } else {
-                                onChange(newValue); // Only update if the value is valid
+                                onChange(newValue);
                               }
                             }}
                             onBlur={onBlur}
-                            value={value || ""}
                             inputRef={ref}
                             disabled={disableFields}
                             sx={{ maxWidth: "120px" }}
+                            allowNegative={false} // Prevents negative numbers
+                            thousandSeparator="," // Adds comma for thousands
+                            isAllowed={(values) => /^\d*$/.test(values.value)} // Only whole numbers
                           />
                         )}
                       />
-                      
-                    {!disableFields && (
-                      <Typography
-                        variant="caption"
-                        color="gray"
-                        lineHeight="0.5"
-                      >
-                        {watchItems[index]?.itemCode
-                          ? `SOH: ${
-                              data?.mo.find(
-                                (item) =>
-                                  item.itemCode ===
-                                  watchItems[index]?.itemCode
-                              )?.soh
-                            }`
-                          : "Select Item first"}
-                      </Typography>
-                    )}
+
+                      {!disableFields && (
+                        <Typography
+                          variant="caption"
+                          color={
+                            !watchItems[index]?.itemCode
+                              ? "gray"
+                              : data?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.itemCode
+                                )?.soh
+                              ? data?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.itemCode
+                                )?.soh < 5
+                                ? "orange"
+                                : "green"
+                              : "red"
+                          }
+                          lineHeight="0.5"
+                        >
+                          {watchItems[index]?.itemCode
+                            ? `SOH: ${
+                                data?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.itemCode
+                                )?.soh ?? "NONE"
+                              }`
+                            : "Select Item first"}
+                        </Typography>
+                      )}
                     </Stack>
 
                     <Controller

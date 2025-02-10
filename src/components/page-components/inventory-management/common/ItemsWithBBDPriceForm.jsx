@@ -382,6 +382,7 @@ const ItemsWithBBDPriceForm = ({
                       name={`${itemsFieldName}[${index}].quantity`}
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <NumericFormat
+                          customInput={TextField}
                           label="Quantity"
                           size="small"
                           autoComplete="off"
@@ -405,7 +406,11 @@ const ItemsWithBBDPriceForm = ({
                             );
                           }}
                           value={value || ""}
-                          isAllowed={({ floatValue }) => {
+                          isAllowed={(values) => {
+                            const { floatValue } = values;
+
+                            if (!/^\d*$/.test(values.value)) return false;
+
                             const itemPrice = watchItems?.[index]?.price || 0;
                             const net = (floatValue || 0) * itemPrice;
                             const availQuantity =
@@ -478,7 +483,10 @@ const ItemsWithBBDPriceForm = ({
                       <Typography
                         variant="caption"
                         color={`${
-                          watchItems[index]?.item?.availQuantity > 0 ? "green" : "gray"}`}
+                          watchItems[index]?.item?.availQuantity > 0
+                            ? "green"
+                            : "gray"
+                        }`}
                         lineHeight="0.5"
                       >
                         {watchItems[index]?.item?.itemCode

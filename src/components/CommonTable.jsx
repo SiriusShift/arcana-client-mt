@@ -262,9 +262,10 @@ function CommonTable({
               {tableHeadsList.map((item, i) => (
                 <TableCell
                   sx={{
-                    position: item === "Actions" && "sticky",
-                    right: item === "Actions" && 0,
-                    bgcolor: item === "Actions" && "primary.main",
+                    position:
+                     (item === "Actions" || item === "SOH") && "sticky",
+                    right: (item === "Actions" || item === "SOH") && 0,
+                    bgcolor: (item === "Actions" || item === "SOH") && "primary.main",
                   }}
                   key={i}
                 >
@@ -531,6 +532,25 @@ function CommonTable({
                       return (
                         <TableCell key={k}>
                           {item[keys] && "+63 " + formatPhoneNumber(item[keys])}
+                        </TableCell>
+                      );
+                    }
+
+                    if (keys === "soh") {
+                      return (
+                        <TableCell
+                          sx={{
+                            position: "sticky",
+                            right: 0,
+                            bgcolor: checkIn
+                              ? item["timeOut"]
+                                ? "#A2E4B8"
+                                : "#FF7276"
+                              : "white !important",
+                          }}
+                          key={k}
+                        >
+                          {item[keys] && item[keys]}
                         </TableCell>
                       );
                     }

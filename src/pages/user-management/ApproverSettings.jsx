@@ -121,17 +121,28 @@ function Approver() {
     refetchOnMountOrArgChange: true,
   });
 
-  const [
+  let [
     triggerApprovers,
     { data: approversByRangeData, isFetching: isApproverByRangeFetching },
   ] = useLazyGetApproversByRangeQuery({
     refetchOnMountOrArgChange: true,
   });
+
+  useEffect(() => {
+    approversByRangeData = {
+      approvers:
+        approversByRangeData?.approvers
+          ?.slice()
+          .sort((a, b) => a.level - b.level) || [],
+    };
+  }, [approversByRangeData]);
+
   const [updateApprovers, { isLoading: isUpdateLoading }] =
     useUpdateApproversByRangeMutation();
 
   //Drawer Functions
   const onSubmit = async (values) => {
+    console.log("test", values);
     const approvers = values.approvers.map((item) => ({
       userId: item.userId.userId,
       minValue: null,
@@ -146,7 +157,23 @@ function Approver() {
       level: item.level + values.approvers.length,
     }));
 
-    const combinedApprovers = [...approvers, ...approversWithLimit];
+    const approversWithLimitDigit = values.approversWithLimitDigit.map(
+      (item) => ({
+        userId: item.userId.userId,
+        minValue: item.minValue,
+        // maxValue: item.maxValue,
+        level:
+          item.level +
+          values.approvers.length +
+          values.approversWithLimit.length,
+      })
+    );
+
+    const combinedApprovers = [
+      ...approvers,
+      ...approversWithLimit,
+      ...approversWithLimitDigit,
+    ];
 
     try {
       await updateApprovers({
@@ -186,23 +213,37 @@ function Approver() {
   };
 
   const handleSwapApproverWithLimit = (indexA, indexB) => {
+    console.log("hello");
     // Get the current values of the items at indexA and indexB
-    const itemA = watch(watch("moduleName")?.name === "Sp. Discount Approval" ? `approversWithLimit[${indexA}]` : `approversWithLimitDigit[${indexA}]`);
-    const itemB = watch(watch("moduleName")?.name === "Sp. Discount Approval" ? `approversWithLimit[${indexB}]` : `approversWithLimitDigit[${indexB}]`);
+    const itemA = watch(
+      watch("moduleName")?.name === "Sp. Discount Approval"
+        ? `approversWithLimit[${indexA}]`
+        : `approversWithLimitDigit[${indexA}]`
+    );
+    const itemB = watch(
+      watch("moduleName")?.name === "Sp. Discount Approval"
+        ? `approversWithLimit[${indexB}]`
+        : `approversWithLimitDigit[${indexB}]`
+    );
 
     // // Update only the userId property between items at indexA and indexB
-    const updatedItemA = { ...itemB };
-    console.log(itemA, updatedItemA);
-    const updatedItemB = { ...itemA };
+    const updatedItemA = { ...itemB, level: itemA.level };
+    const updatedItemB = { ...itemA, level: itemB.level };
+
+    console.log(updatedItemA, updatedItemB);
 
     // Use update to update the specific items in the array
     // setValue(`approversWithLimit[${indexA}]`, updatedItemA);
     // setValue(`approversWithLimit[${indexB}]`, updatedItemB);
-    watch("moduleName")?.name === "Sp. Discount Approval" ? approverWithLimitUpdate(indexA, updatedItemA) : approverWithLimitDigitUpdate(indexA, updatedItemA);
-    watch("moduleName")?.name === "Sp. Discount Approval" ? approverWithLimitUpdate(indexB, updatedItemB) : approverWithLimitDigitUpdate(indexB, updatedItemB);
+    watch("moduleName")?.name === "Sp. Discount Approval"
+      ? approverWithLimitUpdate(indexA, updatedItemA)
+      : approverWithLimitDigitUpdate(indexA, updatedItemA);
+    watch("moduleName")?.name === "Sp. Discount Approval"
+      ? approverWithLimitUpdate(indexB, updatedItemB)
+      : approverWithLimitDigitUpdate(indexB, updatedItemB);
 
     // Swap the items in the array
-    approverWithLimitSwap(indexA, indexB);
+    // approverWithLimitSwap(indexA, indexB);
   };
 
   const handleDrawerClose = () => {
@@ -369,7 +410,9 @@ function Approver() {
                     getOptionDisabled={(option) => {
                       const approversWithLimit = watch("approversWithLimit");
                       const approvers = watch("approvers");
-                      const approversWithLimitDigit = watch("approversWithLimitDigit")
+                      const approversWithLimitDigit = watch(
+                        "approversWithLimitDigit"
+                      );
 
                       const checkApprover =
                         approversWithLimit?.some(
@@ -378,9 +421,9 @@ function Approver() {
                         approvers?.some(
                           (item) => item?.userId?.userId === option.userId
                         );
-                        approversWithLimitDigit?.some(
-                          (item) => item?.userId?.userId === option.userId
-                        )
+                      approversWithLimitDigit?.some(
+                        (item) => item?.userId?.userId === option.userId
+                      );
                       return checkApprover;
                     }}
                     sx={{ flex: 1 }}
@@ -545,7 +588,11 @@ function Approver() {
                     getOptionLabel={(option) => option.fullname || ""}
                     getOptionDisabled={(option) => {
                       const approversWithLimit = watch("approversWithLimit");
+                      const approversWithLimitDigit = watch(
+                        "approversWithLimitDigit"
+                      );
                       const approvers = watch("approvers");
+                      console.log(approversWithLimit, option);
 
                       const checkApprover =
                         approversWithLimit?.some(
@@ -554,6 +601,9 @@ function Approver() {
                         approvers?.some(
                           (item) => item?.userId === option.userId
                         );
+                      approversWithLimitDigit?.some(
+                        (item) => item?.userId === option.userId
+                      );
                       return checkApprover;
                     }}
                     sx={{ flex: 1 }}
@@ -572,19 +622,19 @@ function Approver() {
                         error={Boolean(errors?.userId)}
                       />
                     )}
-                    onChange={(_, newValue) => {
-                      if (newValue) {
-                        control.setValue(
-                          `approversWithLimit[${index}].userId`,
-                          newValue.userId
-                        );
-                      } else {
-                        control.setValue(
-                          `approversWithLimit[${index}].userId`,
-                          null
-                        );
-                      }
-                    }}
+                    // onChange={(_, newValue) => {
+                    //   if (newValue) {
+                    //     setValue(
+                    //       `approversWithLimit[${index}].userId`,
+                    //       newValue.userId
+                    //     );
+                    //   } else {
+                    //     setValue(
+                    //       `approversWithLimit[${index}].userId`,
+                    //       null
+                    //     );
+                    //   }
+                    // }}
                   />
 
                   {!isRegistrationApproval && (
@@ -651,7 +701,11 @@ function Approver() {
                     onClick={() =>
                       handleSwapApproverWithLimit(index, index + 1)
                     }
-                    disabled={watch("moduleName")?.name === "Sp. Discount Approval" ? index === approverWithLimitFields.length - 1 : index === approverWithLimitDigitFields.length - 1}
+                    disabled={
+                      watch("moduleName")?.name === "Sp. Discount Approval"
+                        ? index === approverWithLimitFields.length - 1
+                        : index === approverWithLimitDigitFields.length - 1
+                    }
                   >
                     <KeyboardArrowDown sx={{ fontSize: "30px" }} />
                   </IconButton>
@@ -659,11 +713,12 @@ function Approver() {
                   <IconButton
                     sx={{ color: "error.main" }}
                     onClick={() => {
-                      if(watch("moduleName")?.name === "Sp. Discount Approval"){
-                        approverWithLimitRemove(index)
-                      }
-                      else{
-                        approverWithLimitDigitRemove(index)
+                      if (
+                        watch("moduleName")?.name === "Sp. Discount Approval"
+                      ) {
+                        approverWithLimitRemove(index);
+                      } else {
+                        approverWithLimitDigitRemove(index);
                       }
                     }}
                   >
@@ -689,7 +744,7 @@ function Approver() {
                     approverWithLimitDigitAppend({
                       userId: null,
                       minValue: null,
-                      level: approverWithLimitFields.length + 1,
+                      level: approverWithLimitDigitAppend.length + 1,
                     });
                   }
                 } else {
