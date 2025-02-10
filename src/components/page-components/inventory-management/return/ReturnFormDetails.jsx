@@ -15,9 +15,12 @@ const ReturnFormDetailsSkeleton = () => {
     </Stack>
   );
 };
+
 const ReturnFormDetails = ({ currentStep, details, items, isFetching }) => {
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
+
+  console.log(currentStep)
 
   const { data: clientData, isFetching: isClientFetching } =
     useGetAllClientsQuery({
