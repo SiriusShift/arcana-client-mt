@@ -21,12 +21,13 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi";
 import useSnackbar from "../../../../hooks/useSnackbar";
 
-const ItemsWithBBDForm = ({ items = [], isFetching }) => {
+const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
   const viewOnly = items.length > 0 || isFetching;
   const snackbar = useSnackbar();
 
-  const [parent] = useAutoAnimate();
+  console.log(items)
 
+  const [parent] = useAutoAnimate();
 
   const {
     bbdCache,
@@ -44,7 +45,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
     control,
   } = useItemsWithBbd({ items });
 
-  console.log(watchItems)
+  console.log(watchItems);
 
   const { data: productData, isFetching: isProductFetching } =
     useGetAllItemsByPriceModeIdQuery(
@@ -152,6 +153,10 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                         `items[${index}].itemDescription`,
                         value?.itemDescription
                       );
+                      {
+                        isTransferOut &&
+                          setValue(`items[${index}].price`, value?.currentPrice);
+                      }
                       setValue(`items[${index}].uom`, value?.uom);
                       setValue(`items[${index}].bbd`, null);
                       setValue(`items[${index}].quantity`, null);
@@ -194,6 +199,32 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                     )}
                   />
 
+                  {isTransferOut && (
+                    <Controller
+                      control={control}
+                      name={`items[${index}].price`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <NumericFormat
+                          label="Price"
+                          size="small"
+                          autoComplete="off"
+                          onValueChange={(e) => {
+                            onChange(e.value === "" ? null : Number(e.value));
+                          }}
+                          onBlur={onBlur}
+                          value={value || ""}
+                          inputRef={ref}
+                          sx={{ maxWidth: "140px" }}
+                          disabled={viewOnly}
+                          customInput={TextField}
+                          thousandSeparator
+                          allowLeadingZeros={false}
+                          allowNegative={false}
+                          prefix="₱"
+                        />
+                      )}
+                    />
+                  )}
                   {/* <ControlledAutocomplete
                     name={`items[${index}].bbd`}
                     control={control}
@@ -353,7 +384,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching }) => {
                     {!viewOnly && (
                       <Typography
                         variant="caption"
-                        color="gray"
+                        color={`${watchItems[index]?.item?.itemCode ? "green" : "grey"}`}
                         lineHeight="0.5"
                       >
                         {watchItems[index]?.item?.itemCode

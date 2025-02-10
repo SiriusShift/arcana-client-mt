@@ -21,8 +21,7 @@ function ReceivingForm() {
     items: [],
     wrong: [],
   });
-
-  console.log(formData);
+  
   const [isFormValid, setIsFormValid] = useState({
     isItemsValid: false,
     isWrongDeliverValid: false,
@@ -30,6 +29,7 @@ function ReceivingForm() {
   console.log(isFormValid);
 
   const { data: receivingData } = useGenerateMoveOrderQuery(moveOrderSlipNo);
+  
 
   useEffect(() => {
     if (!receivingData) {

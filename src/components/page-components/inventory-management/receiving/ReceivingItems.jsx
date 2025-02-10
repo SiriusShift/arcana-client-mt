@@ -12,6 +12,7 @@ import {
   Stack,
   TextField,
   IconButton,
+  Typography,
 } from "@mui/material";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { receivingItemsSchema } from "../../../../schema/schema";
@@ -21,6 +22,7 @@ import ControlledAutocomplete from "../../../ControlledAutocomplete";
 import { useGetAllProductsQuery } from "../../../../features/setup/api/productsApi";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import SecondaryButton from "../../../SecondaryButton";
+import { useGetInventoryMrpQuery } from "../../../../features/inventory-management/api/inventoryMrpApi";
 
 const ReceivingItemsTableSkeleton = () => {
   return (
@@ -75,6 +77,16 @@ function ReceivingItems({
       PageSize: 1000,
     });
 
+  const { data, isFetching: isInventoryMrpFetching } = useGetInventoryMrpQuery(
+    {
+      PageNumber: 1,
+      PageSize: 1000,
+    },
+    { refetchOnMountOrArgChange: true }
+  );
+
+  console.log(data);
+
   console.log(watch());
 
   const { fields, append, remove } = useFieldArray({
@@ -87,6 +99,8 @@ function ReceivingItems({
     name: "items",
     defaultValue: [],
   });
+
+  console.log(watchItems);
 
   const disableFields = items.some((item) => item.actualQuantity);
 
@@ -142,7 +156,7 @@ function ReceivingItems({
             </TableRow>
           </TableHead>
 
-          {isFetching ? (
+          {isProductsFetching ? (
             <ReceivingItemsTableSkeleton />
           ) : (
             <TableCell sx={{ borderBottom: "none" }}>
@@ -258,46 +272,70 @@ function ReceivingItems({
                       )}
                     />
 
-                    <Controller
-                      control={control}
-                      name={`items[${index}].actualQuantity`}
-                      render={({ field: { onChange, onBlur, value, ref } }) => (
-                        <TextField
-                          label="Actual Quantity"
-                          size="small"
-                          autoComplete="off"
-                          type="number"
-                          onChange={(e) => {
-                            const newValue = e.target.value;
-                            const quantity = watch(`items[${index}].quantity`); // Watch the quantity field
+                    <Stack gap={0.6} alignItems="center">
+                      <Controller
+                        control={control}
+                        name={`items[${index}].actualQuantity`}
+                        render={({
+                          field: { onChange, onBlur, value, ref },
+                        }) => (
+                          <TextField
+                            label="Actual Quantity"
+                            size="small"
+                            autoComplete="off"
+                            type="number"
+                            onChange={(e) => {
+                              const newValue = e.target.value;
+                              const quantity = watch(
+                                `items[${index}].quantity`
+                              ); // Watch the quantity field
 
-                            if (
-                              parseFloat(newValue) >
-                                parseFloat(quantity) * 1.1 &&
-                              items?.some(
-                                (item, itemIndex) =>
+                              if (
+                                parseFloat(newValue) >
+                                  parseFloat(quantity) * 1.1 &&
+                                items?.some(
+                                  (item, itemIndex) =>
+                                    item.itemCode ===
+                                      watch(`items[${index}].itemCode`) &&
+                                    itemIndex === index // Disable rows with the same itemCode except the current row
+                                )
+                              ) {
+                                snackbar({
+                                  message:
+                                    "Actual Quantity must not exceed Quantity",
+                                  variant: "warning",
+                                });
+                              } else {
+                                onChange(newValue); // Only update if the value is valid
+                              }
+                            }}
+                            onBlur={onBlur}
+                            value={value || ""}
+                            inputRef={ref}
+                            disabled={disableFields}
+                            sx={{ maxWidth: "120px" }}
+                          />
+                        )}
+                      />
+                      
+                    {!disableFields && (
+                      <Typography
+                        variant="caption"
+                        color="gray"
+                        lineHeight="0.5"
+                      >
+                        {watchItems[index]?.itemCode
+                          ? `SOH: ${
+                              data?.mo.find(
+                                (item) =>
                                   item.itemCode ===
-                                    watch(`items[${index}].itemCode`) &&
-                                  itemIndex === index // Disable rows with the same itemCode except the current row
-                              )
-                            ) {
-                              snackbar({
-                                message:
-                                  "Actual Quantity must not exceed Quantity",
-                                variant: "warning",
-                              });
-                            } else {
-                              onChange(newValue); // Only update if the value is valid
-                            }
-                          }}
-                          onBlur={onBlur}
-                          value={value || ""}
-                          inputRef={ref}
-                          disabled={disableFields}
-                          sx={{ maxWidth: "120px" }}
-                        />
-                      )}
-                    />
+                                  watchItems[index]?.itemCode
+                              )?.soh
+                            }`
+                          : "Select Item first"}
+                      </Typography>
+                    )}
+                    </Stack>
 
                     <Controller
                       control={control}

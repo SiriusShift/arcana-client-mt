@@ -15,8 +15,9 @@ const ReturnForm = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const replace = searchParams.get("replace");
+
+  const searchParams = new URLSearchParams(location.search);  
+  const replace = Boolean(searchParams.get('replace'));
 
   const steps = [
     {
@@ -37,10 +38,11 @@ const ReturnForm = () => {
 
   return (
     <Box className="commonPageLayout">
-      <ReturnFormHeader StepProps={{ currentStep, steps }} />
+      <ReturnFormHeader replace={replace} StepProps={{ currentStep, steps }} />
 
       <FormProvider {...methods}>
         <ReturnFormDetails currentStep={currentStep} details={replace && selectedRowData} />
+        <ReturnFormDetails currentStep={currentStep} details={replace && selectedRowData}/>
 
         {steps[currentStep].label === "Return" && (
           <ReturnItems

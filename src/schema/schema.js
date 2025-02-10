@@ -1021,7 +1021,7 @@ export const wrongDeliverSchema = {
   schema: yup.object({
     wrong: yup.array().of(
       yup.object({
-        item: yup.object().required("Product Code is required"),
+        item: yup.string().required("Product Code is required"),
         quantity: yup.number().required("Quantity is required"),
         uom: yup.string().nullable(),
         itemDescription: yup.string().nullable(),

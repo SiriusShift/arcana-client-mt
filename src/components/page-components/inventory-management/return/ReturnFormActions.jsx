@@ -10,6 +10,7 @@ import {
   useLazyGetAllReturnsQuery,
   useReplaceItemsMutation,
   useReturnItemsMutation,
+  useUpdateReturnMutation,
 } from "../../../../features/inventory-management/api/returnApi";
 import moment from "moment";
 import {
@@ -25,7 +26,7 @@ import { replace } from "lodash";
 import { useEffect } from "react";
 
 const ReturnFormActions = ({
-  replace, 
+  replace,
   StepProps: { currentStep = 0, setCurrentStep, steps = [] },
 }) => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const ReturnFormActions = ({
   } = useDisclosure();
 
   const {
-    formState: { isValid },
+    formState: { isValid, errors },
     handleSubmit,
     watch,
   } = useFormContext();
@@ -55,6 +56,9 @@ const ReturnFormActions = ({
     useReturnItemsMutation();
   const [replaceItems, { isLoading: replaceItemsLoading }] =
     useReplaceItemsMutation();
+
+  const [updateReturn, { isLoading: updateReturnLoading }] =
+    useUpdateReturnMutation();
 
   const [trigger, { data: returnData }] = useLazyGetAllReturnsQuery();
 
@@ -68,10 +72,11 @@ const ReturnFormActions = ({
         Status: "Pending",
       });
     }
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, currentStep]);
 
   const onSubmit = async (data) => {
     try {
+      // Prepare the payloads
       const replaceItemsPayload = {
         replaceOrders: data.replaceItems.map((item) => ({
           itemId: item.item.itemId,
@@ -83,36 +88,75 @@ const ReturnFormActions = ({
         returnOrderId: returnData?.to[0]?.returnId,
         clientId: data.client.id,
       };
-
-      console.log(replaceItemsPayload);
-
-      // Confirm before proceeding
-      await confirm({
-        children: "Are you sure you want to return and replace these items?",
-        question: true,
-        callback: () => {
-          replaceItems(replaceItemsPayload).unwrap();
-        },
-      });
-
-      // Show success message
-      snackbar({
-        message: "Return and replace operations successful!",
-        variant: "success",
-      });
-
-      // Navigate to a different page after success
-      navigate("/inventory-management/return", { replace: true });
+  
+      const returnItemsPayload = {
+        returnItems: data.returnItems.map((item) => ({
+          itemId: item.item.itemId,
+          price: item.price,
+          quantity: item.quantity,
+          bbd: moment(item.bbd).format("YYYY-MM-DD"),
+          reason: item.reason,
+        })),
+        returnOrderId: returnData?.to[0]?.returnId,
+      };
+  
+      // Confirm action
+      const confirmationMessage = replace
+        ? "Are you sure you want to update return and replace these items?"
+        : "Are you sure you want to return and replace these items?";
+  
+      try {
+        await confirm({
+          children: confirmationMessage,
+          question: true,
+          callback: async () => {
+            if (replace) {
+              console.log("Replacing items with payload:", replaceItemsPayload);
+              await updateReturn({
+                id: returnData?.to[0]?.returnId,
+                returnItems: returnItemsPayload,
+              }).unwrap();
+              await replaceItems(replaceItemsPayload).unwrap();
+              console.log("Replace items successful.");
+            } else {
+              console.log("Replacing and returning items...");
+              console.log("Replace payload:", replaceItemsPayload);
+              console.log("Return payload:", returnItemsPayload);
+  
+              await replaceItems(replaceItemsPayload).unwrap();
+              console.log("Replace and return items successful.");
+            }
+          },
+        });
+  
+        // Show success message
+        snackbar({
+          message: "Operation completed successfully!",
+          variant: "success",
+        });
+  
+        // Navigate after success
+        navigate("/inventory-management/return", { replace: true });
+      } catch (confirmationError) {
+        // Handle dialog cancellation
+        if (confirmationError.isCancelled) {
+          console.log("User canceled the confirmation dialog.");
+          return; // Exit the function if canceled
+        }
+        throw confirmationError; // Re-throw any other error
+      }
     } catch (error) {
       console.error("Error in onSubmit:", error);
-
-      // Show error message to the user
+  
+      // Display error message
       snackbar({
         message: handleCatchErrorMessage(error),
         variant: "error",
       });
     }
   };
+  
+  
 
   const handleCancel = () => {
     navigate("/inventory-management/return", { replace: true });
@@ -172,7 +216,11 @@ const ReturnFormActions = ({
 
   return (
     <>
-      <Stack direction="row" justifyContent={`${replace ? "space-between" : "flex-end"}`} gap={1.5}>
+      <Stack
+        direction="row"
+        justifyContent={`${replace ? "space-between" : "flex-end"}`}
+        gap={1.5}
+      >
         <Stack>
           {currentStep !== 0 && replace && (
             <DangerButton

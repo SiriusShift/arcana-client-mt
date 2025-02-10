@@ -27,6 +27,7 @@ import useSnackbar from "../../../hooks/useSnackbar";
 import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
 import { RemoveCircleOutline } from "@mui/icons-material";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
+import { NumericFormat } from "react-number-format";
 
 function FreebieForm({
   isFreebieFormOpen,
@@ -36,6 +37,8 @@ function FreebieForm({
 }) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [total, setTotalQuantity] = useState(1);
+
+  console.log(total);
 
   //Redux States
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -91,6 +94,7 @@ function FreebieForm({
     formState: { errors, isValid, isDirty },
     setValue,
     reset,
+    trigger,
     control,
     watch,
   } = useForm({
@@ -359,6 +363,7 @@ function FreebieForm({
                   value?.itemDescription
                 );
                 setValue(`freebies[${index}].uom`, value?.uom);
+                trigger();
                 return value;
               }}
             />
@@ -414,48 +419,117 @@ function FreebieForm({
                 control={control}
                 name={`freebies[${index}].quantity`}
                 render={({ field: { onChange, onBlur, value, ref } }) => (
-                  <TextField
-                    label="Quantity"
+                  <NumericFormat
+                    customInput={TextField}
+                    type="text"
                     size="small"
+                    label="Quantity"
                     autoComplete="off"
-                    // disabled = {selectedRowData?.storeType !== "Distributor" ? true : false}
-                    onChange={(e) => {
-                      if (
-                        e.target.value >
+                    onValueChange={(values) => {
+                      const { value: numericValue } = values; // Extract numeric value from the input
+                      const inputValue = parseInt(numericValue) || 0;
+
+                      // Get the current total of all quantities, excluding the current item
+                      const currentTotal = watch("freebies").reduce(
+                        (acc, curr, idx) =>
+                          idx !== index
+                            ? acc + (parseInt(curr.quantity, 10) || 0)
+                            : acc,
+                        0
+                      );
+
+                      const tempTotal = currentTotal + inputValue;
+
+                      // Get available quantity for this item
+                      const availableQuantity =
                         productData?.priceModeItems.find(
                           (item) =>
-                            item.itemCode === watch("freebies")[index]?.itemId?.itemCode
-                        )?.availQuantity
-                      ) {
+                            item.itemCode ===
+                            watch("freebies")[index]?.itemId?.itemCode
+                        )?.availQuantity || 0;
+
+                      // Check for validation errors
+                      let errorMessage = "";
+                      if (tempTotal > lengthArray) {
+                        errorMessage = `Maximum of ${lengthArray} freebies allowed`;
+                      } else if (inputValue > availableQuantity) {
+                        errorMessage = `Quantity cannot exceed available stock (${availableQuantity})`;
+                      }
+
+                      // Only show snackbar if there's an error
+                      if (errorMessage) {
                         snackbar({
-                          message: `Quantity cannot exceed available stock (${availQuantity})`,
+                          message: errorMessage,
                           variant: "error",
                         });
-                        return; // Prevent state update
+                        return; // Prevent state update if error occurs
                       }
-                      onChange(e);
+
+                      // Update value in the form state if no validation error
+                      onChange({ target: { value: inputValue } });
+
+                      // Update the total quantity after validation
                       setTotalQuantity(
                         watch("freebies").reduce((acc, curr) => {
-                          return acc + parseInt(curr.quantity);
+                          return acc + (parseInt(curr.quantity, 10) || 0);
                         }, 0)
                       );
                     }}
                     onBlur={onBlur}
-                    disabled={
-                      !watch("freebies")[index]?.itemId
-                    }
                     value={value || ""}
                     ref={ref}
+                    allowNegative={false}
+                    isAllowed={({ value }) => {
+                      const inputValue = parseInt(value) || 0;
+
+                      // Get the current total of all quantities, excluding the current item
+                      const currentTotal = watch("freebies").reduce(
+                        (acc, curr, idx) =>
+                          idx !== index
+                            ? acc + (parseInt(curr.quantity, 10) || 0)
+                            : acc,
+                        0
+                      );
+
+                      const tempTotal = currentTotal + inputValue;
+
+                      // Get available quantity for this item
+                      const availableQuantity =
+                        productData?.priceModeItems.find(
+                          (item) =>
+                            item.itemCode ===
+                            watch("freebies")[index]?.itemId?.itemCode
+                        )?.availQuantity || 0;
+
+                      // Check for validation errors
+                      if (
+                        tempTotal > lengthArray ||
+                        inputValue > availableQuantity
+                      ) {
+                        snackbar({
+                          message:
+                            tempTotal > lengthArray
+                              ? `Maximum of ${lengthArray} freebies allowed`
+                              : `Quantity cannot exceed available stock (${availableQuantity})`,
+                          variant: "error",
+                        });
+                        return false; // Block invalid input
+                      }
+
+                      return true; // Allow valid input
+                    }}
+                    error={!!errors?.freebies?.[index]?.quantity}
                   />
                 )}
               />
 
-              <Typography variant="caption" color="gray" lineHeight="0.5">
+              <Typography variant="caption" color={`${watch("freebies")[index]?.itemId ? "green" : "gray"}`} lineHeight="0.5">
                 {watch("freebies")[index]?.itemId
                   ? `Available: ${
                       productData?.priceModeItems.find(
                         (item) =>
-                          item.itemCode === watch("freebies")[index]?.itemId?.itemCode
+                          item.itemCode ===
+                          watch("freebies")[index]?.itemId?.itemCode
                       )?.availQuantity
                     }`
                   : "Select product first"}

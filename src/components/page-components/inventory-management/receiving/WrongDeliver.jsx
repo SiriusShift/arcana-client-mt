@@ -20,6 +20,7 @@ import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import SecondaryButton from "../../../SecondaryButton";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
 import useSnackbar from "../../../../hooks/useSnackbar";
+import { add } from "lodash";
 
 const WrongDeliverSkeleton = () => {
   return (
@@ -82,7 +83,7 @@ function WrongDeliver({
     defaultValues: wrongDeliverSchema.defaultValues,
   });
 
-  console.log(watch());
+  console.log("test1", watch());
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -101,17 +102,62 @@ function WrongDeliver({
 
   const handleAdd = () => {
     append({
-      item: {
-        itemCode: "",
-        itemDescription: "",
-        uom: "",
-      },
+      item: "",
       itemDescription: "",
       uom: "",
       quantity: null,
       reason: "",
+      add: "manual",
     });
   };
+
+  useEffect(() => {
+    formData?.items?.forEach((item) => {
+      console.log("watching!", item);
+      if (
+        item.quantity > 0 &&
+        item.actualQuantity &&
+        item.actualQuantity < item.quantity
+      ) {
+        // Check if the itemCode already exists in the form
+        const existingIndex = fields.findIndex(
+          (field) => field.item === item.itemCode
+        );
+
+        if (existingIndex !== -1) {
+          // If exists, update quantity
+          setValue(
+            `wrong[${existingIndex}].quantity`,
+            item.quantity - item.actualQuantity
+          );
+        } else {
+          // If not, append new entry
+          append({
+            item: item.itemCode,
+            itemDescription: item.itemDescription,
+            uom: item.uom,
+            quantity: item.quantity - item.actualQuantity,
+            reason: "",
+            add: "automatic",
+          });
+        }
+      }
+    });
+
+    // Remove any existing items where actualQuantity === quantity
+    fields.forEach((field, index) => {
+      const matchingItem = formData?.items?.find(
+        (item) => item.itemCode === field.item
+      );
+      if (
+        matchingItem &&
+        field?.add === "automatic" &&
+        matchingItem.actualQuantity >= matchingItem.quantity
+      ) {
+        remove(index);
+      }
+    });
+  }, [formData?.items, append, remove, fields, setValue]);
 
   useEffect(() => {
     if (wrongItems.length > 0) {
@@ -129,9 +175,10 @@ function WrongDeliver({
       handleFormData((prev) => ({
         ...prev,
         wrong: wrong.map((item) => ({
-          itemCode: item?.item?.itemCode || "",
+          item: item?.item || "",
           quantity: Number(item.quantity),
           reason: item.reason,
+          add: item.add,
         })),
       }));
     }
@@ -152,7 +199,7 @@ function WrongDeliver({
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Wrong Deliver</TableCell>
+              <TableCell>Return to Depot</TableCell>
             </TableRow>
           </TableHead>
 
@@ -165,24 +212,34 @@ function WrongDeliver({
                       <ControlledAutocomplete
                         control={control}
                         name={`wrong[${index}].item`}
-                        options={items || []}
-                        getOptionDisabled={(option) =>
-                          fields.some(
-                            (field) =>
-                              field.item?.itemCode &&
-                              field.item?.itemCode === option?.itemCode
-                          )
+                        options={
+                          formData?.items
+                            ?.filter(
+                              (item, idx, self) =>
+                                self.findIndex(
+                                  (i) => i.itemCode === item.itemCode
+                                ) === idx // Remove duplicate itemCodes
+                            )
+                            ?.filter(
+                              (item) =>
+                                !fields.some(
+                                  (field) => field.item === item.itemCode
+                                ) // Exclude already chosen items
+                            )
+                            ?.filter((item) => item.quantity === null) || [] // Exclude items with no quantity
                         }
-                        getOptionLabel={(option) => option?.itemCode}
-                        isOptionEqualToValue={() => true}
-                        disabled={disableFields}
+                        getOptionLabel={(option) => option?.itemCode || option}
+                        isOptionEqualToValue={(option, value) =>
+                          option?.itemCode === value?.itemCode
+                        }
+                        disabled={disableFields || watch("wrong")[index]?.add === "automatic"}
                         onChange={(_, value) => {
                           setValue(
                             `wrong[${index}].itemDescription`,
                             value?.itemDescription
                           );
                           setValue(`wrong[${index}].uom`, value?.uom);
-                          return value;
+                          return value?.itemCode;
                         }}
                         renderInput={(params) => (
                           <TextField
@@ -246,9 +303,11 @@ function WrongDeliver({
                             onChange={(e) => {
                               watch("wrong").map((item) => {
                                 formData.items.map((data) => {
-                                  if (item.item.itemCode === data.itemCode) {
+                                  console.log("test", data);
+                                  if (item.item === data.itemCode) {
                                     if (e.target.value > data?.actualQuantity) {
                                       console.log(
+                                        "quantity exceeds",
                                         item?.item?.quantity,
                                         data?.actualQuantity
                                       );
@@ -258,6 +317,9 @@ function WrongDeliver({
                                         variant: "error",
                                       });
                                     } else if (e.target.value < 0) {
+                                      console.log(
+                                        "quantity received must not be negative value"
+                                      );
                                       return snackbar({
                                         message:
                                           "Quantity received must not be negative value",
@@ -274,7 +336,7 @@ function WrongDeliver({
                             value={value || ""}
                             inputRef={ref}
                             sx={{ maxWidth: "120px" }}
-                            disabled={disableFields}
+                            disabled={disableFields || watch("wrong")[index]?.add === "automatic"}
                           />
                         )}
                       />
