@@ -26,12 +26,13 @@ import CommonFilter from "../../components/CommonFilter";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
-import { reportsSchema } from "../../schema/schema";
+import { reportsSchema, transferOutSchema } from "../../schema/schema";
 import Report from "../../components/page-components/reports/SOAreport";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 // import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
 import { useDispatch } from "react-redux";
 import { useGetAllListingFeeQuery, useGetListingFeeHistoryByClientIdQuery } from "../../features/listing-fee/api/listingFeeApi";
+import { useGetAllReceivedOrdersQuery } from "../../features/inventory-management/api/receivingApi";
 // import SOAReport from "../../utils/Excel"
 
 function Reports() {
@@ -46,10 +47,12 @@ function Reports() {
     as: true,
     //Check in 
     ci: true,
+    soa: true,
     //Listing Fee
     lf: true,
     //Checkin First in, Last out
     cf: true,
+    rr: true,
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
@@ -60,6 +63,7 @@ function Reports() {
   // const dispatch = useDispatch();
 
   const pesoArray = ["charges", "payment", "remainingBalance"];
+  const dateTimeArray = ["timeIn", "timeOut", "transactionDate", "dateReceived"]; 
 
   const {
     handleSubmit,
@@ -75,7 +79,6 @@ function Reports() {
   });
 
   console.log(watch());
-  console.log(activeArray);
 
   // RTK Query
 
@@ -178,6 +181,17 @@ function Reports() {
       skip: isActive.cf
     })
 
+    let { data: receivingReportData, isFetching: receivingFetching } = useGetAllReceivedOrdersQuery({
+      Search: search,
+      PageNumber: page + 1,
+      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+      PageSize: rowsPerPage,
+      clusterId: clusterId?.value || "",
+    }, {
+      skip: isActive.rr
+    });
+
   //functions
   const handleSubmitDate = () => {
     useDownloadExcel();
@@ -241,6 +255,16 @@ function Reports() {
   };
 
   //useEffect()
+
+  useEffect(() => {
+    receivingReportData = {
+      ...receivingReportData,
+      value: {
+        ...receivingReportData?.value,
+        mo: receivingReportData?.value?.mo?.map(({ moveItems, ...rest }) => rest) || []
+      }
+    }
+  }, [receivingReportData])
   useEffect(() => {
     const reports = [
       cdoReportData,
@@ -250,7 +274,8 @@ function Reports() {
       checkInReportData,
       soaReportData,
       listingFeeReportData,
-      checkInFiloReportData
+      checkInFiloReportData,
+      receivingReportData
     ];
     const keys = [
       "cdo",
@@ -259,7 +284,8 @@ function Reports() {
       "ci",
       "soa",
       "lf",
-      "cf"
+      "cf",
+      "rr"
       // 'pm',/
     ];
 
@@ -283,6 +309,7 @@ function Reports() {
     soaReportData,
     listingFeeReportData,
     checkInFiloReportData,
+    receivingReportData,
     // priceModeReportData,
     watch("dateFrom"),
     watch("dateTo"),
@@ -363,6 +390,18 @@ function Reports() {
       "remainingBalance",
       "remarks",
     ],
+    [
+      "paymentType",
+      "amount",
+      "createdDate",
+      "transactedBy",
+    ],
+    [
+      "user",
+      "timeIn",
+      "timeOut",
+      "duration",
+    ]
   ];
 
   const tableHeads = [
@@ -416,6 +455,24 @@ function Reports() {
       "Remaining Balance",
       "Remarks",
     ],
+    [
+      "Payment Type",
+      "Amount",
+      "Created Date",
+      "Transacted By",
+    ],
+    [
+      "User",
+      "Time In",
+      "Time Out",
+      "Duration",
+    ],
+    // [
+    //   "Move Order ID",
+    //   "Date Received",
+    //   "Details",
+    //   "Route",
+    // ]
   ];
 
   return (
@@ -572,7 +629,8 @@ function Reports() {
       // priceModeFetching ||
       checkInFetching || 
       listingFeeFetching || 
-      checkInFiloFetching ? (
+      checkInFiloFetching || 
+      receivingFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
@@ -584,7 +642,8 @@ function Reports() {
             activeArray?.checkIn ||
             activeArray?.pendingSoa || 
             activeArray?.listingHistory || 
-            activeArray?.result
+            activeArray?.result || 
+            activeArray?.mo
           }
           tableHeads={tableHeads[activeReport?.index]}
           customOrderKeys={customOrderKeys[activeReport?.index]}
@@ -593,6 +652,7 @@ function Reports() {
           attachKey={"image"}
           rowsPerPage={rowsPerPage}
           setRowsPerPage={setRowsPerPage}
+          dateTimeArray={dateTimeArray}
           page={page}
           setPage={setPage}
         />

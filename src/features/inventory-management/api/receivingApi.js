@@ -39,7 +39,6 @@ const receivingApi = api
           url: "/get-move-order-arcana",
           method: "GET",
         }),
-        transformResponse: (response) => response.value,
         // transformErrorResponse: (response) => response.value,
         providesTags: ["Orders"],
 

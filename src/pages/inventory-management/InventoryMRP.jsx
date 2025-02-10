@@ -38,10 +38,10 @@ function InventoryMRP() {
     "Transfer Out (-)",
     "Freebies (-)",
     "Sampling (-)",
-    "Replace (-)",
+    "Replaced (-)",
     "Sales (-)",
-    "Return CDO (-)",
-    "Return Client (+)",
+    "Returned Client (+)",
+    "Returned by CDO",
     "SOH",
   ];
 
@@ -55,8 +55,8 @@ function InventoryMRP() {
     "sampling",
     "replace",
     "sales",
-    "returnCdo",
     "returnByClient",
+    "returnCdo",
     "soh",
   ];
 

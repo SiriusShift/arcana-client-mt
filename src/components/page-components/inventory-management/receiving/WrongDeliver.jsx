@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import SecondaryButton from "../../../SecondaryButton";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
+import { NumericFormat } from "react-number-format";
 import useSnackbar from "../../../../hooks/useSnackbar";
 import { add } from "lodash";
 
@@ -226,13 +227,16 @@ function WrongDeliver({
                                   (field) => field.item === item.itemCode
                                 ) // Exclude already chosen items
                             )
-                            ?.filter((item) => item.quantity === null) || [] // Exclude items with no quantity
+                            // ?.filter((item) => item.quantity === null) || [] // Exclude items with no quantity
                         }
                         getOptionLabel={(option) => option?.itemCode || option}
                         isOptionEqualToValue={(option, value) =>
                           option?.itemCode === value?.itemCode
                         }
-                        disabled={disableFields || watch("wrong")[index]?.add === "automatic"}
+                        disabled={
+                          disableFields ||
+                          watch("wrong")[index]?.add === "automatic"
+                        }
                         onChange={(_, value) => {
                           setValue(
                             `wrong[${index}].itemDescription`,
@@ -296,47 +300,51 @@ function WrongDeliver({
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
-                          <TextField
+                          <NumericFormat
+                            customInput={TextField}
                             label="Quantity"
                             size="small"
                             autoComplete="off"
-                            onChange={(e) => {
-                              watch("wrong").map((item) => {
-                                formData.items.map((data) => {
-                                  console.log("test", data);
+                            value={value || ""}
+                            onValueChange={(values) => {
+                              const { value: newValue } = values; // Get only numeric value
+
+                              watch("wrong").forEach((item) => {
+                                formData.items.forEach((data) => {
                                   if (item.item === data.itemCode) {
-                                    if (e.target.value > data?.actualQuantity) {
-                                      console.log(
-                                        "quantity exceeds",
-                                        item?.item?.quantity,
-                                        data?.actualQuantity
-                                      );
-                                      return snackbar({
+                                    if (
+                                      parseInt(newValue, 10) >
+                                      data?.actualQuantity
+                                    ) {
+                                      snackbar({
                                         message:
                                           "Quantity exceeds actual quantity",
                                         variant: "error",
                                       });
-                                    } else if (e.target.value < 0) {
-                                      console.log(
-                                        "quantity received must not be negative value"
-                                      );
-                                      return snackbar({
+                                    } else if (parseInt(newValue, 10) < 0) {
+                                      snackbar({
                                         message:
-                                          "Quantity received must not be negative value",
+                                          "Quantity received must not be negative",
                                         variant: "error",
                                       });
                                     } else {
-                                      onChange(e);
+                                      onChange(newValue);
                                     }
                                   }
                                 });
                               });
                             }}
                             onBlur={onBlur}
-                            value={value || ""}
                             inputRef={ref}
                             sx={{ maxWidth: "120px" }}
-                            disabled={disableFields || watch("wrong")[index]?.add === "automatic"}
+                            disabled={
+                              disableFields ||
+                              watch("wrong")[index]?.add === "automatic"
+                              || watch("wrong")[index]?.item === ""
+                            }
+                            allowNegative={false} // Prevents negative values
+                            thousandSeparator="," // Adds commas for readability
+                            isAllowed={(values) => /^\d*$/.test(values.value)} // Ensures whole numbers only
                           />
                         )}
                       />

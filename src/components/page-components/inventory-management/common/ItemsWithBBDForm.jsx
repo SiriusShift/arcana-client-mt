@@ -25,7 +25,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
   const viewOnly = items.length > 0 || isFetching;
   const snackbar = useSnackbar();
 
-  console.log(items)
+  console.log(items);
 
   const [parent] = useAutoAnimate();
 
@@ -155,7 +155,10 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                       );
                       {
                         isTransferOut &&
-                          setValue(`items[${index}].price`, value?.currentPrice);
+                          setValue(
+                            `items[${index}].price`,
+                            value?.currentPrice
+                          );
                       }
                       setValue(`items[${index}].uom`, value?.uom);
                       setValue(`items[${index}].bbd`, null);
@@ -338,6 +341,8 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                           isAllowed={(values) => {
                             const { floatValue } = values;
 
+                            if (!/^\d*$/.test(values.value)) return false;
+
                             if (
                               floatValue != null &&
                               floatValue >
@@ -384,7 +389,9 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                     {!viewOnly && (
                       <Typography
                         variant="caption"
-                        color={`${watchItems[index]?.item?.itemCode ? "green" : "grey"}`}
+                        color={`${
+                          watchItems[index]?.item?.itemCode ? "green" : "grey"
+                        }`}
                         lineHeight="0.5"
                       >
                         {watchItems[index]?.item?.itemCode

@@ -261,9 +261,10 @@ function CommonTable({
               {tableHeadsList.map((item, i) => (
                 <TableCell
                   sx={{
-                    position: item === "Actions" && "sticky",
-                    right: item === "Actions" && 0,
-                    bgcolor: item === "Actions" && "primary.main",
+                    position:
+                     (item === "Actions" || item === "SOH") && "sticky",
+                    right: (item === "Actions" || item === "SOH") && 0,
+                    bgcolor: (item === "Actions" || item === "SOH") && "primary.main",
                   }}
                   key={i}
                 >
@@ -313,9 +314,17 @@ function CommonTable({
                     if (checkIn) {
                       if (keys === "timeOut" || keys === "createdDate") {
                         return (
-                          <TableCell sx={{ bgcolor: item["timeOut"] ? "#A2E4B8" : "#FF7276" }} key={k}>
-                            {item[keys] &&
-                            moment(item[keys]).format("MMM DD, YYYY HH:mm:ss") || "N/A"}
+                          <TableCell
+                            sx={{
+                              bgcolor: item["timeOut"] ? "#A2E4B8" : "#FF7276",
+                            }}
+                            key={k}
+                          >
+                            {(item[keys] &&
+                              moment(item[keys]).format(
+                                "MMM DD, YYYY HH:mm:ss"
+                              )) ||
+                              "N/A"}
                             {/* // H:mm a */}
                           </TableCell>
                         );
@@ -326,7 +335,7 @@ function CommonTable({
                             {item[keys] || "N/A"}
                           </TableCell>
                         );
-                      }else{
+                      } else {
                         return (
                           <TableCell sx={{ bgcolor: "#A2E4B8" }} key={k}>
                             {item[keys] || "N/A"}
@@ -462,6 +471,25 @@ function CommonTable({
                       );
                     }
 
+                    if (keys === "soh") {
+                      return (
+                        <TableCell
+                          sx={{
+                            position: "sticky",
+                            right: 0,
+                            bgcolor: checkIn
+                              ? item["timeOut"]
+                                ? "#A2E4B8"
+                                : "#FF7276"
+                              : "white !important",
+                          }}
+                          key={k}
+                        >
+                          {item[keys] && item[keys]}
+                        </TableCell>
+                      );
+                    }
+
                     if (keys === "referenceNos") {
                       return (
                         <TableCell
@@ -519,7 +547,7 @@ function CommonTable({
                       keys === "createdAt" ||
                       keys === "updatedAt" ||
                       keys === "date" ||
-                      keys === "chequeDate" || 
+                      keys === "chequeDate" ||
                       keys === "deliveryDate"
                     ) {
                       return (
@@ -608,7 +636,9 @@ function CommonTable({
                               maximumFractionDigits: 2,
                             })
                           : !item[keys]
-                          ? item[keys] === null ? "N/A" : item[keys]
+                          ? item[keys] === null
+                            ? "N/A"
+                            : item[keys]
                           : item[keys]}
 
                         {percentageArray &&
@@ -623,7 +653,11 @@ function CommonTable({
                       sx={{
                         position: "sticky",
                         right: 0,
-                        bgcolor: checkIn ? item["timeOut"] ? "#A2E4B8" : "#FF7276" : "white !important",
+                        bgcolor: checkIn
+                          ? item["timeOut"]
+                            ? "#A2E4B8"
+                            : "#FF7276"
+                          : "white !important",
                       }}
                     >
                       <CommonActions

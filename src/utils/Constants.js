@@ -68,7 +68,12 @@ export const reportNames = [
 		label: "Check In, First in - Last out Reports",
 		index: 6,
 		value: "check-in-filo"
-	}
+	},
+	{
+		label: "Receiving Reports",
+		index: 7,
+		value: "arcana-mo"
+	},
 ]
 
 export const regions = [
