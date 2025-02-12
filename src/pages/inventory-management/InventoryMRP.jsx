@@ -33,6 +33,7 @@ function InventoryMRP() {
   const tableHeads = [
     "Item Code",
     "Item Description",
+    "Depot",
     "Receiving (+)",
     "Transfer In (+)",
     "Transfer Out (-)",
@@ -40,7 +41,7 @@ function InventoryMRP() {
     "Sampling (-)",
     "Replaced (-)",
     "Sales (-)",
-    "Returned Client (+)",
+    "Returned by Client (+)",
     "Returned by CDO",
     "SOH",
   ];
@@ -48,6 +49,7 @@ function InventoryMRP() {
   const customOrderKeys = [
     "itemCode",
     "itemDescription",
+    "fromDepot",
     "receiving",
     "transferIn",
     "transferOut",

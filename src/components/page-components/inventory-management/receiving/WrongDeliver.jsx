@@ -376,7 +376,7 @@ function WrongDeliver({
                     </Stack>
                   ))}
 
-                  {!disableFields && (
+                  {/* {!disableFields && (
                     <SecondaryButton
                       endIcon={<Add />}
                       sx={{ width: "fit-content", alignSelf: "end" }}
@@ -385,7 +385,7 @@ function WrongDeliver({
                     >
                       Add Wrong Deliver
                     </SecondaryButton>
-                  )}
+                  )} */}
                 </Stack>
               </TableCell>
             </TableRow>
