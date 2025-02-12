@@ -44,7 +44,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
 
   const validDataKey = index !== undefined && index !== null ? index : "";
   const dataInformation = data?.transactionItemsDtos?.[validDataKey] || {};
-  console.log(dataInformation)
+  console.log(dataInformation);
 
   const {
     handleSubmit,
@@ -270,7 +270,9 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                             }}
                             onValueChange={(values) => {
                               const { floatValue } = values; // Extract numerical value
-                              if ((floatValue || 0) > dataInformation.remainingInv) {
+                              if (
+                                (floatValue || 0) > dataInformation.remainingInv
+                              ) {
                                 snackbar({
                                   message: "Quantity exceeds Sales In",
                                   variant: "error",
@@ -315,17 +317,16 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                           </LocalizationProvider>
                         )}
                       />
-                      <IconButton
-                        color="error"
-                        onClick={() => remove(index)}
-                      >
+                      <IconButton color="error" onClick={() => remove(index)}>
                         <RemoveCircle />
                       </IconButton>
                     </Stack>
                   ))}
 
                   {!disableFields &&
-                    totalQuantity < dataInformation.remainingInv && (
+                    (dataInformation?.remainingInv > 0
+                      ? totalQuantity < dataInformation.remainingInv
+                      : totalQuantity < dataInformation.salesIn) && (
                       <SecondaryButton
                         endIcon={<Add />}
                         sx={{ width: "fit-content", alignSelf: "end" }}
