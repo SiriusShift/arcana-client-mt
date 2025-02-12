@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import CommonModalForm from "../../../CommonModalForm";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+} from "react-hook-form";
 import { callsheetSchema } from "../../../../schema/schema";
 import {
   Box,
@@ -18,6 +23,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility } from "@mui/icons-material";
+import { Skeleton } from "@mui/material"; // Import Skeleton from MUI
 
 import { useDispatch, useSelector } from "react-redux";
 import CommonTable from "../../../../components/CommonTable";
@@ -26,10 +32,14 @@ import useSnackbar from "../../../../hooks/useSnackbar";
 import useDisclosure from "../../../../hooks/useDisclosure";
 import BBDCallsheetModal from "./BBDCallsheetModal";
 import { setSelectedRow } from "../../../../features/misc/reducers/selectedRowSlice";
-import { useUpdateRemainingInventoryMutation } from "../../../../features/inventory-management/api/callsheetApi";
+import {
+  useGetAllCallsheetsQuery,
+  useUpdateRemainingInventoryMutation,
+} from "../../../../features/inventory-management/api/callsheetApi";
 import useConfirm from "../../../../hooks/useConfirm";
+import moment from "moment";
 
-function CallsheetModal({ width, onClose, ...props }) {
+function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const [data, setData] = useState([]);
   const confirm = useConfirm();
@@ -39,58 +49,50 @@ function CallsheetModal({ width, onClose, ...props }) {
     isOpen: isBbdOpen,
   } = useDisclosure();
 
-  const {
-    handleSubmit,
-    formState: { errors, isValid, dirtyFields, isDirty },
-    setValue,
-    reset,
-    control,
-    watch,
-  } = useForm({
-    resolver: yupResolver(callsheetSchema.schema),
-    mode: "onChange",
-    defaultValues: callsheetSchema.defaultValues,
+  const { data: callsheetData, isFetching } = useGetAllCallsheetsQuery({
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    PageSize: 1000,
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "items",
-  });
+  const index = callsheetData?.to?.findIndex(
+    (item) => item?.transactionId === selectedRowData?.transactionId
+  );
+
+  console.log(index);
 
   //RTK QUERY
-  const [updateItems] = useUpdateRemainingInventoryMutation();
-
-  console.log(watch("items"));
+  // const [updateItems] = useUpdateRemainingInventoryMutation();
 
   //FUNCTIONS
 
-  const onSubmit = (data) => {
-    console.log(data);
-    try {
-      confirm({
-        children: "Are you sure you want to update the remaining inventory?",
-        question: true,
-        callback: () => {
-          updateItems({
-            body: {
-              transactionItems: data.items.map((item) => ({
-                transactionItemsId: item?.transactionItemId,
-                remainingInv: item?.remainingInv,
-              })),
-            },
-            id: selectedRowData?.transactionId,
-          }).unwrap();
-          onClose();
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const onSubmit = (data) => {
+  //   console.log(data);
+  //   try {
+  //     confirm({
+  //       children: "Are you sure you want to update the remaining inventory?",
+  //       question: true,
+  //       callback: () => {
+  //         updateItems({
+  //           body: {
+  //             transactionItems: data.items.map((item) => ({
+  //               transactionItemsId: item?.transactionItemId,
+  //               remainingInv: item?.remainingInv,
+  //             })),
+  //           },
+  //           id: selectedRowData?.transactionId,
+  //         }).unwrap();
+  //         onClose();
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   const handleClose = () => {
-    reset();
     onClose();
+    setData(null);
   };
 
   const handleOpen = (index) => {
@@ -118,24 +120,12 @@ function CallsheetModal({ width, onClose, ...props }) {
     onBbdOpen();
   };
 
-  useEffect(() => {
-    if (selectedRowData) {
-      reset({
-        ...selectedRowData,
-        items: selectedRowData?.transactionItemsDtos?.map((item) => ({
-          ...item,
-        })),
-      });
-    }
-  }, [selectedRowData]);
-
   return (
     <>
       <CommonModalForm
         title={"Call Sheet"}
-        disableSubmit={!isValid || !isDirty}
-        submitText="Update"
-        onSubmit={handleSubmit(onSubmit)}
+        disableButton={true}
+        // onSubmit={handleSubmit(onSubmit)}
         onClose={handleClose}
         width={width}
         {...props}
@@ -175,137 +165,81 @@ function CallsheetModal({ width, onClose, ...props }) {
               {/* {isFetching ? (
             <ReceivingItemsTableSkeleton />
           ) : ( */}
+
               <TableBody>
-                {fields.map((item, index) => {
-                  const isRowDirty = !!dirtyFields.items?.[index];
-
-                  return (
-                    <TableRow sx={{ height: "50px" }} key={index}>
-                      <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
-                      <TableCell sx={{ py: 1 }}>
-                        {item?.itemDescription}
-                      </TableCell>
-                      <TableCell sx={{ py: 1 }}>{item?.salesIn}</TableCell>
-                      <TableCell sx={{ py: 1 }}>
-                        <Controller
-                          control={control}
-                          name={`items[${index}].remainingInv`}
-                          render={({ field }) => (
-                            <NumericFormat
-                              customInput={TextField}
-                              size="small"
-                              type="number"
-                              {...field}
-                              value={field.value || ""}
-                              onValueChange={(data) => {
-                                const saleOut = item?.salesIn - data.value;
-                                const endingInv = data.value - saleOut;
-                                console.log(saleOut);
-                                setValue(`items[${index}].salesOut`, saleOut);
-                                if (endingInv >= 0) {
-                                  setValue(
-                                    `items[${index}].endingInv`,
-                                    endingInv
-                                  );
-                                } else {
-                                  setValue(`items[${index}].endingInv`, 0);
-                                }
-                                setValue(`items[${index}].suggestPO`, saleOut);
-                                setValue(`items[${index}].avgSales`, saleOut);
-                                field.onChange(data.value);
-                              }}
-                              isAllowed={({ value }) => {
-                                if (value > item?.salesIn) {
-                                  snackbar({
-                                    message:
-                                      "Value can't be greater than Sales In",
-                                    variant: "error",
-                                  });
-                                  return false;
-                                } else {
-                                  return true;
-                                }
-                              }}
-                            />
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ py: 1 }}>
-                        <Controller
-                          control={control}
-                          name={`items[${index}].endingInv`}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              size="small"
-                              type="number"
-                              disabled
-                            />
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ py: 1 }}>
-                        <Controller
-                          control={control}
-                          name={`items[${index}].salesOut`}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              size="small"
-                              type="number"
-                              disabled
-                            />
-                          )}
-                        />
-                      </TableCell>
-
-                      <TableCell sx={{ py: 1 }}>
-                        <Controller
-                          control={control}
-                          name={`items[${index}].suggestedPo`}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              size="small"
-                              type="number"
-                              disabled
-                            />
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ py: 1 }}>
-                        <Controller
-                          control={control}
-                          name={`items[${index}].averageSales`}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              size="small"
-                              type="number"
-                              disabled
-                            />
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ py: 1 }}>
-                        <IconButton
-                          onClick={() => handleOpen(index)}
-                          disabled={isRowDirty}
-                        >
-                          <Visibility />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {isFetching
+                  ? // Skeleton Loader (Shows while fetching data)
+                    [...Array(callsheetData?.to[index]?.transactionItemsDtos?.length)].map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Skeleton variant="text" width={80} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={150} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="circular" width={40} height={40} />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : // Actual Data (Shows when data is available)
+                    callsheetData?.to[index]?.transactionItemsDtos?.map(
+                      (item, index) => (
+                        <TableRow sx={{ height: "50px" }} key={index}>
+                          <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.itemDescription}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>{item?.salesIn}</TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.remainingInv}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.endingInv}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>{item?.salesOut}</TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.suggestedPo}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.averageSales}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            <IconButton onClick={() => handleOpen(index)}>
+                              <Visibility />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    )}
               </TableBody>
+
               {/* )} */}
             </Table>
           </TableContainer>
         </Box>
       </CommonModalForm>
       <BBDCallsheetModal
-        data={data}
+        data={callsheetData?.to[index]}
+        index={data}
         width={"50%"}
         open={isBbdOpen}
         onClose={onBbdClose}
