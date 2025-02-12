@@ -42,7 +42,6 @@ const ReturnForm = () => {
 
       <FormProvider {...methods}>
         <ReturnFormDetails currentStep={currentStep} details={replace && selectedRowData} />
-        <ReturnFormDetails currentStep={currentStep} details={replace && selectedRowData}/>
 
         {steps[currentStep].label === "Return" && (
           <ReturnItems
