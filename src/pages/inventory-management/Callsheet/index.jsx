@@ -140,6 +140,8 @@ function Callsheet() {
         </Box>
         <CallsheetModal
           width={"1250px"}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
           open={isCallsheetOpen}
           onClose={onCallsheetClose}
         />

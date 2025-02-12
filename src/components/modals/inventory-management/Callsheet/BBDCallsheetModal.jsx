@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { bbdCallsheet } from "../../../../schema/schema";
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  useFormContext,
+  useWatch,
+} from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import CommonModalForm from "../../../CommonModalForm";
+import CommonModal from "../../../CommonModal";
 import {
   Box,
   Button,
@@ -29,30 +35,27 @@ import useSnackbar from "../../../../hooks/useSnackbar";
 import { NumericFormat } from "react-number-format";
 import { useUpdateItemsWithBBDMutation } from "../../../../features/inventory-management/api/callsheetApi";
 import useConfirm from "../../../../hooks/useConfirm";
+import { callsheetSchema } from "../../../../schema/schema";
 
-function BBDCallsheetModal({ width, onClose, data, ...props }) {
-  const selectedRowData = useSelector((state) => state.selectedRow.value);
+function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const snackbar = useSnackbar();
   const confirm = useConfirm();
   const [totalQuantity, setTotalQuantity] = useState(0);
-  console.log(totalQuantity);
-  const validDataKey = data !== undefined && data !== null ? data : "";
-  const dataInformation =
-    selectedRowData?.transactionItemsDtos?.[validDataKey] || {};
 
-  console.log(dataInformation);
+  const validDataKey = index !== undefined && index !== null ? index : "";
+  const dataInformation = data?.transactionItemsDtos?.[validDataKey] || {};
+  console.log(dataInformation)
 
   const {
     handleSubmit,
-    formState: { errors, isValid, dirtyFields, isDirty },
-    setValue,
-    reset,
+    formState: { errors, isValid },
     control,
+    reset,
     watch,
   } = useForm({
-    resolver: yupResolver(bbdCallsheet.schema),
     mode: "onChange",
-    defaultValues: bbdCallsheet.defaultValues,
+    resolver: yupResolver(callsheetSchema.schema),
+    defaultValues: callsheetSchema.defaultValues,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -63,9 +66,8 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
 
   const [triggerBBD] = useUpdateItemsWithBBDMutation();
 
-  //FUNCTIONS
+  // FUNCTIONS
   const onSubmit = (data) => {
-    console.log(data);
     try {
       confirm({
         children: "Are you sure you want to update the remaining inventory?",
@@ -76,12 +78,16 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
               itemBbds: data?.bbdList?.map((item) => ({
                 quantity: item?.quantity,
                 bbd: moment(item?.bbd).format("YYYY-MM-DD"),
+                bbdId: item?.bbdId,
               })),
             },
             id: dataInformation?.transactionItemId,
           }).unwrap();
-          console.log("test");
-          onClose();
+          snackbar({
+            message: "Inventory updated successfully",
+            variant: "success",
+          });
+          handleClose();
         },
       });
     } catch (error) {
@@ -91,8 +97,8 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
   console.log(watch());
 
   const handleClose = () => {
-    reset(bbdCallsheet.defaultValues);
-    console.log(watch());
+    console.log("close!");
+    reset();
     setTotalQuantity(0);
     onClose();
   };
@@ -108,31 +114,29 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
   };
 
   useEffect(() => {
-    if (dataInformation) {
+    if (dataInformation && open) {
       reset({
-        bbdList: [
-          ...(Array.isArray(dataInformation?.bbbDtos) &&
-          dataInformation?.bbbDtos.length > 0
-            ? dataInformation.bbbDtos.map((item) => ({
-                itemCode: dataInformation.itemCode || "",
-                itemDescription: dataInformation.itemDescription || "",
-                salesIn: dataInformation.salesIn || "",
-                quantity: item?.quantity ?? null,
-                bbd: item?.bbd ?? "",
-              }))
-            : []),
-
-          // {
-          //   itemCode: dataInformation.itemCode || "",
-          //   itemDescription: dataInformation.itemDescription || "",
-          //   salesIn: dataInformation.salesIn || "",
-          //   quantity: null,
-          //   bbd: "",
-          // },
-        ],
+        bbdList:
+          dataInformation?.bbbDtos?.map((item) => ({
+            itemCode: dataInformation.itemCode || "",
+            itemDescription: dataInformation.itemDescription || "",
+            salesIn: dataInformation.salesIn || "",
+            remainingInv: dataInformation.remainingInv || "",
+            quantity: item?.quantity ?? null,
+            bbd: item?.bbd ?? "",
+            bbdId: item?.bbdId,
+          })) || [],
       });
+      setTotalQuantity(
+        dataInformation?.bbbDtos?.reduce((acc, item) => acc + item.quantity, 0)
+      );
+    } else if (!open) {
+      reset({
+        bbdList: [],
+      });
+      setTotalQuantity(0);
     }
-  }, [data, reset]);
+  }, [open, dataInformation, reset]); // Added watch as a dependency to ensure only when dataInformation changes
 
   const disableFields = fields.some((item) => item.actualQuantity);
 
@@ -140,19 +144,19 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
     <>
       <CommonModalForm
         title={"BBD Monitoring"}
-        disableSubmit={!isValid || !isDirty}
+        disableSubmit={!isValid}
         submitText="Update"
+        open={open}
         onSubmit={handleSubmit(onSubmit)}
         onClose={handleClose}
         width={width}
         {...props}
       >
+        {" "}
         <Box className="callsheetModal">
           <Box className="callsheetModal__callsheetHeader">
             <Box className="callsheetModal__callsheetHeader__left">
-              <Typography>
-                Customer Name: {selectedRowData?.customerName}
-              </Typography>
+              <Typography>Customer Name: {data?.customerName}</Typography>
             </Box>
           </Box>
           <TableContainer
@@ -178,6 +182,7 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
                         render={({ field }) => (
                           <TextField
                             {...field}
+                            label="Item Code"
                             variant="outlined"
                             size="small"
                             placeholder="Item Code"
@@ -191,6 +196,7 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
                         render={({ field }) => (
                           <TextField
                             {...field}
+                            label="Item Description"
                             variant="outlined"
                             size="small"
                             placeholder="Item Description"
@@ -204,6 +210,21 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
                         render={({ field }) => (
                           <TextField
                             {...field}
+                            label="Sales In"
+                            variant="outlined"
+                            size="small"
+                            placeholder="Sales In"
+                            disabled
+                          />
+                        )}
+                      />
+                      <Controller
+                        name={`bbdList.${index}.remainingInv`}
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Remaining"
                             variant="outlined"
                             size="small"
                             placeholder="Sales In"
@@ -219,6 +240,7 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
                             {...field}
                             customInput={TextField} // Use TextField as input
                             size="small"
+                            label="Quantity*"
                             type="number"
                             variant="outlined"
                             placeholder="Quantity"
@@ -248,7 +270,7 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
                             }}
                             onValueChange={(values) => {
                               const { floatValue } = values; // Extract numerical value
-                              if ((floatValue || 0) > dataInformation.salesIn) {
+                              if ((floatValue || 0) > dataInformation.remainingInv) {
                                 snackbar({
                                   message: "Quantity exceeds Sales In",
                                   variant: "error",
@@ -293,14 +315,17 @@ function BBDCallsheetModal({ width, onClose, data, ...props }) {
                           </LocalizationProvider>
                         )}
                       />
-                      <IconButton color="error" onClick={() => remove(index)}>
+                      <IconButton
+                        color="error"
+                        onClick={() => remove(index)}
+                      >
                         <RemoveCircle />
                       </IconButton>
                     </Stack>
                   ))}
 
                   {!disableFields &&
-                    totalQuantity < dataInformation.salesIn && (
+                    totalQuantity < dataInformation.remainingInv && (
                       <SecondaryButton
                         endIcon={<Add />}
                         sx={{ width: "fit-content", alignSelf: "end" }}
