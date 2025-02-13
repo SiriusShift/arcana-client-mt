@@ -7,7 +7,6 @@ import {
   useFieldArray,
   useForm,
 } from "react-hook-form";
-import { callsheetSchema } from "../../../../schema/schema";
 import {
   Box,
   Button,

@@ -35,7 +35,7 @@ import useSnackbar from "../../../../hooks/useSnackbar";
 import { NumericFormat } from "react-number-format";
 import { useUpdateItemsWithBBDMutation } from "../../../../features/inventory-management/api/callsheetApi";
 import useConfirm from "../../../../hooks/useConfirm";
-import { callsheetSchema } from "../../../../schema/schema";
+import { bbdCallsheet } from "../../../../schema/schema";
 
 function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const snackbar = useSnackbar();
@@ -54,14 +54,16 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     watch,
   } = useForm({
     mode: "onChange",
-    resolver: yupResolver(callsheetSchema.schema),
-    defaultValues: callsheetSchema.defaultValues,
+    resolver: yupResolver(bbdCallsheet.schema),
+    defaultValues: bbdCallsheet.defaultValues,
   });
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "bbdList",
   });
+
+  console.log(isValid)
   //RTK QUERY
 
   const [triggerBBD] = useUpdateItemsWithBBDMutation();
@@ -122,7 +124,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
             itemDescription: dataInformation.itemDescription || "",
             salesIn: dataInformation.salesIn || "",
             remainingInv: dataInformation.remainingInv || "",
-            quantity: item?.quantity ?? null,
+            quantity: null,
             bbd: item?.bbd ?? "",
             bbdId: item?.bbdId,
           })) || [],
@@ -271,7 +273,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                             onValueChange={(values) => {
                               const { floatValue } = values; // Extract numerical value
                               if (
-                                (floatValue || 0) > dataInformation.remainingInv
+                                (dataInformation.sales && (floatValue || 0 > dataInformation.remainingInv))
                               ) {
                                 snackbar({
                                   message: "Quantity exceeds Sales In",

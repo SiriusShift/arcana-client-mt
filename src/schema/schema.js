@@ -1275,24 +1275,24 @@ export const reportsSchema = {
   },
 };
 
-export const callsheetSchema = {
-  schema: yup.object({
-    items: yup.array().of(
-      yup.object({
-        itemCode: yup.string().required("Item Code is required"),
-        remainingInv: yup.number().required("Remaining Inventory is required"),
-      })
-    ),
-  }),
-  defaultValues: {
-    items: [
-      {
-        itemCode: null,
-        remainingInv: null,
-      },
-    ],
-  },
-};
+// export const callsheetSchema = {
+//   schema: yup.object({
+//     items: yup.array().of(
+//       yup.object({
+//         itemCode: yup.string().required("Item Code is required"),
+//         remainingInv: yup.number().required("Remaining Inventory is required"),
+//       })
+//     ),
+//   }),
+//   defaultValues: {
+//     items: [
+//       {
+//         itemCode: null,
+//         remainingInv: null,
+//       },
+//     ],
+//   },
+// };
 
 export const bbdCallsheet = {
   schema: yup.object({
