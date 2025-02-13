@@ -14,6 +14,7 @@ function CommonModalForm({
   isLoading,
   onSubmit,
   title,
+  disableButton,
   submitText = "Submit",
   width,
   height,
@@ -48,12 +49,14 @@ function CommonModalForm({
 
         <Box className="commonModalForm__content">{children}</Box>
 
-        <Box className="commonModalForm__actions">
-          <DangerButton onClick={onClose}>Close</DangerButton>
-          <SecondaryButton type="submit" disabled={disableSubmit}>
-            {isLoading ? <CircularProgress size="20px" /> : submitText}
-          </SecondaryButton>
-        </Box>
+        {disableButton !== true && (
+          <Box className="commonModalForm__actions">
+            <DangerButton onClick={onClose}>Close</DangerButton>
+            <SecondaryButton type="submit" disabled={disableSubmit}>
+              {isLoading ? <CircularProgress size="20px" /> : submitText}
+            </SecondaryButton>
+          </Box>
+        )}
       </Box>
     </Modal>
   );
