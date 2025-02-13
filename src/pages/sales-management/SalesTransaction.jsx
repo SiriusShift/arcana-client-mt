@@ -384,7 +384,7 @@ function SalesTransaction() {
                           key={index}
                           onClick={() => {
                             if (quickAdd) {
-                              handleAddItem(item);
+                              handleAddItem(item, 1, item.currentPrice);
                             } else {
                               dispatch(setSelectedRow(item));
                               onAddItemOpen();
