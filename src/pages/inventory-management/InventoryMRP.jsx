@@ -42,6 +42,7 @@ function InventoryMRP() {
     "Replaced (-)",
     "Sales (-)",
     "Returned by Client (+)",
+    "Reserved",
     "Returned by CDO",
     "SOH",
   ];
@@ -58,6 +59,7 @@ function InventoryMRP() {
     "replace",
     "sales",
     "returnByClient",
+    "reserve",
     "returnCdo",
     "soh",
   ];

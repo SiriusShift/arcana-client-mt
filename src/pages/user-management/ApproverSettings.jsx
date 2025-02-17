@@ -121,6 +121,7 @@ function Approver() {
     refetchOnMountOrArgChange: true,
   });
 
+
   let [
     triggerApprovers,
     { data: approversByRangeData, isFetching: isApproverByRangeFetching },
@@ -136,6 +137,9 @@ function Approver() {
           .sort((a, b) => a.level - b.level) || [],
     };
   }, [approversByRangeData]);
+
+
+  console.log(data, approversByRangeData);
 
   const [updateApprovers, { isLoading: isUpdateLoading }] =
     useUpdateApproversByRangeMutation();
@@ -279,6 +283,7 @@ function Approver() {
   useEffect(() => {
     if (approversByRangeData) {
       const approvers = approversByRangeData?.approvers;
+      console.log("test",approvers);
 
       // Assuming approvers is an array of objects
       const [withMinValue, withoutMinValue] = approvers.reduce(
