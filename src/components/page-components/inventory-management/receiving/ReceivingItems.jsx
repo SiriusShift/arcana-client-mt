@@ -273,83 +273,94 @@ function ReceivingItems({
                       )}
                     />
 
-<Stack gap={0.6} alignItems="center">
-  <Controller
-    control={control}
-    name={`items[${index}].actualQuantity`}
-    render={({ field: { onChange, onBlur, value, ref } }) => (
-      <NumericFormat
-        customInput={TextField}
-        label="Actual Quantity"
-        size="small"
-        autoComplete="off"
-        type="text"
-        value={value || ""}
-        onValueChange={(values) => {
-          const { value: newValue } = values;
-          const quantity = parseFloat(watch(`items[${index}].quantity`)) || 0;
-          const maxAllowed = Math.min(quantity * 1.1); // Max 10% increase or +2 units
+                    <Stack gap={0.6} alignItems="center">
+                      <Controller
+                        control={control}
+                        name={`items[${index}].actualQuantity`}
+                        render={({
+                          field: { onChange, onBlur, value, ref },
+                        }) => (
+                          <NumericFormat
+                            customInput={TextField}
+                            label="Actual Quantity"
+                            size="small"
+                            autoComplete="off"
+                            type="text"
+                            value={value || ""}
+                            onValueChange={(values) => {
+                              const { value: newValue } = values;
+                              const quantity =
+                                parseFloat(watch(`items[${index}].quantity`)) ||
+                                0;
+                              const maxAllowed = Math.min(quantity * 1.1); // Max 10% increase or +2 units
 
-          if (parseFloat(newValue) > maxAllowed) {
-            snackbar({
-              message: `Actual Quantity must not exceed ${maxAllowed}`,
-              variant: "warning",
-            });
-          } else {
-            onChange(newValue);
-          }
-        }}
-        onBlur={onBlur}
-        inputRef={ref}
-        disabled={disableFields}
-        sx={{ maxWidth: "120px" }}
-        allowNegative={false} // Prevents negative numbers
-        thousandSeparator="," // Adds comma for thousands
-        isAllowed={(values) => {
-          const quantity = parseFloat(watch(`items[${index}].quantity`)) || 0;
-          const maxAllowed = Math.min(quantity * 1.1);
-          if(parseFloat(values.value) > maxAllowed) {
-            snackbar({
-              message: `Actual Quantity must not exceed ${maxAllowed}`,
-              variant: "warning",
-            })
-            return false
-          }
-          return /^\d*$/.test(values.value) 
-        }} // Only whole numbers and within limit
-      />
-    )}
-  />
+                              if (parseFloat(newValue) > maxAllowed && watchItems[index]?.quantity !== null) {
+                                snackbar({
+                                  message: `Actual Quantity must not exceed ${maxAllowed}`,
+                                  variant: "warning",
+                                });
+                              } else {
+                                onChange(newValue);
+                              }
+                            }}
+                            onBlur={onBlur}
+                            inputRef={ref}
+                            disabled={disableFields}
+                            sx={{ maxWidth: "120px" }}
+                            allowNegative={false} // Prevents negative numbers
+                            thousandSeparator="," // Adds comma for thousands
+                            isAllowed={(values) => {
+                              const quantity =
+                                parseFloat(watch(`items[${index}].quantity`)) ||
+                                0;
+                              const maxAllowed = Math.min(quantity * 1.1);
+                              if (parseFloat(values.value) > maxAllowed && watchItems[index]?.quantity !== null) {
+                                snackbar({
+                                  message: `Actual Quantity must not exceed ${maxAllowed}`,
+                                  variant: "warning",
+                                });
+                                return false;
+                              }
+                              return /^\d*$/.test(values.value);
+                            }} // Only whole numbers and within limit
+                          />
+                        )}
+                      />
 
-  {!disableFields && (
-    <Typography
-      variant="caption"
-      color={
-        !watchItems[index]?.itemCode
-          ? "gray"
-          : data?.mo?.find(
-              (item) => item.itemCode === watchItems[index]?.itemCode
-            )?.soh
-          ? data?.mo?.find(
-              (item) => item.itemCode === watchItems[index]?.itemCode
-            )?.soh < 5
-            ? "orange"
-            : "green"
-          : "red"
-      }
-      lineHeight="0.5"
-    >
-      {watchItems[index]?.itemCode
-        ? `SOH: ${
-            data?.mo?.find(
-              (item) => item.itemCode === watchItems[index]?.itemCode
-            )?.soh ?? "NONE"
-          }`
-        : "Select Item first"}
-    </Typography>
-  )}
-</Stack>
-
+                      {!disableFields && (
+                        <Typography
+                          variant="caption"
+                          color={
+                            !watchItems[index]?.itemCode
+                              ? "gray"
+                              : data?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.itemCode
+                                )?.soh
+                              ? data?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.itemCode
+                                )?.soh < 5
+                                ? "orange"
+                                : "green"
+                              : "red"
+                          }
+                          lineHeight="0.5"
+                        >
+                          {watchItems[index]?.itemCode
+                            ? `SOH: ${
+                                data?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.itemCode
+                                )?.soh ?? "NONE"
+                              }`
+                            : "Select Item first"}
+                        </Typography>
+                      )}
+                    </Stack>
 
                     <Controller
                       control={control}

@@ -97,11 +97,11 @@ function Receiving() {
             <CommonTable
               lowerCompact
               moveNoDataUp
-              mapData={data?.mo || []}
+              mapData={data?.value?.mo || []}
               tableHeads={tableHeads}
               customOrderKeys={customOrderKeys}
               dateTimeArray={dateTimeArray}
-              count={data?.totalCount || 0}
+              count={data?.value?.totalCount || 0}
               onView={handleView}
               rowsPerPage={rowsPerPage}
               setRowsPerPage={setRowsPerPage}
