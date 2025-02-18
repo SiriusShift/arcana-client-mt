@@ -48,6 +48,7 @@ function ReceivingFormHeader({
   } = {},
   isFetching,
 }) {
+  console.log(deliveryDate);
   const navigate = useNavigate();
 
   const handleBack = () => {

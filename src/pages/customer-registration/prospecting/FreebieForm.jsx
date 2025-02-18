@@ -261,7 +261,7 @@ function FreebieForm({
 
         const transformedFreebies = originalFreebies.map((item) => ({
           itemId: item,
-          quantity: 1,
+          quantity: item?.quantity,
           itemDescription: item.itemDescription,
           uom: item.uom,
         }));
@@ -363,6 +363,7 @@ function FreebieForm({
                   value?.itemDescription
                 );
                 setValue(`freebies[${index}].uom`, value?.uom);
+                setValue(`freebies[${index}].quantity`, 1);
                 trigger();
                 return value;
               }}

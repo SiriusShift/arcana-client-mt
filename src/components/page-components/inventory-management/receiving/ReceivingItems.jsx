@@ -118,6 +118,8 @@ function ReceivingItems({
     });
   }, [items, reset]);
 
+  console.log(watch());
+
   useEffect(() => {
     if (handleFormValid && handleFormData) {
       handleFormValid((prev) => ({ ...prev, isItemsValid: isValid }));
@@ -157,7 +159,7 @@ function ReceivingItems({
             </TableRow>
           </TableHead>
 
-          {isProductsFetching ? (
+          {isProductsFetching || isFetching ? (
             <ReceivingItemsTableSkeleton />
           ) : (
             <TableCell sx={{ borderBottom: "none" }}>

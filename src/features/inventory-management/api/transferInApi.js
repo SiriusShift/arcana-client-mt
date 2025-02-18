@@ -25,10 +25,10 @@ const transferInApi = api
 
       rejectTransferIn: builder.mutation({
         // Uncomment this when the backend is ready
-        query: (id) => ({
+        query: ({id, body}) => ({
           url: `/reject-transfer/${id}`,
           method: "PATCH",
-          body: {},
+          body,
         }),
         invalidatesTags: ["Transfer In", "Transfer Ins"],
 

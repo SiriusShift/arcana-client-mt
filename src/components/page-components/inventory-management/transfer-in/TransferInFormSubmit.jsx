@@ -10,6 +10,7 @@ import {
 } from "../../../../features/inventory-management/api/transferInApi";
 import { handleCatchErrorMessage } from "../../../../utils/CustomFunctions";
 import { MoveToInbox, ThumbDownOutlined } from "@mui/icons-material";
+import useReasonConfirm from "../../../../hooks/useReasonConfirm";
 
 function TransferInFormSubmit() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ function TransferInFormSubmit() {
   const navigate = useNavigate();
   const snackbar = useSnackbar();
   const confirm = useConfirm();
+  const confirmReason = useReasonConfirm();
 
   const [receiveTransferIn] = useReceiveTransferInMutation();
   const [rejectTransferIn] = useRejectTransferInMutation();
@@ -44,10 +46,12 @@ function TransferInFormSubmit() {
 
   const handleReject = async () => {
     try {
-      await confirm({
+      await confirmReason({
         children: "Are you sure you want to reject this transfer in?",
         question: false,
-        callback: () => rejectTransferIn(id).unwrap(),
+        callback: (remarks) => rejectTransferIn({ id: id, body: {
+          reason: remarks
+        } }).unwrap(),
       });
 
       navigate("/inventory-management/transfer-in");

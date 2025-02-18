@@ -13,6 +13,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
   const [price, setPrice] = useState(null);
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  console.log(selectedRowData);
   const quantityRef = useRef();
   const snackbar = useSnackbar();
 

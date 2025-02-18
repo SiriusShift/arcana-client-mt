@@ -3,8 +3,9 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ReceivingFormHeader from "../../../components/page-components/inventory-management/receiving/ReceivingFormHeader";
 import ReceivingItems from "../../../components/page-components/inventory-management/receiving/ReceivingItems";
 import WrongDeliver from "../../../components/page-components/inventory-management/receiving/WrongDeliver";
-import { useEffect } from "react";
-import { useLazyGetReceivedOrderByIdQuery, useLazyGetWrongItemsQuery } from "../../../features/inventory-management/api/receivingApi";
+import { useEffect, useMemo, useState } from "react";
+import { useLazyGetReceivedOrderByIdQuery } from "../../../features/inventory-management/api/receivingApi";
+import { set } from "lodash";
 
 const ViewReceivingSkeleton = () => {
   return (
@@ -23,57 +24,75 @@ function ViewReceiving() {
 
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
-  const items = [];
-  const wrongDelivers = [];
   const navigate = useNavigate();
 
   const [triggerData, { data, isFetching, isUninitialized }] =
     useLazyGetReceivedOrderByIdQuery();
-  
-  const [triggerWrong, { data: wrongData, isFetching: wrongFetching}] = useLazyGetWrongItemsQuery();
 
-  console.log("data", data);
+  const [formData, setFormData] = useState({
+    moveOrderId: Number(id),
+    items: [],
+    wrong: [],
+  });
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        await triggerData({ MoveOrderId: id, DateFrom: dateFrom, DateTo: dateTo }).unwrap();
+        await triggerData({
+          MoveOrderId: id,
+          DateFrom: dateFrom,
+          DateTo: dateTo,
+        }).unwrap();
       } catch (error) {
         navigate("/inventory-management/receiving", { replace: true });
       }
     };
+
     fetch();
-  }, [id, navigate, triggerData]);
+  }, [id, dateFrom, dateTo, navigate, triggerData]); // ✅ Ensure correct dependencies
 
-  data?.mo[0]?.moveItems?.map((item, index) => {
-    console.log("items", item, "index:", index);
-  
-    // If quantity > 0, actualQuantity is null, and reason is not null
-    if (item?.quantity > 0 && item?.actualQuantity === null && item?.reason !== null) {
-      wrongDelivers.push(item);
-    } else {
-      items.push(item);
-    }
-  });
-  
-  console.log("Items:", items);
-  console.log("Wrong Delivers:", wrongDelivers);
-  
+  // ✅ Use `useMemo` to safely filter items without modifying state
+  const { filteredItems, wrongDelivers } = useMemo(() => {
+    const filteredItems = [];
+    const wrongDelivers = [];
 
-  if (!data || isFetching || isUninitialized) {
+    data?.mo?.[0]?.moveItems?.forEach((item) => {
+      if (
+        item?.quantity > 0 &&
+        item?.actualQuantity === null &&
+        item?.reason !== null
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          wrong: [...prev.wrong, item],
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          items: [...prev.items, item],
+        }))
+      }
+    });
+
+    return { filteredItems, wrongDelivers };
+  }, [data]);
+
+  // ✅ Prevent flickering with `isFetching && !data`
+  if (isFetching && !data) {
     return <ViewReceivingSkeleton />;
   }
 
   return (
     <Box className="commonPageLayout">
-      <ReceivingFormHeader data={data.mo[0]} isFetching={isFetching} />
+      <ReceivingFormHeader data={data?.mo[0]} isFetching={isFetching} />
 
-      <ReceivingItems items={items} isFetching={isFetching} />
+      <ReceivingItems items={formData.items} isFetching={isFetching} />
 
       <WrongDeliver
         viewing={true}
         wrongItems={wrongDelivers}
         isFetching={isFetching}
+        formData={formData}
       />
     </Box>
   );

@@ -38,6 +38,7 @@ import UnderConstruction from "../../assets/images/under-construction.svg";
 import { useGetAllClientsForPOSQuery } from "../../features/sales-management/api/salesTransactionApi.js";
 import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi.js";
 import SessionExpired from "../SessionExpired.jsx";
+import useSnackbar from "../../hooks/useSnackbar.js";
 
 function SalesTransaction() {
   const [search, setSearch] = useState("");
@@ -56,6 +57,7 @@ function SalesTransaction() {
   // const fullName = useSelector((state) => state.login.fullname);
 
   const dispatch = useDispatch();
+  const snackbar = useSnackbar();
   const filterRef = useRef();
 
   //Disclosures
@@ -129,6 +131,14 @@ function SalesTransaction() {
         existingItem.itemId.priceModeItemId === item.priceModeItemId &&
         existingItem.itemId.currentPrice === price
     );
+
+    const tempQuantity = quantity + (watch("items")[existingItemIndex]?.quantity && parseInt(watch("items")[existingItemIndex].quantity) || 0);
+    console.log(item);
+
+    if(tempQuantity > item.availQuantity){
+      snackbar({ message: "Quantity exceeds available quantity", variant: "warning" });
+      return 
+    }
 
     if (existingItemIndex !== -1) {
       // Item with the same itemCode already exists, so increment the quantity
@@ -503,6 +513,10 @@ function SalesTransaction() {
                             : remove(index);
                         }}
                         onPlus={() => {
+                          if(watch("items")[index]?.quantity + 1 > orderItem?.itemId?.availQuantity){
+                            snackbar({ message: "Quantity exceeds available quantity", variant: "warning" });
+                            return
+                          }
                           update(index, {
                             itemId: watch("items")[index]?.itemId,
                             quantity:

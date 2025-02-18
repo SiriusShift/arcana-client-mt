@@ -363,13 +363,13 @@ function WrongDeliver({
                             onBlur={onBlur}
                             value={value || ""}
                             inputRef={ref}
-                            disabled={disableFields}
+                            disabled={disableFields || wrongItems}
                           />
                         )}
                       />
 
-                      {!disableFields && (
-                        <IconButton color="error" onClick={() => remove(index)}>
+                      {!disableFields || wrongItems && (
+                        <IconButton  color="error" onClick={() => remove(index)}>
                           <RemoveCircleOutline />
                         </IconButton>
                       )}
