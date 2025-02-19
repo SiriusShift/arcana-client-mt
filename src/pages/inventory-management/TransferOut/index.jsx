@@ -71,6 +71,7 @@ function TransferOut() {
     "Cluster",
     "Total Quantity",
     "Transaction Date",
+    ...(tabViewing === 3 ? ["Reason"] : []),
   ];
 
   const customOrderKeys = [
@@ -79,6 +80,8 @@ function TransferOut() {
     "transferToCluster",
     "totalQuantity",
     "transactionDate",
+    ...(tabViewing === 3 ? ["rejectReason"] : []),
+
   ];
 
   const dateTimeArray = ["transactionDate"];

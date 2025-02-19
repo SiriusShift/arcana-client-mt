@@ -5,7 +5,7 @@ import ReceivingItems from "../../../components/page-components/inventory-manage
 import WrongDeliver from "../../../components/page-components/inventory-management/receiving/WrongDeliver";
 import { useEffect, useMemo, useState } from "react";
 import { useLazyGetReceivedOrderByIdQuery } from "../../../features/inventory-management/api/receivingApi";
-import { set } from "lodash";
+import { filter, set } from "lodash";
 
 const ViewReceivingSkeleton = () => {
   return (
@@ -66,16 +66,20 @@ function ViewReceiving() {
           ...prev,
           wrong: [...prev.wrong, item],
         }));
+        wrongDelivers.push(item);
       } else {
         setFormData((prev) => ({
           ...prev,
           items: [...prev.items, item],
         }))
+        filteredItems.push(item);
       }
     });
 
     return { filteredItems, wrongDelivers };
   }, [data]);
+
+  console.log("wrong deliver!",wrongDelivers)
 
   // ✅ Prevent flickering with `isFetching && !data`
   if (isFetching && !data) {

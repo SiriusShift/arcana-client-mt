@@ -34,7 +34,7 @@ function TransferIn() {
         : tabViewing === 2
         ? "Received"
         : "Rejected",
-    TransferType: "In"
+    TransferType: "In",
   });
 
   const tableHeads = [
@@ -43,6 +43,7 @@ function TransferIn() {
     "Cluster",
     "Total Quantity",
     "Transaction Date",
+    ...(tabViewing === 3 ? ["Reason"] : []),
   ];
 
   const customOrderKeys = [
@@ -51,6 +52,7 @@ function TransferIn() {
     "createdByCluster",
     "totalQuantity",
     "transactionDate",
+    ...(tabViewing === 3 ? ["rejectReason"] : []), // Conditionally add "Reason"
   ];
 
   const dateTimeArray = ["transactionDate"];
@@ -76,9 +78,17 @@ function TransferIn() {
   // Functions
   const handleView = () => {
     if (tabViewing === 1) {
-      navigate(`transfer-in-form/${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
+      navigate(
+        `transfer-in-form/${selectedRowData?.id}?dateFrom=${moment(
+          dateFrom
+        ).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+      );
     } else {
-      navigate(`${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
+      navigate(
+        `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
+          "YYYY-MM-DD"
+        )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+      );
     }
   };
 

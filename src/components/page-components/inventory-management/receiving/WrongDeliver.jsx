@@ -73,6 +73,7 @@ function WrongDeliver({
   isFetching,
   viewing,
 }) {
+  console.log(wrongItems);
   const snackbar = useSnackbar();
   const {
     control,
@@ -113,51 +114,54 @@ function WrongDeliver({
   };
 
   useEffect(() => {
-    formData?.items?.forEach((item) => {
-      console.log("watching!", item);
-      if (
-        item.quantity > 0 &&
-        item.actualQuantity &&
-        item.actualQuantity < item.quantity
-      ) {
-        // Check if the itemCode already exists in the form
-        const existingIndex = fields.findIndex(
-          (field) => field.item === item.itemCode
-        );
-
-        if (existingIndex !== -1) {
-          // If exists, update quantity
-          setValue(
-            `wrong[${existingIndex}].quantity`,
-            item.quantity - item.actualQuantity
+    if(!viewing){
+      formData?.items?.forEach((item) => {
+        console.log("watching!", item);
+        if (
+          item.quantity > 0 &&
+          item.actualQuantity &&
+          item.actualQuantity < item.quantity
+        ) {
+          // Check if the itemCode already exists in the form
+          const existingIndex = fields.findIndex(
+            (field) => field.item === item.itemCode
           );
-        } else {
-          // If not, append new entry
-          append({
-            item: item.itemCode,
-            itemDescription: item.itemDescription,
-            uom: item.uom,
-            quantity: item.quantity - item.actualQuantity,
-            reason: "",
-            add: "automatic",
-          });
+  
+          if (existingIndex !== -1) {
+            // If exists, update quantity
+            setValue(
+              `wrong[${existingIndex}].quantity`,
+              item.quantity - item.actualQuantity
+            );
+          } else {
+            // If not, append new entry
+            append({
+              item: item.itemCode,
+              itemDescription: item.itemDescription,
+              uom: item.uom,
+              quantity: item.quantity - item.actualQuantity,
+              reason: "",
+              add: "automatic",
+            });
+          }
         }
-      }
-    });
+      });
+  
+      // Remove any existing items where actualQuantity === quantity
+      fields.forEach((field, index) => {
+        const matchingItem = formData?.items?.find(
+          (item) => item.itemCode === field.item
+        );
+        if (
+          matchingItem &&
+          field?.add === "automatic" &&
+          matchingItem.actualQuantity >= matchingItem.quantity
+        ) {
+          remove(index);
+        }
+      });
+    }
 
-    // Remove any existing items where actualQuantity === quantity
-    fields.forEach((field, index) => {
-      const matchingItem = formData?.items?.find(
-        (item) => item.itemCode === field.item
-      );
-      if (
-        matchingItem &&
-        field?.add === "automatic" &&
-        matchingItem.actualQuantity >= matchingItem.quantity
-      ) {
-        remove(index);
-      }
-    });
   }, [formData?.items, append, remove, fields, setValue]);
 
   useEffect(() => {
@@ -363,12 +367,12 @@ function WrongDeliver({
                             onBlur={onBlur}
                             value={value || ""}
                             inputRef={ref}
-                            disabled={disableFields || wrongItems}
+                            disabled={disableFields || viewing}
                           />
                         )}
                       />
 
-                      {!disableFields || wrongItems && (
+                      {!disableFields || !viewing && (
                         <IconButton  color="error" onClick={() => remove(index)}>
                           <RemoveCircleOutline />
                         </IconButton>

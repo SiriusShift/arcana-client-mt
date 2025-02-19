@@ -25,6 +25,7 @@ function CancelFreebiesModal({ ...otherProps }) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const freebiesLength = selectedRowData?.freebies?.length;
   const address = selectedRowData?.ownersAddress;
   const { fullname } = useSelector((state) => state.login);
 
@@ -117,7 +118,7 @@ function CancelFreebiesModal({ ...otherProps }) {
               <Box>
                 <Typography>
                   <span>Transaction no:</span>{" "}
-                  {selectedRowData?.freebies?.[0]?.transactionNumber || ""}
+                  {selectedRowData?.freebies?.[freebiesLength - 1]?.transactionNumber || ""}
                 </Typography>
                 <Typography>
                   <span>Date:</span> {moment().format("MMM DD, YYYY")}
@@ -141,7 +142,7 @@ function CancelFreebiesModal({ ...otherProps }) {
               </TableHead>
 
               <TableBody>
-                {selectedRowData?.freebies?.[0]?.freebieItems?.map(
+                {selectedRowData?.freebies?.[freebiesLength - 1]?.freebieItems?.map(
                   (item, i) => (
                     <TableRow key={i}>
                       <TableCell>{item.quantity}</TableCell>
