@@ -114,39 +114,56 @@ function WrongDeliver({
   };
 
   useEffect(() => {
-    if(!viewing){
+    if (!viewing) {
       formData?.items?.forEach((item) => {
         console.log("watching!", item);
         if (
           item.quantity > 0 &&
-          item.actualQuantity &&
+          (item.actualQuantity || item.actualQuantity !== null) &&
           item.actualQuantity < item.quantity
         ) {
+          console.log("check")
           // Check if the itemCode already exists in the form
           const existingIndex = fields.findIndex(
             (field) => field.item === item.itemCode
           );
-  
+
           if (existingIndex !== -1) {
             // If exists, update quantity
-            setValue(
-              `wrong[${existingIndex}].quantity`,
-              item.quantity - item.actualQuantity
-            );
+            if (item.actualQuantity === 0) {
+              setValue(`wrong[${existingIndex}].quantity`, item.quantity);
+            } else {
+              setValue(
+                `wrong[${existingIndex}].quantity`,
+                item.quantity - item.actualQuantity
+              );
+            }
           } else {
             // If not, append new entry
-            append({
-              item: item.itemCode,
-              itemDescription: item.itemDescription,
-              uom: item.uom,
-              quantity: item.quantity - item.actualQuantity,
-              reason: "",
-              add: "automatic",
-            });
+
+            if (item.actualQuantity === 0) {
+              append({
+                item: item.itemCode,
+                itemDescription: item.itemDescription,
+                uom: item.uom,
+                quantity: item.quantity,
+                reason: "",
+                add: "automatic",
+              });
+            } else {
+              append({
+                item: item.itemCode,
+                itemDescription: item.itemDescription,
+                uom: item.uom,
+                quantity: item.quantity - item.actualQuantity,
+                reason: "",
+                add: "automatic",
+              });
+            }
           }
         }
       });
-  
+
       // Remove any existing items where actualQuantity === quantity
       fields.forEach((field, index) => {
         const matchingItem = formData?.items?.find(
@@ -161,7 +178,6 @@ function WrongDeliver({
         }
       });
     }
-
   }, [formData?.items, append, remove, fields, setValue]);
 
   useEffect(() => {
@@ -231,16 +247,13 @@ function WrongDeliver({
                                   (field) => field.item === item.itemCode
                                 ) // Exclude already chosen items
                             )
-                            // ?.filter((item) => item.quantity === null) || [] // Exclude items with no quantity
+                          // ?.filter((item) => item.quantity === null) || [] // Exclude items with no quantity
                         }
                         getOptionLabel={(option) => option?.itemCode || option}
                         isOptionEqualToValue={(option, value) =>
                           option?.itemCode === value?.itemCode
                         }
-                        disabled={
-                          disableFields ||
-                          watch("wrong")[index]?.add === "automatic"
-                        }
+                        disabled
                         onChange={(_, value) => {
                           setValue(
                             `wrong[${index}].itemDescription`,
@@ -341,11 +354,7 @@ function WrongDeliver({
                             onBlur={onBlur}
                             inputRef={ref}
                             sx={{ maxWidth: "120px" }}
-                            disabled={
-                              disableFields ||
-                              watch("wrong")[index]?.add === "automatic"
-                              || watch("wrong")[index]?.item === ""
-                            }
+                            disabled
                             allowNegative={false} // Prevents negative values
                             thousandSeparator="," // Adds commas for readability
                             isAllowed={(values) => /^\d*$/.test(values.value)} // Ensures whole numbers only
@@ -372,11 +381,15 @@ function WrongDeliver({
                         )}
                       />
 
-                      {!disableFields || !viewing && (
-                        <IconButton  color="error" onClick={() => remove(index)}>
-                          <RemoveCircleOutline />
-                        </IconButton>
-                      )}
+                      {!disableFields ||
+                        (!viewing && (
+                          <IconButton
+                            color="error"
+                            onClick={() => remove(index)}
+                          >
+                            <RemoveCircleOutline />
+                          </IconButton>
+                        ))}
                     </Stack>
                   ))}
 

@@ -28,11 +28,7 @@ const ViewTransferOut = () => {
     DateFrom: dateFrom,
     DateTo: dateTo,
   });
-
-  console.log(data);
-
-  console.log(data?.to[0]);
-
+  
   useEffect(() => {
     if (isError) {
       navigate("/inventory-management/transfer-out", { replace: true });
@@ -44,9 +40,9 @@ const ViewTransferOut = () => {
       <TransferOutFormHeader />
 
       <FormProvider {...methods}>
-        <TransferOutFormDetails details={data?.to[0]} isFetching={isFetching} />
+        <TransferOutFormDetails details={data?.value?.to[0]} isFetching={isFetching} />
 
-        <TransferOutItems items={data?.to[0]?.transferItems || []} isFetching={isFetching} />
+        <TransferOutItems items={data?.value?.to[0]?.transferItems || []} isFetching={isFetching} />
       </FormProvider>
     </Box>
   );

@@ -68,6 +68,62 @@ const reportsApi = api
         }),
         providesTags: ["CheckIn Report"],
       }),
+      getReturnByCDOReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-return-by-cdo-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Return By CDO Report"],
+      }),
+      getTransferOutReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-transfer-out-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Transfer Out Report"],
+      }),
+      getTransferInReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-transfer-in-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Transfer In Report"],
+      }),
+      getFreebieReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-freebie-report",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Freebie Report"],
+      }),
+      getSamplingReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-sampling-report",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Sampling Report"],
+      }),
+      getReturnReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-return-report",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Return Report"],
+      }),
+      getReplaceReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-replace-report",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Replace Report"],
+      })
     }),
   });
 
@@ -80,4 +136,11 @@ export const {
   useCheckInReportQuery,
   useGetSOAReportsQuery,
   useGetCheckInFiloReportsQuery,
+  useGetReturnByCDOReportsQuery,
+  useGetTransferOutReportsQuery,
+  useGetTransferInReportsQuery,
+  useGetFreebieReportsQuery,
+  useGetSamplingReportsQuery,
+  useGetReturnReportsQuery,
+  useGetReplaceReportsQuery
 } = reportsApi;

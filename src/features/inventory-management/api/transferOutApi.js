@@ -31,7 +31,6 @@ const transferOutApi = api
           url: "/get-transfer",
           method: "GET",
         }),
-        transformResponse: (response) => response.value,
         // transformErrorResponse: (response) => response.value,
         providesTags: ["Transfer Outs"],
 

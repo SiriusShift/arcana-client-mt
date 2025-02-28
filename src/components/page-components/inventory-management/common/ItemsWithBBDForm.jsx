@@ -292,8 +292,6 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                   /> */}
 
                   <LocalizationProvider dateAdapter={AdapterMoment}>
-                    {" "}
-                    {/* Wrap in LocalizationProvider */}
                     <Controller
                       control={control}
                       name={`items[${index}].bbd`}

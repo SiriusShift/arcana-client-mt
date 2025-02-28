@@ -50,6 +50,7 @@ const ItemsWithBBDPriceForm = ({
     handleAddItem,
     handleRemove,
     handleRemoveAll,
+    errors,
     watchItems,
     // productData,
     isItemsWithBBDFetching,
@@ -72,6 +73,7 @@ const ItemsWithBBDPriceForm = ({
   });
 
   console.log(watchItems);
+  console.log(errors);
 
   const { data: products, isFetching: isProductFetching } =
     useGetAllItemsInventoryQuery();

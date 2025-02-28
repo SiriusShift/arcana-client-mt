@@ -6,11 +6,23 @@ const callsheetApi = api
   .enhanceEndpoints({ addTagTypes: ["Callsheet"] })
   .injectEndpoints({
     endpoints: (builder) => ({
+      // getAllCallsheets: builder.query({
+      //   // Uncomment this when the backend is ready
+      //   query: (params) => ({
+      //     params,
+      //     url: "/get-callsheet",
+      //     method: "GET",
+      //   }),
+      //   transformResponse: (response) => response.value,
+      //   transformErrorResponse: (response) => response.value,
+      //   // queryFn: dummyGetAllCallsheet,
+      //   providesTags: ["Callsheet"],
+      // }),
       getAllCallsheets: builder.query({
         // Uncomment this when the backend is ready
         query: (params) => ({
           params,
-          url: "/get-callsheet",
+          url: "/get-callsheet-v2",
           method: "GET",
         }),
         transformResponse: (response) => response.value,
@@ -27,13 +39,19 @@ const callsheetApi = api
         invalidatesTags: ["Callsheet"],
       }),
       updateItemsWithBBD: builder.mutation({
-        query: ({id, body}) => ({
-          url: `/update-bbd/${id}`,
+        query: (body) => ({
+          url: `/update-bbd`,
           method: "PUT",
           body: body,
         }),
         invalidatesTags: ["Callsheet"],
       }),
+      getTransactionItemCallsheet: builder.query({
+        query: () => ({
+          url: "/get-transaction-item-callsheet",
+          method: "GET"
+        })
+      })
     }),
   });
 
@@ -41,5 +59,6 @@ export const {
   useGetAllCallsheetsQuery,
   useUpdateRemainingInventoryMutation,
   useUpdateItemsWithBBDMutation,
+  useGetTransactionItemCallsheetQuery
   // useGetCallSheetByIdQuery,
 } = callsheetApi;

@@ -34,7 +34,7 @@ const TransferOutFormActions = () => {
           itemCode: item.item.itemCode,
           quantity: item.quantity,
           reason: item.reason,
-          // bbd: moment(item.bbd).format("YYYY-MM-DD"),
+          bbd: moment(item.bbd).format("YYYY-MM-DD"),
           amount: item.price,
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),

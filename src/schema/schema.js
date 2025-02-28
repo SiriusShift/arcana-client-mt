@@ -1080,7 +1080,6 @@ export const transferOutSchema = {
       .array()
       .of(
         yup.object({
-          reason: yup.string(),
           item: yup.object().required("Item Code is required"),
           bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
@@ -1095,7 +1094,7 @@ export const transferOutSchema = {
     items: [
       {
         item: null,
-        bbd: null,
+        // bbd: null,
         quantity: null,
         reason: "",
       },
@@ -1185,7 +1184,7 @@ export const returnSchema = {
           item: yup.object().required("Item Code is required"),
           bbd: yup.string().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
-          reason: yup.string(),
+          reason: yup.string().nullable(),
         })
       )
       .min(1, "At least one product is required"),
@@ -1298,8 +1297,10 @@ export const bbdCallsheet = {
   schema: yup.object({
     bbdList: yup.array().of(
       yup.object({
+        transactionId: yup.object().required("Transaction ID is required"),
+        remainingInv: yup.number().required("Remaining Inventory required"),
         itemCode: yup.string().required("Item Code is required"),
-        quantity: yup.number().required("Remaining Inventory is required"),
+        quantity: yup.number().required("Quantity is required"),
         bbd: yup.string().required("BBD is required"),
       })
     ),
@@ -1307,6 +1308,7 @@ export const bbdCallsheet = {
   defaultValues: {
     bbdList: [
       {
+        transactionId: null,
         itemCode: "",
         bbd: "",
         quantity: null

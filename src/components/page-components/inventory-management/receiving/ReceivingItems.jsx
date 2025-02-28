@@ -61,6 +61,7 @@ function ReceivingItems({
   isFetching,
 }) {
   const snackbar = useSnackbar();
+  console.log(items);
   const {
     control,
     reset,
@@ -129,6 +130,8 @@ function ReceivingItems({
           itemCode: item?.itemCode,
           quantity: Number(item?.quantity),
           actualQuantity: Number(item?.actualQuantity),
+          itemDescription: item?.itemDescription,
+          uom: item?.uom,
           reason: item?.reason,
         })),
       }));

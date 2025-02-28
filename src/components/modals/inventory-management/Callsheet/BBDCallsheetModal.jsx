@@ -33,17 +33,22 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import useSnackbar from "../../../../hooks/useSnackbar";
 import { NumericFormat } from "react-number-format";
-import { useUpdateItemsWithBBDMutation } from "../../../../features/inventory-management/api/callsheetApi";
+import {
+  useGetTransactionItemCallsheetQuery,
+  useUpdateItemsWithBBDMutation,
+} from "../../../../features/inventory-management/api/callsheetApi";
 import useConfirm from "../../../../hooks/useConfirm";
 import { bbdCallsheet } from "../../../../schema/schema";
+import ControlledAutocomplete from "../../../ControlledAutocomplete";
 
 function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const snackbar = useSnackbar();
   const confirm = useConfirm();
   const [totalQuantity, setTotalQuantity] = useState(0);
+  console.log(totalQuantity);
 
   const validDataKey = index !== undefined && index !== null ? index : "";
-  const dataInformation = data?.transactionItemsDtos?.[validDataKey] || {};
+  const dataInformation = data?.callSheetDtos?.[validDataKey] || {};
   console.log(dataInformation);
 
   const {
@@ -51,6 +56,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     formState: { errors, isValid },
     control,
     reset,
+    setValue,
     watch,
   } = useForm({
     mode: "onChange",
@@ -63,28 +69,47 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     name: "bbdList",
   });
 
-  console.log(isValid)
+  console.log(isValid);
   //RTK QUERY
 
   const [triggerBBD] = useUpdateItemsWithBBDMutation();
+  // const {data: callsheetData} = useGetTransactionItemCallsheetQuery()
+  // console.log(callsheetData);
 
-  // FUNCTIONS
+  // // FUNCTIONS
   const onSubmit = (data) => {
+    console.log("submit");
+    const transformData = data?.bbdList?.map((item) => ({
+      transactionItemId: item.transactionId.transactionItemId,
+      itemBbds: {
+        quantity: item?.quantity,
+        bbd: moment(item?.bbd).format("YYYY-MM-DD"),
+        bbdId: item?.bbdId,
+      },
+    }));
+    console.log(transformData);
+    const groupedData = transformData.reduce((acc, item) => {
+      let group = acc.find(
+        (g) => g.transactionItemId === item.transactionItemId
+      );
+      if (!group) {
+        group = {
+          transactionItemId: item.transactionItemId,
+          itemBbds: [],
+        };
+        acc.push(group);
+      }
+      group.itemBbds.push(item.itemBbds);
+      return acc;
+    }, []);
+
+    console.log(groupedData);
     try {
       confirm({
         children: "Are you sure you want to update the remaining inventory?",
         question: true,
         callback: () => {
-          triggerBBD({
-            body: {
-              itemBbds: data?.bbdList?.map((item) => ({
-                quantity: item?.quantity,
-                bbd: moment(item?.bbd).format("YYYY-MM-DD"),
-                bbdId: item?.bbdId,
-              })),
-            },
-            id: dataInformation?.transactionItemId,
-          }).unwrap();
+          triggerBBD({items: groupedData}).unwrap();
           snackbar({
             message: "Inventory updated successfully",
             variant: "success",
@@ -107,9 +132,11 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
 
   const handleAdd = () => {
     append({
+      transactionId: null,
       itemCode: dataInformation.itemCode || "",
       itemDescription: dataInformation.itemDescription || "",
       salesIn: dataInformation.salesIn || "",
+      remainingInv: dataInformation.remainingInv || "",
       quantity: null,
       bbd: "",
     });
@@ -119,18 +146,26 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     if (dataInformation && open) {
       reset({
         bbdList:
-          dataInformation?.bbbDtos?.map((item) => ({
+          dataInformation?.bbdDtos?.map((item) => ({
             itemCode: dataInformation.itemCode || "",
             itemDescription: dataInformation.itemDescription || "",
             salesIn: dataInformation.salesIn || "",
-            remainingInv: dataInformation.remainingInv || "",
+            remainingInv:
+              dataInformation.transactionItemIds.find(
+                (transaction) =>
+                  transaction?.transactionItemId === item?.transactionItemId
+              ).remainingQuantity || "",
+            transactionId: dataInformation.transactionItemIds.find(
+              (transaction) =>
+                transaction?.transactionItemId === item?.transactionItemId
+            ),
             quantity: null,
             bbd: item?.bbd ?? "",
             bbdId: item?.bbdId,
           })) || [],
       });
       setTotalQuantity(
-        dataInformation?.bbbDtos?.reduce((acc, item) => acc + item.quantity, 0)
+        dataInformation?.bbdDtos?.reduce((acc, item) => acc + item.quantity, 0)
       );
     } else if (!open) {
       reset({
@@ -138,7 +173,9 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       });
       setTotalQuantity(0);
     }
-  }, [open, dataInformation, reset]); // Added watch as a dependency to ensure only when dataInformation changes
+  }, [open, reset]); // Added watch as a dependency to ensure only when dataInformation changes
+
+  useEffect;
 
   const disableFields = fields.some((item) => item.actualQuantity);
 
@@ -178,6 +215,38 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                 <Stack spacing={1}>
                   {fields.map((item, index) => (
                     <Stack direction="row" spacing={1.5} key={index}>
+                      <ControlledAutocomplete
+                        name={`bbdList[${index}].transactionId`}
+                        control={control}
+                        options={dataInformation.transactionItemIds || []}
+                        getOptionLabel={(option) =>
+                          option.transactionItemId || ""
+                        }
+                        isOptionEqualToValue={(option, val) =>
+                          option.transactionItemId === val
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            size="small"
+                            label="Transaction Item"
+                            helperText={
+                              errors?.bbdList?.[index]?.transactionId?.message
+                            }
+                            error={!!errors?.bbdList?.[index]?.transactionId}
+                            sx={{ width: "180px" }}
+                          />
+                        )}
+                        onChange={(_, selectedValue) => {
+                          // Set remainingInv when transaction ID changes
+                          setValue(
+                            `bbdList[${index}].remainingInv`,
+                            selectedValue?.remainingQuantity || ""
+                          );
+                          return selectedValue; // Return the full selected value
+                        }}
+                      />
+
                       <Controller
                         name={`bbdList[${index}].itemCode`}
                         control={control}
@@ -193,7 +262,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                         )}
                       />
                       <Controller
-                        name={`bbdList.${index}.itemDescription`}
+                        name={`bbdList[${index}].itemDescription`}
                         control={control}
                         render={({ field }) => (
                           <TextField
@@ -207,7 +276,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                         )}
                       />
                       <Controller
-                        name={`bbdList.${index}.salesIn`}
+                        name={`bbdList[${index}].salesIn`}
                         control={control}
                         render={({ field }) => (
                           <TextField
@@ -221,7 +290,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                         )}
                       />
                       <Controller
-                        name={`bbdList.${index}.remainingInv`}
+                        name={`bbdList[${index}].remainingInv`}
                         control={control}
                         render={({ field }) => (
                           <TextField
@@ -252,8 +321,14 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                             isAllowed={(values) => {
                               const { floatValue } = values; // Extract numerical value\
                               const totalQuantity = watch("bbdList").filter(
-                                (item, i) => i !== index
+                                (item, i) =>
+                                  i !== index &&
+                                  watch("bbdList")[index]?.transactionId
+                                    ?.transactionItemId ===
+                                    item?.transactionId?.transactionItemId
                               );
+
+                              console.log("total: ", totalQuantity);
                               const total =
                                 totalQuantity.reduce(
                                   (acc, item) =>
@@ -261,9 +336,14 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                                     (parseFloat(item.quantity) || 0),
                                   0
                                 ) + (parseFloat(floatValue) || 0);
-                              if (total > dataInformation.salesIn) {
+
+                              console.log("total: ", total);
+                              if (
+                                total > watch("bbdList")[index].remainingInv
+                              ) {
                                 snackbar({
-                                  message: "Quantity exceeds Sales In",
+                                  message:
+                                    "Quantity exceeds remaining inventory",
                                   variant: "error",
                                 });
                                 return false;
@@ -273,7 +353,8 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                             onValueChange={(values) => {
                               const { floatValue } = values; // Extract numerical value
                               if (
-                                (dataInformation.sales && (floatValue || 0 > dataInformation.remainingInv))
+                                dataInformation.sales &&
+                                (floatValue || 0 > dataInformation.remainingInv)
                               ) {
                                 snackbar({
                                   message: "Quantity exceeds Sales In",
@@ -295,7 +376,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                           />
                         )}
                       />
-
                       <Controller
                         name={`bbdList[${index}].bbd`}
                         control={control}

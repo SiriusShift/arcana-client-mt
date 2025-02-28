@@ -21,6 +21,8 @@ function ReceivingForm() {
     items: [],
     wrong: [],
   });
+
+  console.log(formData);
   
   const [isFormValid, setIsFormValid] = useState({
     isItemsValid: false,

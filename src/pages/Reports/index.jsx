@@ -18,7 +18,14 @@ import {
   useASReportsQuery,
   useGetCheckInReportsQuery,
   useGetSOAReportsQuery,
-  useGetCheckInFiloReportsQuery
+  useGetCheckInFiloReportsQuery,
+  useGetReturnByCDOReportsQuery,
+  useGetTransferOutReportsQuery,
+  useGetTransferInReportsQuery,
+  useGetFreebieReportsQuery,
+  useGetSamplingReportsQuery,
+  useGetReturnReportsQuery,
+  useGetReplaceReportsQuery
 } from "../../features/reports/api/reportsApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
@@ -33,6 +40,7 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { useDispatch } from "react-redux";
 import { useGetAllListingFeeQuery, useGetListingFeeHistoryByClientIdQuery } from "../../features/listing-fee/api/listingFeeApi";
 import { useGetAllReceivedOrdersQuery } from "../../features/inventory-management/api/receivingApi";
+import { useGetAllTransferOutsQuery } from "../../features/inventory-management/api/transferOutApi";
 // import SOAReport from "../../utils/Excel"
 
 function Reports() {
@@ -52,13 +60,30 @@ function Reports() {
     lf: true,
     //Checkin First in, Last out
     cf: true,
+    //Receiving Reports
     rr: true,
+    //Return By Cdo
+    rcdo: true,
+    //transfer out
+    tor: true,
+    //transfer in
+    tir: true,
+    //freebie
+    freebie: true,
+    //sampling
+    sampling: true,
+    //return
+    return: true,
+    //replace
+    replace: true
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
   const [search, setSearch] = useState("");
   const userDetails = useSelector((state) => state.login.userDetails);
   const presentDay = moment();
+
+  console.log(activeArray)
   // const selectedRowData = useSelector((state) => state.selectedRow.value);
   // const dispatch = useDispatch();
 
@@ -192,6 +217,25 @@ function Reports() {
       skip: isActive.rr
     });
 
+    const {data: returnByCdoReportData, isFetching: returnByCdoFetching} = useGetReturnByCDOReportsQuery({
+      ClusterId: clusterId?.value || "",
+      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+    }, {
+      skip: isActive.rcdo
+    });
+
+    const { data: transferOutReportData, isFetching: transferOutFetching } = useGetAllTransferOutsQuery({
+      Search: search,
+      Page: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+      TransferType: "Out",
+    }, {
+      skip: isActive.tor
+    });
+
   //functions
   const handleSubmitDate = () => {
     useDownloadExcel();
@@ -210,7 +254,7 @@ function Reports() {
       const response = await fetch(
         `${import.meta.env.VITE_BASEURL}${
           activeReport?.value
-        }-reports?DateFrom=${moment(watch("dateFrom")).format(
+        }?DateFrom=${moment(watch("dateFrom")).format(
           "MM-DD-YYYY"
         )}&DateTo=${moment(watch("dateTo")).format("MM-DD-YYYY")}${
           clusterId ? `&clusterId=${clusterId?.value}` : ""
@@ -275,7 +319,9 @@ function Reports() {
       soaReportData,
       listingFeeReportData,
       checkInFiloReportData,
-      receivingReportData
+      receivingReportData,
+      returnByCdoReportData,
+      transferOutReportData
     ];
     const keys = [
       "cdo",
@@ -285,7 +331,9 @@ function Reports() {
       "soa",
       "lf",
       "cf",
-      "rr"
+      "rr",
+      "rcdo",
+      "tor",
       // 'pm',/
     ];
 
@@ -310,6 +358,7 @@ function Reports() {
     listingFeeReportData,
     checkInFiloReportData,
     receivingReportData,
+    returnByCdoReportData,
     // priceModeReportData,
     watch("dateFrom"),
     watch("dateTo"),
@@ -344,7 +393,7 @@ function Reports() {
       "date",
       "invoiceNo",
       "itemDescription",
-      "qty",
+      "quantity",
       "unitPrice",
       "amount",
       "outlet",
@@ -630,7 +679,8 @@ function Reports() {
       checkInFetching || 
       listingFeeFetching || 
       checkInFiloFetching || 
-      receivingFetching ? (
+      receivingFetching ||
+      returnByCdoFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable

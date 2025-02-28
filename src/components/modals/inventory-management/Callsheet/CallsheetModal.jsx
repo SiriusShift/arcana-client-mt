@@ -98,7 +98,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
     // Ensure selectedRowData and transactionItemsDtos exist
     if (
       !selectedRowData ||
-      !Array.isArray(selectedRowData.transactionItemsDtos)
+      !Array.isArray(selectedRowData.callSheetDtos)
     ) {
       console.error(
         "selectedRowData or transactionItemsDtos is undefined or not an array"
@@ -107,7 +107,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
     }
 
     // Ensure index is within bounds
-    if (index < 0 || index >= selectedRowData.transactionItemsDtos.length) {
+    if (index < 0 || index >= selectedRowData.callSheetDtos.length) {
       console.error("Index out of bounds:", index);
       return;
     }
@@ -200,7 +200,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
                       </TableRow>
                     ))
                   : // Actual Data (Shows when data is available)
-                    callsheetData?.to[index]?.transactionItemsDtos?.map(
+                    callsheetData?.to[index]?.callSheetDtos?.map(
                       (item, index) => (
                         <TableRow sx={{ height: "50px" }} key={index}>
                           <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>

@@ -89,6 +89,7 @@ function CommonTable({
   lowerCompact,
   compact,
   moreCompact,
+  mostCompact,
   expanded,
   percentageArray,
   pesoArray,
@@ -136,7 +137,7 @@ function CommonTable({
             ? "calc(100dvh - 330px)"
             : moreCompact
             ? "calc(100dvh - 400px)"
-            : // : moreCompact
+            : mostCompact ? "calc(100dvh - 700px)"  : // : moreCompact
               // ? "calc(100dvh - 354px)"
               null,
         }}
@@ -226,7 +227,7 @@ function CommonTable({
             ? "calc(100dvh - 330px)"
             : moreCompact
             ? "calc(100dvh - 400px)"
-            : // : moreCompact
+            : mostCompact ? "calc(100dvh - 700px)"  : // : moreCompact
               // ? "calc(100dvh - 354px)"
               null,
         }}
@@ -414,6 +415,7 @@ function CommonTable({
                               )
                               .map(([key, value]) => ({ key, value })) // Store both key (color) and value
                           : [];
+                        console.log(nestedValues)
 
                         return (
                           <TableCell key={k}>

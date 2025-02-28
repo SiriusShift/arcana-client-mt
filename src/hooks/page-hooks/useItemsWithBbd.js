@@ -29,6 +29,7 @@ const useItemsWithBbd = ({
     setValue,
     formState: { dirtyFields, isValid },
     getFieldState,
+    watch,
   } = useFormContext();
 
   const { fields, append, remove } = useFieldArray({
@@ -44,10 +45,28 @@ const useItemsWithBbd = ({
   const itemsFieldState = getFieldState(itemsFieldName);
 
   const { data: productData, isFetching: isItemsWithBBDFetching } =
-  useGetAllItemsInventoryQuery();
+    useGetAllItemsInventoryQuery();
 
+  let transformedItems = items?.map((item) => {
+    console.log("testing123", item);
+    // const momentBBD = item.bbd
+    //   ? moment(item.bbd, "YYYY-MM-DD", true)
+    //   : null;
 
-  console.log("test 1", productData);
+    return {
+      item: productData?.find((product) => product.itemCode === item.itemCode),
+      itemDescription: item.itemDescription,
+      price: item.price,
+      netPrice: item.net,
+      uom: item.uom,
+      quantity: item.quantity,
+      bbd: item.bbd,
+      reason: item.reason,
+      // remarks: item.remarks
+    };
+  });
+
+  console.log("testing 1!", transformedItems, watchItems);
   console.log(items);
 
   const handleAddItem = () => {
@@ -94,48 +113,42 @@ const useItemsWithBbd = ({
 
   useEffect(() => {
     if (items.length > 0) {
-      if (
-        itemsFieldName === "replaceItems" ||
-        itemsFieldName === "returnItems"
-      ) {
-        const newItems = items?.map((item) => {
-          console.log("testing123",item);
-          // const momentBBD = item.bbd
-          //   ? moment(item.bbd, "YYYY-MM-DD", true)
-          //   : null;
-
-          return {
-            item: productData?.find(
-              (product) => product.itemCode === item.itemCode
-            ),
-            itemDescription: item.itemDescription,
-            price: item.price,
-            netPrice: item.net,
-            uom: item.uom,
-            quantity: item.quantity,
-            bbd: item.bbd,
-            reason: item.reason,
-            // remarks: item.remarks
-          };
-        });
+      if (itemsFieldName === "replaceItems" || itemsFieldName === "returnItems") {
+        const isDirty = dirtyFields?.[itemsFieldName] && Object.keys(dirtyFields[itemsFieldName]).length > 0;
+  
+        if (isDirty) {
+          console.log("Skipping update: User has edited returnItems.");
+          return;
+        }
+  
+        const newItems = items.map((item) => ({
+          item: productData?.find((product) => product.itemCode === item.itemCode),
+          itemDescription: item.itemDescription,
+          price: item.price,
+          netPrice: item.net,
+          uom: item.uom,
+          quantity: item.quantity,
+          bbd: item.bbd,
+          reason: item.reason ?? "",
+        }));
+  
         setValue(itemsFieldName, newItems);
       } else {
-        const newItems = items?.map((item, index) => {
-          console.log("test view", item, itemsFieldName);
-          return {
-            item: item,
-            itemDescription: item.itemDescription,
-            uom: item.uom,
-            price: item.amount,
-            quantity: item.quantity,
-            bbd: item.bbd,
-            reason: item.reason
-          };
-        });
+        const newItems = items.map((item) => ({
+          item: item,
+          itemDescription: item.itemDescription,
+          uom: item.uom,
+          price: item.amount,
+          quantity: item.quantity,
+          bbd: item.bbd,
+          reason: item.reason,
+        }));
+  
         setValue("items", newItems);
       }
     }
-  }, [items, productData, setValue]);
+  }, [items, productData, setValue, dirtyFields, itemsFieldName]);
+  
 
   return {
     bbdCache,

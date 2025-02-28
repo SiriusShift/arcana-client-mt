@@ -178,10 +178,10 @@ function PrintFreebiesModal({ ...otherProps }) {
                       <Box
                         sx={{
                           width: "100px",
-                          // height: "20px",
                           display: "flex",
                           justifyContent: "center",
                           position: "absolute",
+                          right: 0,
                           top: -20,
                         }}
                       >

@@ -32,17 +32,17 @@ export const reportNames = [
 	{
 		label: "CDO Reports",
 		index: 0,
-		value: "CDO",
+		value: "CDO-reports",
 	},
 	{
 		label: "Sales Analyst Reports",
 		index: 1,
-		value: "sales-journal",
+		value: "sales-journal-reports",
 	},
 	{
 		label: "AS Report",
 		index: 2,
-		value: "AS",
+		value: "AS-reports",
 	},
 	// {
 	// 	label: "GAS Report",
@@ -52,28 +52,63 @@ export const reportNames = [
 	{
 		label: "Check In Reports",
 		index: 3,
-		value: "check-ins",
+		value: "check-ins-reports",
 	},
 	{
 		label: "Statement of Account Reports",
 		index: 4,
-		value: "SOA"
+		value: "SOA-reports"
 	},
 	{
 		label: "Listing Fee Reports",
 		index: 5,
-		value: "listing-fee"
+		value: "listing-fee-reports"
 	},
 	{
 		label: "Check In, First in - Last out Reports",
 		index: 6,
-		value: "check-in-filo"
+		value: "check-in-filo-reports"
 	},
 	{
 		label: "Receiving Reports",
 		index: 7,
-		value: "arcana-mo"
+		value: "arcana-mo-reports"
 	},
+	{
+		label: "Return by CDO Reports",
+		index: 8,
+		value: "arcana-return-by-cdo-reports"
+	},
+	{
+		label: "Transfer Out Reports",
+		index: 9,
+		value: "arcana-transfer-out-reports"
+	},
+	{
+		label: "Transfer In Reports",
+		index: 10,
+		value: "arcana-transfer-in-reports"
+	},
+	{
+		label: "Freebie Reports",
+		index: 11,
+		value: "arcana-freebie-report"
+	},
+	{
+		label: "Sampling Reports",
+		index: 12,
+		value: "arcana-sampling-report"
+	},
+	{
+		label: "Return Reports",
+		index: 13,
+		value: "arcana-return-report"
+	},
+	{
+		label: "Replace Reports",
+		index: 14,
+		value: "arcana-replace-report"
+	}
 ]
 
 export const regions = [

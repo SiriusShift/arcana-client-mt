@@ -35,6 +35,8 @@ function TransferIn() {
         ? "Received"
         : "Rejected",
     TransferType: "In",
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   const tableHeads = [

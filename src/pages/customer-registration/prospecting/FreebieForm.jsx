@@ -26,7 +26,7 @@ import { setFreebies } from "../../../features/registration/reducers/regularRegi
 import useSnackbar from "../../../hooks/useSnackbar";
 import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
 import { RemoveCircleOutline } from "@mui/icons-material";
-import { useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
+import { priceModeItemsApi, useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
 import { NumericFormat } from "react-number-format";
 
 function FreebieForm({
@@ -156,7 +156,7 @@ function FreebieForm({
             itemId: freebie.itemId.itemId,
             quantity: freebie.quantity,
           })),
-        });
+        }).unwrap();
         setSnackbarMessage("Freebies updated successfully");
       } else {
         response = await postRequestFreebies({
@@ -170,6 +170,7 @@ function FreebieForm({
       }
 
       dispatch(setSelectedRow(response?.value));
+      dispatch(priceModeItemsApi.util.invalidateTags(["Price Mode Items"]));
       handleDrawerClose();
       debounce(onRedirectReleaseOpen(), 2000);
       onSuccessOpen();
@@ -424,6 +425,7 @@ function FreebieForm({
                     customInput={TextField}
                     type="text"
                     size="small"
+                    decimalScale={0}
                     label="Quantity"
                     autoComplete="off"
                     onValueChange={(values) => {
@@ -482,6 +484,7 @@ function FreebieForm({
                     allowNegative={false}
                     isAllowed={({ value }) => {
                       const inputValue = parseInt(value) || 0;
+                      
 
                       // Get the current total of all quantities, excluding the current item
                       const currentTotal = watch("freebies").reduce(

@@ -55,7 +55,7 @@ function TransferOut() {
       }
     );
 
-  const dataWithPrice = data?.to?.map((itemData) => ({
+  const dataWithPrice = data?.value?.to?.map((itemData) => ({
     ...itemData,
     transferItems: itemData.transferItems.map((item, index) => ({
       ...item,
@@ -171,7 +171,7 @@ function TransferOut() {
             page={page}
             setPage={setPage}
             onDownload={handleDownload}
-            count={data?.totalCount}
+            count={data?.value?.totalCount}
             dateTimeArray={dateTimeArray}
             onView={handleView}
           />
