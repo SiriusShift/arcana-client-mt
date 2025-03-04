@@ -2,7 +2,7 @@ import { dummyCallsheetData } from "../../../utils/DummyInventoryData";
 import { dummyGetAllCallsheet } from "../../../utils/DummyQueryFn";
 import { api } from "../../api";
 
-const callsheetApi = api
+export const callsheetApi = api
   .enhanceEndpoints({ addTagTypes: ["Callsheet"] })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -50,7 +50,16 @@ const callsheetApi = api
         query: () => ({
           url: "/get-transaction-item-callsheet",
           method: "GET"
-        })
+        }),
+        providesTags: ["Callsheet"]
+      }),
+      deleteCallsheetBBD: builder.mutation({
+        query: ({body, id}) => ({
+          url: `/delete-callsheet-bbd/${id}`,
+          method: "PUT",
+          body
+        }),
+        invalidatesTags: ["Callsheet"]
       })
     }),
   });
@@ -59,6 +68,7 @@ export const {
   useGetAllCallsheetsQuery,
   useUpdateRemainingInventoryMutation,
   useUpdateItemsWithBBDMutation,
-  useGetTransactionItemCallsheetQuery
+  useGetTransactionItemCallsheetQuery,
+  useDeleteCallsheetBBDMutation
   // useGetCallSheetByIdQuery,
 } = callsheetApi;

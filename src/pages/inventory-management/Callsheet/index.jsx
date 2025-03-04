@@ -35,13 +35,13 @@ function Callsheet() {
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     PageNumber: page + 1,
     PageSize: rowsPerPage,
-  });
+  }, {refetchOnMountOrArgChange: true});
 
   console.log(data);
 
-  const transformedData = data?.to?.map(({ red, orange, green, ...item }) => ({
+  const transformedData = data?.to?.map(({ red, orange, green, gray, ...item }) => ({
     ...item,
-    expirationDate: red || orange || green ? { red, orange, green } : {},
+    expirationDate: red || orange || green || gray ? { gray, red, orange, green  } : {},
   }));
 
   const tableHeads = [
@@ -62,7 +62,7 @@ function Callsheet() {
 
   const nestedProperty = {
     key: "expirationDate",
-    nestedKeys: ["red", "orange", "green"],
+    nestedKeys: ["gray", "red", "orange", "green", ],
   };
 
   const dateTimeArray = ["callSheetDate"];
@@ -75,6 +75,10 @@ function Callsheet() {
             <Typography className="inventory__callsheet__summaryHeader__title">
               Color Summmary
             </Typography>
+            <div className="inventory__callsheet__summaryHeader__greyBox">
+              <div className="inventory__callsheet__summaryHeader__greyBox__grey" />
+              <Typography>Expired</Typography>
+            </div>
             <div className="inventory__callsheet__summaryHeader__redBox">
               <div className="inventory__callsheet__summaryHeader__redBox__red" />
               <Typography>1 - 10 Days</Typography>

@@ -137,8 +137,9 @@ function CommonTable({
             ? "calc(100dvh - 330px)"
             : moreCompact
             ? "calc(100dvh - 400px)"
-            : mostCompact ? "calc(100dvh - 700px)"  : // : moreCompact
-              // ? "calc(100dvh - 354px)"
+            : mostCompact
+            ? "calc(100dvh - 700px)" // : moreCompact
+            : // ? "calc(100dvh - 354px)"
               null,
         }}
       >
@@ -227,8 +228,9 @@ function CommonTable({
             ? "calc(100dvh - 330px)"
             : moreCompact
             ? "calc(100dvh - 400px)"
-            : mostCompact ? "calc(100dvh - 700px)"  : // : moreCompact
-              // ? "calc(100dvh - 354px)"
+            : mostCompact
+            ? "calc(100dvh - 700px)" // : moreCompact
+            : // ? "calc(100dvh - 354px)"
               null,
         }}
       >
@@ -264,9 +266,10 @@ function CommonTable({
                 <TableCell
                   sx={{
                     position:
-                     (item === "Actions" || item === "SOH") && "sticky",
+                      (item === "Actions" || item === "SOH") && "sticky",
                     right: (item === "Actions" || item === "SOH") && 0,
-                    bgcolor: (item === "Actions" || item === "SOH") && "primary.main",
+                    bgcolor:
+                      (item === "Actions" || item === "SOH") && "primary.main",
                   }}
                   key={i}
                 >
@@ -415,7 +418,7 @@ function CommonTable({
                               )
                               .map(([key, value]) => ({ key, value })) // Store both key (color) and value
                           : [];
-                        console.log(nestedValues)
+                        console.log(nestedValues);
 
                         return (
                           <TableCell key={k}>
@@ -441,6 +444,14 @@ function CommonTable({
                                 ))
                               ) : (
                                 <>
+                                  <Box
+                                    sx={{
+                                      width: "38px",
+                                      height: "28px",
+                                      backgroundColor: "grey", // Use key as background color
+                                      textAlign: "center",
+                                    }}
+                                  />
                                   <Box
                                     sx={{
                                       width: "38px",

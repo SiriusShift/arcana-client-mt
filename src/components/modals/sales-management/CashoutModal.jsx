@@ -23,6 +23,7 @@ import { NumericFormat } from "react-number-format";
 import { useGetAllDiscountTypesQuery } from "../../../features/setup/api/discountTypeApi";
 import { priceModeItemsApi } from "../../../features/setup/api/priceModeItemsApi";
 import { useDispatch } from "react-redux";
+import { callsheetApi } from "../../../features/inventory-management/api/callsheetApi";
 
 function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   const { onClose, open } = props;
@@ -130,6 +131,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
       
             // Once the transaction is successful, invalidate the tags
             dispatch(priceModeItemsApi.util.invalidateTags(["Price Mode Items"]));
+            dispatch(callsheetApi.util.invalidateTags(["Callsheet"]))
       
             return response; // Return the response so it can be handled as necessary
           } catch (error) {
