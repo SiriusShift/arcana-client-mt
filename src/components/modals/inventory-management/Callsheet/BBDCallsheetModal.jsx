@@ -50,11 +50,9 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [isQuantityValid, setIsQuantityValid] = useState(true);
   const [groupedSum, setGroupedSum] = useState(0);
-  console.log(isQuantityValid);
 
   const validDataKey = index !== undefined && index !== null ? index : "";
   const dataInformation = data?.callSheetDtos?.[validDataKey] || {};
-  console.log(groupedSum);
 
   const {
     handleSubmit,
@@ -169,6 +167,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       salesIn: dataInformation.salesIn || "",
       remainingInv: dataInformation.remainingInv || "",
       quantity: null,
+      initial: null,
       bbd: "",
     });
   };
@@ -181,7 +180,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
             itemCode: dataInformation.itemCode || "",
             itemDescription: dataInformation.itemDescription || "",
             salesIn: dataInformation.salesIn || "",
-            initial: item.quantity,
+            initial: item.quantity || null,
             remainingInv: item.remainingQuantity,
 
             transactionId: dataInformation.transactionItemIds.find(
@@ -193,9 +192,9 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
             bbdId: item?.bbdId,
           })) || [],
       });
-      setTotalQuantity(
-        dataInformation?.bbdDtos?.reduce((acc, item) => acc + item.quantity, 0)
-      );
+      // setTotalQuantity(
+      //   dataInformation?.bbdDtos?.reduce((acc, item) => acc + item.quantity, 0)
+      // );
     } else if (!open) {
       reset({
         bbdList: [],
@@ -203,10 +202,15 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       setTotalQuantity(0);
     }
   }, [open, reset]); // Added watch as a dependency to ensure only when dataInformation changes
-  const bbdList = watch("bbdList");
+  const bbdList = useWatch({
+    control,
+    name: "bbdList", // Watches the whole bbdList array
+  });
 
   useEffect(() => {
     if (open) {
+      console.log("bbdList changed", bbdList);
+  
       const groupedSums = bbdList.reduce((acc, item) => {
         if (!item.initial && item.transactionId?.transactionId) {
           const transactionId = item.transactionId.transactionId;
@@ -215,11 +219,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         }
         return acc;
       }, {});
-
-      console.log(groupedSums);
-
-      setGroupedSum(groupedSums);
-
+  
       const isValid = bbdList.every((item) => {
         if (!item.initial && item.transactionId?.transactionId) {
           const transactionId = item.transactionId.transactionId;
@@ -227,10 +227,12 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         }
         return true;
       });
-
+  
+      setGroupedSum(groupedSums);
       setIsQuantityValid(isValid);
     }
   }, [open, bbdList]);
+  
 
   const disableFields = fields.some((item) => item.actualQuantity);
 
@@ -241,6 +243,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         disableSubmit={!isValid || !isQuantityValid}
         submitText="Update"
         open={open}
+        date={data?.modifiedDate}
         onSubmit={handleSubmit(onSubmit)}
         onClose={handleClose}
         width={width}
@@ -273,13 +276,15 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                       <ControlledAutocomplete
                         name={`bbdList[${index}].transactionId`}
                         control={control}
-                        options={dataInformation.transactionItemIds.filter(
+                        options={dataInformation?.transactionItemIds?.filter(
                           (item) =>
-                            !watch("bbdList")
-                              ?.map((bbd) => bbd?.transactionId?.transactionId)
-                              .includes(item?.transactionId)
-                        )}                        disabled={watch("bbdList")?.[index]?.initial}
-                        getOptionLabel={(option) => option.transactionId || ""}
+                            !dataInformation?.bbdDtos?.some(
+                              (bbd) =>
+                                bbd?.transactionId === item?.transactionId
+                            )
+                        )}
+                        disabled={watch("bbdList")?.[index]?.initial}
+                        getOptionLabel={(option) => option?.transactionId || ""}
                         isOptionEqualToValue={(option, val) =>
                           option.transactionId === val
                         }
@@ -453,25 +458,62 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                             }}
                             onValueChange={(values) => {
                               const { floatValue } = values;
+                              const currentTransactionId =
+                                watch("bbdList")[index]?.transactionId
+                                  ?.transactionId;
 
-                              if (
-                                dataInformation.sales &&
-                                floatValue > dataInformation.remainingInv
-                              ) {
-                                snackbar({
-                                  message: "Quantity exceeds Sales In",
-                                  variant: "error",
-                                });
-                              } else {
-                                field.onChange(floatValue || 0);
-                                setTotalQuantity(
-                                  watch("bbdList").reduce(
-                                    (acc, item) =>
-                                      Number(acc) +
-                                      (Number(item.quantity) || 0),
-                                    0
-                                  )
+                              // Check if there is any matching transactionId in bbdDtos
+                              const hasMatchingTransaction =
+                                dataInformation.bbdDtos.some(
+                                  (dto) =>
+                                    dto.transactionId === currentTransactionId
                                 );
+
+                              if (hasMatchingTransaction) {
+                                if (
+                                  floatValue >
+                                  watch("bbdList")[index].remainingInv
+                                ) {
+                                  snackbar({
+                                    message:
+                                      "Quantity exceeds remaining inventory",
+                                    variant: "error",
+                                  });
+                                  return false;
+                                }
+                              } else if (!hasMatchingTransaction) {
+                                // If no matching transactionId in bbdDtos
+                                const totalQuantity = watch("bbdList").filter(
+                                  (item, i) =>
+                                    i !== index &&
+                                    item?.transactionId?.transactionId ===
+                                      currentTransactionId
+                                );
+
+                                console.log("TEEEST");
+
+                                const total =
+                                  totalQuantity.reduce(
+                                    (acc, item) =>
+                                      parseFloat(acc) +
+                                      (parseFloat(item.quantity) || 0),
+                                    0
+                                  ) + (parseFloat(floatValue) || 0);
+
+                                console.log(total);
+
+                                if (
+                                  total > watch("bbdList")[index].remainingInv
+                                ) {
+                                  snackbar({
+                                    message:
+                                      "Quantity exceeds remaining inventory",
+                                    variant: "error",
+                                  });
+                                  return false;
+                                }
+                                field.onChange(floatValue);
+                                // setTotalQuantity(total)
                               }
                             }}
                           />
@@ -522,7 +564,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                   {!disableFields &&
                     dataInformation?.remainingInv > 0 &&
                     // && totalQuantity < dataInformation.remainingInv
-                    totalQuantity < dataInformation.salesIn && (
+                    totalQuantity < dataInformation.salesIn  && (
                       <SecondaryButton
                         endIcon={<Add />}
                         sx={{ width: "fit-content", alignSelf: "end" }}

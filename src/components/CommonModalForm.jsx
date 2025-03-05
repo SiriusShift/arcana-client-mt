@@ -8,12 +8,14 @@ import {
 } from "@mui/material";
 import DangerButton from "./DangerButton";
 import SecondaryButton from "./SecondaryButton";
+import moment from "moment";
 
 function CommonModalForm({
   disableSubmit,
   isLoading,
   onSubmit,
   title,
+  date,
   disableButton,
   submitText = "Submit",
   width,
@@ -22,7 +24,9 @@ function CommonModalForm({
   ...otherProps
 }) {
   const { onClose, ...noOnCloseProps } = otherProps;
-
+  console.log(date);
+  // const isDisabled = moment(date).isBefore(moment().add(1, "days")) && date !== "0001-01-01T00:00:00"
+  
   return (
     <Modal {...noOnCloseProps}>
       <Box

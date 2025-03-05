@@ -40,6 +40,7 @@ import moment from "moment";
 
 function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  console.log(selectedRowData)
   const [data, setData] = useState([]);
   const confirm = useConfirm();
   const {
@@ -55,10 +56,10 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   });
 
   const index = callsheetData?.to?.findIndex(
-    (item) => item?.transactionId === selectedRowData?.transactionId
+    (item) => item?.clientId === selectedRowData?.clientId
   );
 
-  console.log(index);
+  console.log("customer",index);
 
   //RTK QUERY
   // const [updateItems] = useUpdateRemainingInventoryMutation();
