@@ -42,7 +42,6 @@ import {
 import useConfirm from "../../../../hooks/useConfirm";
 import { bbdCallsheet } from "../../../../schema/schema";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
-import { initial } from "lodash";
 import {
   selectItem,
   upsertItem,
@@ -423,7 +422,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                           />
                         )}
                       />
-                      <Controller
+                      {/* <Controller
                         name={`bbdList[${index}].initial`}
                         control={control}
                         render={({ field }) => (
@@ -436,7 +435,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                             disabled
                           />
                         )}
-                      />
+                      /> */}
                       <Controller
                         name={`bbdList[${index}].remainingInv`}
                         control={control}

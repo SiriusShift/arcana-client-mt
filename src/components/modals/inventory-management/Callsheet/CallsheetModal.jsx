@@ -238,7 +238,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
       <BBDCallsheetModal
         data={callsheetData?.to[index]}
         index={data}
-        width={"50%"}
+        width={"1250px"}
         open={isBbdOpen}
         onClose={onBbdClose}
       />
