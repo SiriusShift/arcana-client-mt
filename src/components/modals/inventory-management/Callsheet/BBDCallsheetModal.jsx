@@ -25,7 +25,7 @@ import {
   Stack,
 } from "@mui/material";
 import { useField } from "@mui/x-date-pickers/internals";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Add, RemoveCircle } from "@mui/icons-material";
 import SecondaryButton from "../../../SecondaryButton";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -43,9 +43,11 @@ import useConfirm from "../../../../hooks/useConfirm";
 import { bbdCallsheet } from "../../../../schema/schema";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
 import { initial } from "lodash";
+import { selectItem, upsertItem, updateBbd } from "../../../../features/inventory-management/reducers/callsheetSlice";
 
 function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const snackbar = useSnackbar();
+  const dispatch = useDispatch();
   const confirm = useConfirm();
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [isQuantityValid, setIsQuantityValid] = useState(true);
@@ -107,23 +109,25 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       return acc;
     }, []);
 
-    console.log(groupedData);
-    try {
-      confirm({
-        children: "Are you sure you want to update the remaining inventory?",
-        question: true,
-        callback: () => {
-          triggerBBD({ items: groupedData }).unwrap();
-          snackbar({
-            message: "Inventory updated successfully",
-            variant: "success",
-          });
-          handleClose();
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    console.log("onSUbmit",groupedData);
+    dispatch(upsertItem(groupedData));
+    handleClose()
+    // try {
+    //   confirm({
+    //     children: "Are you sure you want to update the remaining inventory?",
+    //     question: true,
+    //     callback: () => {
+    //       triggerBBD({ items: groupedData }).unwrap();
+    //       snackbar({
+    //         message: "Inventory updated successfully",
+    //         variant: "success",
+    //       });
+    //       handleClose();
+    //     },
+    //   });
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
 
   const onDelete = (item, index) => {

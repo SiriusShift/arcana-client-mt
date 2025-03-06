@@ -13,6 +13,7 @@ import { api } from "../features/api";
 import { initialChangePasswordApi } from "../features/authentication/api/initialChangePasswordApi";
 import { generateReceivingSlice } from "../features/inventory-management/reducers/generateReceivingSlice";
 import { bbdCacheSlice } from "../features/inventory-management/reducers/bbdCacheSlice";
+import { callsheetSlice } from "../features/inventory-management/reducers/callsheetSlice";
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +26,7 @@ export const store = configureStore({
     disclosure: disclosureSlice.reducer,
     generateReceiving: generateReceivingSlice.reducer,
     bbdCache: bbdCacheSlice.reducer,
+    callsheet: callsheetSlice.reducer,
     [api.reducerPath]: api.reducer,
     [initialChangePasswordApi.reducerPath]: initialChangePasswordApi.reducer,
     [sedarApi.reducerPath]: sedarApi.reducer,
