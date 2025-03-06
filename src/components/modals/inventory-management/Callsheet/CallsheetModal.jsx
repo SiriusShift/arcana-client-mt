@@ -39,14 +39,16 @@ import {
 import useConfirm from "../../../../hooks/useConfirm";
 import moment from "moment";
 import { clearCallsheet } from "../../../../features/inventory-management/reducers/callsheetSlice";
-import { bbdCallsheet } from "../../../../schema/schema";
 
 function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  console.log(selectedRowData);
+  const callsheetItem = useSelector((state) => state.callsheet.items);
+
+  console.log(callsheetItem);
   const [data, setData] = useState([]);
   const dispatch = useDispatch();
   const confirm = useConfirm();
+  const snackbar = useSnackbar();
   const {
     onOpen: onBbdOpen,
     onClose: onBbdClose,
@@ -55,13 +57,6 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
 
   const [triggerUpdate] = useUpdateItemsWithBBDMutation();
 
-  const methods = useForm({
-    resolver: yupResolver(bbdCallsheet.schema),
-    defaultValues: bbdCallsheet.defaultValues,
-  });
-
-  const { watch } = methods;
-  console.log(watch());
   const { data: callsheetData, isFetching } = useGetAllCallsheetsQuery({
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
@@ -74,7 +69,24 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
 
   console.log("customer", index);
 
-  const handleSubmit = () => {};
+  const onSubmit = async () => {
+    try {
+      confirm({
+        children: "Are you sure you want to update callsheet?",
+        question: true,
+        callback: () => {
+          triggerUpdate({
+            accessBy: 0,
+            items: callsheetItem,
+          }).unwrap();
+          snackbar({message: "successfully updated callsheet", variant: "success"})
+          handleClose();
+        },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const handleClose = () => {
     onClose();
     dispatch(clearCallsheet());
@@ -107,8 +119,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
     <>
       <CommonModalForm
         title={"Call Sheet"}
-        disableButton={true}
-        // onSubmit={handleSubmit(onSubmit)}
+        onSubmit={onSubmit}
         onClose={handleClose}
         width={width}
         {...props}
@@ -224,15 +235,13 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
           </TableContainer>
         </Box>
       </CommonModalForm>
-      <FormProvider {...methods}>
-        <BBDCallsheetModal
-          data={callsheetData?.to[index]}
-          index={data}
-          width={"50%"}
-          open={isBbdOpen}
-          onClose={onBbdClose}
-        />
-      </FormProvider>
+      <BBDCallsheetModal
+        data={callsheetData?.to[index]}
+        index={data}
+        width={"50%"}
+        open={isBbdOpen}
+        onClose={onBbdClose}
+      />
     </>
   );
 }

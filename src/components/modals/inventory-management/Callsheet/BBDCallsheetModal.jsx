@@ -70,7 +70,11 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     reset,
     setValue,
     watch,
-  } = useFormContext();
+  } = useForm({
+    mode: "onChange",
+    resolver: yupResolver(bbdCallsheet.schema),
+    defaultValues: bbdCallsheet.defaultValues,
+  });
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -183,7 +187,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       const bbdDtos = dataInformation?.bbdDtos || [];
       const transactionItemIds = dataInformation?.transactionItemIds || [];
       const callsheetItems = callsheetItem || [];
-      console.log(bbdDtos);
+      console.log(bbdDtos)
 
       const mergedBbdList = [
         ...bbdDtos.flatMap((item) => {
@@ -211,8 +215,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
               remainingInv: item?.remainingQuantity ?? null,
               transactionId: transactionItemIds.find(
                 (transaction) =>
-                  transaction?.transactionId ===
-                  matchingCallsheet?.transactionId
+                  transaction?.transactionId === matchingCallsheet?.transactionId
               ),
               quantity: bbd?.quantity ?? null,
               bbd: bbd?.bbd || "",
@@ -248,15 +251,8 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                 itemDescription: dataInformation?.itemDescription || "",
                 salesIn: dataInformation?.salesIn || "",
                 initial: null,
-                remainingInv: transactionItemIds.find(
-                  (transactions) =>
-                    transactions.transactionId === callsheet?.transactionId
-                ).remainingQuantity,
-                transactionId:
-                  transactionItemIds.find(
-                    (transactions) =>
-                      transactions.transactionId === callsheet?.transactionId
-                  ) || null,
+                remainingInv: transactionItemIds.find((transactions) => transactions.transactionId === callsheet?.transactionId).remainingQuantity,
+                transactionId: transactionItemIds.find((transactions) => transactions.transactionId === callsheet?.transactionId) || null,
                 quantity: bbd?.quantity || null,
                 bbd: bbd?.bbd || "",
                 bbdId: bbd?.bbdId || null,

@@ -17,6 +17,7 @@ import { transform } from "lodash";
 function Callsheet() {
   const navigate = useNavigate();
   const location = useLocation();
+  const selectedRowData = useSelector((state) => state.selectedRow?.value);
 
   const {
     onOpen: onCallsheetOpen,
@@ -38,6 +39,14 @@ function Callsheet() {
   }, {refetchOnMountOrArgChange: true});
 
   console.log(data);
+  const disableActions = ["view"];
+  const checkIsDisabled = (date) => {
+    const isDisabled = moment().isBefore(moment(date).add(1, "days"));
+    console.log("checking disabled",isDisabled);
+      // && totalAmount - balance === 0;
+    return isDisabled;
+  };
+
 
   const transformedData = data?.to?.map(({ red, orange, green, gray, ...item }) => ({
     ...item,
@@ -131,6 +140,9 @@ function Callsheet() {
               mapData={transformedData}
               tableHeads={tableHeads}
               customOrderKeys={customOrderKeys}
+              disableActions={
+                checkIsDisabled && disableActions
+              }
               nestedProperty={nestedProperty}
               rowsPerPage={rowsPerPage}
               setRowsPerPage={setRowsPerPage}
