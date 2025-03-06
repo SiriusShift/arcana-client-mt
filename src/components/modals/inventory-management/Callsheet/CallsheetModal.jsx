@@ -37,11 +37,13 @@ import {
 } from "../../../../features/inventory-management/api/callsheetApi";
 import useConfirm from "../../../../hooks/useConfirm";
 import moment from "moment";
+import { clearCallsheet } from "../../../../features/inventory-management/reducers/callsheetSlice";
 
 function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   console.log(selectedRowData)
   const [data, setData] = useState([]);
+  const dispatch = useDispatch();
   const confirm = useConfirm();
   const {
     onOpen: onBbdOpen,
@@ -92,6 +94,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
 
   const handleClose = () => {
     onClose();
+    dispatch(clearCallsheet())
     setData(null);
   };
 

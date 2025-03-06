@@ -54,8 +54,11 @@ export const callsheetSlice = createSlice({
       const item = state.items.find((item) => item.transactionId === transactionId);
       return item;
     },
+    clearCallsheet: (state) => {
+      state.items = [];
+    },
   },
 });
 
-export const { upsertItem, updateBbd, selectItem } = callsheetSlice.actions;
+export const { upsertItem, updateBbd, selectItem, clearCallsheet } = callsheetSlice.actions;
 export default callsheetSlice.reducer;

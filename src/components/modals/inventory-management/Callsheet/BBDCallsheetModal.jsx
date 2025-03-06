@@ -43,18 +43,25 @@ import useConfirm from "../../../../hooks/useConfirm";
 import { bbdCallsheet } from "../../../../schema/schema";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
 import { initial } from "lodash";
-import { selectItem, upsertItem, updateBbd } from "../../../../features/inventory-management/reducers/callsheetSlice";
+import {
+  selectItem,
+  upsertItem,
+  updateBbd,
+} from "../../../../features/inventory-management/reducers/callsheetSlice";
 
 function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
   const confirm = useConfirm();
+  const callsheetItem = useSelector((state) => state.callsheet.items);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [isQuantityValid, setIsQuantityValid] = useState(true);
   const [groupedSum, setGroupedSum] = useState(0);
 
   const validDataKey = index !== undefined && index !== null ? index : "";
   const dataInformation = data?.callSheetDtos?.[validDataKey] || {};
+
+  console.log(callsheetItem);
 
   const {
     handleSubmit,
@@ -74,7 +81,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     name: "bbdList",
   });
 
-  console.log(isValid);
+  // console.log(isValid);
   //RTK QUERY
 
   const [triggerBBD] = useUpdateItemsWithBBDMutation();
@@ -84,7 +91,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
 
   // // FUNCTIONS
   const onSubmit = (data) => {
-    console.log("submit");
     const transformData = data?.bbdList?.map((item) => ({
       transactionId: item.transactionId.transactionId,
       itemCode: item.itemCode,
@@ -109,9 +115,9 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       return acc;
     }, []);
 
-    console.log("onSUbmit",groupedData);
+    // console.log("onSUbmit", groupedData);
     dispatch(upsertItem(groupedData));
-    handleClose()
+    handleClose();
     // try {
     //   confirm({
     //     children: "Are you sure you want to update the remaining inventory?",
@@ -131,11 +137,11 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   };
 
   const onDelete = (item, index) => {
-    console.log("Item to delete:", index); // Debug here
+    // console.log("Item to delete:", index); // Debug here
     const find = dataInformation?.bbdDtos?.find(
       (bbd) => bbd.bbdId === item.bbdId
     );
-    console.log("Matching BBD:", find); // See if it finds anything
+    // console.log("Matching BBD:", find); // See if it finds anything
     if (find) {
       confirm({
         children: "Are you sure you want to delete bbd item?",
@@ -154,10 +160,10 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     }
   };
 
-  console.log(watch());
+  // console.log(watch());
 
   const handleClose = () => {
-    console.log("close!");
+    // console.log("close!");
     reset();
     setTotalQuantity(0);
     onClose();
@@ -178,34 +184,67 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
 
   useEffect(() => {
     if (dataInformation && open) {
-      reset({
-        bbdList:
-          dataInformation?.bbdDtos?.map((item) => ({
-            itemCode: dataInformation.itemCode || "",
-            itemDescription: dataInformation.itemDescription || "",
-            salesIn: dataInformation.salesIn || "",
-            initial: item.quantity || null,
-            remainingInv: item.remainingQuantity,
+      const bbdDtos = dataInformation?.bbdDtos || [];
+      const transactionItemIds = dataInformation?.transactionItemIds || [];
+      const callsheetItems = callsheetItem || [];
+      console.log(bbdDtos);
+      console.log(callsheetItems);
 
-            transactionId: dataInformation.transactionItemIds.find(
-              (transaction) =>
-                transaction?.transactionId === item?.transactionId
-            ),
-            quantity: null,
-            bbd: item?.bbdDate ?? "",
-            bbdId: item?.bbdId,
-          })) || [],
-      });
-      // setTotalQuantity(
-      //   dataInformation?.bbdDtos?.reduce((acc, item) => acc + item.quantity, 0)
-      // );
+      const mergedBbdList = [
+        ...bbdDtos
+          .map((item) => {
+            return {
+              itemCode: dataInformation.itemCode || "",
+              itemDescription: dataInformation.itemDescription || "",
+              salesIn: dataInformation.salesIn || "",
+              initial: item.quantity || null,
+              remainingInv: item.remainingQuantity,
+              transactionId: transactionItemIds.find(
+                (transaction) =>
+                  transaction?.transactionId === item?.transactionId
+              ),
+              quantity: null,
+              bbd: item?.bbdDate ?? "",
+              bbdId: item?.bbdId,
+            };
+          })
+          .flat(),
+
+        ...callsheetItems
+          .filter(
+            (callsheet) =>
+              !transactionItemIds.some(
+                (transaction) =>
+                  transaction?.transactionId === callsheet?.transactionId
+              ) && callsheet?.itemCode === dataInformation?.itemCode
+          )
+          .flatMap((callsheet) =>
+            callsheet.itemBbds.map((bbd) => ({
+              itemCode: callsheet?.itemCode || "",
+              itemDescription: dataInformation?.itemDescription || "",
+              salesIn: dataInformation?.salesIn || "",
+              initial: bbd?.quantity || null,
+              remainingInv: null,
+              transactionId: callsheet?.transactionId || null,
+              quantity: bbd?.quantity || null,
+              bbd: bbd?.bbd || "",
+              bbdId: bbd?.bbdId || null,
+            }))
+          ),
+      ];
+
+      reset({ bbdList: mergedBbdList });
     } else if (!open) {
-      reset({
-        bbdList: [],
-      });
+      reset({ bbdList: [] });
       setTotalQuantity(0);
     }
-  }, [open, reset]); // Added watch as a dependency to ensure only when dataInformation changes
+  }, [
+    open,
+    reset,
+    JSON.stringify(dataInformation),
+    JSON.stringify(callsheetItem),
+  ]);
+
   const bbdList = useWatch({
     control,
     name: "bbdList", // Watches the whole bbdList array
@@ -214,7 +253,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   useEffect(() => {
     if (open) {
       console.log("bbdList changed", bbdList);
-  
+
       const groupedSums = bbdList.reduce((acc, item) => {
         if (!item.initial && item.transactionId?.transactionId) {
           const transactionId = item.transactionId.transactionId;
@@ -223,7 +262,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         }
         return acc;
       }, {});
-  
+
       const isValid = bbdList.every((item) => {
         if (!item.initial && item.transactionId?.transactionId) {
           const transactionId = item.transactionId.transactionId;
@@ -231,12 +270,11 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         }
         return true;
       });
-  
+
       setGroupedSum(groupedSums);
       setIsQuantityValid(isValid);
     }
   }, [open, bbdList]);
-  
 
   const disableFields = fields.some((item) => item.actualQuantity);
 
@@ -305,7 +343,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                           />
                         )}
                         onChange={(_, selectedValue) => {
-                          console.log(selectedValue);
+                          // console.log(selectedValue);
                           // Set remainingInv when transaction ID changes
                           setValue(
                             `bbdList[${index}].remainingInv`,
@@ -494,8 +532,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                                       currentTransactionId
                                 );
 
-                                console.log("TEEEST");
-
                                 const total =
                                   totalQuantity.reduce(
                                     (acc, item) =>
@@ -504,7 +540,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                                     0
                                   ) + (parseFloat(floatValue) || 0);
 
-                                console.log(total);
+                                // console.log(total);
 
                                 if (
                                   total > watch("bbdList")[index].remainingInv
@@ -568,7 +604,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                   {!disableFields &&
                     dataInformation?.remainingInv > 0 &&
                     // && totalQuantity < dataInformation.remainingInv
-                    totalQuantity < dataInformation.salesIn  && (
+                    totalQuantity < dataInformation.salesIn && (
                       <SecondaryButton
                         endIcon={<Add />}
                         sx={{ width: "fit-content", alignSelf: "end" }}
