@@ -33,15 +33,17 @@ import BBDCallsheetModal from "./BBDCallsheetModal";
 import { setSelectedRow } from "../../../../features/misc/reducers/selectedRowSlice";
 import {
   useGetAllCallsheetsQuery,
+  useUpdateItemsWithBBDMutation,
   useUpdateRemainingInventoryMutation,
 } from "../../../../features/inventory-management/api/callsheetApi";
 import useConfirm from "../../../../hooks/useConfirm";
 import moment from "moment";
 import { clearCallsheet } from "../../../../features/inventory-management/reducers/callsheetSlice";
+import { bbdCallsheet } from "../../../../schema/schema";
 
 function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  console.log(selectedRowData)
+  console.log(selectedRowData);
   const [data, setData] = useState([]);
   const dispatch = useDispatch();
   const confirm = useConfirm();
@@ -51,6 +53,15 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
     isOpen: isBbdOpen,
   } = useDisclosure();
 
+  const [triggerUpdate] = useUpdateItemsWithBBDMutation();
+
+  const methods = useForm({
+    resolver: yupResolver(bbdCallsheet.schema),
+    defaultValues: bbdCallsheet.defaultValues,
+  });
+
+  const { watch } = methods;
+  console.log(watch());
   const { data: callsheetData, isFetching } = useGetAllCallsheetsQuery({
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
@@ -61,49 +72,18 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
     (item) => item?.clientId === selectedRowData?.clientId
   );
 
-  console.log("customer",index);
+  console.log("customer", index);
 
-  //RTK QUERY
-  // const [updateItems] = useUpdateRemainingInventoryMutation();
-
-  //FUNCTIONS
-
-  // const onSubmit = (data) => {
-  //   console.log(data);
-  //   try {
-  //     confirm({
-  //       children: "Are you sure you want to update the remaining inventory?",
-  //       question: true,
-  //       callback: () => {
-  //         updateItems({
-  //           body: {
-  //             transactionItems: data.items.map((item) => ({
-  //               transactionItemsId: item?.transactionItemId,
-  //               remainingInv: item?.remainingInv,
-  //             })),
-  //           },
-  //           id: selectedRowData?.transactionId,
-  //         }).unwrap();
-  //         onClose();
-  //       },
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
+  const handleSubmit = () => {};
   const handleClose = () => {
     onClose();
-    dispatch(clearCallsheet())
+    dispatch(clearCallsheet());
     setData(null);
   };
 
   const handleOpen = (index) => {
     // Ensure selectedRowData and transactionItemsDtos exist
-    if (
-      !selectedRowData ||
-      !Array.isArray(selectedRowData.callSheetDtos)
-    ) {
+    if (!selectedRowData || !Array.isArray(selectedRowData.callSheetDtos)) {
       console.error(
         "selectedRowData or transactionItemsDtos is undefined or not an array"
       );
@@ -172,7 +152,11 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
               <TableBody>
                 {isFetching
                   ? // Skeleton Loader (Shows while fetching data)
-                    [...Array(callsheetData?.to[index]?.transactionItemsDtos?.length)].map((_, index) => (
+                    [
+                      ...Array(
+                        callsheetData?.to[index]?.transactionItemsDtos?.length
+                      ),
+                    ].map((_, index) => (
                       <TableRow key={index}>
                         <TableCell>
                           <Skeleton variant="text" width={80} />
@@ -240,13 +224,15 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
           </TableContainer>
         </Box>
       </CommonModalForm>
-      <BBDCallsheetModal
-        data={callsheetData?.to[index]}
-        index={data}
-        width={"50%"}
-        open={isBbdOpen}
-        onClose={onBbdClose}
-      />
+      <FormProvider {...methods}>
+        <BBDCallsheetModal
+          data={callsheetData?.to[index]}
+          index={data}
+          width={"50%"}
+          open={isBbdOpen}
+          onClose={onBbdClose}
+        />
+      </FormProvider>
     </>
   );
 }

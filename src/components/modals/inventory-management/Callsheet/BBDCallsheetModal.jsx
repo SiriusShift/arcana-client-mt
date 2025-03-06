@@ -70,11 +70,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     reset,
     setValue,
     watch,
-  } = useForm({
-    mode: "onChange",
-    resolver: yupResolver(bbdCallsheet.schema),
-    defaultValues: bbdCallsheet.defaultValues,
-  });
+  } = useFormContext();
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -188,49 +184,85 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       const transactionItemIds = dataInformation?.transactionItemIds || [];
       const callsheetItems = callsheetItem || [];
       console.log(bbdDtos);
-      console.log(callsheetItems);
 
       const mergedBbdList = [
-        ...bbdDtos
-          .map((item) => {
-            return {
-              itemCode: dataInformation.itemCode || "",
-              itemDescription: dataInformation.itemDescription || "",
-              salesIn: dataInformation.salesIn || "",
-              initial: item.quantity || null,
-              remainingInv: item.remainingQuantity,
-              transactionId: transactionItemIds.find(
-                (transaction) =>
-                  transaction?.transactionId === item?.transactionId
-              ),
-              quantity: null,
-              bbd: item?.bbdDate ?? "",
-              bbdId: item?.bbdId,
-            };
-          })
-          .flat(),
-
-        ...callsheetItems
-          .filter(
+        ...bbdDtos.flatMap((item) => {
+          const matchingCallsheet = callsheetItems.find(
             (callsheet) =>
-              !transactionItemIds.some(
-                (transaction) =>
-                  transaction?.transactionId === callsheet?.transactionId
-              ) && callsheet?.itemCode === dataInformation?.itemCode
-          )
-          .flatMap((callsheet) =>
-            callsheet.itemBbds.map((bbd) => ({
-              itemCode: callsheet?.itemCode || "",
+              callsheet.transactionId === item.transactionId &&
+              callsheet.itemBbds.some(
+                (bbd) => bbd.bbd === moment(item.bbdDate).format("YYYY-MM-DD")
+              )
+          );
+
+          if (matchingCallsheet) {
+            const matchedBbds = matchingCallsheet.itemBbds.filter(
+              (bbd) =>
+                bbd.bbdId === item.bbdId &&
+                moment(bbd.bbd).format("YYYY-MM-DD") ===
+                  moment(item.bbdDate).format("YYYY-MM-DD")
+            );
+
+            return matchedBbds.map((bbd) => ({
+              itemCode: dataInformation?.itemCode || "",
               itemDescription: dataInformation?.itemDescription || "",
               salesIn: dataInformation?.salesIn || "",
-              initial: bbd?.quantity || null,
-              remainingInv: null,
-              transactionId: callsheet?.transactionId || null,
-              quantity: bbd?.quantity || null,
+              initial: item?.quantity ?? null,
+              remainingInv: item?.remainingQuantity ?? null,
+              transactionId: transactionItemIds.find(
+                (transaction) =>
+                  transaction?.transactionId ===
+                  matchingCallsheet?.transactionId
+              ),
+              quantity: bbd?.quantity ?? null,
               bbd: bbd?.bbd || "",
               bbdId: bbd?.bbdId || null,
-            }))
-          ),
+            }));
+          } else {
+            return [
+              {
+                itemCode: dataInformation?.itemCode || "",
+                itemDescription: dataInformation?.itemDescription || "",
+                salesIn: dataInformation?.salesIn || "",
+                initial: item?.quantity ?? null,
+                remainingInv: item?.remainingQuantity ?? null,
+                transactionId: transactionItemIds.find(
+                  (transaction) =>
+                    transaction?.transactionId === item?.transactionId
+                ),
+                quantity: null,
+                bbd: moment(item.bbdDate).format("YYYY-MM-DD") || "",
+                bbdId: item?.bbdId || null,
+              },
+            ];
+          }
+        }),
+
+        ...callsheetItems.flatMap((callsheet) =>
+          !bbdDtos.some(
+            (transaction) =>
+              transaction?.transactionId === callsheet?.transactionId
+          ) && callsheet?.itemCode === dataInformation?.itemCode
+            ? callsheet.itemBbds.map((bbd) => ({
+                itemCode: callsheet?.itemCode || "",
+                itemDescription: dataInformation?.itemDescription || "",
+                salesIn: dataInformation?.salesIn || "",
+                initial: null,
+                remainingInv: transactionItemIds.find(
+                  (transactions) =>
+                    transactions.transactionId === callsheet?.transactionId
+                ).remainingQuantity,
+                transactionId:
+                  transactionItemIds.find(
+                    (transactions) =>
+                      transactions.transactionId === callsheet?.transactionId
+                  ) || null,
+                quantity: bbd?.quantity || null,
+                bbd: bbd?.bbd || "",
+                bbdId: bbd?.bbdId || null,
+              }))
+            : []
+        ),
       ];
 
       reset({ bbdList: mergedBbdList });
