@@ -43,7 +43,7 @@ function AddSearchMixin({
         </SecondaryButton>
       </Box>
       <Box className="mixin__right">
-      {userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance" ? (<CommonFilter
+      {userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance" || userDetails?.roleName === "Customer Registration Approver" ? (<CommonFilter
           filter={onFilter}
           transactionStatus={transactionStatus}
           clusterFilter={clusterFilter && clusterFilter}

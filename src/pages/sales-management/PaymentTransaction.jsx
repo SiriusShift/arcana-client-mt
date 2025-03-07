@@ -47,6 +47,8 @@ function PaymentTransaction() {
   const userDetails = useSelector((state) => state.login.userDetails);
 
   const isAdmin = userDetails?.roleName === "Admin";
+  const isCustomerApprover =
+    userDetails?.roleName === "Customer Registration Approver";
   console.log(isAdmin);
 
   console.log(selectedRowData);
@@ -63,7 +65,6 @@ function PaymentTransaction() {
     onOpen: onViewOpen,
     onClose: onViewClose,
   } = useDisclosure();
-
 
   //RTK Query
   // const {
@@ -223,9 +224,8 @@ function PaymentTransaction() {
   };
 
   const checkIsVoidable = (date, totalAmount, balance) => {
-    const isVoidable =
-      moment(date).isAfter(moment().subtract(1, "days")) 
-      // && totalAmount - balance === 0;
+    const isVoidable = moment(date).isAfter(moment().subtract(1, "days"));
+    // && totalAmount - balance === 0;
     return isVoidable;
   };
 
@@ -295,7 +295,7 @@ function PaymentTransaction() {
               small
             />
 
-           <AddSearchMixin
+            <AddSearchMixin
               title="Pay Now"
               endIcon={<KeyboardDoubleArrowRight />}
               setSearch={setSearch}
@@ -313,9 +313,7 @@ function PaymentTransaction() {
               <CommonTableSkeleton lowerCompact mt={"-20px"} />
             ) : (
               <CommonTable
-                mapData={
-                  filteredList?.transactions
-                }
+                mapData={filteredList?.transactions}
                 customOrderKeys={customOrderKeys}
                 tableHeads={tableHeads}
                 dateTimeSplitArray={dateTimeSplitArray}
@@ -336,8 +334,9 @@ function PaymentTransaction() {
                 count={count}
                 mt={"-20px"}
                 disableActions={
-                  (transactionStatus === "Pending" || transactionStatus === "Paid") &&
-                  !isAdmin && 
+                  (transactionStatus === "Pending" ||
+                    transactionStatus === "Paid") &&
+                  !isAdmin &&
                   !checkIsVoidable(
                     selectedRowData?.createdAt,
                     selectedRowData?.totalAmountDue,
@@ -347,20 +346,26 @@ function PaymentTransaction() {
                 }
                 onVoid={
                   (transactionStatus === "Pending" ||
-                  transactionStatus === "Paid") &&
-                    // checkIsVoidable(
-                    //   selectedRowData?.createdAt,
-                    //   selectedRowData?.totalAmountDue,
-                    //   selectedRowData?.remainingBalance
-                    // ) &&
-                    onVoid
+                    transactionStatus === "Paid") &&
+                  !isCustomerApprover &&
+                  // checkIsVoidable(
+                  //   selectedRowData?.createdAt,
+                  //   selectedRowData?.totalAmountDue,
+                  //   selectedRowData?.remainingBalance
+                  // ) &&
+                  onVoid
                 }
                 onView={
                   (transactionStatus === "Paid" ||
-                  transactionStatus === "Pending" ) && onViewOpen
+                    transactionStatus === "Pending") &&
+                  onViewOpen
                 }
                 onPaymentHistories={onPaymentHistoriesOpen}
-                onPay={transactionStatus === "Pending" && onPay}
+                onPay={
+                  transactionStatus === "Pending" &&
+                  !isCustomerApprover &&
+                  onPay
+                }
                 // onCancel={transactionStatus === "Pending" || transactionStatus === "Paid" && onCancel}
               />
             )}
