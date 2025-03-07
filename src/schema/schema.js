@@ -1297,7 +1297,6 @@ export const bbdCallsheet = {
   schema: yup.object({
     bbdList: yup.array().of(
       yup.object({
-        transactionId: yup.object().required("Transaction ID is required"),
         remainingInv: yup.number().required("Remaining Inventory required"),
         itemCode: yup.string().required("Item Code is required"),
         quantity: yup.number().required("Quantity is required"),
@@ -1308,8 +1307,8 @@ export const bbdCallsheet = {
   defaultValues: {
     bbdList: [
       {
-        transactionId: null,
         itemCode: "",
+        remmainingInv: null,
         bbd: "",
         quantity: null
       },
