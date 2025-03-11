@@ -60,8 +60,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const validDataKey = index !== undefined && index !== null ? index : "";
   const dataInformation = data?.callSheetDtos?.[validDataKey] || {};
 
-  console.log(totalQuantity);
-
   const {
     handleSubmit,
     formState: { errors, isValid },
@@ -69,16 +67,17 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     reset,
     setValue,
     watch,
-  } = useForm({
-    mode: "onChange",
-    resolver: yupResolver(bbdCallsheet.schema),
-    defaultValues: bbdCallsheet.defaultValues,
-  });
+  } = useFormContext();
+  console.log(totalQuantity);
+
+  console.log(watch());
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "bbdList",
   });
+
+  console.log(fields);
 
   const [triggerDelete, { isLoading }] = useDeleteCallsheetBBDMutation();
 
@@ -90,6 +89,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       itemBbds: {
         quantity: item?.quantity,
         bbd: moment(item?.bbd).format("YYYY-MM-DD"),
+        bbdId: item?.bbdId,
       },
     }));
 
@@ -112,28 +112,28 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     handleClose();
   };
 
-  const onDelete = (item, index) => {
-    // console.log("Item to delete:", index); // Debug here
-    const find = dataInformation?.bbdDtos?.find(
-      (bbd) => bbd.bbdId === item.bbdId
-    );
-    if (find) {
-      confirm({
-        children: "Are you sure you want to delete bbd item?",
-        question: true,
-        callback: () => {
-          triggerDelete({ id: item.bbdId, body: { accessBy: 0 } }).unwrap();
-          snackbar({
-            message: "BBD deleted successfully",
-            variant: "success",
-          });
-          handleClose();
-        },
-      });
-    } else {
-      remove(index);
-    }
-  };
+  // const onDelete = (item, index) => {
+  //   // console.log("Item to delete:", index); // Debug here
+  //   const find = dataInformation?.bbdDtos?.find(
+  //     (bbd) => bbd.bbdId === item.bbdId
+  //   );
+  //   if (find) {
+  //     confirm({
+  //       children: "Are you sure you want to delete bbd item?",
+  //       question: true,
+  //       callback: () => {
+  //         triggerDelete({ id: item.bbdId, body: { accessBy: 0 } }).unwrap();
+  //         snackbar({
+  //           message: "BBD deleted successfully",
+  //           variant: "success",
+  //         });
+  //         handleClose();
+  //       },
+  //     });
+  //   } else {
+  //     remove(index);
+  //   }
+  // };
 
   // console.log(watch());
 
@@ -159,45 +159,49 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     if (dataInformation && open) {
       const bbdDtos = dataInformation?.bbdDtos || [];
       const callsheetItems = callsheetItem || [];
-      console.log(bbdDtos);
 
       const mergedBbdList = [
         ...bbdDtos.flatMap((item) => {
-          console.log("test")
+          const itemBbdDate = item?.bbdDate
+            ? moment(item.bbdDate).format("YYYY-MM-DD")
+            : "";
+
           const matchingCallsheet = callsheetItems.find(
             (callsheet) =>
-              callsheet.itemCode === item.itemCode &&
+              callsheet.itemCode === dataInformation.itemCode &&
               callsheet.itemBbds.some(
-                (bbd) => bbd.bbd === moment(item.bbdDate).format("YYYY-MM-DD")
+                (bbd) =>
+                  moment(bbd.bbd).format("YYYY-MM-DD") === itemBbdDate ||
+                  bbd.bbdId === item.bbdId
               )
           );
-          console.log(matchingCallsheet)
 
           if (matchingCallsheet) {
             const matchedBbds = matchingCallsheet.itemBbds.filter(
               (bbd) =>
-                bbd.bbdId === item.bbdId &&
-                moment(bbd.bbd).format("YYYY-MM-DD") ===
-                  moment(item.bbdDate).format("YYYY-MM-DD")
+                bbd?.bbdId === item?.bbdId &&
+                moment(bbd.bbd).format("YYYY-MM-DD") === itemBbdDate
             );
 
             return matchedBbds.map((bbd) => ({
               itemCode: dataInformation?.itemCode || "",
               itemDescription: dataInformation?.itemDescription || "",
-              salesIn: dataInformation?.salesIn || "",
-              remainingInv: item?.remainingQuantity ?? null,
-              quantity: bbd?.quantity ?? null,
-              bbd: bbd?.bbd || "",
+              salesIn: dataInformation?.salesIn || 0,
+              remainingInv: item?.remainingQuantity ?? 0,
+              quantity: bbd?.quantity ?? 0,
+              bbd: itemBbdDate,
+              bbdId: bbd?.bbdId ?? null,
             }));
           } else {
             return [
               {
-                itemCode: dataInformation.itemCode || "",
-                itemDescription: dataInformation.itemDescription || "",
-                salesIn: dataInformation.salesIn || 0,
-                remainingInv: dataInformation.remainingInv || 0,
-                quantity: item.quantity || null,
-                bbd: item.bbd || "",
+                itemCode: dataInformation?.itemCode || "",
+                itemDescription: dataInformation?.itemDescription || "",
+                salesIn: dataInformation?.salesIn || 0,
+                remainingInv: item?.remainingQuantity ?? 0,
+                quantity: item?.quantity ?? null,
+                bbd: itemBbdDate,
+                bbdId: item?.bbdId ?? null,
               },
             ];
           }
@@ -210,12 +214,12 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                 salesIn: dataInformation?.salesIn ?? 0,
                 itemDescription: dataInformation?.itemDescription || "",
                 remainingInv: dataInformation?.remainingInv || 0,
-                quantity: bbd?.quantity || null,
-                bbd: bbd?.bbd || "",
+                quantity: bbd?.quantity ?? 0,
+                bbd: moment(bbd?.bbd).format("YYYY-MM-DD") || "",
+                bbdId: bbd?.bbdId ?? null,
               }))
             : []
         ),
-        
       ];
 
       reset({ bbdList: mergedBbdList });
@@ -334,7 +338,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                           />
                         )}
                       />
-                      <Controller
+                      {/* <Controller
                         name={`bbdList[${index}].salesIn`}
                         control={control}
                         render={({ field }) => (
@@ -347,7 +351,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                             disabled
                           />
                         )}
-                      />
+                      /> */}
 
                       <Controller
                         name={`bbdList[${index}].remainingInv`}
@@ -391,7 +395,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                                     (parseFloat(item.quantity) || 0),
                                   0
                                 ) + (parseFloat(floatValue) || 0);
-                              if (total > dataInformation.salesIn) {
+                              if (total > dataInformation.remainingInv) {
                                 snackbar({
                                   message: "Quantity exceeds Sales In",
                                   variant: "error",
@@ -404,7 +408,8 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                               const { floatValue } = values; // Extract numerical value
                               if (
                                 dataInformation.sales &&
-                                (floatValue || 0 > dataInformation.remainingInv)
+                                (floatValue ||
+                                  0 > watch("bbdList")[index].remainingInv)
                               ) {
                                 snackbar({
                                   message: "Quantity exceeds Sales In",
@@ -453,7 +458,8 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                       <IconButton
                         color="error"
                         onClick={() => {
-                          onDelete(item, index);
+                          console.log(index);
+                          remove(index);
                         }}
                       >
                         <RemoveCircle />

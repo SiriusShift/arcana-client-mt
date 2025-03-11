@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CommonModalForm from "../../../CommonModalForm";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
@@ -21,7 +21,7 @@ import {
   Typography,
   IconButton,
 } from "@mui/material";
-import { Visibility } from "@mui/icons-material";
+import { More, Visibility } from "@mui/icons-material";
 import { Skeleton } from "@mui/material"; // Import Skeleton from MUI
 
 import { useDispatch, useSelector } from "react-redux";
@@ -39,6 +39,8 @@ import {
 import useConfirm from "../../../../hooks/useConfirm";
 import moment from "moment";
 import { clearCallsheet } from "../../../../features/inventory-management/reducers/callsheetSlice";
+import CommonActions from "../../../common/CommonActions";
+import { bbdCallsheet } from "../../../../schema/schema";
 
 function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -57,6 +59,13 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
 
   const [triggerUpdate] = useUpdateItemsWithBBDMutation();
 
+  const methods = useForm({
+    resolver: yupResolver(bbdCallsheet.schema),
+    defaultValues: bbdCallsheet.defaultValues,
+  });
+
+  const {watch} = methods 
+  console.log(watch());
   const { data: callsheetData, isFetching } = useGetAllCallsheetsQuery({
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
@@ -79,7 +88,10 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
             accessBy: 0,
             items: callsheetItem,
           }).unwrap();
-          snackbar({message: "successfully updated callsheet", variant: "success"})
+          snackbar({
+            message: "successfully updated callsheet",
+            variant: "success",
+          });
           handleClose();
         },
       });
@@ -221,9 +233,12 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
                             {item?.averageSales}
                           </TableCell>
                           <TableCell sx={{ py: 1 }}>
-                            <IconButton onClick={() => handleOpen(index)}>
-                              <Visibility />
-                            </IconButton>
+                            <CommonActions
+                              // disabled={
+                              //   watch("bbdList")[index].remainingInv === 0
+                              // }
+                              onView={() => handleOpen(index)}
+                            />
                           </TableCell>
                         </TableRow>
                       )
@@ -235,13 +250,15 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
           </TableContainer>
         </Box>
       </CommonModalForm>
-      <BBDCallsheetModal
-        data={callsheetData?.to[index]}
-        index={data}
-        width={"1250px"}
-        open={isBbdOpen}
-        onClose={onBbdClose}
-      />
+      <FormProvider {...methods}>
+        <BBDCallsheetModal
+          data={callsheetData?.to[index]}
+          index={data}
+          width={"1250px"}
+          open={isBbdOpen}
+          onClose={onBbdClose}
+        />
+      </FormProvider>
     </>
   );
 }

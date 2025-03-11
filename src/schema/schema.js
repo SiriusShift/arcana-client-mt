@@ -1308,7 +1308,7 @@ export const bbdCallsheet = {
     bbdList: [
       {
         itemCode: "",
-        remmainingInv: null,
+        remainingInv: null,
         bbd: "",
         quantity: null
       },
