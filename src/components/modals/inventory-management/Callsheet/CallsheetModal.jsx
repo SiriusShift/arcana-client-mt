@@ -76,6 +76,8 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
     (item) => item?.clientId === selectedRowData?.clientId
   );
 
+  const disabledActions = ["viewMore"]
+
   console.log("customer", index);
 
   const onSubmit = async () => {
@@ -86,6 +88,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
         callback: () => {
           triggerUpdate({
             accessBy: 0,
+            clientId: selectedRowData?.clientId,
             items: callsheetItem,
           }).unwrap();
           snackbar({
@@ -234,9 +237,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
                           </TableCell>
                           <TableCell sx={{ py: 1 }}>
                             <CommonActions
-                              // disabled={
-                              //   watch("bbdList")[index].remainingInv === 0
-                              // }
+                              disableActions={item?.remainingInv === 0 && disabledActions}
                               onView={() => handleOpen(index)}
                             />
                           </TableCell>
@@ -254,7 +255,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
         <BBDCallsheetModal
           data={callsheetData?.to[index]}
           index={data}
-          width={"1250px"}
+          width={"800px"}
           open={isBbdOpen}
           onClose={onBbdClose}
         />

@@ -54,6 +54,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const confirm = useConfirm();
   const callsheetItem = useSelector((state) => state.callsheet.items);
   const [totalQuantity, setTotalQuantity] = useState(0);
+  const [totalRemainingBbd, setTotalRemainingBbd] = useState(0);
   const [isQuantityValid, setIsQuantityValid] = useState(true);
   const [groupedSum, setGroupedSum] = useState(0);
 
@@ -88,6 +89,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       itemCode: item.itemCode,
       itemBbds: {
         quantity: item?.quantity,
+        remainingInv: item?.remainingInv,
         bbd: moment(item?.bbd).format("YYYY-MM-DD"),
         bbdId: item?.bbdId,
       },
@@ -149,7 +151,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       itemCode: dataInformation.itemCode || "",
       itemDescription: dataInformation.itemDescription || "",
       salesIn: dataInformation.salesIn || "",
-      remainingInv: dataInformation.remainingInv || "",
+      remainingInv: totalRemainingBbd ? dataInformation.remainingInv - totalRemainingBbd : dataInformation.remainingInv  || null,
       quantity: null,
       bbd: "",
     });
@@ -160,66 +162,49 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       const bbdDtos = dataInformation?.bbdDtos || [];
       const callsheetItems = callsheetItem || [];
 
+      const totalRemaining = bbdDtos.reduce(
+        (acc, item) => acc + (item.remainingQuantity || 0),
+        0
+      );
+      setTotalRemainingBbd(totalRemaining);
       const mergedBbdList = [
-        ...bbdDtos.flatMap((item) => {
-          const itemBbdDate = item?.bbdDate
-            ? moment(item.bbdDate).format("YYYY-MM-DD")
-            : "";
-
-          const matchingCallsheet = callsheetItems.find(
-            (callsheet) =>
-              callsheet.itemCode === dataInformation.itemCode &&
-              callsheet.itemBbds.some(
-                (bbd) =>
-                  moment(bbd.bbd).format("YYYY-MM-DD") === itemBbdDate ||
-                  bbd.bbdId === item.bbdId
-              )
-          );
-
-          if (matchingCallsheet) {
-            const matchedBbds = matchingCallsheet.itemBbds.filter(
-              (bbd) =>
-                bbd?.bbdId === item?.bbdId &&
-                moment(bbd.bbd).format("YYYY-MM-DD") === itemBbdDate
-            );
-
-            return matchedBbds.map((bbd) => ({
-              itemCode: dataInformation?.itemCode || "",
-              itemDescription: dataInformation?.itemDescription || "",
-              salesIn: dataInformation?.salesIn || 0,
-              remainingInv: item?.remainingQuantity ?? 0,
-              quantity: bbd?.quantity ?? 0,
-              bbd: itemBbdDate,
-              bbdId: bbd?.bbdId ?? null,
-            }));
-          } else {
-            return [
-              {
-                itemCode: dataInformation?.itemCode || "",
-                itemDescription: dataInformation?.itemDescription || "",
-                salesIn: dataInformation?.salesIn || 0,
-                remainingInv: item?.remainingQuantity ?? 0,
-                quantity: item?.quantity ?? null,
-                bbd: itemBbdDate,
-                bbdId: item?.bbdId ?? null,
-              },
-            ];
-          }
-        }),
-
+        // Include callsheetItems first
         ...callsheetItems.flatMap((callsheet) =>
           callsheet.itemCode === dataInformation?.itemCode
             ? callsheet.itemBbds.map((bbd) => ({
                 itemCode: callsheet?.itemCode || "",
                 salesIn: dataInformation?.salesIn ?? 0,
                 itemDescription: dataInformation?.itemDescription || "",
-                remainingInv: dataInformation?.remainingInv || 0,
+                remainingInv: bbd?.remainingInv || 0,
                 quantity: bbd?.quantity ?? 0,
                 bbd: moment(bbd?.bbd).format("YYYY-MM-DD") || "",
                 bbdId: bbd?.bbdId ?? null,
               }))
             : []
         ),
+
+        // Only process bbdDtos if callsheetItems is empty
+        ...(callsheetItems.some(
+          (item) => item.itemCode === dataInformation?.itemCode
+        )
+          ? []
+          : bbdDtos.flatMap((item) => {
+              const itemBbdDate = item?.bbdDate
+                ? moment(item.bbdDate).format("YYYY-MM-DD")
+                : "";
+
+              return [
+                {
+                  itemCode: dataInformation?.itemCode || "",
+                  itemDescription: dataInformation?.itemDescription || "",
+                  salesIn: dataInformation?.salesIn || 0,
+                  remainingInv: item?.remainingQuantity ?? 0,
+                  quantity: item?.quantity ?? null,
+                  bbd: itemBbdDate,
+                  bbdId: item?.bbdId ?? null,
+                },
+              ];
+            })),
       ];
 
       reset({ bbdList: mergedBbdList });
@@ -290,7 +275,14 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         <Box className="callsheetModal">
           <Box className="callsheetModal__callsheetHeader">
             <Box className="callsheetModal__callsheetHeader__left">
-              <Typography>Customer Name: {data?.customerName}</Typography>
+              <Typography>
+                Item Name: {dataInformation?.itemDescription}
+              </Typography>
+            </Box>
+            <Box className="callsheetModal__callsheetHeader__left">
+              <Typography>
+                Remaining Inventory: {dataInformation?.remainingInv}
+              </Typography>
             </Box>
           </Box>
           <TableContainer
@@ -310,7 +302,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                 <Stack spacing={1}>
                   {fields.map((item, index) => (
                     <Stack direction="row" spacing={1.5} key={index}>
-                      <Controller
+                      {/* <Controller
                         name={`bbdList[${index}].itemCode`}
                         control={control}
                         render={({ field }) => (
@@ -337,7 +329,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                             disabled
                           />
                         )}
-                      />
+                      /> */}
                       {/* <Controller
                         name={`bbdList[${index}].salesIn`}
                         control={control}
@@ -446,6 +438,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                               label="BBD*"
                               size="small"
                               value={value ? moment(value) : null}
+                              disabled={watch("bbdList")[index].bbdId}
                               onChange={(newValue) =>
                                 onChange(newValue?.toDate())
                               } // ✅ Convert Moment to JS Date
