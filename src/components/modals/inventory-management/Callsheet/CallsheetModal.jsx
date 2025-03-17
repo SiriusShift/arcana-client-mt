@@ -89,7 +89,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
           triggerUpdate({
             accessBy: 0,
             clientId: selectedRowData?.clientId,
-            items: callsheetItem,
+            item: callsheetItem,
           }).unwrap();
           snackbar({
             message: "successfully updated callsheet",

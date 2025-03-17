@@ -40,8 +40,6 @@ import {
   useUpdateItemsWithBBDMutation,
 } from "../../../../features/inventory-management/api/callsheetApi";
 import useConfirm from "../../../../hooks/useConfirm";
-import { bbdCallsheet } from "../../../../schema/schema";
-import ControlledAutocomplete from "../../../ControlledAutocomplete";
 import {
   selectItem,
   upsertItem,
@@ -85,12 +83,19 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   // // FUNCTIONS
   const onSubmit = (data) => {
     console.log(data);
+
+    if(data.bbdList.length === 0){
+      dispatch(upsertItem([{
+        itemCode: dataInformation.itemCode,
+        bbds: []
+      }]));
+    }
     const transformData = data?.bbdList?.map((item) => ({
       itemCode: item.itemCode,
-      itemBbds: {
+      bbds: {
         quantity: item?.quantity,
         remainingInv: item?.remainingInv,
-        bbd: moment(item?.bbd).format("YYYY-MM-DD"),
+        bbdDate: item.bbdDate ? moment(item?.bbdDate).format("YYYY-MM-DD") : null,
         bbdId: item?.bbdId,
       },
     }));
@@ -100,11 +105,11 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       if (!group) {
         group = {
           itemCode: item.itemCode,
-          itemBbds: [],
+          bbds: [],
         };
         acc.push(group);
       }
-      group.itemBbds.push(item.itemBbds);
+      group.bbds.push(item.bbds);
       return acc;
     }, []);
 
@@ -153,7 +158,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       salesIn: dataInformation.salesIn || "",
       remainingInv: totalRemainingBbd ? dataInformation.remainingInv - totalRemainingBbd : dataInformation.remainingInv  || null,
       quantity: null,
-      bbd: "",
+      bbdDate: null,
     });
   };
 
@@ -167,21 +172,34 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         0
       );
       setTotalRemainingBbd(totalRemaining);
+      const totalQuantity = callsheetItems?.items?.length > 0 ? callsheetItems?.map((item) => {
+        return item?.itemBbds?.reduce(
+          (acc, bbd) => acc + (bbd.quantity || 0),
+          0
+        );
+      }
+      ) : 0
+      console.log(dataInformation);
+      setTotalQuantity(totalQuantity[0] || totalQuantity)
       const mergedBbdList = [
         // Include callsheetItems first
-        ...callsheetItems.flatMap((callsheet) =>
-          callsheet.itemCode === dataInformation?.itemCode
-            ? callsheet.itemBbds.map((bbd) => ({
-                itemCode: callsheet?.itemCode || "",
-                salesIn: dataInformation?.salesIn ?? 0,
-                itemDescription: dataInformation?.itemDescription || "",
-                remainingInv: bbd?.remainingInv || 0,
-                quantity: bbd?.quantity ?? 0,
-                bbd: moment(bbd?.bbd).format("YYYY-MM-DD") || "",
-                bbdId: bbd?.bbdId ?? null,
-              }))
-            : []
-        ),
+        ...callsheetItems.flatMap((callsheet) => {
+          if (callsheet?.itemCode === dataInformation?.itemCode) {
+            return callsheet.bbds?.map((bbd) => ({
+              itemCode: callsheet?.itemCode || "",
+              salesIn: dataInformation?.salesIn ?? 0,
+              itemDescription: dataInformation?.itemDescription || "",
+              remainingInv: bbd?.remainingInv ?? 0,
+              quantity: bbd?.quantity ?? 0,
+              bbdDate: bbd?.bbdDate
+                ? moment(bbd.bbdDate).format("YYYY-MM-DD")
+                : null,
+              bbdId: bbd?.bbdId ?? null,
+            })) || [];
+          }
+          return [];
+        }),
+        
 
         // Only process bbdDtos if callsheetItems is empty
         ...(callsheetItems.some(
@@ -200,12 +218,13 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                   salesIn: dataInformation?.salesIn || 0,
                   remainingInv: item?.remainingQuantity ?? 0,
                   quantity: item?.quantity ?? null,
-                  bbd: itemBbdDate,
+                  bbdDate: itemBbdDate,
                   bbdId: item?.bbdId ?? null,
                 },
               ];
             })),
       ];
+      console.log(mergedBbdList);
 
       reset({ bbdList: mergedBbdList });
     } else if (!open) {
@@ -425,7 +444,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                       />
 
                       <Controller
-                        name={`bbdList[${index}].bbd`}
+                        name={`bbdList[${index}].bbdDate`}
                         control={control}
                         render={({ field: { onChange, value, ref } }) => (
                           <LocalizationProvider dateAdapter={AdapterMoment}>
@@ -438,7 +457,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                               label="BBD*"
                               size="small"
                               value={value ? moment(value) : null}
-                              disabled={watch("bbdList")[index].bbdId}
+                              disabled={watch("bbdList")[index]?.bbdId}
                               onChange={(newValue) =>
                                 onChange(newValue?.toDate())
                               } // ✅ Convert Moment to JS Date

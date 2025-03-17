@@ -1300,7 +1300,7 @@ export const bbdCallsheet = {
         remainingInv: yup.number().required("Remaining Inventory required"),
         itemCode: yup.string().required("Item Code is required"),
         quantity: yup.number().required("Quantity is required"),
-        bbd: yup.string()
+        bbdDate: yup.string().nullable()
       })
     ),
   }),

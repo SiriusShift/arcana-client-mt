@@ -20,15 +20,15 @@ export const callsheetSlice = createSlice({
       
         if (existingItem) {
           // Merge existing BBDs with new ones, avoiding duplicates
-          newItem.itemBbds.forEach((newBbd) => {
-            const existingBbd = existingItem.itemBbds.find(
+          newItem.bbds.forEach((newBbd) => {
+            const existingBbd = existingItem.bbds.find(
               (bbd) => bbd.bbdId === newBbd.bbdId
             );
             if (existingBbd) {
               existingBbd.quantity = newBbd.quantity;
               existingBbd.bbd = newBbd.bbd;
             } else {
-              existingItem.itemBbds.push(newBbd); // Add new BBD
+              existingItem.bbds.push(newBbd); // Add new BBD
             }
           });
         } else {
@@ -42,14 +42,14 @@ export const callsheetSlice = createSlice({
       const item = state.items.find((item) => item.itemCode === itemCode);
 
       if (item) {
-        const existingBbd = item.itemBbds.find((bbdItem) => bbdItem.bbdId === bbdId);
+        const existingBbd = item.bbds.find((bbdItem) => bbdItem.bbdId === bbdId);
         if (existingBbd) {
           // Update BBD details
           existingBbd.quantity = quantity;
           existingBbd.bbd = bbd;
         } else {
           // Add new BBD
-          item.itemBbds.push({ bbdId, quantity, bbd });
+          item.bbds.push({ bbdId, quantity, bbd });
         }
       }
     },
