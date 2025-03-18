@@ -448,13 +448,13 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
         </Stack>
       </CommonModal>
       <ViewPhotoModal
-        currentViewPhoto={transaction?.receiptAttachment}
+        currentViewPhoto={transaction?.attachment}
         open={isViewPhotoOpen}
         onClose={onViewPhotoClose}
         cloudified={true}
       />
       <ViewPhotoModal
-        currentViewPhoto={transaction?.attachment}
+        currentViewPhoto={transaction?.receiptAttachment}
         open={isViewAttachmentOpen}
         onClose={onViewAttachmentClose}
         cloudified={true}

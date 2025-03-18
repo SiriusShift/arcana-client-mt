@@ -38,6 +38,7 @@ function Reports() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(0);
   const [activeReport, setActiveReport] = useState();
+  const [isDownloading, setIsDownloading] = useState(false);
   const [activeArray, setActiveArray] = useState();
   const [clusterId, setClusterId] = useState();
   const [isActive, setIsActive] = useState({
@@ -192,6 +193,8 @@ function Reports() {
   };
 
   const useDownloadExcel = async () => {
+    setIsDownloading(true); // Start loading
+  
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASEURL}${
@@ -200,22 +203,26 @@ function Reports() {
           "MM-DD-YYYY"
         )}&DateTo=${moment(watch("dateTo")).format("MM-DD-YYYY")}${
           clusterId ? `&clusterId=${clusterId?.value}` : ""
-        }${watch("clientId")?.id || watch("clientId")?.clientId ? `&clientId=${watch("clientId")?.id || watch("clientId")?.clientId}` : ""}`,
+        }${
+          watch("clientId")?.id || watch("clientId")?.clientId
+            ? `&clientId=${watch("clientId")?.id || watch("clientId")?.clientId}`
+            : ""
+        }`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            // Accept: " application/json",
             Authorization: `Bearer ${decryptString(
               sessionStorage.getItem("token")
             )}`,
           },
         }
       );
+  
       if (!response.ok) {
         throw new Error("Failed to download Excel file.");
       }
-      console.log(response);
+  
       const blob = await response.blob();
       const link = document.createElement("a");
       const url = window.URL.createObjectURL(blob);
@@ -228,15 +235,11 @@ function Reports() {
       );
       document.body.appendChild(link);
       link.click();
-
-      // Clean up and revoke the object URL
       link.parentNode.removeChild(link);
-      // const link = document.createElement("a");
-      // link.href = response.url;
-      // link.click();
-      // link.remove();
     } catch (error) {
       console.error("Error while downloading Excel file:", error);
+    } finally {
+      setIsDownloading(false); // Stop loading
     }
   };
 
@@ -550,6 +553,8 @@ function Reports() {
               onClick={handleSubmitDate}
               sx={{ mr: "10px", height: "100%" }}
               disabled={
+                !activeReport ||
+                isDownloading ||
                 !watch("dateFrom") ||
                 !watch("dateTo") ||
                 activeArray?.transactions < 1 ||
