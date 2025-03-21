@@ -33,7 +33,7 @@ function InventoryMRP() {
   const tableHeads = [
     "Item Code",
     "Item Description",
-    "Depot",
+    "Expected Delivery",
     "Receiving (+)",
     "Transfer In (+)",
     "Transfer Out (-)",
@@ -44,6 +44,8 @@ function InventoryMRP() {
     "Returned by Client (+)",
     "Reserved",
     "Returned by CDO",
+    "For Releasing",
+    "Temporary Return",
     "SOH",
   ];
 
@@ -61,6 +63,8 @@ function InventoryMRP() {
     "returnByClient",
     "reserve",
     "returnCdo",
+    "forReleasing",
+    "temporaryReturn",
     "soh",
   ];
 

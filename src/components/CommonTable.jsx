@@ -71,6 +71,7 @@ function CommonTable({
   onPay,
   onDownload,
   onReplace,
+  onNoReplace,
   onPaymentHistories,
   onListingHistories,
   onInspect,
@@ -785,6 +786,7 @@ function CommonTable({
                         onInspect={onInspect && onInspect}
                         onDownload={onDownload && onDownload}
                         onReplace={onReplace && onReplace}
+                        onNoReplace={onNoReplace && onNoReplace}
                         item={item}
                         status={status}
                         disableActions={disableActions}

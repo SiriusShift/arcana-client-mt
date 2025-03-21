@@ -335,7 +335,7 @@ export const navigationData = [
       },
       {
         id: 8,
-        name: "Return",
+        name: "Return from Customer",
         path: "/inventory-management/return",
         description: "Process and record item returns and replacements",
         icon: "AssignmentReturn",

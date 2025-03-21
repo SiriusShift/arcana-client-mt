@@ -34,6 +34,7 @@ import {
   ZoomIn,
   Download,
   ContentCopy,
+  CopyAll,
 } from "@mui/icons-material";
 
 function CommonActions({
@@ -76,6 +77,7 @@ function CommonActions({
   onInspect,
   onDownload,
   onReplace,
+  onNoReplace,
   disableActions,
   item,
   status,
@@ -159,6 +161,8 @@ function CommonActions({
       onDownload();
     } else if (action === "replace"){
       onReplace();
+    } else if(action === "noReplace"){
+      onNoReplace();
     }
 
     onClose();
@@ -754,6 +758,21 @@ function CommonActions({
           >
             <ContentCopy />
             Replace
+          </MenuItem>
+        )}
+
+        {onNoReplace && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("noReplace");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("noReplace") : false
+            }
+          >
+            <CopyAll />
+            No Replace
           </MenuItem>
         )}
       </Menu>

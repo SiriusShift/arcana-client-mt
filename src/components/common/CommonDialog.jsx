@@ -12,6 +12,7 @@ import QuestionAlert from "../../assets/images/QuestionAlert.png";
 
 function CommonDialog({
   onClose,
+  onBackdropClick,
   onYes,
   children,
   question,
@@ -27,7 +28,7 @@ function CommonDialog({
   };
 
   return (
-    <Dialog {...otherProps} onClose={onClose}>
+    <Dialog {...otherProps} onClose={onBackdropClick ? onBackdropClick : onClose}>
       <Box className="commonDialog">
         <Box className="commonDialog__roof" />
 

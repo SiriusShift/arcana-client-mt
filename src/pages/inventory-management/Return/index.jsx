@@ -19,6 +19,7 @@ import { Add, Remove, Settings } from "@mui/icons-material";
 import useDisclosure from "../../../hooks/useDisclosure";
 import CommonModal from "../../../components/CommonModal";
 import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
+import CommonDialog from "../../../components/common/CommonDialog";
 
 function Return() {
   const navigate = useNavigate();
@@ -31,6 +32,12 @@ function Return() {
     isOpen: isSettingsOpen,
     onOpen: onSettingsOpen,
     onClose: onSettingsClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isCancelOpen,
+    onOpen: onCancelOpen,
+    onClose: onCancelClose,
   } = useDisclosure();
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -114,6 +121,18 @@ function Return() {
     );
   }
 
+  const handleNoReplace = () => {
+    onCancelOpen()
+  }
+
+  const handleClose = () => {
+    onCancelClose();
+  }
+
+  const handleSubmit = () => {
+
+  }
+
   const handleAdd = () => {
     navigate(`return-form?dateFrom=${moment(dateFrom).format(
         "YYYY-MM-DD"
@@ -165,6 +184,7 @@ function Return() {
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
             onReplace={tabViewing === 1 && handleReplace}
+            onNoReplace={tabViewing === 1 && handleNoReplace}
             disabledActions={tabViewing !== 1 ? disableActions : []}
             onView={handleView}
           />
@@ -214,6 +234,14 @@ function Return() {
             </div>
           </div>
         </CommonModal>
+        <CommonDialog         
+        open={isCancelOpen}
+        onClose={handleClose}
+        onYes={handleSubmit}
+        // isLoading={returnItemsLoading || replaceItemsLoading}
+        question>
+          Are you sure you want to cancel replacement?
+        </CommonDialog>
       </Box>
     );
   }

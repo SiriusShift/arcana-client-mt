@@ -469,6 +469,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                       />
                       <IconButton
                         color="error"
+                        disabled={watch("bbdList")[index]?.bbdId}
                         onClick={() => {
                           console.log(index);
                           remove(index);

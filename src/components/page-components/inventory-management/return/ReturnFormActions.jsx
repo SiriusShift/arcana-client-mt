@@ -162,6 +162,10 @@ const ReturnFormActions = ({
     navigate("/inventory-management/return", { replace: true });
   };
 
+  const handleModalClose = () => {
+    onContinueClose();
+  };
+
   const handleClose = async () => {
     try {
       console.log("test");
@@ -272,6 +276,7 @@ const ReturnFormActions = ({
       <CommonDialog
         open={isContinueOpen}
         onClose={handleClose}
+        onBackdropClick={handleModalClose}
         onYes={currentStep !== steps.length - 1 && handleNext}
         isLoading={returnItemsLoading || replaceItemsLoading}
         question

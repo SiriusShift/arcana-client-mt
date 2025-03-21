@@ -418,7 +418,7 @@ function SalesTransaction() {
                           <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__labels">
                             <Typography
                               fontSize="1.2rem"
-                              fontWeight="700"
+                              // fontWeight="700"
                               textTransform="none"
                             >
                               {item.itemCode}
@@ -447,11 +447,11 @@ function SalesTransaction() {
                           </Box>
 
                           <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__description">
-                            <Typography fontSize="12px">
+                            <Typography fontSize="13px" fontWeight="700">
                               {item.isClearPack === true ? "© " : ""}
                               {item.itemDescription}
                             </Typography>
-                            <Typography color="green" fontSize="12px">
+                            <Typography color="green" fontSize="13px" fontWeight="700">
                               Available: {item.availQuantity}
                             </Typography>
                           </Box>

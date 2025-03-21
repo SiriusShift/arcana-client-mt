@@ -161,7 +161,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
                 <TableRow>
                   <TableCell>Item Code</TableCell>
                   <TableCell>Item Description</TableCell>
-                  <TableCell>Sales-In</TableCell>
+                  <TableCell>Delivery</TableCell>
                   <TableCell>Remaining Inv.</TableCell>
                   <TableCell>Ending Inv.</TableCell>
                   <TableCell>Sales-out</TableCell>

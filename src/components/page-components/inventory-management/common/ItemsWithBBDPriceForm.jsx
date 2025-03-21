@@ -112,6 +112,7 @@ const ItemsWithBBDPriceForm = ({
           px={2}
           direction="row"
         >
+          <Box sx={{ display: "flex", gap: "10px", alignItems: "center"}}>
           <Typography
             fontSize="1.2rem"
             fontWeight="500"
@@ -119,6 +120,17 @@ const ItemsWithBBDPriceForm = ({
           >
             {itemsFormTitle}
           </Typography>
+          {itemsFieldName === "replaceItems" && (
+            <Typography
+              fontSize="1.2rem"
+              fontWeight="300"
+              sx={{ color: "white !important" }}
+            >
+              - Return Sum: {watch("returnItems").reduce((acc, item) => acc + item.netPrice, 0)}
+            </Typography>
+          )}
+          </Box>
+
 
           {!viewOnly && (
             <Box
