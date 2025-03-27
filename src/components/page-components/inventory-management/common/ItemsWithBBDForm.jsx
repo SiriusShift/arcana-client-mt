@@ -291,7 +291,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                     }}
                   /> */}
 
-                  <LocalizationProvider dateAdapter={AdapterMoment}>
+                  {/* <LocalizationProvider dateAdapter={AdapterMoment}>
                     <Controller
                       control={control}
                       name={`items[${index}].bbd`}
@@ -321,7 +321,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                         />
                       )}
                     />
-                  </LocalizationProvider>
+                  </LocalizationProvider> */}
 
                   <Stack gap={0.6} alignItems="center">
                     <Controller
@@ -371,7 +371,9 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                           value={value || ""}
                           inputRef={ref}
                           sx={{ maxWidth: "120px" }}
-                          disabled={viewOnly || !watchItems?.[index]?.bbd}
+                          disabled={viewOnly 
+                            // || !watchItems?.[index]?.bbd
+                          }
                           customInput={TextField}
                           thousandSeparator
                           allowLeadingZeros={false}

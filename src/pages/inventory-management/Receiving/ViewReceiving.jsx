@@ -32,7 +32,7 @@ function ViewReceiving() {
   const [formData, setFormData] = useState({
     moveOrderId: Number(id),
     items: [],
-    wrong: [],
+    // wrong: [],
   });
 
   useEffect(() => {
@@ -52,9 +52,12 @@ function ViewReceiving() {
   }, [id, dateFrom, dateTo, navigate, triggerData]); // ✅ Ensure correct dependencies
 
   // ✅ Use `useMemo` to safely filter items without modifying state
-  const { filteredItems, wrongDelivers } = useMemo(() => {
+  const { filteredItems,
+    //  wrongDelivers
+
+   } = useMemo(() => {
     const filteredItems = [];
-    const wrongDelivers = [];
+    // const wrongDelivers = [];
 
     data?.mo?.[0]?.moveItems?.forEach((item) => {
       if (
@@ -62,11 +65,11 @@ function ViewReceiving() {
         item?.actualQuantity === null &&
         item?.reason !== null
       ) {
-        setFormData((prev) => ({
-          ...prev,
-          wrong: [...prev.wrong, item],
-        }));
-        wrongDelivers.push(item);
+        // setFormData((prev) => ({
+        //   ...prev,
+        //   wrong: [...prev.wrong, item],
+        // }));
+        // wrongDelivers.push(item);
       } else {
         setFormData((prev) => ({
           ...prev,
@@ -76,10 +79,10 @@ function ViewReceiving() {
       }
     });
 
-    return { filteredItems, wrongDelivers };
+    return { filteredItems, 
+      // wrongDelivers 
+    };
   }, [data]);
-
-  console.log("wrong deliver!",wrongDelivers)
 
   // ✅ Prevent flickering with `isFetching && !data`
   if (isFetching && !data) {
@@ -91,13 +94,13 @@ function ViewReceiving() {
       <ReceivingFormHeader data={data?.mo[0]} isFetching={isFetching} />
 
       <ReceivingItems items={formData.items} isFetching={isFetching} />
-
+{/* 
       <WrongDeliver
         viewing={true}
         wrongItems={wrongDelivers}
         isFetching={isFetching}
         formData={formData}
-      />
+      /> */}
     </Box>
   );
 }

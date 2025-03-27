@@ -19,14 +19,14 @@ function ReceivingForm() {
   const [formData, setFormData] = useState({
     moveOrderId: Number(moveOrderSlipNo),
     items: [],
-    wrong: [],
+    // wrong: [],
   });
 
   console.log(formData);
   
   const [isFormValid, setIsFormValid] = useState({
     isItemsValid: false,
-    isWrongDeliverValid: false,
+    // isWrongDeliverValid: false,
   });
   console.log(isFormValid);
 
@@ -53,12 +53,12 @@ function ReceivingForm() {
         handleFormData={setFormData}
       />
 
-      <WrongDeliver
+      {/* <WrongDeliver
         formData={formData}
         items={receivingData?.moItems}
         handleFormValid={setIsFormValid}
         handleFormData={setFormData}
-      />
+      /> */}
 
       <ReceivingFormSubmit
         formData={formData}

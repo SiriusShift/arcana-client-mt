@@ -190,6 +190,15 @@ function FreebieForm({
 
     onConfirmSubmitClose();
   };
+  
+  const handleRemove = async (index) => {
+    remove(index);
+    setTotalQuantity(
+      watch("freebies").reduce((acc, curr) => {
+        return acc + (parseInt(curr.quantity, 10) || 0);
+      }, 0)
+    );
+  }
 
   const handleDrawerClose = () => {
     reset();
@@ -266,6 +275,12 @@ function FreebieForm({
           itemDescription: item.itemDescription,
           uom: item.uom,
         }));
+
+        setTotalQuantity(
+          originalFreebies.reduce((acc, curr) => {
+            return acc + (parseInt(curr.quantity, 10) || 0);
+          }, 0)
+        );
 
         setValue("freebies", transformedFreebies);
         setValue(
@@ -546,7 +561,7 @@ function FreebieForm({
                 fields.length <= 1
                   ? handleFreebieError()
                   : // : remove(fields[index]);
-                    remove(index);
+                    handleRemove(index);
               }}
             >
               <RemoveCircleOutline sx={{ fontSize: "30px" }} />

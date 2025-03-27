@@ -757,7 +757,7 @@ function CommonActions({
             }
           >
             <ContentCopy />
-            Replace
+            For Replacement
           </MenuItem>
         )}
 
@@ -772,7 +772,7 @@ function CommonActions({
             }
           >
             <CopyAll />
-            No Replace
+            Sales Return
           </MenuItem>
         )}
       </Menu>

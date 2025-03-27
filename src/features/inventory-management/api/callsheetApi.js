@@ -40,7 +40,7 @@ export const callsheetApi = api
       }),
       updateItemsWithBBD: builder.mutation({
         query: (body) => ({
-          url: `/update-bbd-v2`,
+          url: `/update-bbd-v3`,
           method: "PUT",
           body: body,
         }),

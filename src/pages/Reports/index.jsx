@@ -397,6 +397,7 @@ function Reports() {
       "unitPrice",
       "amount",
       "outlet",
+      "status"
     ],
     [
       "date",
@@ -407,6 +408,7 @@ function Reports() {
       "debit",
       "credit",
       "cluster",
+      "status"
     ],
     [
       "date",
@@ -462,6 +464,7 @@ function Reports() {
       "Unit Price",
       "Amount",
       "Outlet",
+      "Status"
     ],
     [
       "Date",
@@ -472,6 +475,7 @@ function Reports() {
       "Debit",
       "Credit",
       "Cluster",
+      "Status"
     ],
     [
       "Date",
@@ -556,15 +560,15 @@ function Reports() {
             userDetails?.roleName === "Treasury" ||
             userDetails?.roleName === "GAS" ||
             userDetails?.roleName === "Finance") &&
-            (activeReport?.value !== "SOA" && activeReport?.value !== "listing-fee")&& (
+            (activeReport?.value !== "SOA-reports" && activeReport?.value !== "listing-fee-reports")&& (
               <CommonFilter filter={onFilter} clusterFilter />
             )}
-          {activeReport?.value === "SOA" ||
-            activeReport?.value === "listing-fee" ? (
+          {activeReport?.value === "SOA-reports" ||
+            activeReport?.value === "listing-fee-reports" ? (
               <ControlledAutocomplete
                 name="clientId"
                 control={control}
-                options={activeReport?.value === "listing-fee" ? listingFeeClients?.listingFees : RegisteredClients?.regularClient || []}
+                options={activeReport?.value === "listing-fee-reports" ? listingFeeClients?.listingFees : RegisteredClients?.regularClient || []}
                 getOptionLabel={(option) =>
                   option?.businessName?.toUpperCase() +
                   " - " +
@@ -586,7 +590,7 @@ function Reports() {
                 )}
               />
             ) : ""}
-          {activeReport?.value != "SOA" && (
+          {activeReport?.value != "SOA-reports" && (
             <>
               <Controller
                 name="dateFrom"
@@ -615,7 +619,7 @@ function Reports() {
             render={({ field }) => (
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
-                  minDate={watch("dateFrom")}
+                  minDate={activeReport?.value != "SOA-reports" && watch("dateFrom")}
                   maxDate={moment()}
                   {...field}
                   label="Date To"
@@ -629,7 +633,7 @@ function Reports() {
               </LocalizationProvider>
             )}
           />
-          {activeReport?.value === "SOA" && !soaFetching ? (
+          {activeReport?.value === "SOA-reports" && !soaFetching ? (
             <PDFDownloadLink
               document={
                 <Report
@@ -641,8 +645,8 @@ function Reports() {
             >
               <SecondaryButton
                 disabled={
-                  ((!watch("clientId") && !soaFetching) || (!watch("clientId") && !listingFeeFetching)) ||
-                  activeArray?.pendingSoa || activeArray?.transactions < 1
+                  ((!watch("clientId") && !soaFetching) || (!watch("clientId") && !listingFeeFetching)) 
+                  // || activeArray?.pendingSoa || activeArray?.transactions < 1
                 }
                 size="medium"
                 variant="contained"

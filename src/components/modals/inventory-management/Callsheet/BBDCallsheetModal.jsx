@@ -96,7 +96,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         quantity: item?.quantity,
         remainingInv: item?.remainingInv,
         bbdDate: item.bbdDate ? moment(item?.bbdDate).format("YYYY-MM-DD") : null,
-        bbdId: item?.bbdId,
       },
     }));
 
@@ -156,7 +155,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       itemCode: dataInformation.itemCode || "",
       itemDescription: dataInformation.itemDescription || "",
       salesIn: dataInformation.salesIn || "",
-      remainingInv: totalRemainingBbd ? dataInformation.remainingInv - totalRemainingBbd : dataInformation.remainingInv  || null,
+      remainingInv: dataInformation.remainingInv  || null,
       quantity: null,
       bbdDate: null,
     });
@@ -167,19 +166,16 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       const bbdDtos = dataInformation?.bbdDtos || [];
       const callsheetItems = callsheetItem || [];
 
-      const totalRemaining = bbdDtos.reduce(
-        (acc, item) => acc + (item.remainingQuantity || 0),
-        0
-      );
-      setTotalRemainingBbd(totalRemaining);
-      const totalQuantity = callsheetItems?.items?.length > 0 ? callsheetItems?.map((item) => {
-        return item?.itemBbds?.reduce(
-          (acc, bbd) => acc + (bbd.quantity || 0),
-          0
-        );
-      }
-      ) : 0
-      console.log(dataInformation);
+      console.log(dataInformation)
+
+      const totalQuantity = callsheetItems?.length > 0
+      ? callsheetItems.find((item) => item?.itemCode === dataInformation?.itemCode)
+          ?.bbds?.reduce((acc, bbd) => acc + (bbd.quantity || 0), 0) || 0
+      : 0;
+    
+
+      console.log(totalQuantity)
+
       setTotalQuantity(totalQuantity[0] || totalQuantity)
       const mergedBbdList = [
         // Include callsheetItems first
@@ -202,27 +198,27 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         
 
         // Only process bbdDtos if callsheetItems is empty
-        ...(callsheetItems.some(
-          (item) => item.itemCode === dataInformation?.itemCode
-        )
-          ? []
-          : bbdDtos.flatMap((item) => {
-              const itemBbdDate = item?.bbdDate
-                ? moment(item.bbdDate).format("YYYY-MM-DD")
-                : "";
+        // ...(callsheetItems.some(
+        //   (item) => item.itemCode === dataInformation?.itemCode
+        // )
+        //   ? []
+        //   : bbdDtos.flatMap((item) => {
+        //       const itemBbdDate = item?.bbdDate
+        //         ? moment(item.bbdDate).format("YYYY-MM-DD")
+        //         : "";
 
-              return [
-                {
-                  itemCode: dataInformation?.itemCode || "",
-                  itemDescription: dataInformation?.itemDescription || "",
-                  salesIn: dataInformation?.salesIn || 0,
-                  remainingInv: item?.remainingQuantity ?? 0,
-                  quantity: item?.quantity ?? null,
-                  bbdDate: itemBbdDate,
-                  bbdId: item?.bbdId ?? null,
-                },
-              ];
-            })),
+        //       return [
+        //         {
+        //           itemCode: dataInformation?.itemCode || "",
+        //           itemDescription: dataInformation?.itemDescription || "",
+        //           salesIn: dataInformation?.salesIn || 0,
+        //           remainingInv: item?.remainingQuantity ?? 0,
+        //           quantity: item?.quantity ?? null,
+        //           bbdDate: itemBbdDate,
+        //           bbdId: item?.bbdId ?? null,
+        //         },
+        //       ];
+        //     })),
       ];
       console.log(mergedBbdList);
 
@@ -408,7 +404,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                                 ) + (parseFloat(floatValue) || 0);
                               if (total > dataInformation.remainingInv) {
                                 snackbar({
-                                  message: "Quantity exceeds Sales In",
+                                  message: "Quantity exceeds Remaining Inventory",
                                   variant: "error",
                                 });
                                 return false;

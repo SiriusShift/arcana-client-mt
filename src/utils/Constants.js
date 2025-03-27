@@ -198,9 +198,21 @@ export const paymentTypes = [
 		icon: "AccountBalance",
 	},
 	{
+		label: "Sales Return",
+		value: "Sales Return",
+		uppercase: "SALES RETURN",
+		icon: "AccountBalance",
+	},
+	{
 		label: "Others",
 		value: "Others",
 		uppercase: "OTHERS",
+		icon: "MoreHoriz",
+	},
+	{
+		label: "Other Expenses",
+		value: "Other Expenses",
+		uppercase: "OTHER EXPENSES",
 		icon: "MoreHoriz",
 	},
 ];

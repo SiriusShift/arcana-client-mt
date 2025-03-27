@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
-import { useGetAllReturnsQuery } from "../../../features/inventory-management/api/returnApi";
+import { useGetAllReturnsQuery, useNoReplaceItemsMutation } from "../../../features/inventory-management/api/returnApi";
 import { Add, Remove, Settings } from "@mui/icons-material";
 import useDisclosure from "../../../hooks/useDisclosure";
 import CommonModal from "../../../components/CommonModal";
@@ -27,6 +27,7 @@ function Return() {
   const [tabViewing, setTabViewing] = useState(1);
   console.log(tabViewing);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  console.log(selectedRowData?.returnId);
 
   const {
     isOpen: isSettingsOpen,
@@ -46,6 +47,8 @@ function Return() {
   const [margin, setMargin] = useState(50);
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
+
+  const [noReplace, isLoading] = useNoReplaceItemsMutation();
 
   const paymentNavigation = useMemo(
     () => [
@@ -130,7 +133,12 @@ function Return() {
   }
 
   const handleSubmit = () => {
-
+    try{
+      noReplace({returnOrderID: selectedRowData?.returnId, accessBy: 0}).unwrap();
+      onCancelClose();
+    }catch(err){
+      console.log(err);
+    }
   }
 
   const handleAdd = () => {

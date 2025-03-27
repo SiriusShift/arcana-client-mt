@@ -954,10 +954,24 @@ export const paymentSchema = {
 
     //Others
     otherExpense: yup.object().when("paymentMethod.label", {
-      is: "Others",
+      is: "Other Expenses",
       then: (schema) => schema.required("Other expense is required"),
       otherwise: (schema) => schema.nullable(),
     }),
+
+    remarks: yup.string().when("paymentMethod.label", {
+      is: "Others",
+      then: (schema) => schema.required("Remarks is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    returnId: yup.object().when("paymentMethod.label", {
+      is: "Sales Return",
+      then: (schema) => schema.required("Return Id is required"),
+      otherwise: (schema) => schema.nullable(),
+    })
+
+    //
   }),
   defaultValues: {
     paymentMethod: null,
@@ -1052,6 +1066,7 @@ export const receivingItemsSchema = {
         uom: yup.string().required("UOM is required"),
         itemDescription: yup.string().required("Item Description is required"),
         actualQuantity: yup.number().required("Quantity Received is required"),
+        variance: yup.number().required("Variance is required"),
         reason: yup.string(),
       })
     ),
@@ -1081,7 +1096,7 @@ export const transferOutSchema = {
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
-          bbd: yup.object().required("BBD is required"),
+          // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
         })
@@ -1111,7 +1126,7 @@ export const freebiesSchema = {
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
-          bbd: yup.object().required("BBD is required"),
+          // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
         })
@@ -1124,7 +1139,7 @@ export const freebiesSchema = {
     items: [
       {
         item: null,
-        bbd: null,
+        // bbd: null,
         quantity: null,
         reason: "",
       },
@@ -1141,7 +1156,7 @@ export const samplingSchema = {
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
-          bbd: yup.object().required("BBD is required"),
+          // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
         })

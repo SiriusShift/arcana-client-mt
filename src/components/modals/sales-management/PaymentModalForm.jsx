@@ -31,6 +31,7 @@ import { useGetOtherExpensesBalanceByClientIdQuery } from "../../../features/oth
 import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
 import { dummyOnlinePaymentPlatformsData } from "../../../utils/DummyData";
 import { useGetAllOnlinePlatformsQuery } from "../../../features/setup/api/onlinePaymentPlatformsApi";
+import { useGetAllReturnsQuery } from "../../../features/inventory-management/api/returnApi";
 
 function PaymentModalForm({
   editMode,
@@ -72,7 +73,8 @@ function PaymentModalForm({
     defaultValues: paymentSchema.defaultValues,
   });
 
-  console.log(watch("otherExpense"));
+  console.log(watch());
+  console.log(errors, isValid);
 
   //Watch Constants
   const otherExpenseType = watch("otherExpense");
@@ -94,6 +96,15 @@ function PaymentModalForm({
     useGetOtherExpensesBalanceByClientIdQuery({
       clientId: client?.id,
     });
+
+  const { data: returnData, isFetching } = useGetAllReturnsQuery({
+    Page: 1,
+    PageSize: 1000,
+    DateFrom: "2000-01-01",
+    DateTo: moment().format("YYYY-MM-DD"),
+    Status: "Pending",
+  });
+  console.log(returnData)
   // if (otherExpensesBalanceError) {
   //   otherExpensesBalanceData = 0;
   // }
@@ -145,7 +156,7 @@ function PaymentModalForm({
         // invoiceAttachment: data.invoiceAttachment,
         attachment: data.attachment,
       };
-    } else if (data.paymentMethod.label === "Others") {
+    } else if (data.paymentMethod.label === "Other Expenses") {
       transformedData = {
         paymentMethod: data.paymentMethod,
         paymentAmount: data.paymentAmount,
@@ -261,7 +272,7 @@ function PaymentModalForm({
         disableSubmit={
           !isValid ||
           !isDirty ||
-          (watch("paymentMethod")?.label === "Others" &&
+          (watch("paymentMethod")?.label === "Other Expenses" &&
             !otherExpensesBalanceData)
         }
         width="800px"
@@ -300,7 +311,7 @@ function PaymentModalForm({
                         field.paymentMethod.label !== "Cheque" &&
                         field.paymentMethod.label !== "Online" &&
                         field.paymentMethod.label !== "Offset" &&
-                        field.paymentMethod.label !== "Others"
+                        field.paymentMethod.label !== "Other Expenses"
                     )
                 )}
                 getOptionLabel={(option) => option.label.toUpperCase()}
@@ -371,6 +382,7 @@ function PaymentModalForm({
                   if (value.label !== "Withholding") {
                     setValue("attachment", "");
                   }
+                  setValue("paymentAmount", 0)
                   return value;
                 }}
               />
@@ -387,11 +399,14 @@ function PaymentModalForm({
                     label="Payment Amount"
                     type="text"
                     disabled={
-                      (watch("paymentMethod")?.label === "Listing Fee" && remainingListingFee < 1) ||
-                      (watch("paymentMethod")?.label === "Advance Payment" && remainingAdvancePayment < 1) ||
-                      (watch("paymentMethod")?.label === "Others" && currentExpenseBalance < 1)
+                      (watch("paymentMethod")?.label === "Listing Fee" &&
+                        remainingListingFee < 1) ||
+                      (watch("paymentMethod")?.label === "Advance Payment" &&
+                        remainingAdvancePayment < 1) ||
+                      (watch("paymentMethod")?.label === "Other Expenses" &&
+                        currentExpenseBalance < 1) ||
+                      watch("paymentMethod")?.label === "Sales Return"
                     }
-                    
                     size="small"
                     customInput={TextField}
                     autoComplete="off"
@@ -408,7 +423,8 @@ function PaymentModalForm({
                       if (
                         floatValue != null &&
                         floatValue > balanceToCompare &&
-                        watch("paymentMethod").label !== "Cheque"
+                        watch("paymentMethod").label !== "Cheque" &&
+                        watch("paymentMethod").label !== "Others"
                       ) {
                         snackbar({
                           message: `${
@@ -653,7 +669,9 @@ function PaymentModalForm({
                         type="file"
                         size="small"
                         label="Attachment"
-                        inputProps={{ accept: "image/jpeg, image/png, image/jpg"}}
+                        inputProps={{
+                          accept: "image/jpeg, image/png, image/jpg",
+                        }}
                         helperText={errors?.attachment?.message}
                         error={errors?.attachment}
                         InputLabelProps={{ shrink: true }}
@@ -748,7 +766,30 @@ function PaymentModalForm({
               </Box>
             )}
 
-            {watch("paymentMethod")?.label === "Others" && (
+            {watch("paymentMethod")?.label === "Sales Return" && (
+                <ControlledAutocomplete
+                name="returnId"
+                control={control}
+                options={returnData?.to}
+                getOptionLabel={(option) => option.returnId}
+                disableClearable
+                isOptionEqualToValue={() => true}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    size="small"
+                    label="Return Id"
+                    helperText={errors?.otherExpense?.message}
+                    error={errors?.otherExpense}
+                  />
+                )}
+                onChange={(_, value) => {
+                  setValue("paymentAmount", value.totalReturnPrice);
+                }}
+              />
+            )}
+
+            {watch("paymentMethod")?.label === "Other Expenses" && (
               <>
                 <ControlledAutocomplete
                   name="otherExpense"
@@ -795,12 +836,11 @@ function PaymentModalForm({
                           {option.expenseType}
                           {otherExpensesBalanceData?.others?.map(
                             (item, index) => {
-                              if (item?.balance > 0 && item?.otherExpenseName === option.expenseType) {
-                                return (
-                                  <span key={index}>
-                                    {notifIcon}
-                                  </span>
-                                );
+                              if (
+                                item?.balance > 0 &&
+                                item?.otherExpenseName === option.expenseType
+                              ) {
+                                return <span key={index}>{notifIcon}</span>;
                               }
                             }
                           )}
@@ -822,7 +862,7 @@ function PaymentModalForm({
                 <Box className="paymentTransactionModal__footer">
                   <Box className="paymentTransactionModal__footer__label">
                     <Typography className="paymentTransactionModal__footer__label__top">
-                      {watch("otherExpense")?.expenseType ?? "Others"}
+                      {watch("otherExpense")?.expenseType ?? "Other Expenses"}
                     </Typography>
 
                     <Typography className="paymentTransactionModal__footer__label__bottom">
@@ -835,6 +875,24 @@ function PaymentModalForm({
                   </Typography>
                 </Box>
               </>
+            )}
+
+            {watch("paymentMethod")?.label === "Others" && (
+              <Controller
+                name="remarks"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    label="Remarks"
+                    size="small"
+                    autoComplete="off"
+                    {...field}
+                    helperText={errors?.paymentAmount?.message}
+                    error={errors?.paymentAmount}
+                  />
+                )}
+              />
             )}
           </Box>
         </Box>

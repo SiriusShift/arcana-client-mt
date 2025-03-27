@@ -133,6 +133,7 @@ function ReceivingItems({
           itemDescription: item?.itemDescription,
           uom: item?.uom,
           reason: item?.reason,
+          variance: item?.variance,
         })),
       }));
     }
@@ -153,7 +154,7 @@ function ReceivingItems({
     <Box sx={{ padding: "1px" }}>
       <TableContainer
         component={Paper}
-        sx={{ overflow: "auto", maxHeight: "calc(100dvh - 25dvh - 360px)" }}
+        sx={{ overflow: "auto", maxHeight: "calc(100dvh - 375px)" }}
       >
         <Table>
           <TableHead sx={{ position: "sticky", top: 0, zIndex: 10 }}>
@@ -173,7 +174,14 @@ function ReceivingItems({
                     <ControlledAutocomplete
                       control={control}
                       name={`items[${index}].itemCode`}
-                      options={products?.items || []}
+                      options={products?.items.filter((items) => {
+                        return (
+                          !watch("items")?.some(
+                            (existingItem) =>
+                              existingItem.itemCode === items.itemCode
+                          ) // Exclude items already in the items array
+                        );
+                      }) || []}
                       getOptionLabel={(option) => option?.itemCode || option}
                       isOptionEqualToValue={(option, value) =>
                         option?.itemCode === value?.itemCode
@@ -294,19 +302,24 @@ function ReceivingItems({
                             value={value || ""}
                             onValueChange={(values) => {
                               const { value: newValue } = values;
-                              const quantity =
-                                parseFloat(watch(`items[${index}].quantity`)) ||
-                                0;
-                              const maxAllowed = Math.min(quantity * 1.1); // Max 10% increase or +2 units
 
-                              if (parseFloat(newValue) > maxAllowed && watchItems[index]?.quantity !== null) {
-                                snackbar({
-                                  message: `Actual Quantity must not exceed ${maxAllowed}`,
-                                  variant: "warning",
-                                });
-                              } else {
-                                onChange(newValue);
-                              }
+                              setValue(`items[${index}].variance`, newValue -  watch("items")?.[index]?.quantity );
+                              // const quantity =
+                              //   parseFloat(watch(`items[${index}].quantity`)) ||
+                              //   0;
+                              // const maxAllowed = Math.min(quantity * 1.1); // Max 10% increase or +2 units
+
+                              // if (
+                              //   parseFloat(newValue) > maxAllowed &&
+                              //   watchItems[index]?.quantity !== null
+                              // ) {
+                              //   snackbar({
+                              //     message: `Actual Quantity must not exceed ${maxAllowed}`,
+                              //     variant: "warning",
+                              //   });
+                              // } else {
+                              onChange(newValue);
+                              // }
                             }}
                             onBlur={onBlur}
                             inputRef={ref}
@@ -315,17 +328,20 @@ function ReceivingItems({
                             allowNegative={false} // Prevents negative numbers
                             thousandSeparator="," // Adds comma for thousands
                             isAllowed={(values) => {
-                              const quantity =
-                                parseFloat(watch(`items[${index}].quantity`)) ||
-                                0;
-                              const maxAllowed = Math.min(quantity * 1.1);
-                              if (parseFloat(values.value) > maxAllowed && watchItems[index]?.quantity !== null) {
-                                snackbar({
-                                  message: `Actual Quantity must not exceed ${maxAllowed}`,
-                                  variant: "warning",
-                                });
-                                return false;
-                              }
+                              // const quantity =
+                              //   parseFloat(watch(`items[${index}].quantity`)) ||
+                              //   0;
+                              // const maxAllowed = Math.min(quantity * 1.1);
+                              // if (
+                              //   parseFloat(values.value) > maxAllowed &&
+                              //   watchItems[index]?.quantity !== null
+                              // ) {
+                              //   snackbar({
+                              //     message: `Actual Quantity must not exceed ${maxAllowed}`,
+                              //     variant: "warning",
+                              //   });
+                              //   return false;
+                              // }
                               return /^\d*$/.test(values.value);
                             }} // Only whole numbers and within limit
                           />
@@ -369,6 +385,24 @@ function ReceivingItems({
 
                     <Controller
                       control={control}
+                      name={`items[${index}].variance`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <TextField
+                          label="Variance"
+                          size="small"
+                          autoComplete="off"
+                          onChange={onChange}
+                          onBlur={onBlur}
+                          value={value || ""}
+                          inputRef={ref}
+                          sx={{ maxWidth: "120px" }}
+                          disabled
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
                       name={`items[${index}].reason`}
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <TextField
@@ -393,7 +427,19 @@ function ReceivingItems({
                     />
 
                     {!disableFields && (
-                      <IconButton color="error" onClick={() => remove(index)}>
+                      <IconButton
+                        disabled={
+                          disableFields ||
+                          items?.some(
+                            (item, itemIndex) =>
+                              item.itemCode ===
+                                watch(`items[${index}].itemCode`) &&
+                              itemIndex === index // Disable rows with the same itemCode except the current row
+                          )
+                        }
+                        color="error"
+                        onClick={() => remove(index)}
+                      >
                         <RemoveCircleOutline />
                       </IconButton>
                     )}

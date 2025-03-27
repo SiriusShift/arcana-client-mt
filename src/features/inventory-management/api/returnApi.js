@@ -31,6 +31,15 @@ const returnApi = api
         invalidatesTags: ["Return", "Returns", "Items With BBD"],
       }),
 
+      noReplaceItems: builder.mutation({
+        query: (body) => ({ 
+          url: `/add-no-replace`,
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["Return", "Returns", "Items With BBD"],
+      }),
+
       getAllReturns: builder.query({
         // Uncomment this when the backend is ready
         query: (params) => ({
@@ -80,5 +89,6 @@ export const {
   useLazyGetAllReturnsQuery,
   useGetReturnByIdQuery,
   useReplaceItemsMutation,
+  useNoReplaceItemsMutation,
   useUpdateReturnMutation
 } = returnApi;

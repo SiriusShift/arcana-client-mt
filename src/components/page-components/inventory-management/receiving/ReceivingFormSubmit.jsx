@@ -25,11 +25,11 @@ function ReceivingFormSubmit({
 
   formData = {
     ...formData,
-    wrong: formData.wrong.map((item) => ({
-      itemCode: item.item,
-      quantity: item.quantity,
-      reason: item.reason,
-    })), 
+    // wrong: formData.wrong.map((item) => ({
+    //   itemCode: item.item,
+    //   quantity: item.quantity,
+    //   reason: item.reason,
+    // })), 
     additional: formData.items
       .filter(item => item.quantity === 0 || item.quantity === null)  // Filter for items with 0 quantity or actualQuantity
       .map(item => ({
@@ -43,6 +43,7 @@ function ReceivingFormSubmit({
         itemCode: item.itemCode,
         actualQuantity: item.actualQuantity,
         reason: item.reason,
+        variance: item.variance
       })),
   };
   

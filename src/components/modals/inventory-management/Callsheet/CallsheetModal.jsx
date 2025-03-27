@@ -64,7 +64,7 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
     defaultValues: bbdCallsheet.defaultValues,
   });
 
-  const {watch} = methods 
+  const { watch } = methods;
   console.log(watch());
   const { data: callsheetData, isFetching } = useGetAllCallsheetsQuery({
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
@@ -76,26 +76,38 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
     (item) => item?.clientId === selectedRowData?.clientId
   );
 
-  const disabledActions = ["viewMore"]
+  const disabledActions = ["viewMore"];
 
   console.log("customer", index);
 
   const onSubmit = async () => {
+    const transformData = callsheetItem.map((item) => ({
+      itemCode: item.itemCode,
+      bbds: item?.bbds?.map((item) => ({
+        bbdDate: item?.bbdDate,
+        quantity: item?.quantity,
+      })),
+    }));
+    console.log(transformData);
     try {
       confirm({
         children: "Are you sure you want to update callsheet?",
         question: true,
         callback: () => {
-          triggerUpdate({
-            accessBy: 0,
-            clientId: selectedRowData?.clientId,
-            item: callsheetItem,
-          }).unwrap();
-          snackbar({
-            message: "successfully updated callsheet",
-            variant: "success",
-          });
-          handleClose();
+          try{
+            triggerUpdate({
+              accessBy: 0,
+              clientId: selectedRowData?.clientId,
+              item: transformData,
+            }).unwrap();
+            snackbar({
+              message: "successfully updated callsheet",
+              variant: "success",
+            });
+            handleClose();
+          }catch(err){
+            console.log(err);
+          }
         },
       });
     } catch (err) {
@@ -237,7 +249,9 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
                           </TableCell>
                           <TableCell sx={{ py: 1 }}>
                             <CommonActions
-                              disableActions={item?.remainingInv === 0 && disabledActions}
+                              disableActions={
+                                item?.remainingInv === 0 && disabledActions
+                              }
                               onView={() => handleOpen(index)}
                             />
                           </TableCell>
