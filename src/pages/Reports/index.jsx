@@ -18,7 +18,8 @@ import {
   useASReportsQuery,
   useGetCheckInReportsQuery,
   useGetSOAReportsQuery,
-  useGetCheckInFiloReportsQuery
+  useGetCheckInFiloReportsQuery,
+  useGetVoidTransactionsReportsQuery
 } from "../../features/reports/api/reportsApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
@@ -51,6 +52,8 @@ function Reports() {
     lf: true,
     //Checkin First in, Last out
     cf: true,
+    //Void Transactions Report
+    vtr: true
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
@@ -179,6 +182,16 @@ function Reports() {
       skip: isActive.cf
     })
 
+    const {data: voidTransactionsReportData, isFetching: voidTransactionsFetching} = useGetVoidTransactionsReportsQuery({
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      ClusterId: clusterId?.value || "",
+      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+    }, {
+      skip: isActive.vtr
+    })
+
   //functions
   const handleSubmitDate = () => {
     useDownloadExcel();
@@ -253,7 +266,8 @@ function Reports() {
       checkInReportData,
       soaReportData,
       listingFeeReportData,
-      checkInFiloReportData
+      checkInFiloReportData,
+      voidTransactionsReportData
     ];
     const keys = [
       "cdo",
@@ -262,7 +276,8 @@ function Reports() {
       "ci",
       "soa",
       "lf",
-      "cf"
+      "cf",
+      "vtr"
       // 'pm',/
     ];
 
@@ -286,6 +301,7 @@ function Reports() {
     soaReportData,
     listingFeeReportData,
     checkInFiloReportData,
+    voidTransactionsReportData,
     // priceModeReportData,
     watch("dateFrom"),
     watch("dateTo"),
@@ -324,6 +340,7 @@ function Reports() {
       "unitPrice",
       "amount",
       "outlet",
+      "status"
     ],
     [
       "date",
@@ -334,6 +351,7 @@ function Reports() {
       "debit",
       "credit",
       "cluster",
+      "status"
     ],
     [
       "date",
@@ -377,6 +395,7 @@ function Reports() {
       "Unit Price",
       "Amount",
       "Outlet",
+      "Status"
     ],
     [
       "Date",
@@ -387,6 +406,7 @@ function Reports() {
       "Debit",
       "Credit",
       "Cluster",
+      "Status"
     ],
     [
       "Date",
@@ -538,8 +558,8 @@ function Reports() {
             >
               <SecondaryButton
                 disabled={
-                  ((!watch("clientId") && !soaFetching) || (!watch("clientId") && !listingFeeFetching)) ||
-                  activeArray?.pendingSoa || activeArray?.transactions < 1
+                  ((!watch("clientId") && !soaFetching) || (!watch("clientId") && !listingFeeFetching)) 
+                  // || activeArray?.pendingSoa || activeArray?.transactions < 1
                 }
                 size="medium"
                 variant="contained"
@@ -577,7 +597,8 @@ function Reports() {
       // priceModeFetching ||
       checkInFetching || 
       listingFeeFetching || 
-      checkInFiloFetching ? (
+      checkInFiloFetching || 
+      voidTransactionsFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable

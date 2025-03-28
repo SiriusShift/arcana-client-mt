@@ -68,6 +68,15 @@ const reportsApi = api
         }),
         providesTags: ["CheckIn Report"],
       }),
+
+      getVoidTransactionsReports: builder.query({
+        query: (params) => ({
+          url: "/get-void-transaction-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["CheckIn Report"],
+      })
     }),
   });
 
@@ -80,4 +89,5 @@ export const {
   useCheckInReportQuery,
   useGetSOAReportsQuery,
   useGetCheckInFiloReportsQuery,
+  useGetVoidTransactionsReportsQuery
 } = reportsApi;

@@ -68,6 +68,11 @@ export const reportNames = [
 		label: "Check In, First in - Last out Reports",
 		index: 6,
 		value: "check-in-filo"
+	}, 
+	{
+		label: "Void Transactions Report",
+		index: 7,
+		value: "void-transaction"
 	}
 ]
 
