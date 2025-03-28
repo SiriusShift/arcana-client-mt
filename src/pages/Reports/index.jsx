@@ -19,7 +19,7 @@ import {
   useGetCheckInReportsQuery,
   useGetSOAReportsQuery,
   useGetCheckInFiloReportsQuery,
-  useGetVoidTransactionsReportsQuery
+  useGetVoidTransactionsReportsQuery,
 } from "../../features/reports/api/reportsApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
@@ -32,7 +32,11 @@ import Report from "../../components/page-components/reports/SOAreport";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 // import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
 import { useDispatch } from "react-redux";
-import { useGetAllListingFeeQuery, useGetListingFeeHistoryByClientIdQuery } from "../../features/listing-fee/api/listingFeeApi";
+import {
+  useGetAllListingFeeQuery,
+  useGetListingFeeHistoryByClientIdQuery,
+} from "../../features/listing-fee/api/listingFeeApi";
+import SOAPDFDownload from "./PDFDownload";
 // import SOAReport from "../../utils/Excel"
 
 function Reports() {
@@ -46,14 +50,14 @@ function Reports() {
     cdo: true,
     sj: true,
     as: true,
-    //Check in 
+    //Check in
     ci: true,
     //Listing Fee
     lf: true,
     //Checkin First in, Last out
     cf: true,
     //Void Transactions Report
-    vtr: true
+    vtr: true,
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
@@ -83,10 +87,7 @@ function Reports() {
 
   // RTK Query
 
-  const {
-    data: listingFeeClients,
-    error,
-  } = useGetAllListingFeeQuery(
+  const { data: listingFeeClients, error } = useGetAllListingFeeQuery(
     {
       Search: search,
       Status: true,
@@ -163,34 +164,46 @@ function Reports() {
         skip: isActive.soa,
       }
     );
-  
-    const { data: listingFeeReportData, isFetching: listingFeeFetching } =
-    useGetListingFeeHistoryByClientIdQuery({
-      ClientId: watch("clientId")?.id || watch("clientId")?.clientId,
-    }, {
-      skip: isActive.lf,
-    });
 
-    const { data: checkInFiloReportData, isFetching: checkInFiloFetching } =
-    useGetCheckInFiloReportsQuery({
+  const { data: listingFeeReportData, isFetching: listingFeeFetching } =
+    useGetListingFeeHistoryByClientIdQuery(
+      {
+        ClientId: watch("clientId")?.id || watch("clientId")?.clientId,
+      },
+      {
+        skip: isActive.lf,
+      }
+    );
+
+  const { data: checkInFiloReportData, isFetching: checkInFiloFetching } =
+    useGetCheckInFiloReportsQuery(
+      {
+        PageNumber: page + 1,
+        PageSize: rowsPerPage,
+        ClusterId: clusterId?.value || "",
+        DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+        DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+      },
+      {
+        skip: isActive.cf,
+      }
+    );
+
+  const {
+    data: voidTransactionsReportData,
+    isFetching: voidTransactionsFetching,
+  } = useGetVoidTransactionsReportsQuery(
+    {
       PageNumber: page + 1,
       PageSize: rowsPerPage,
       ClusterId: clusterId?.value || "",
       DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
       DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
-    }, {
-      skip: isActive.cf
-    })
-
-    const {data: voidTransactionsReportData, isFetching: voidTransactionsFetching} = useGetVoidTransactionsReportsQuery({
-      PageNumber: page + 1,
-      PageSize: rowsPerPage,
-      ClusterId: clusterId?.value || "",
-      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
-      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
-    }, {
-      skip: isActive.vtr
-    })
+    },
+    {
+      skip: isActive.vtr,
+    }
+  );
 
   //functions
   const handleSubmitDate = () => {
@@ -207,7 +220,7 @@ function Reports() {
 
   const useDownloadExcel = async () => {
     setIsDownloading(true); // Start loading
-  
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASEURL}${
@@ -218,7 +231,9 @@ function Reports() {
           clusterId ? `&clusterId=${clusterId?.value}` : ""
         }${
           watch("clientId")?.id || watch("clientId")?.clientId
-            ? `&clientId=${watch("clientId")?.id || watch("clientId")?.clientId}`
+            ? `&clientId=${
+                watch("clientId")?.id || watch("clientId")?.clientId
+              }`
             : ""
         }`,
         {
@@ -231,11 +246,11 @@ function Reports() {
           },
         }
       );
-  
+
       if (!response.ok) {
         throw new Error("Failed to download Excel file.");
       }
-  
+
       const blob = await response.blob();
       const link = document.createElement("a");
       const url = window.URL.createObjectURL(blob);
@@ -267,7 +282,7 @@ function Reports() {
       soaReportData,
       listingFeeReportData,
       checkInFiloReportData,
-      voidTransactionsReportData
+      voidTransactionsReportData,
     ];
     const keys = [
       "cdo",
@@ -277,7 +292,7 @@ function Reports() {
       "soa",
       "lf",
       "cf",
-      "vtr"
+      "vtr",
       // 'pm',/
     ];
 
@@ -340,7 +355,7 @@ function Reports() {
       "unitPrice",
       "amount",
       "outlet",
-      "status"
+      "status",
     ],
     [
       "date",
@@ -351,7 +366,7 @@ function Reports() {
       "debit",
       "credit",
       "cluster",
-      "status"
+      "status",
     ],
     [
       "date",
@@ -395,7 +410,7 @@ function Reports() {
       "Unit Price",
       "Amount",
       "Outlet",
-      "Status"
+      "Status",
     ],
     [
       "Date",
@@ -406,7 +421,7 @@ function Reports() {
       "Debit",
       "Credit",
       "Cluster",
-      "Status"
+      "Status",
     ],
     [
       "Date",
@@ -473,36 +488,43 @@ function Reports() {
             userDetails?.roleName === "Treasury" ||
             userDetails?.roleName === "GAS" ||
             userDetails?.roleName === "Finance") &&
-            (activeReport?.value !== "SOA" && activeReport?.value !== "listing-fee")&& (
+            activeReport?.value !== "SOA" &&
+            activeReport?.value !== "listing-fee" && (
               <CommonFilter filter={onFilter} clusterFilter />
             )}
           {activeReport?.value === "SOA" ||
-            activeReport?.value === "listing-fee" ? (
-              <ControlledAutocomplete
-                name="clientId"
-                control={control}
-                options={activeReport?.value === "listing-fee" ? listingFeeClients?.listingFees : RegisteredClients?.regularClient || []}
-                getOptionLabel={(option) =>
-                  option?.businessName?.toUpperCase() +
-                  " - " +
-                  (option?.ownersName || option?.clientName) +
-                  " - " +
-                  String(option?.id || option?.clientId)
-                }
-                disableClearable
-                isOptionEqualToValue={() => true}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    size="small"
-                    label="Business Name"
-                    sx={{ width: "200px" }}
-                    helperText={errors?.clientId?.message}
-                    error={errors?.clientId}
-                  />
-                )}
-              />
-            ) : ""}
+          activeReport?.value === "listing-fee" ? (
+            <ControlledAutocomplete
+              name="clientId"
+              control={control}
+              options={
+                activeReport?.value === "listing-fee"
+                  ? listingFeeClients?.listingFees
+                  : RegisteredClients?.regularClient || []
+              }
+              getOptionLabel={(option) =>
+                option?.businessName?.toUpperCase() +
+                " - " +
+                (option?.ownersName || option?.clientName) +
+                " - " +
+                String(option?.id || option?.clientId)
+              }
+              disableClearable
+              isOptionEqualToValue={() => true}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  label="Business Name"
+                  sx={{ width: "200px" }}
+                  helperText={errors?.clientId?.message}
+                  error={errors?.clientId}
+                />
+              )}
+            />
+          ) : (
+            ""
+          )}
           {activeReport?.value != "SOA" && (
             <>
               <Controller
@@ -547,26 +569,13 @@ function Reports() {
             )}
           />
           {activeReport?.value === "SOA" && !soaFetching ? (
-            <PDFDownloadLink
-              document={
-                <Report
-                  client={soaReportData?.value}
-                  dateTo={watch("dateTo")}
-                />
-              }
-              fileName="SOA.pdf"
-            >
-              <SecondaryButton
-                disabled={
-                  ((!watch("clientId") && !soaFetching) || (!watch("clientId") && !listingFeeFetching)) 
-                  // || activeArray?.pendingSoa || activeArray?.transactions < 1
-                }
-                size="medium"
-                variant="contained"
-              >
-                <GetApp />
-              </SecondaryButton>
-            </PDFDownloadLink>
+            <SOAPDFDownload
+              soaReportData={soaReportData}
+              watch={watch}
+              soaFetching={soaFetching}
+              listingFeeFetching={listingFeeFetching}
+              dateTo={watch("dateTo")}
+            />
           ) : (
             <SecondaryButton
               size="medium"
@@ -595,9 +604,9 @@ function Reports() {
       asFetching ||
       soaFetching ||
       // priceModeFetching ||
-      checkInFetching || 
-      listingFeeFetching || 
-      checkInFiloFetching || 
+      checkInFetching ||
+      listingFeeFetching ||
+      checkInFiloFetching ||
       voidTransactionsFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
@@ -608,8 +617,8 @@ function Reports() {
           mapData={
             activeArray?.transactions ||
             activeArray?.checkIn ||
-            activeArray?.pendingSoa || 
-            activeArray?.listingHistory || 
+            activeArray?.pendingSoa ||
+            activeArray?.listingHistory ||
             activeArray?.result
           }
           tableHeads={tableHeads[activeReport?.index]}

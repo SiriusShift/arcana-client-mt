@@ -47,7 +47,7 @@ function AddItemModal({ onSubmit, ...otherProps }) {
   }, [open]);
 
   return (
-    <CommonModal {...otherProps} width="350px" closeTopRight>
+    <CommonModal {...otherProps} customOnClose={handleClose} width="350px" closeTopRight>
       <Box component="form" onSubmit={handleSubmit}>
         <Box>
           <Typography fontSize="1.3rem" fontWeight="700">
