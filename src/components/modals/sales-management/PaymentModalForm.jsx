@@ -92,10 +92,13 @@ function PaymentModalForm({
     pageSize: 1000,
   });
 
-  let { data: otherExpensesBalanceData, error: otherExpensesBalanceError } =
-    useGetOtherExpensesBalanceByClientIdQuery({
-      clientId: client?.id,
-    });
+  const { data: otherExpensesBalanceData, error: otherExpensesBalanceError } =
+    useGetOtherExpensesBalanceByClientIdQuery(
+      { clientId: client?.id },
+      { skip: !client?.id } // Skip query if clientId is undefined
+    );
+
+  console.log(otherExpensesBalanceData);
 
   const { data: returnData, isFetching } = useGetAllReturnsQuery({
     Page: 1,
@@ -104,7 +107,7 @@ function PaymentModalForm({
     DateTo: moment().format("YYYY-MM-DD"),
     Status: "Pending",
   });
-  console.log(returnData)
+  console.log(returnData);
   // if (otherExpensesBalanceError) {
   //   otherExpensesBalanceData = 0;
   // }
@@ -127,7 +130,7 @@ function PaymentModalForm({
   const onSubmit = async (data) => {
     let transformedData;
 
-    if (data.paymentMethod.label === "Cheque") {
+    if (data.paymentMethod.value === "Cheque") {
       transformedData = {
         paymentMethod: data.paymentMethod,
         paymentAmount: data.paymentAmount,
@@ -140,7 +143,7 @@ function PaymentModalForm({
         dateReceived: data.dateReceived,
         // chequeAmount: Number(data.chequeAmount),
       };
-    } else if (data.paymentMethod.label === "Online") {
+    } else if (data.paymentMethod.value === "Online") {
       transformedData = {
         paymentMethod: data.paymentMethod,
         paymentAmount: data.paymentAmount,
@@ -149,19 +152,25 @@ function PaymentModalForm({
         paymentChannel: data.paymentChannel.id,
         referenceNo: data.referenceNo,
       };
-    } else if (data.paymentMethod.label === "Withholding") {
+    } else if (data.paymentMethod.value === "Withholding") {
       transformedData = {
         paymentMethod: data.paymentMethod,
         paymentAmount: data.paymentAmount,
         // invoiceAttachment: data.invoiceAttachment,
         attachment: data.attachment,
       };
-    } else if (data.paymentMethod.label === "Other Expenses") {
+    } else if (data.paymentMethod.value === "Others") {
       transformedData = {
         paymentMethod: data.paymentMethod,
         paymentAmount: data.paymentAmount,
         // invoiceAttachment: data.invoiceAttachment,
         otherExpense: data.otherExpense,
+      };
+    } else if (data.paymentMethod.value === "Others With Remarks") {
+      transformedData = {
+        paymentMethod: data.paymentMethod,
+        paymentAmount: data.paymentAmount,
+        remarks: data.remarks,
       };
     } else {
       transformedData = {
@@ -178,10 +187,10 @@ function PaymentModalForm({
         } else {
           const paymentIndex = paymentFields.findIndex(
             (field) =>
-              field.paymentMethod.label ===
-                transformedData.paymentMethod.label &&
-              (transformedData.paymentMethod.label === "Advance Payment" ||
-                transformedData.paymentMethod.label === "Listing Fee")
+              field.paymentMethod.value ===
+                transformedData.paymentMethod.value &&
+              (transformedData.paymentMethod.value === "Advance Payment" ||
+                transformedData.paymentMethod.value === "Listing Fee")
           );
 
           if (paymentIndex !== -1) {
@@ -272,14 +281,18 @@ function PaymentModalForm({
         disableSubmit={
           !isValid ||
           !isDirty ||
-          (watch("paymentMethod")?.label === "Other Expenses" &&
-            !otherExpensesBalanceData)
+          (watch("paymentMethod")?.value === "Others" &&
+            !otherExpensesBalanceData) ||
+          (watch("paymentMethod")?.value === "Others" &&
+            otherExpensesBalanceData?.others?.find(
+              (e) => e.otherExpenseName === watch("otherExpense")?.expenseType
+            )?.balance === 0)
         }
         width="800px"
         // height change when in advance payment and listing fee to accomodate the payment balance for them
         height={
-          watch("paymentMethod")?.label === "Listing Fee" ||
-          watch("paymentMethod")?.label === "Advance Payment"
+          watch("paymentMethod")?.value === "Listing Fee" ||
+          watch("paymentMethod")?.value === "Advance Payment"
             ? "350px"
             : "auto"
         }
@@ -311,7 +324,7 @@ function PaymentModalForm({
                         field.paymentMethod.label !== "Cheque" &&
                         field.paymentMethod.label !== "Online" &&
                         field.paymentMethod.label !== "Offset" &&
-                        field.paymentMethod.label !== "Other Expenses"
+                        field.paymentMethod.label !== "Others"
                     )
                 )}
                 getOptionLabel={(option) => option.label.toUpperCase()}
@@ -327,11 +340,11 @@ function PaymentModalForm({
                   );
 
                   const isAdvancePaymentNotif =
-                    option.label === "Advance Payment" &&
+                    option.value === "Advance Payment" &&
                     remainingAdvancePayment > 0;
 
                   const isListingFeeNotif =
-                    option.label === "Listing Fee" && remainingListingFee > 0;
+                    option.value === "Listing Fee" && remainingListingFee > 0;
 
                   return (
                     <Tooltip
@@ -362,7 +375,7 @@ function PaymentModalForm({
                   />
                 )}
                 onChange={(_, value) => {
-                  if (value.label !== "Cheque") {
+                  if (value.value !== "Cheque") {
                     setValue("payee", "");
                     setValue("chequeDate", null);
                     setValue("bankName", "");
@@ -370,19 +383,19 @@ function PaymentModalForm({
                     setValue("dateReceived", null);
                     // setValue("chequeAmount", "");
                   }
-                  if (value.label !== "Online") {
+                  if (value.value !== "Online") {
                     setValue("accountName", "");
                     setValue("accountNo", "");
                     setValue("referenceNo", "");
                   }
-                  if (value.label !== "Offset") {
+                  if (value.value !== "Offset") {
                     setValue("remarks", "");
                   }
 
-                  if (value.label !== "Withholding") {
+                  if (value.value !== "Withholding") {
                     setValue("attachment", "");
                   }
-                  setValue("paymentAmount", 0)
+                  setValue("paymentAmount", null);
                   return value;
                 }}
               />
@@ -399,13 +412,13 @@ function PaymentModalForm({
                     label="Payment Amount"
                     type="text"
                     disabled={
-                      (watch("paymentMethod")?.label === "Listing Fee" &&
+                      (watch("paymentMethod")?.value === "Listing Fee" &&
                         remainingListingFee < 1) ||
-                      (watch("paymentMethod")?.label === "Advance Payment" &&
+                      (watch("paymentMethod")?.value === "Advance Payment" &&
                         remainingAdvancePayment < 1) ||
-                      (watch("paymentMethod")?.label === "Other Expenses" &&
+                      (watch("paymentMethod")?.value === "Others" &&
                         currentExpenseBalance < 1) ||
-                      watch("paymentMethod")?.label === "Sales Return"
+                      watch("paymentMethod")?.value === "Sales Return"
                     }
                     size="small"
                     customInput={TextField}
@@ -423,12 +436,11 @@ function PaymentModalForm({
                       if (
                         floatValue != null &&
                         floatValue > balanceToCompare &&
-                        watch("paymentMethod").label !== "Cheque" &&
-                        watch("paymentMethod").label !== "Others"
+                        watch("paymentMethod")?.value !== "Cheque"
                       ) {
                         snackbar({
                           message: `${
-                            watch("paymentMethod").label
+                            watch("paymentMethod")?.value
                           } cannot be over the remaining balance`,
                           variant: "error",
                         });
@@ -439,14 +451,19 @@ function PaymentModalForm({
                         floatValue != null &&
                         ((floatValue >
                           parseFloat(advancePaymentData?.remainingBalance) &&
-                          watch("paymentMethod").label === "Advance Payment") ||
+                          watch("paymentMethod")?.value ===
+                            "Advance Payment") ||
                           (floatValue >
                             parseFloat(listingFeeBalanceData?.totalBalance) &&
-                            watch("paymentMethod").label === "Listing Fee"))
+                            watch("paymentMethod")?.value === "Listing Fee") ||
+                          (floatValue > currentExpenseBalance &&
+                            watch("paymentMethod")?.value === "Others"))
                       ) {
                         snackbar({
                           message: `Not enough ${
-                            watch("paymentMethod").label
+                            watch("paymentMethod")?.value === "Others"
+                              ? watch("otherExpense")?.expenseType
+                              : watch("paymentMethod")?.value
                           } balance`,
                           variant: "error",
                         });
@@ -486,7 +503,7 @@ function PaymentModalForm({
 								/>
 							)} */}
 
-            {watch("paymentMethod")?.label === "Cheque" && (
+            {watch("paymentMethod")?.value === "Cheque" && (
               <>
                 <Controller
                   name="payee"
@@ -591,7 +608,7 @@ function PaymentModalForm({
               </>
             )}
 
-            {watch("paymentMethod")?.label === "Online" && (
+            {watch("paymentMethod")?.value === "Online" && (
               <>
                 <ControlledAutocomplete
                   name="paymentChannel"
@@ -691,7 +708,7 @@ function PaymentModalForm({
               </>
             )}
 
-            {watch("paymentMethod")?.label === "Listing Fee" && (
+            {watch("paymentMethod")?.value === "Listing Fee" && (
               <Box className="paymentTransactionModal__footer">
                 <Box className="paymentTransactionModal__footer__label">
                   <Typography className="paymentTransactionModal__footer__label__top">
@@ -716,7 +733,7 @@ function PaymentModalForm({
               </Box>
             )}
 
-            {watch("paymentMethod")?.label === "Offset" && (
+            {watch("paymentMethod")?.value === "Offset" && (
               <Box className="paymentTransactionModal__otherFields">
                 <Controller
                   name="remarks"
@@ -741,7 +758,7 @@ function PaymentModalForm({
               </Box>
             )}
 
-            {watch("paymentMethod")?.label === "Advance Payment" && (
+            {watch("paymentMethod")?.value === "Advance Payment" && (
               <Box className="paymentTransactionModal__footer">
                 <Box className="paymentTransactionModal__footer__label">
                   <Typography className="paymentTransactionModal__footer__label__top">
@@ -766,8 +783,8 @@ function PaymentModalForm({
               </Box>
             )}
 
-            {watch("paymentMethod")?.label === "Sales Return" && (
-                <ControlledAutocomplete
+            {watch("paymentMethod")?.value === "Sales Return" && (
+              <ControlledAutocomplete
                 name="returnId"
                 control={control}
                 options={returnData?.to}
@@ -785,11 +802,12 @@ function PaymentModalForm({
                 )}
                 onChange={(_, value) => {
                   setValue("paymentAmount", value.totalReturnPrice);
+                  return value
                 }}
               />
             )}
 
-            {watch("paymentMethod")?.label === "Other Expenses" && (
+            {watch("paymentMethod")?.value === "Others" && (
               <>
                 <ControlledAutocomplete
                   name="otherExpense"
@@ -862,7 +880,7 @@ function PaymentModalForm({
                 <Box className="paymentTransactionModal__footer">
                   <Box className="paymentTransactionModal__footer__label">
                     <Typography className="paymentTransactionModal__footer__label__top">
-                      {watch("otherExpense")?.expenseType ?? "Other Expenses"}
+                      {watch("otherExpense")?.expenseType ?? "Others"}
                     </Typography>
 
                     <Typography className="paymentTransactionModal__footer__label__bottom">
@@ -877,7 +895,7 @@ function PaymentModalForm({
               </>
             )}
 
-            {watch("paymentMethod")?.label === "Others" && (
+            {watch("paymentMethod")?.value === "Others With Remarks" && (
               <Controller
                 name="remarks"
                 control={control}
@@ -888,8 +906,8 @@ function PaymentModalForm({
                     size="small"
                     autoComplete="off"
                     {...field}
-                    helperText={errors?.paymentAmount?.message}
-                    error={errors?.paymentAmount}
+                    helperText={errors?.remarks?.message}
+                    error={errors?.remarks}
                   />
                 )}
               />

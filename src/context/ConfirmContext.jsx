@@ -77,7 +77,7 @@ const ConfirmProvider = ({ children }) => {
         <CommonDialog
           key={key}
           open={promise.length === 3}
-          onClose={handleCancel}
+          onClose={!isLoading ?handleCancel : undefined}
           onYes={handleConfirm}
           isLoading={isLoading}
           {...options}

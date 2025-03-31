@@ -953,14 +953,14 @@ export const paymentSchema = {
     }),
 
     //Others
-    otherExpense: yup.object().when("paymentMethod.label", {
-      is: "Other Expenses",
+    otherExpense: yup.object().when("paymentMethod.value", {
+      is: "Others",
       then: (schema) => schema.required("Other expense is required"),
       otherwise: (schema) => schema.nullable(),
     }),
 
-    remarks: yup.string().when("paymentMethod.label", {
-      is: "Others",
+    remarks: yup.string().when("paymentMethod.value", {
+      is: "Others With Remarks",
       then: (schema) => schema.required("Remarks is required"),
       otherwise: (schema) => schema.nullable(),
     }),

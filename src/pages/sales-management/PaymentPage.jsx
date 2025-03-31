@@ -186,6 +186,9 @@ function PaymentPage({
           `Payments[${index}].othersPayment`,
           payment.otherExpense.id
         );
+
+      payment.returnId && 
+        formData.append(`Payments[${index}].returnId`, payment.returnId?.returnId);
     });
 
     try {
