@@ -64,6 +64,12 @@ import ViewReturn from "../pages/inventory-management/Return/ViewReturn";
 import Reports from "../pages/Reports";
 import Cheque from "../pages/cheque";
 import Attendance from "../pages/check-in";
+import Outrite from "../pages/inventory-management/OutrightReturn";
+import OutrightForm from "../pages/inventory-management/OutrightReturn/OutrightForm";
+import ViewOutright from "../pages/inventory-management/OutrightReturn/ViewOutrightReturn";
+import MiscIn from "../pages/inventory-management/MiscIn/index"
+import MiscOut from "../pages/inventory-management/MiscOut/index"
+
 
 export const router = createBrowserRouter([
   {
@@ -262,6 +268,28 @@ export const router = createBrowserRouter([
                 element: <ViewReceiving />,
               },
             ],
+          },
+          {
+            path: "outright-return",
+            element: <Outrite />,
+            children: [
+              {
+                path: "outright-return-form",
+                element: <OutrightForm />,
+              },
+              {
+                path: ":id",
+                element: <ViewOutright />,
+              },
+            ],
+          },
+          {
+            path: "miscellaneous-in",
+            element: <MiscIn />
+          },
+          {
+            path: "miscellaneous-out",
+            element: <MiscOut />
           },
           {
             path: "transfer-in",
