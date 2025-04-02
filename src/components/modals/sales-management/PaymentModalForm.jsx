@@ -72,7 +72,7 @@ function PaymentModalForm({
     defaultValues: paymentSchema.defaultValues,
   });
 
-  console.log(watch("otherExpense"));
+  console.log(watch(), errors, isValid);
 
   //Watch Constants
   const otherExpenseType = watch("otherExpense");
@@ -748,7 +748,7 @@ function PaymentModalForm({
               </Box>
             )}
 
-            {watch("paymentMethod")?.label === "Others" && (
+            {watch("paymentMethod")?.label === "Other Expenses" && (
               <>
                 <ControlledAutocomplete
                   name="otherExpense"

@@ -223,10 +223,25 @@ function PaymentTransaction() {
     }
   };
 
+
+
   const checkIsVoidable = (date, totalAmount, balance) => {
-    const isVoidable = moment(date).isAfter(moment().subtract(1, "days"));
+    const firstDay = moment().format("YYYY-MM") + "-01";
+    const cutOff = moment().format("YYYY-MM") + "-10";
+    const voidLastMonth = moment().isBetween(firstDay, cutOff, undefined, "[]");
+    // If current day is within the first day of the month upto 10th day of the month
+    if(voidLastMonth){
+      const lastMonth = moment(date).isBetween(moment().subtract(1, "months").startOf("month"), moment());
+      return lastMonth;
+    }else{
+      // If current day is from 11th day onwards
+      // First day of the month unto the current day
+      const isVoidable =  moment(date).isBetween(moment().startOf("month"), moment());
+      return isVoidable;
+    }
+    // const isVoidable = moment(date).isAfter(moment().subtract(1, "days"));
     // && totalAmount - balance === 0;
-    return isVoidable;
+    // return isVoidable;
   };
 
   const onPay = () => {

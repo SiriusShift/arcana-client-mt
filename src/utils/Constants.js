@@ -121,28 +121,28 @@ export const regions = [
 
 export const paymentTypes = [
 	{
-		label: "Cheque",
-		value: "Cheque",
-		uppercase: "CHEQUE",
-		icon: "ReceiptLong",
+	  label: "Cheque",
+	  value: "Cheque",
+	  uppercase: "CHEQUE",
+	  icon: "ReceiptLong",
 	},
 	{
-		label: "Cash",
-		value: "Cash",
-		uppercase: "CASH",
-		icon: "AttachMoney",
+	  label: "Cash",
+	  value: "Cash",
+	  uppercase: "CASH",
+	  icon: "AttachMoney",
 	},
 	{
-		label: "Online",
-		value: "Online",
-		uppercase: "ONLINE",
-		icon: "CreditCard",
+	  label: "Online",
+	  value: "Online",
+	  uppercase: "ONLINE",
+	  icon: "CreditCard",
 	},
 	{
-		label: "Listing Fee",
-		value: "Listing Fee",
-		uppercase: "LISTING FEE",
-		icon: "Assignment",
+	  label: "Listing Fee",
+	  value: "Listing Fee",
+	  uppercase: "LISTING FEE",
+	  icon: "Assignment",
 	},
 	// {
 	//   label: "Offset",
@@ -151,24 +151,36 @@ export const paymentTypes = [
 	//   icon: "Undo",
 	// },
 	{
-		label: "Advance Payment",
-		value: "Advance Payment",
-		uppercase: "ADVANCE PAYMENT",
-		icon: "FastForward",
+	  label: "Advance Payment",
+	  value: "Advance Payment",
+	  uppercase: "ADVANCE PAYMENT",
+	  icon: "FastForward",
 	},
 	{
-		label: "Withholding",
-		value: "Withholding",
-		uppercase: "WITHHOLDING",
-		icon: "AccountBalance",
+	  label: "Withholding",
+	  value: "Withholding",
+	  uppercase: "WITHHOLDING",
+	  icon: "AccountBalance",
+	},
+	// {
+	//   label: "Sales Return",
+	//   value: "Sales Return",
+	//   uppercase: "SALES RETURN",
+	//   icon: "AccountBalance",
+	// },
+	{
+	  label: "Other Expenses",
+	  value: "Others",
+	  uppercase: "OTHER EXPENSES",
+	  icon: "ReceiptLong",
 	},
 	{
-		label: "Others",
-		value: "Others",
-		uppercase: "OTHERS",
-		icon: "MoreHoriz",
+	  label: "Others",
+	  value: "Others With Remarks",
+	  uppercase: "OTHERS",
+	  icon: "MoreHoriz",
 	},
-];
+  ];
 
 export const paymentTypesAdvPayment = [
   {

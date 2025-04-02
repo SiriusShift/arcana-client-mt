@@ -842,100 +842,114 @@ export const paymentTransactionSchema = {
 
 export const paymentSchema = {
 	schema: yup.object({
-		paymentMethod: yup.object().required("Payment Type is required"),
-		paymentAmount: yup.number().required("Amount is required"),
-		// invoiceAttachment: yup.mixed().required("Invoice Attachment is required"),
-
-		//Cheque Validations
-		payee: yup.string().when("paymentMethod.label", {
-			is: "Cheque",
-			then: (schema) => schema.required("Payee is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-		chequeDate: yup.date().when("paymentMethod.label", {
-			is: "Cheque",
-			then: (schema) => schema.required("Cheque date is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-		bankName: yup.string().when("paymentMethod.label", {
-			is: "Cheque",
-			then: (schema) => schema.required("Bank name is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-		chequeNo: yup.string().when("paymentMethod.label", {
-			is: "Cheque",
-			then: (schema) => schema.required("Cheque number is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-		dateReceived: yup.date().when("paymentMethod.label", {
-			is: "Cheque",
-			then: (schema) => schema.required("Date received is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-		// chequeAmount: yup.string().when("paymentMethod.label", {
-		//   is: "Cheque",
-		//   then: (schema) => schema.required("Cheque paymentAmount is required"),
-		//   otherwise: (schema) => schema.nullable(),
-		// }),
-
-		//Online
-		accountName: yup.string().when("paymentMethod.label", {
-			is: "Online",
-			then: (schema) => schema.required("Account name is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-
-		paymentChannel: yup.object().when("paymentMethod.label", {
-			is: "Online",
-			then: (schema) => schema.required("Payment Channel is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-
-		referenceNo: yup.string().when("paymentMethod.label", {
-			is: "Online",
-			then: (schema) => schema.required("Reference number is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-
-		//Offset
-		remarks: yup.string().when("paymentMethod.label", {
-			is: "Offset",
-			then: (schema) => schema.required("Remarks is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-
-		//Withholding
-		attachment: yup.mixed().when("paymentMethod.label", {
-			is: "Withholding",
-			then: (schema) => schema.required("Attachment  is required"),
-			otherwise: (schema) => schema.nullable(),
-		}),
-
-		//Others
-		otherExpense: yup.object().when("paymentMethod.label", {
-			is: "Others",
-			then: (schema) => schema.required("Other expense is required"),
-			otherwise: (schema) => schema.nullable(),
-		})
+	  paymentMethod: yup.object().required("Payment Type is required"),
+	  paymentAmount: yup.number().required("Amount is required"),
+	  // invoiceAttachment: yup.mixed().required("Invoice Attachment is required"),
+  
+	  //Cheque Validations
+	  payee: yup.string().when("paymentMethod.label", {
+		is: "Cheque",
+		then: (schema) => schema.required("Payee is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+	  chequeDate: yup.date().when("paymentMethod.label", {
+		is: "Cheque",
+		then: (schema) => schema.required("Cheque date is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+	  bankName: yup.string().when("paymentMethod.label", {
+		is: "Cheque",
+		then: (schema) => schema.required("Bank name is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+	  chequeNo: yup.string().when("paymentMethod.label", {
+		is: "Cheque",
+		then: (schema) => schema.required("Cheque number is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+	  dateReceived: yup.date().when("paymentMethod.label", {
+		is: "Cheque",
+		then: (schema) => schema.required("Date received is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+	  // chequeAmount: yup.string().when("paymentMethod.label", {
+	  //   is: "Cheque",
+	  //   then: (schema) => schema.required("Cheque paymentAmount is required"),
+	  //   otherwise: (schema) => schema.nullable(),
+	  // }),
+  
+	  //Online
+	  accountName: yup.string().when("paymentMethod.label", {
+		is: "Online",
+		then: (schema) => schema.required("Account name is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+  
+	  paymentChannel: yup.object().when("paymentMethod.label", {
+		is: "Online",
+		then: (schema) => schema.required("Payment Channel is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+  
+	  referenceNo: yup.string().when("paymentMethod.label", {
+		is: "Online",
+		then: (schema) => schema.required("Reference number is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+  
+	  //Offset
+	  remarks: yup.string().when("paymentMethod.label", {
+		is: "Offset",
+		then: (schema) => schema.required("Remarks is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+  
+	  //Withholding
+	  attachment: yup.mixed().when("paymentMethod.label", {
+		is: "Withholding",
+		then: (schema) => schema.required("Attachment  is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+  
+	  //Others
+	  otherExpense: yup.object().when("paymentMethod.value", {
+		is: "Others",
+		then: (schema) => schema.required("Other expense is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+  
+	  remarks: yup.string().when("paymentMethod.value", {
+		is: "Others With Remarks",
+		then: (schema) => schema.required("Remarks is required"),
+		otherwise: (schema) => schema.nullable(),
+	  }),
+  
+	  returnId: yup.object().when("paymentMethod.label", {
+		is: "Sales Return",
+		then: (schema) => schema.required("Return Id is required"),
+		otherwise: (schema) => schema.nullable(),
+	  })
+  
+	  //
 	}),
 	defaultValues: {
-		paymentMethod: null,
-		paymentAmount: null,
-		payee: "",
-		chequeDate: null,
-		bankName: "",
-		chequeNo: "",
-		dateReceived: null,
-		// chequeAmount: "",
-		accountName: "",
-		paymentChannel: null,
-		referenceNo: "",
-		remarks: "",
-		// invoiceAttachment: null,
-		attachment: null,
-		otherExpense: null
+	  paymentMethod: null,
+	  paymentAmount: null,
+	  payee: "",
+	  chequeDate: null,
+	  bankName: "",
+	  chequeNo: "",
+	  dateReceived: null,
+	  // chequeAmount: "",
+	  accountName: "",
+	  paymentChannel: null,
+	  referenceNo: "",
+	  remarks: "",
+	  // invoiceAttachment: null,
+	  attachment: null,
+	  otherExpense: null,
 	},
-};
+  };
 
 export const salesTransactionSchema = {
 	schema: yup.object({
