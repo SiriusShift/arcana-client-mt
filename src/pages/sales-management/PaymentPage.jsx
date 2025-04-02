@@ -35,7 +35,7 @@ import {
   handleCatchErrorMessage,
 } from "../../utils/CustomFunctions";
 import { getIconElement } from "../../components/GetIconElement";
-import { useCreatePaymentTransactionMutation } from "../../features/sales-management/api/paymentTransactionApi";
+import { paymentTransactionApi, useCreatePaymentTransactionMutation } from "../../features/sales-management/api/paymentTransactionApi";
 import PaymentListSkeleton from "../../components/skeletons/PaymentListSkeleton";
 import PaymentHistoriesModal from "../../components/modals/sales-management/PaymentHistoriesModal";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
@@ -43,6 +43,7 @@ import { useLazyGetAllSalesTransactionQuery } from "../../features/sales-managem
 import moment from "moment";
 import ReceiptInput from "../../components/modals/sales-management/ReceiptInput";
 import ViewPhotoModal from "../../components/modals/ViewPhotoModal";
+import { useDispatch } from "react-redux";
 
 function PaymentPage({
   setPaymentMode,
@@ -58,6 +59,7 @@ function PaymentPage({
   //Hooks
   const confirm = useConfirm();
   const snackbar = useSnackbar();
+  const dispatch = useDispatch();
   const checkboxRef = useRef(null);
   const receiptUploadRef = useRef();
   const [parent] = useAutoAnimate();
@@ -186,6 +188,12 @@ function PaymentPage({
           `Payments[${index}].othersPayment`,
           payment.otherExpense.id
         );
+      //IF PAYMENT IS OTHERS WITH REMARKS
+      payment.remarks && 
+        formData.append(`Payments[${index}].reason`, payment.remarks);
+
+      payment.returnId && 
+        formData.append(`Payments[${index}].returnId`, payment.returnId?.returnId);
     });
 
     try {
@@ -194,6 +202,8 @@ function PaymentPage({
         question: true,
         callback: () => createPaymentTransaction(formData).unwrap(),
       });
+
+      dispatch(paymentTransactionApi.util.invalidateTags(["Payment Transaction Histories"]))
 
       handleReset();
       snackbar({
