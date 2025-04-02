@@ -1149,7 +1149,7 @@ export const freebiesSchema = {
 
 export const samplingSchema = {
   schema: yup.object({
-    client: yup.object().required("Client is required"),
+    // client: yup.object().required("Client is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
