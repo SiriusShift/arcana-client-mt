@@ -1,8 +1,4 @@
 import { Box } from "@mui/material";
-import TransferOutFormHeader from "../../../components/page-components/inventory-management/transfer-out/TransferOutFormHeader";
-import TransferOutFormDetails from "../../../components/page-components/inventory-management/transfer-out/TransferOutFormDetails";
-import TransferOutItems from "../../../components/page-components/inventory-management/transfer-out/TransferOutItems";
-import TransferOutFormActions from "../../../components/page-components/inventory-management/transfer-out/TransferOutFormActions";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { outrightReturnSchema, transferOutSchema } from "../../../schema/schema";

@@ -21,7 +21,7 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi";
 import useSnackbar from "../../../../hooks/useSnackbar";
 
-const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
+const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut, withBbd }) => {
   const viewOnly = items.length > 0 || isFetching;
   const snackbar = useSnackbar();
 
@@ -290,8 +290,8 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                       return value;
                     }}
                   /> */}
-
-                  {/* <LocalizationProvider dateAdapter={AdapterMoment}>
+                  {}
+                  <LocalizationProvider dateAdapter={AdapterMoment}>
                     <Controller
                       control={control}
                       name={`items[${index}].bbd`}
@@ -321,7 +321,7 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut }) => {
                         />
                       )}
                     />
-                  </LocalizationProvider> */}
+                  </LocalizationProvider>
 
                   <Stack gap={0.6} alignItems="center">
                     <Controller

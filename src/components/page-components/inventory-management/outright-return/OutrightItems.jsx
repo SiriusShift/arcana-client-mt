@@ -1,7 +1,7 @@
-import ItemsWithBBDPriceForm from "../common/ItemsWithBBDPriceForm";
+import ItemsWithBBDForm from "../common/ItemsWithBBDForm";
 
 const OutrightItems = ({ items = [], isFetching }) => {
-  return <ItemsWithBBDPriceForm items={items} isFetching={isFetching} />;
+  return <ItemsWithBBDForm withBbd isTransferOut items={items} isFetching={isFetching} />;
 };
 
 export default OutrightItems;

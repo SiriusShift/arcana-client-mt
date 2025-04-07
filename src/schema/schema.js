@@ -1340,7 +1340,7 @@ export const outrightReturnSchema = {
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
-          // bbd: yup.object().required("BBD is required"),
+          bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
         })
@@ -1352,7 +1352,35 @@ export const outrightReturnSchema = {
     items: [
       {
         item: null,
-        // bbd: null,
+        bbd: null,
+        quantity: null,
+        reason: "",
+      },
+    ],
+  },
+};
+export const miscInSchema = {
+  schema: yup.object({
+    // transactionType: yup.object().required("Transaction Type is required"),
+    transactionDate: yup.date().required("Transaction Date is required"),
+    items: yup
+      .array()
+      .of(
+        yup.object({
+          item: yup.object().required("Item Code is required"),
+          bbd: yup.object().required("BBD is required"),
+          quantity: yup.number().required("Quantity is required").min(1),
+          reason: yup.string(),
+        })
+      )
+      .min(1, "At least one product is required"),
+  }),
+  defaultValues: {
+    transactionDate: moment(),
+    items: [
+      {
+        item: null,
+        bbd: null,
         quantity: null,
         reason: "",
       },

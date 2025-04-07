@@ -9,7 +9,6 @@ import { useGetAllTransferOutsQuery, useGetTransferOutByIdQuery } from "../../..
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import OutrightReturnFormHeader from "../../../components/page-components/inventory-management/outright-return/OutrightReturnFormHeader";
-import OutrightReturnFormDetails from "../../../components/page-components/inventory-management/outright-return/OutrightReturnFormDetails";
 import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OutrightItems";
 
 const ViewOutright = () => {
@@ -45,8 +44,6 @@ const ViewOutright = () => {
       <OutrightReturnFormHeader />
 
       <FormProvider {...methods}>
-        <OutrightReturnFormDetails details={data?.value?.to[0]} isFetching={isFetching} />
-
         <OutrightItems items={data?.value?.to[0]?.transferItems || []} isFetching={isFetching} />
       </FormProvider>
     </Box>

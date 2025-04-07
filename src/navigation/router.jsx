@@ -69,6 +69,7 @@ import OutrightForm from "../pages/inventory-management/OutrightReturn/OutrightF
 import ViewOutright from "../pages/inventory-management/OutrightReturn/ViewOutrightReturn";
 import MiscIn from "../pages/inventory-management/MiscIn/index"
 import MiscOut from "../pages/inventory-management/MiscOut/index"
+import MiscInForm from "../pages/inventory-management/MiscIn/MiscInForm";
 
 
 export const router = createBrowserRouter([
@@ -285,7 +286,13 @@ export const router = createBrowserRouter([
           },
           {
             path: "miscellaneous-in",
-            element: <MiscIn />
+            element: <MiscIn />,
+            children: [
+              {
+                path: "miscellaneous-in-form",
+                element: <MiscInForm />,
+              }
+            ]
           },
           {
             path: "miscellaneous-out",
