@@ -71,7 +71,7 @@ function PaymentHistoriesModal({ clientId, ...props }) {
   const getPaymentTypeIcon = (paymentType) => {
     console.log(paymentType)
     return getIconElement(
-      paymentTypes.find((type) => type.uppercase === paymentType?.toUpperCase())
+      paymentTypes.find((type) => type.value === paymentType)
         ?.icon,
       "gray",
       "1.3rem"
