@@ -5,16 +5,15 @@ import TransferOutItems from "../../../components/page-components/inventory-mana
 import TransferOutFormActions from "../../../components/page-components/inventory-management/transfer-out/TransferOutFormActions";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { transferOutSchema } from "../../../schema/schema";
+import { outrightReturnSchema, transferOutSchema } from "../../../schema/schema";
 import OutrightReturnFormHeader from "../../../components/page-components/inventory-management/outright-return/OutrightReturnFormHeader";
-import OutrightReturnFormDetails from "../../../components/page-components/inventory-management/outright-return/OutrightReturnFormDetails";
 import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OutrightItems";
 import OutrightFormActions from "../../../components/page-components/inventory-management/outright-return/OutrightFormActions";
 
 const OutrightForm = () => {
   const methods = useForm({
-    resolver: yupResolver(transferOutSchema.schema),
-    defaultValues: transferOutSchema.defaultValues,
+    resolver: yupResolver(outrightReturnSchema.schema),
+    defaultValues: outrightReturnSchema.defaultValues,
   });
 
   const { watch } = methods;
@@ -26,7 +25,6 @@ const OutrightForm = () => {
       <OutrightReturnFormHeader />
 
       <FormProvider {...methods}>
-        <OutrightReturnFormDetails />
 
         <OutrightItems />
 

@@ -71,7 +71,7 @@ const OutrightFormActions = () => {
         disabled={!isValid}
         endIcon={<SaveOutlined />}
       >
-        Transfer Out
+        return
       </SecondaryButton>
     </Stack>
   );
