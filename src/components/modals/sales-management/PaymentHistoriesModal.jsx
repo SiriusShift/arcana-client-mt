@@ -69,6 +69,7 @@ function PaymentHistoriesModal({ clientId, ...props }) {
 
   //Functions
   const getPaymentTypeIcon = (paymentType) => {
+    console.log(paymentType)
     return getIconElement(
       paymentTypes.find((type) => type.uppercase === paymentType?.toUpperCase())
         ?.icon,
@@ -169,7 +170,7 @@ function PaymentHistoriesModal({ clientId, ...props }) {
 
           {hasVoidable && (
             <Alert severity="warning">
-              Only payments made within the past day can be voided
+              Payments from last month can be only voided from the 1st to 10th day of the month
             </Alert>
           )}
 

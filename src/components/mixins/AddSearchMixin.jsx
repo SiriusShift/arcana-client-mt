@@ -8,6 +8,7 @@ function AddSearchMixin({
   endIcon,
   title,
   transactionStatus,
+  disableButton,
   addTitle,
   onAddOpen,
   onFilter,
@@ -28,19 +29,22 @@ function AddSearchMixin({
     setSearch(value);
   }, 200);
 
+  console.log(disableButton)
+
   const userDetails = useSelector((state) => state.login.userDetails);
 
   return (
     // <Paper elevation={1}>
     <Box className="mixin" sx={{ mt: "-20px" }}>
       <Box className="mixin__left">
-        <SecondaryButton
+        {!disableButton && <SecondaryButton
           className="addRowButtons"
           onClick={onAddOpen}
           endIcon={endIcon ? endIcon : <Add />}
         >
           {title ? title : `Add ${addTitle && addTitle}`}
-        </SecondaryButton>
+        </SecondaryButton>}
+
       </Box>
       <Box className="mixin__right">
       {userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance" || userDetails?.roleName === "Customer Registration Approver" ? (<CommonFilter

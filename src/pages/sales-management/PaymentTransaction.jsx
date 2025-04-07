@@ -49,7 +49,7 @@ function PaymentTransaction() {
   const isAdmin = userDetails?.roleName === "Admin";
   const isCustomerApprover =
     userDetails?.roleName === "Customer Registration Approver";
-  console.log(isAdmin);
+  console.log(isCustomerApprover);
 
   console.log(selectedRowData);
 
@@ -314,6 +314,7 @@ function PaymentTransaction() {
               title="Pay Now"
               endIcon={<KeyboardDoubleArrowRight />}
               setSearch={setSearch}
+              disableButton={isCustomerApprover}
               onAddOpen={() => {
                 dispatch(setSelectedRow(null));
                 setPaymentMode(true);

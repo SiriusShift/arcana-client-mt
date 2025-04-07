@@ -436,7 +436,8 @@ function PaymentModalForm({
                       if (
                         floatValue != null &&
                         floatValue > balanceToCompare &&
-                        watch("paymentMethod")?.value !== "Cheque"
+                        watch("paymentMethod")?.value !== "Cheque" &&
+                        watch("paymentMethod")?.value !== "Others With Remarks"
                       ) {
                         snackbar({
                           message: `${
