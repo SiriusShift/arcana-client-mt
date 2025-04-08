@@ -660,6 +660,15 @@ function Approver() {
                           onValueChange={(e) => {
                             onChange(parseInt(e.value));
                           }}
+                          isAllowed={(e) => {
+                            if(watch("moduleName")?.name === "Sp. Discount Approval"){
+                              if(e.value > 100){
+                                snackbar({message: "Maximum value is 100%", variant: "error"})
+                                return false
+                              }
+                            }
+                            return true
+                          }}
                           onBlur={onBlur}
                           value={value || ""}
                           inputRef={ref}

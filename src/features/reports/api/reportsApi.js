@@ -123,6 +123,14 @@ const reportsApi = api
           params,
         }),
         providesTags: ["Replace Report"],
+      }),
+      getVoidTransactionsReports: builder.query({
+        query: (params) => ({
+          url: "/get-void-transaction-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["CheckIn Report"],
       })
     }),
   });
@@ -142,5 +150,6 @@ export const {
   useGetFreebieReportsQuery,
   useGetSamplingReportsQuery,
   useGetReturnReportsQuery,
-  useGetReplaceReportsQuery
+  useGetReplaceReportsQuery,  
+  useGetVoidTransactionsReportsQuery
 } = reportsApi;
