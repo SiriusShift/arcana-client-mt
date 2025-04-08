@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { miscInSchema, outrightReturnSchema, transferOutSchema } from "../../../schema/schema";
-import MiscInReturnFormHeader from "../../../components/page-components/inventory-management/misc-in/MiscInFormHeader";
+import MiscInFormHeader from "../../../components/page-components/inventory-management/misc-in/MiscInFormHeader";
 import MiscInReturnFormDetails from "../../../components/page-components/inventory-management/misc-in/MiscInFormDetails";
 import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OutrightItems";
 import OutrightFormActions from "../../../components/page-components/inventory-management/outright-return/OutrightFormActions";
@@ -20,7 +20,7 @@ const MiscInForm = () => {
 
   return (
     <Box className="commonPageLayout">
-      <MiscInReturnFormHeader />
+      <MiscInFormHeader />
 
       <FormProvider {...methods}>
         <MiscInReturnFormDetails />

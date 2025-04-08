@@ -52,7 +52,9 @@ const ReturnFormActions = ({
 
   console.log(watch());
 
-  const [returnItems, { isLoading: returnItemsLoading }] =
+  const [returnItemsNo, { isLoading: returnItemsNoLoading }] =
+    useReturnItemsMutation();
+  const [returnItemsYes, { isLoading: returnItemsYesLoading }] =
     useReturnItemsMutation();
   const [replaceItems, { isLoading: replaceItemsLoading }] =
     useReplaceItemsMutation();
@@ -181,7 +183,7 @@ const ReturnFormActions = ({
         clientId: watch("client").id,
       };
       console.log("testing!");
-      await returnItems(transformedData).unwrap();
+      await returnItemsNo(transformedData).unwrap();
       onContinueClose();
       navigate("/inventory-management/return", { replace: true });
     } catch (error) {
@@ -209,7 +211,7 @@ const ReturnFormActions = ({
       clientId: watch("client").id,
     };
     console.log("testing!");
-    await returnItems(transformedData).unwrap();
+    await returnItemsYes(transformedData).unwrap();
     onContinueClose();
     setCurrentStep((prev) => prev + 1);
   };
@@ -278,7 +280,8 @@ const ReturnFormActions = ({
         onClose={handleClose}
         onBackdropClick={handleModalClose}
         onYes={currentStep !== steps.length - 1 && handleNext}
-        isLoading={returnItemsLoading || replaceItemsLoading}
+        isLoading={replaceItemsLoading || returnItemsYesLoading}
+        isLoadingNo={returnItemsNoLoading}
         question
       >
         Continue adding replace items ?

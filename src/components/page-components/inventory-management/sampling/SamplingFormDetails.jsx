@@ -20,30 +20,43 @@ const SamplingFormDetails = ({ details, isFetching }) => {
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
 
-  const { data: clientData, isFetching: isClientFetching } =
-    useGetAllClientsQuery({
-      RegistrationStatus: "Approved",
-      PageSize: 2000,
-    });
+  // const { data: clientData, isFetching: isClientFetching } =
+  //   useGetAllClientsQuery({
+  //     RegistrationStatus: "Approved",
+  //     PageSize: 2000,
+  //   });
 
-  useEffect(() => {
-    if (details) {
-      setValue(
-        "client",
-        clientData?.regularClient.find(
-          (client) => client.id === details?.clientId
-        ) || null
-      );
-      setValue("transactionDate", moment(details.transactionDate));
-    }
-  }, [details, setValue, clientData]);
+  // useEffect(() => {
+  //   if (details) {
+  //     setValue(
+  //       "client",
+  //       clientData?.regularClient.find(
+  //         (client) => client.id === details?.clientId
+  //       ) || null
+  //     );
+  //     setValue("transactionDate", moment(details.transactionDate));
+  //   }
+  // }, [details, setValue, clientData]);
 
-  if (isFetching || isClientFetching) {
-    return <SamplingFormDetailsSkeleton />;
-  }
+  // if (isFetching || isClientFetching) {
+  //   return <SamplingFormDetailsSkeleton />;
+  // }
   return (
     <Stack direction="row" spacing={1.5}>
-      <ControlledAutocomplete
+      <Controller
+        control={control}
+        name="description"
+        render={({ field }) => (
+          <TextField
+            {...field}
+            size="small"
+            label="Description"
+            disabled={viewOnly}
+            sx={{ width: "500px" }}
+          />
+        )}
+      />
+      {/* <ControlledAutocomplete
         name="client"
         control={control}
         options={clientData?.regularClient || []}
@@ -68,7 +81,7 @@ const SamplingFormDetails = ({ details, isFetching }) => {
             sx={{ width: "500px" }}
           />
         )}
-      />
+      /> */}
       <Controller
         control={control}
         name="transactionDate"

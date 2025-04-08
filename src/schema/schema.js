@@ -1066,7 +1066,7 @@ export const receivingItemsSchema = {
         uom: yup.string().required("UOM is required"),
         itemDescription: yup.string().required("Item Description is required"),
         actualQuantity: yup.number().required("Quantity Received is required"),
-        variance: yup.number().required("Variance is required"),
+        variance: yup.number(),
         reason: yup.string(),
       })
     ),
@@ -1150,6 +1150,7 @@ export const freebiesSchema = {
 export const samplingSchema = {
   schema: yup.object({
     // client: yup.object().required("Client is required"),
+    description: yup.string().required("Description is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
@@ -1359,7 +1360,37 @@ export const outrightReturnSchema = {
     ],
   },
 };
+
 export const miscInSchema = {
+  schema: yup.object({
+    // transactionType: yup.object().required("Transaction Type is required"),
+    transactionDate: yup.date().required("Transaction Date is required"),
+    items: yup
+      .array()
+      .of(
+        yup.object({
+          item: yup.object().required("Item Code is required"),
+          bbd: yup.object().required("BBD is required"),
+          quantity: yup.number().required("Quantity is required").min(1),
+          reason: yup.string(),
+        })
+      )
+      .min(1, "At least one product is required"),
+  }),
+  defaultValues: {
+    transactionDate: moment(),
+    items: [
+      {
+        item: null,
+        bbd: null,
+        quantity: null,
+        reason: "",
+      },
+    ],
+  },
+};
+
+export const miscOutSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
     transactionDate: yup.date().required("Transaction Date is required"),

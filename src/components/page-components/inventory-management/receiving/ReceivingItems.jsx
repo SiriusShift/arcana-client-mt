@@ -303,7 +303,6 @@ function ReceivingItems({
                             onValueChange={(values) => {
                               const { value: newValue } = values;
 
-                              setValue(`items[${index}].variance`, newValue -  watch("items")?.[index]?.quantity );
                               // const quantity =
                               //   parseFloat(watch(`items[${index}].quantity`)) ||
                               //   0;
@@ -319,6 +318,8 @@ function ReceivingItems({
                               //   });
                               // } else {
                               onChange(newValue);
+                              if(watch("items")?.[index]?.quantity === null) return
+                              setValue(`items[${index}].variance`, newValue -  watch("items")?.[index]?.quantity );
                               // }
                             }}
                             onBlur={onBlur}

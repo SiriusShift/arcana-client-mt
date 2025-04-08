@@ -51,7 +51,7 @@ function MiscOut() {
   const dateTimeArray = ["transactionDate", "dateReceived"];
 
   const handleAdd = () => {
-    navigate("outright-return-form");
+    navigate("miscellaneous-out-form");
   };
 
   // Functions

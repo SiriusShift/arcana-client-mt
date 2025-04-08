@@ -18,7 +18,7 @@ const SamplingForm = () => {
       <SamplingFormHeader />
 
       <FormProvider {...methods}>
-        {/* <SamplingFormDetails /> */}
+        <SamplingFormDetails />
 
         <SamplingFormItems />
 

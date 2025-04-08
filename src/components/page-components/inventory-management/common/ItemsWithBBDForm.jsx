@@ -21,7 +21,12 @@ import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi";
 import useSnackbar from "../../../../hooks/useSnackbar";
 
-const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut, withBbd }) => {
+const ItemsWithBBDForm = ({
+  items = [],
+  isFetching,
+  isTransferOut,
+  withBbd,
+}) => {
   const viewOnly = items.length > 0 || isFetching;
   const snackbar = useSnackbar();
 
@@ -290,38 +295,41 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut, withBbd }) =>
                       return value;
                     }}
                   /> */}
-                  {}
-                  <LocalizationProvider dateAdapter={AdapterMoment}>
-                    <Controller
-                      control={control}
-                      name={`items[${index}].bbd`}
-                      render={({ field: { onChange, onBlur, value, ref } }) => (
-                        <DatePicker
-                          label="BBD*"
-                          size="small"
-                          slotProps={{
-                            textField: {
-                              size: "small",
-                            },
-                          }}
-                          inputFormat="MM/dd/yyyy"
-                          value={value ? moment(value) : null} // Convert value to a Moment object
-                          onChange={(newValue) => onChange(newValue)} // Handle date changes
-                          inputRef={ref}
-                          sx={{ width: "200px" }}
-                          disabled={viewOnly || !watchItems?.[index]?.item}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              size="small"
-                              autoComplete="off"
-                              onBlur={onBlur} // Pass blur event
-                            />
-                          )}
-                        />
-                      )}
-                    />
-                  </LocalizationProvider>
+                  {withBbd && (
+                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                      <Controller
+                        control={control}
+                        name={`items[${index}].bbd`}
+                        render={({
+                          field: { onChange, onBlur, value, ref },
+                        }) => (
+                          <DatePicker
+                            label="BBD*"
+                            size="small"
+                            slotProps={{
+                              textField: {
+                                size: "small",
+                              },
+                            }}
+                            inputFormat="MM/dd/yyyy"
+                            value={value ? moment(value) : null} // Convert value to a Moment object
+                            onChange={(newValue) => onChange(newValue)} // Handle date changes
+                            inputRef={ref}
+                            sx={{ width: "200px" }}
+                            disabled={viewOnly || !watchItems?.[index]?.item}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                size="small"
+                                autoComplete="off"
+                                onBlur={onBlur} // Pass blur event
+                              />
+                            )}
+                          />
+                        )}
+                      />
+                    </LocalizationProvider>
+                  )}
 
                   <Stack gap={0.6} alignItems="center">
                     <Controller
@@ -371,8 +379,8 @@ const ItemsWithBBDForm = ({ items = [], isFetching, isTransferOut, withBbd }) =>
                           value={value || ""}
                           inputRef={ref}
                           sx={{ maxWidth: "120px" }}
-                          disabled={viewOnly 
-                            // || !watchItems?.[index]?.bbd
+                          disabled={
+                            viewOnly || (withBbd && !watchItems?.[index]?.bbd)
                           }
                           customInput={TextField}
                           thousandSeparator

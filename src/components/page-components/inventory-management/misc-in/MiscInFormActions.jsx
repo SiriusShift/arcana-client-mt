@@ -23,7 +23,7 @@ const MiscInFormActions = () => {
   const [transferOut] = useTransferOutMutation();
 
   const handleCancel = () => {
-    navigate("/inventory-management/outright-return", { replace: true });
+    navigate("/inventory-management/miscellaneous-in", { replace: true });
   };
 
   const onSubmit = async (data) => {
