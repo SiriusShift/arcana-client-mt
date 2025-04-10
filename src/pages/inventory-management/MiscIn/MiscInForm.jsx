@@ -4,8 +4,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { miscInSchema, outrightReturnSchema, transferOutSchema } from "../../../schema/schema";
 import MiscInFormHeader from "../../../components/page-components/inventory-management/misc-in/MiscInFormHeader";
 import MiscInReturnFormDetails from "../../../components/page-components/inventory-management/misc-in/MiscInFormDetails";
-import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OutrightItems";
-import OutrightFormActions from "../../../components/page-components/inventory-management/outright-return/OutrightFormActions";
+import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OurightItems";
+import OutrightFormActions from "../../../components/page-components/inventory-management/outright-return/OuriteFormActions";
 import MiscInFormActions from "../../../components/page-components/inventory-management/misc-in/MiscInFormActions";
 
 const MiscInForm = () => {

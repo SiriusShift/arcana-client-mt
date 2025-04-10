@@ -293,7 +293,7 @@ function Approver() {
             acc[0].push({
               userId: data?.find((user) => user.userId === approver.userId),
               level: approver.level,
-              minValue: approver.minValue,
+              minValue: approver.minValue ?? 0,
             }); // Add to the first array if minValue exists
           } else {
             acc[1].push({
@@ -670,7 +670,7 @@ function Approver() {
                             return true
                           }}
                           onBlur={onBlur}
-                          value={value || ""}
+                          value={value ?? ""}
                           inputRef={ref}
                           thousandSeparator=","
                           allowNegative={false}

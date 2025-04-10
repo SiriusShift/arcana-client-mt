@@ -26,7 +26,7 @@ import {
   useGetFreebieReportsQuery,
   useGetSamplingReportsQuery,
   useGetReturnReportsQuery,
-  useGetReplaceReportsQuery
+  useGetReplaceReportsQuery,
 } from "../../features/reports/api/reportsApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
@@ -46,6 +46,7 @@ import {
 import { useGetAllReceivedOrdersQuery } from "../../features/inventory-management/api/receivingApi";
 import { useGetAllTransferOutsQuery } from "../../features/inventory-management/api/transferOutApi";
 import SOAPDFDownload from "./PDFDownload";
+import useSnackbar from "../../hooks/useSnackbar";
 // import SOAReport from "../../utils/Excel"
 
 function Reports() {
@@ -90,13 +91,19 @@ function Reports() {
   const [search, setSearch] = useState("");
   const userDetails = useSelector((state) => state.login.userDetails);
   const presentDay = moment();
+  const snackbar = useSnackbar();
 
-  console.log(activeArray)
+  console.log(activeArray, isActive);
   // const selectedRowData = useSelector((state) => state.selectedRow.value);
   // const dispatch = useDispatch();
 
   const pesoArray = ["charges", "payment", "remainingBalance"];
-  const dateTimeArray = ["timeIn", "timeOut", "transactionDate", "dateReceived"]; 
+  const dateTimeArray = [
+    "timeIn",
+    "timeOut",
+    "transactionDate",
+    "dateReceived",
+  ];
 
   const {
     handleSubmit,
@@ -233,35 +240,47 @@ function Reports() {
     }
   );
 
-    let { data: receivingReportData, isFetching: receivingFetching } = useGetAllReceivedOrdersQuery({
-      Search: search,
-      PageNumber: page + 1,
-      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
-      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
-      PageSize: rowsPerPage,
-      clusterId: clusterId?.value || "",
-    }, {
-      skip: isActive.rr
-    });
+  let { data: receivingReportData, isFetching: receivingFetching } =
+    useGetAllReceivedOrdersQuery(
+      {
+        Search: search,
+        PageNumber: page + 1,
+        DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+        DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+        PageSize: rowsPerPage,
+        clusterId: clusterId?.value || "",
+      },
+      {
+        skip: isActive.rr,
+      }
+    );
 
-    const {data: returnByCdoReportData, isFetching: returnByCdoFetching} = useGetReturnByCDOReportsQuery({
-      ClusterId: clusterId?.value || "",
-      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
-      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
-    }, {
-      skip: isActive.rcdo
-    });
+  const { data: returnByCdoReportData, isFetching: returnByCdoFetching } =
+    useGetReturnByCDOReportsQuery(
+      {
+        ClusterId: clusterId?.value || "",
+        DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+        DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+      },
+      {
+        skip: isActive.rcdo,
+      }
+    );
 
-    const { data: transferOutReportData, isFetching: transferOutFetching } = useGetAllTransferOutsQuery({
-      Search: search,
-      Page: page + 1,
-      PageSize: rowsPerPage,
-      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
-      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
-      TransferType: "Out",
-    }, {
-      skip: isActive.tor
-    });
+  const { data: transferOutReportData, isFetching: transferOutFetching } =
+    useGetAllTransferOutsQuery(
+      {
+        Search: search,
+        Page: page + 1,
+        PageSize: rowsPerPage,
+        DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
+        DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
+        TransferType: "Out",
+      },
+      {
+        skip: isActive.tor,
+      }
+    );
 
   //functions
   const handleSubmitDate = () => {
@@ -315,15 +334,20 @@ function Reports() {
       link.href = url;
       link.setAttribute(
         "download",
-        `${activeReport.value}_Reports_${moment(watch("dateFrom")).format(
+        `${activeReport.value}_${moment(watch("dateFrom")).format(
           "YYYYMMDD"
         )}_${moment(watch("dateTo")).format("YYYYMMDD")}.xlsx`
       );
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
+      snackbar({
+        message: "Excel file downloaded successfully",
+        variant: "success",
+      });
     } catch (error) {
       console.error("Error while downloading Excel file:", error);
+      snackbar({ message: "Error while downloading file", variant: "error" });
     } finally {
       setIsDownloading(false); // Stop loading
     }
@@ -336,10 +360,13 @@ function Reports() {
       ...receivingReportData,
       value: {
         ...receivingReportData?.value,
-        mo: receivingReportData?.value?.mo?.map(({ moveItems, ...rest }) => rest) || []
-      }
-    }
-  }, [receivingReportData])
+        mo:
+          receivingReportData?.value?.mo?.map(
+            ({ moveItems, ...rest }) => rest
+          ) || [],
+      },
+    };
+  }, [receivingReportData]);
   useEffect(() => {
     const reports = [
       cdoReportData,
@@ -350,10 +377,10 @@ function Reports() {
       soaReportData,
       listingFeeReportData,
       checkInFiloReportData,
+      voidTransactionsReportData,
       receivingReportData,
       returnByCdoReportData,
       transferOutReportData,
-      voidTransactionsReportData,
     ];
     const keys = [
       "cdo",
@@ -363,10 +390,10 @@ function Reports() {
       "soa",
       "lf",
       "cf",
+      "vtr",
       "rr",
       "rcdo",
-      "tor",,
-      "vtr",
+      "tor",
       // 'pm',/
     ];
 
@@ -442,7 +469,7 @@ function Reports() {
       "debit",
       "credit",
       "cluster",
-      "status"
+      "status",
     ],
     [
       "date",
@@ -475,18 +502,8 @@ function Reports() {
       "remainingBalance",
       "remarks",
     ],
-    [
-      "paymentType",
-      "amount",
-      "createdDate",
-      "transactedBy",
-    ],
-    [
-      "user",
-      "timeIn",
-      "timeOut",
-      "duration",
-    ]
+    ["paymentType", "amount", "createdDate", "transactedBy"],
+    ["user", "timeIn", "timeOut", "duration"],
   ];
 
   const tableHeads = [
@@ -498,7 +515,7 @@ function Reports() {
       "Unit Price",
       "Amount",
       "Outlet",
-      "Status"
+      "Status",
     ],
     [
       "Date",
@@ -509,7 +526,7 @@ function Reports() {
       "Debit",
       "Credit",
       "Cluster",
-      "Status"
+      "Status",
     ],
     [
       "Date",
@@ -542,18 +559,8 @@ function Reports() {
       "Remaining Balance",
       "Remarks",
     ],
-    [
-      "Payment Type",
-      "Amount",
-      "Created Date",
-      "Transacted By",
-    ],
-    [
-      "User",
-      "Time In",
-      "Time Out",
-      "Duration",
-    ],
+    ["Payment Type", "Amount", "Created Date", "Transacted By"],
+    ["User", "Time In", "Time Out", "Duration"],
     // [
     //   "Move Order ID",
     //   "Date Received",
@@ -573,7 +580,7 @@ function Reports() {
             setActiveReport(value);
             setActiveArray([]);
             setValue("clientId", null);
-            if (value?.value === "SOA") {
+            if (value?.value === "SOA-reports") {
               setValue("dateFrom", null);
             } else {
               setValue("dateFrom", moment());
@@ -594,17 +601,17 @@ function Reports() {
             userDetails?.roleName === "Treasury" ||
             userDetails?.roleName === "GAS" ||
             userDetails?.roleName === "Finance") &&
-            activeReport?.value !== "SOA" &&
-            activeReport?.value !== "listing-fee" && (
+            activeReport?.value !== "SOA-reports" &&
+            activeReport?.value !== "listing-fee-reports" && (
               <CommonFilter filter={onFilter} clusterFilter />
             )}
-          {activeReport?.value === "SOA" ||
-          activeReport?.value === "listing-fee" ? (
+          {activeReport?.value === "SOA-reports" ||
+          activeReport?.value === "listing-fee-reports" ? (
             <ControlledAutocomplete
               name="clientId"
               control={control}
               options={
-                activeReport?.value === "listing-fee"
+                activeReport?.value === "listing-fee-reports"
                   ? listingFeeClients?.listingFees
                   : RegisteredClients?.regularClient || []
               }
@@ -631,7 +638,7 @@ function Reports() {
           ) : (
             ""
           )}
-          {activeReport?.value != "SOA" && (
+          {activeReport?.value != "SOA-reports" && (
             <>
               <Controller
                 name="dateFrom"
@@ -660,7 +667,9 @@ function Reports() {
             render={({ field }) => (
               <LocalizationProvider dateAdapter={AdapterMoment}>
                 <DatePicker
-                  minDate={activeReport?.value != "SOA-reports" && watch("dateFrom")}
+                  minDate={
+                    activeReport?.value != "SOA-reports" && watch("dateFrom")
+                  }
                   maxDate={moment()}
                   {...field}
                   label="Date To"
@@ -674,7 +683,7 @@ function Reports() {
               </LocalizationProvider>
             )}
           />
-          {activeReport?.value === "SOA" && !soaFetching ? (
+          {activeReport?.value === "SOA-reports" && !soaFetching ? (
             <SOAPDFDownload
               soaReportData={soaReportData}
               watch={watch}
@@ -725,7 +734,7 @@ function Reports() {
             activeArray?.checkIn ||
             activeArray?.pendingSoa ||
             activeArray?.listingHistory ||
-            activeArray?.result || 
+            activeArray?.result ||
             activeArray?.mo
           }
           tableHeads={tableHeads[activeReport?.index]}

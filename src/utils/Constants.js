@@ -70,50 +70,50 @@ export const reportNames = [
     value: "check-in-filo-reports",
   },
   {
+		label: "Void Transactions Report",
+		index: 7,
+		value: "void-transaction-reports"
+	},
+  {
     label: "Receiving Reports",
-    index: 7,
+    index: 8,
     value: "arcana-mo-reports",
   },
   {
     label: "Return by CDO Reports",
-    index: 8,
+    index: 9,
     value: "arcana-return-by-cdo-reports",
   },
   {
     label: "Transfer Out Reports",
-    index: 9,
+    index: 10,
     value: "arcana-transfer-out-reports",
   },
   {
     label: "Transfer In Reports",
-    index: 10,
+    index: 11,
     value: "arcana-transfer-in-reports",
   },
   {
     label: "Freebie Reports",
-    index: 11,
+    index: 12,
     value: "arcana-freebie-report",
   },
   {
     label: "Sampling Reports",
-    index: 12,
+    index: 13,
     value: "arcana-sampling-report",
   },
   {
     label: "Return Reports",
-    index: 13,
+    index: 14,
     value: "arcana-return-report",
   },
   {
     label: "Replace Reports",
-    index: 14,
+    index: 15,
     value: "arcana-replace-report",
   },
-  {
-		label: "Void Transactions Report",
-		index: 15,
-		value: "void-transaction-reports"
-	}
 ];
 
 export const regions = [
@@ -202,12 +202,12 @@ export const paymentTypes = [
 	  uppercase: "WITHHOLDING",
 	  icon: "AccountBalance",
 	},
-	// {
-	//   label: "Sales Return",
-	//   value: "Sales Return",
-	//   uppercase: "SALES RETURN",
-	//   icon: "AccountBalance",
-	// },
+	{
+	  label: "Sales Return",
+	  value: "Sales Return",
+	  uppercase: "SALES RETURN",
+	  icon: "AccountBalance",
+	},
 	{
 	  label: "Other Expenses",
 	  value: "Others",

@@ -10,6 +10,7 @@ import { useGetAllReceivedOrdersQuery } from "../../../features/inventory-manage
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
 import moment from "moment";
+import { useGetAllTransferOutsQuery } from "../../../features/inventory-management/api/transferOutApi";
 
 function Outright() {
   const navigate = useNavigate();
@@ -23,12 +24,14 @@ function Outright() {
   const [page, setPage] = useState(0);
 
   // RTK Query
-  const { data, isFetching } = useGetAllReceivedOrdersQuery({
+  const { data, isFetching } = useGetAllTransferOutsQuery({
     Search: search,
-    PageNumber: page + 1,
+    Page: page + 1,
+    PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    PageSize: rowsPerPage,
+    Status: "Received",
+    TransferType: "Ourite",
   });
 
   // Common Table Props
@@ -51,7 +54,7 @@ function Outright() {
   const dateTimeArray = ["transactionDate", "dateReceived"];
 
   const handleAdd = () => {
-    navigate("outright-return-form");
+    navigate("ourite-return-form");
   };
 
   // Functions
@@ -63,7 +66,7 @@ function Outright() {
     );
   };
 
-  if (location.pathname === "/inventory-management/outright-return") {
+  if (location.pathname === "/inventory-management/ourite-return") {
     return (
       <>
         {/* <GenerateMoveOrderModal
@@ -73,7 +76,7 @@ function Outright() {
 
         <Box className="commonPageLayout">
           <PageHeaderAdd
-            pageTitle="Outright Return"
+            pageTitle="Ourite Return"
             addTitle="Return"
             removeArchive
             removeSearch
@@ -95,8 +98,8 @@ function Outright() {
               lowerCompact
               moveNoDataUp
               mapData={data?.value?.mo || []}
-              tableHeads={tableHeads}
-              customOrderKeys={customOrderKeys}
+              // tableHeads={tableHeads}
+              // customOrderKeys={customOrderKeys}
               dateTimeArray={dateTimeArray}
               count={data?.value?.totalCount || 0}
               onView={handleView}

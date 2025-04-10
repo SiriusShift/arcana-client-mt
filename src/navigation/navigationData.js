@@ -301,7 +301,7 @@ export const navigationData = [
       {
         id: 3,
         name: "Outright Return",
-        path: "/inventory-management/outright-return",
+        path: "/inventory-management/ourite-return",
         description: "Return items to depot",
         icon: "KeyboardReturn"
       },

@@ -24,6 +24,7 @@ import useSnackbar from "../../../../hooks/useSnackbar";
 const ItemsWithBBDForm = ({
   items = [],
   isFetching,
+  ourite,
   isTransferOut,
   withBbd,
 }) => {
@@ -70,8 +71,6 @@ const ItemsWithBBDForm = ({
   const viewOnlyBBDs = [...uniqueBBDs].map((bbd) => ({
     bbd: bbd,
   }));
-
-  console.log(watchItems.length, productData?.priceModeItems?.length);
 
   return (
     <Stack sx={{ padding: "1px" }}>
@@ -316,7 +315,7 @@ const ItemsWithBBDForm = ({
                             onChange={(newValue) => onChange(newValue)} // Handle date changes
                             inputRef={ref}
                             sx={{ width: "200px" }}
-                            disabled={viewOnly || !watchItems?.[index]?.item}
+                            disabled={viewOnly || !watchItems?.[index]?.item || ourite}
                             renderInput={(params) => (
                               <TextField
                                 {...params}
@@ -389,10 +388,6 @@ const ItemsWithBBDForm = ({
                         />
                       )}
                     />
-
-                    {console.log(
-                      productData?.priceModeItems[index]?.availQuantity
-                    )}
 
                     {!viewOnly && (
                       <Typography

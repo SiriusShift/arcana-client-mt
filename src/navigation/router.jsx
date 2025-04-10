@@ -64,9 +64,9 @@ import ViewReturn from "../pages/inventory-management/Return/ViewReturn";
 import Reports from "../pages/Reports";
 import Cheque from "../pages/cheque";
 import Attendance from "../pages/check-in";
-import Outrite from "../pages/inventory-management/OutrightReturn";
-import OutrightForm from "../pages/inventory-management/OutrightReturn/OutrightForm";
-import ViewOutright from "../pages/inventory-management/OutrightReturn/ViewOutrightReturn";
+import Outrite from "../pages/inventory-management/OuriteReturn";
+import OuriteForm from "../pages/inventory-management/OuriteReturn/OuriteForm";
+import ViewOutright from "../pages/inventory-management/OuriteReturn/ViewOutrightReturn";
 import MiscIn from "../pages/inventory-management/MiscIn/index"
 import MiscOut from "../pages/inventory-management/MiscOut/index"
 import MiscInForm from "../pages/inventory-management/MiscIn/MiscInForm";
@@ -272,12 +272,12 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: "outright-return",
+            path: "ourite-return",
             element: <Outrite />,
             children: [
               {
-                path: "outright-return-form",
-                element: <OutrightForm />,
+                path: "ourite-return-form",
+                element: <OuriteForm />,
               },
               {
                 path: ":id",
