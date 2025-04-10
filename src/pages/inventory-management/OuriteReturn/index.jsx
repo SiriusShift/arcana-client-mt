@@ -31,7 +31,7 @@ function Outright() {
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     Status: "Received",
-    TransferType: "Ourite",
+    TransferType: "Outright",
   });
 
   // Common Table Props

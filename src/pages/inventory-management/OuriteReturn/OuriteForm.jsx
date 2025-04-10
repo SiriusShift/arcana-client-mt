@@ -23,7 +23,7 @@ const OuriteForm = () => {
       <OutrightReturnFormHeader />
 
       <FormProvider {...methods}>
-        <OuriteFormDetails />
+        {/* <OuriteFormDetails /> */}
         <OutrightItems />
 
         <OutrightFormActions />

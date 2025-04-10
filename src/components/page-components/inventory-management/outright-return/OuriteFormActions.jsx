@@ -38,7 +38,7 @@ const OutrightFormActions = () => {
           amount: item.price,
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
-        to: data.to.id,
+        to: 25,
       };
 
       await confirm({
