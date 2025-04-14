@@ -31,7 +31,7 @@ import { useGetOtherExpensesBalanceByClientIdQuery } from "../../../features/oth
 import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
 import { dummyOnlinePaymentPlatformsData } from "../../../utils/DummyData";
 import { useGetAllOnlinePlatformsQuery } from "../../../features/setup/api/onlinePaymentPlatformsApi";
-import { useGetAllReturnsQuery } from "../../../features/inventory-management/api/returnApi";
+import { useLazyGetReturnByIdQuery } from "../../../features/inventory-management/api/returnApi";
 
 function PaymentModalForm({
   editMode,
@@ -92,6 +92,8 @@ function PaymentModalForm({
     pageSize: 1000,
   });
 
+  console.log(client?.id);
+
   const { data: otherExpensesBalanceData, error: otherExpensesBalanceError } =
     useGetOtherExpensesBalanceByClientIdQuery(
       { clientId: client?.id },
@@ -100,13 +102,8 @@ function PaymentModalForm({
 
   console.log(otherExpensesBalanceData);
 
-  const { data: returnData, isFetching } = useGetAllReturnsQuery({
-    Page: 1,
-    PageSize: 1000,
-    DateFrom: "2000-01-01",
-    DateTo: moment().format("YYYY-MM-DD"),
-    Status: "Pending",
-  });
+  const [triggerReturnData, { data: returnData, isFetching }] =
+    useLazyGetReturnByIdQuery();
   console.log(returnData);
   // if (otherExpensesBalanceError) {
   //   otherExpensesBalanceData = 0;
@@ -256,6 +253,7 @@ function PaymentModalForm({
     if (open) {
       triggerAdvancePaymentBalance({ id: client.id });
       triggerListingFeeBalance({ id: client.id });
+      triggerReturnData(client?.id);
     }
   }, [open, triggerAdvancePaymentBalance, triggerListingFeeBalance, client]);
 
@@ -784,27 +782,48 @@ function PaymentModalForm({
             )}
 
             {watch("paymentMethod")?.value === "Sales Return" && (
-              <ControlledAutocomplete
-                name="returnId"
-                control={control}
-                options={returnData?.to}
-                getOptionLabel={(option) => option.returnId}
-                disableClearable
-                isOptionEqualToValue={() => true}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    size="small"
-                    label="Return Id"
-                    helperText={errors?.otherExpense?.message}
-                    error={errors?.otherExpense}
-                  />
-                )}
-                onChange={(_, value) => {
-                  setValue("paymentAmount", value.totalReturnPrice);
-                  return value
-                }}
-              />
+              <>
+                <ControlledAutocomplete
+                  name="returnId"
+                  control={control}
+                  options={returnData?.value?.salesReturn}
+                  getOptionLabel={(option) => option.returnOrderId}
+                  disableClearable
+                  isOptionEqualToValue={() => true}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      label="Return Id"
+                      helperText={errors?.otherExpense?.message}
+                      error={errors?.otherExpense}
+                    />
+                  )}
+                  onChange={(_, value) => {
+                    if(value?.totalReturnPrice < remainingBalance){
+                      setValue("paymentAmount", value.totalReturnPrice);
+                    }else{
+                      setValue("paymentAmount", remainingBalance - value.totalReturnPrice);
+                    }
+                    return value;
+                  }}
+                />
+                <Box className="paymentTransactionModal__footer">
+                  <Box className="paymentTransactionModal__footer__label">
+                    <Typography className="paymentTransactionModal__footer__label__top">
+                      Sales Return
+                    </Typography>
+
+                    <Typography className="paymentTransactionModal__footer__label__bottom">
+                      (Current Balance)
+                    </Typography>
+                  </Box>
+
+                  <Typography className="paymentTransactionModal__footer__value">
+                    ₱{watch("returnId")?.remaining}
+                  </Typography>
+                </Box>
+              </>
             )}
 
             {watch("paymentMethod")?.value === "Others" && (

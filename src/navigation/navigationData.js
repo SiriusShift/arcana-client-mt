@@ -300,7 +300,7 @@ export const navigationData = [
       },
       {
         id: 3,
-        name: "Outright Return",
+        name: "Ourite Return",
         path: "/inventory-management/ourite-return",
         description: "Return items to depot",
         icon: "KeyboardReturn"

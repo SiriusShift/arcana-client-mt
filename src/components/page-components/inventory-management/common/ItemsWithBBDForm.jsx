@@ -20,10 +20,12 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi";
 import useSnackbar from "../../../../hooks/useSnackbar";
+import { useGetAllItemsInventoryQuery } from "../../../../features/inventory-management/api/inventoryMrpApi";
 
 const ItemsWithBBDForm = ({
   items = [],
   isFetching,
+  misc,
   ourite,
   isTransferOut,
   withBbd,
@@ -49,6 +51,7 @@ const ItemsWithBBDForm = ({
     dirtyFields,
     setValue,
     control,
+    errors
   } = useItemsWithBbd({ items });
 
   console.log(watchItems);
@@ -65,6 +68,9 @@ const ItemsWithBBDForm = ({
         refetchOnMountOrArgChange: true,
       }
     );
+
+  const { data: products, isFetching: isItemsFetching } =
+    useGetAllItemsInventoryQuery();
 
   // Remove duplicates
   const uniqueBBDs = new Set(items.map((item) => item.bbd));
@@ -127,7 +133,7 @@ const ItemsWithBBDForm = ({
                   <ControlledAutocomplete
                     name={`items[${index}].item`}
                     control={control}
-                    options={productData?.priceModeItems || []}
+                    options={misc ? products : productData?.priceModeItems || []}
                     getOptionLabel={(option) => option?.itemCode || ""}
                     getOptionDisabled={(option) => {
                       // Get all selected items across all rows
@@ -315,7 +321,9 @@ const ItemsWithBBDForm = ({
                             onChange={(newValue) => onChange(newValue)} // Handle date changes
                             inputRef={ref}
                             sx={{ width: "200px" }}
-                            disabled={viewOnly || !watchItems?.[index]?.item || ourite}
+                            disabled={
+                              viewOnly || !watchItems?.[index]?.item || ourite
+                            }
                             renderInput={(params) => (
                               <TextField
                                 {...params}
@@ -350,6 +358,7 @@ const ItemsWithBBDForm = ({
 
                             if (
                               floatValue != null &&
+                              !misc &&
                               floatValue >
                                 productData?.priceModeItems.find(
                                   (item) =>
@@ -389,7 +398,7 @@ const ItemsWithBBDForm = ({
                       )}
                     />
 
-                    {!viewOnly && (
+                    {!viewOnly && !misc && (
                       <Typography
                         variant="caption"
                         color={`${

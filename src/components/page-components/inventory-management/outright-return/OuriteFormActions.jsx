@@ -52,7 +52,7 @@ const OutrightFormActions = () => {
         variant: "success",
       });
 
-      navigate("/inventory-management/transfer-out", { replace: true });
+      navigate("/inventory-management/ourite-return", { replace: true });
     } catch (error) {
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });

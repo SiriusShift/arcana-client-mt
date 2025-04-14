@@ -23,6 +23,8 @@ function Outright() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
 
+  const pesoArray = ["totalAmount"];
+
   // RTK Query
   const { data, isFetching } = useGetAllTransferOutsQuery({
     Search: search,
@@ -36,19 +38,19 @@ function Outright() {
 
   // Common Table Props
   const tableHeads = [
-    "Move Order ID",
-    "Customer Name",
-    "Cluster",
+    "ID",
+    "CDO",
     "Transaction Date",
-    "Date Received",
+    "Total Amount",
+    "Total Quantity",
   ];
 
   const customOrderKeys = [
-    "moveOrderId",
-    "customerName",
-    "cluster",
+    "id",
+    "createdBy",
     "transactionDate",
-    "dateReceived",
+    "totalAmount",
+    "totalQuantity",
   ];
 
   const dateTimeArray = ["transactionDate", "dateReceived"];
@@ -60,7 +62,7 @@ function Outright() {
   // Functions
   const handleView = () => {
     navigate(
-      `${selectedRowData?.moveOrderId}?dateFrom=${moment(dateFrom).format(
+      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
         "YYYY-MM-DD"
       )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
     );
@@ -97,15 +99,16 @@ function Outright() {
             <CommonTable
               lowerCompact
               moveNoDataUp
-              mapData={data?.value?.mo || []}
-              // tableHeads={tableHeads}
-              // customOrderKeys={customOrderKeys}
+              mapData={data?.value?.to || []}
+              tableHeads={tableHeads}
+              customOrderKeys={customOrderKeys}
               dateTimeArray={dateTimeArray}
               count={data?.value?.totalCount || 0}
               onView={handleView}
               rowsPerPage={rowsPerPage}
               setRowsPerPage={setRowsPerPage}
               page={page}
+              pesoArray={pesoArray}
               setPage={setPage}
             />
           )}

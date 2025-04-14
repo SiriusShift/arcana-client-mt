@@ -71,6 +71,7 @@ import MiscIn from "../pages/inventory-management/MiscIn/index"
 import MiscOut from "../pages/inventory-management/MiscOut/index"
 import MiscInForm from "../pages/inventory-management/MiscIn/MiscInForm";
 import MiscOutForm from "../pages/inventory-management/MiscOut/MiscOutForm";
+import ViewMiscIn from "../pages/inventory-management/MiscIn/ViewMiscIn";
 
 
 export const router = createBrowserRouter([
@@ -292,6 +293,10 @@ export const router = createBrowserRouter([
               {
                 path: "miscellaneous-in-form",
                 element: <MiscInForm />,
+              },
+              {
+                path: ":id",
+                element: <ViewMiscIn />
               }
             ]
           },

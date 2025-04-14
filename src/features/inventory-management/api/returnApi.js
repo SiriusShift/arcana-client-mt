@@ -23,7 +23,7 @@ const returnApi = api
         // queryFn: dummyReturn,
       }),
       replaceItems: builder.mutation({
-        query: (body) => ({ 
+        query: (body) => ({
           url: `/add-replace-order`,
           method: "POST",
           body,
@@ -32,7 +32,7 @@ const returnApi = api
       }),
 
       noReplaceItems: builder.mutation({
-        query: (body) => ({ 
+        query: (body) => ({
           url: `/add-no-replace`,
           method: "POST",
           body,
@@ -64,21 +64,17 @@ const returnApi = api
         }),
         invalidatesTags: ["Return", "Returns", "Items With BBD"],
       }),
-      
 
       getReturnById: builder.query({
         // Uncomment this when the backend is ready
-        // query: (id) => ({
-        //   url: `/return",/${id}`,
-        //   method: "GET",
-        // }),
-        // transformResponse: (response) => response.value,
-        // transformErrorResponse: (response) => response.value,\
-        providesTags: ["Return"],
+        query: (id) => ({
+          url: `/get-no-replace/${id}`,
+          method: "GET",
+        }),
 
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
-        queryFn: dummyGetReturnById,
+        // queryFn: dummyGetReturnById,
       }),
     }),
   });
@@ -87,8 +83,8 @@ export const {
   useReturnItemsMutation,
   useGetAllReturnsQuery,
   useLazyGetAllReturnsQuery,
-  useGetReturnByIdQuery,
+  useLazyGetReturnByIdQuery,
   useReplaceItemsMutation,
   useNoReplaceItemsMutation,
-  useUpdateReturnMutation
+  useUpdateReturnMutation,
 } = returnApi;

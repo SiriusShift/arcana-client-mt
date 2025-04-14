@@ -27,7 +27,7 @@ const useItemsWithBbd = ({
   const {
     control,
     setValue,
-    formState: { dirtyFields, isValid },
+    formState: { dirtyFields, isValid, errors },
     getFieldState,
     watch,
   } = useFormContext();
@@ -165,6 +165,7 @@ const useItemsWithBbd = ({
     control,
     itemsFieldState,
     isValid,
+    errors
   };
 };
 

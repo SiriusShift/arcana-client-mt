@@ -4,9 +4,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { miscInSchema, outrightReturnSchema, transferOutSchema } from "../../../schema/schema";
 import MiscInFormHeader from "../../../components/page-components/inventory-management/misc-in/MiscInFormHeader";
 import MiscInReturnFormDetails from "../../../components/page-components/inventory-management/misc-in/MiscInFormDetails";
-import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OurightItems";
 import OutrightFormActions from "../../../components/page-components/inventory-management/outright-return/OuriteFormActions";
 import MiscInFormActions from "../../../components/page-components/inventory-management/misc-in/MiscInFormActions";
+import MiscInItems from "../../../components/page-components/inventory-management/misc-in/MiscInItems";
+
 
 const MiscInForm = () => {
   const methods = useForm({
@@ -14,9 +15,9 @@ const MiscInForm = () => {
     defaultValues: miscInSchema.defaultValues,
   });
 
-  const { watch } = methods;
+  const { watch, formState : { errors} } = methods;
 
-  console.log(watch());
+  console.log(watch(), errors);
 
   return (
     <Box className="commonPageLayout">
@@ -24,7 +25,7 @@ const MiscInForm = () => {
 
       <FormProvider {...methods}>
         <MiscInReturnFormDetails />
-        <OutrightItems />
+        <MiscInItems />
 
         <MiscInFormActions />
       </FormProvider>

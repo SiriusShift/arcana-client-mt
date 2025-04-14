@@ -1364,6 +1364,7 @@ export const outrightReturnSchema = {
 export const miscInSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
+    to: yup.object().required("Client is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
@@ -1393,6 +1394,7 @@ export const miscInSchema = {
 export const miscOutSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
+    from: yup.object().required("Client is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()

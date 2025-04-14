@@ -26,6 +26,7 @@ function MiscIn() {
   const { data, isFetching } = useGetAllReceivedOrdersQuery({
     Search: search,
     PageNumber: page + 1,
+    IsMiscellaneousIn: true,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     PageSize: rowsPerPage,
@@ -33,7 +34,7 @@ function MiscIn() {
 
   // Common Table Props
   const tableHeads = [
-    "Move Order ID",
+    "ID",
     "Customer Name",
     "Cluster",
     "Transaction Date",
@@ -41,7 +42,7 @@ function MiscIn() {
   ];
 
   const customOrderKeys = [
-    "moveOrderId",
+    "misInId",
     "customerName",
     "cluster",
     "transactionDate",
@@ -57,7 +58,7 @@ function MiscIn() {
   // Functions
   const handleView = () => {
     navigate(
-      `${selectedRowData?.moveOrderId}?dateFrom=${moment(dateFrom).format(
+      `${selectedRowData?.misInId}?dateFrom=${moment(dateFrom).format(
         "YYYY-MM-DD"
       )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
     );

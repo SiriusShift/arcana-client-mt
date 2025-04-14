@@ -134,7 +134,7 @@ function Return() {
 
   const handleSubmit = () => {
     try{
-      noReplace({returnOrderID: selectedRowData?.returnId, accessBy: 0}).unwrap();
+      noReplace({returnOrderID: selectedRowData?.returnId, accessBy: 0, amount: selectedRowData?.totalReturnPrice}).unwrap();
       onCancelClose();
     }catch(err){
       console.log(err);

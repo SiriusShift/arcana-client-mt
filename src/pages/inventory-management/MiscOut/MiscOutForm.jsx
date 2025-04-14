@@ -7,6 +7,9 @@ import MiscOutFormDetails from "../../../components/page-components/inventory-ma
 import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OurightItems";
 import OutrightFormActions from "../../../components/page-components/inventory-management/outright-return/OuriteFormActions";
 import MiscInFormActions from "../../../components/page-components/inventory-management/misc-in/MiscInFormActions";
+import MiscOutItems from "../../../components/page-components/inventory-management/misc-out/MiscOutItems";
+import MiscOutFormActions from "../../../components/page-components/inventory-management/misc-out/MiscOutFormActions";
+
 
 const MiscOutForm = () => {
   const methods = useForm({
@@ -24,9 +27,8 @@ const MiscOutForm = () => {
 
       <FormProvider {...methods}>
         <MiscOutFormDetails />
-        <OutrightItems />
-
-        <MiscInFormActions />
+        <MiscOutItems />
+        <MiscOutFormActions />
       </FormProvider>
     </Box>
   );

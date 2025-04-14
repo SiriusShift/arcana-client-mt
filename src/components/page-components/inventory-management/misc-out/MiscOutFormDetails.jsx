@@ -60,7 +60,7 @@ const MiscOutFormDetails = ({ details, isFetching }) => {
   useEffect(() => {
     if (details) {
       setValue(
-        "to",
+        "from",
         cdoData?.users.find((user) => user.fullname === details.transferTo)
       );
       setValue("transactionDate", moment(details.transactionDate));
@@ -74,7 +74,7 @@ const MiscOutFormDetails = ({ details, isFetching }) => {
   return (
     <Stack direction="row" spacing={1.5}>
       <ControlledAutocomplete
-        name="to"
+        name="from"
         control={control}
         options={cdoData?.users || []}
         getOptionLabel={(option) => option?.fullname || ""}
@@ -92,7 +92,7 @@ const MiscOutFormDetails = ({ details, isFetching }) => {
           <TextField
             {...params}
             size="small"
-            label="To"
+            label="From"
             sx={{ minWidth: "400px" }}
           />
         )}
