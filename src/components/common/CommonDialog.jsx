@@ -62,7 +62,7 @@ function CommonDialog({
 
           <DialogTitle className="commonDialog__title">{children}</DialogTitle>
           <DialogActions>
-            <DangerButton onClick={onClose} disabled={isLoadingNo}>
+            <DangerButton onClick={onClose} disabled={isLoadingNo || isLoading}>
               {isLoadingNo ? (
                 <CircularProgress size="20px" color="white" />
               ) : (

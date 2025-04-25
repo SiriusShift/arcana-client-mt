@@ -11,7 +11,7 @@ import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
 import moment from "moment";
 
-function MiscIn() {
+function MiscReceipt() {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -30,29 +30,28 @@ function MiscIn() {
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     PageSize: rowsPerPage,
-  });
+  }, {refetchOnMountOrArgChange: true});
 
   // Common Table Props
   const tableHeads = [
     "ID",
-    "Customer Name",
-    "Cluster",
-    "Transaction Date",
+    // "CDO",
+    // "Cluster",
+    // "CDO Name",
     "Date Received",
   ];
 
   const customOrderKeys = [
     "misInId",
-    "customerName",
-    "cluster",
-    "transactionDate",
+    // "cdoName",
+    // "cluster",
     "dateReceived",
   ];
 
   const dateTimeArray = ["transactionDate", "dateReceived"];
 
   const handleAdd = () => {
-    navigate("miscellaneous-in-form");
+    navigate("miscellaneous-receipt-form");
   };
 
   // Functions
@@ -64,7 +63,7 @@ function MiscIn() {
     );
   };
 
-  if (location.pathname === "/inventory-management/miscellaneous-in") {
+  if (location.pathname === "/inventory-management/miscellaneous-receipt") {
     return (
       <>
         {/* <GenerateMoveOrderModal
@@ -74,7 +73,7 @@ function MiscIn() {
 
         <Box className="commonPageLayout">
           <PageHeaderAdd
-            pageTitle="Miscellaneous In"
+            pageTitle="Miscellaneous Receipt"
             addTitle="Add"
             removeArchive
             removeSearch
@@ -115,4 +114,4 @@ function MiscIn() {
   return <Outlet />;
 }
 
-export default MiscIn;
+export default MiscReceipt;

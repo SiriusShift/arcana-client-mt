@@ -6,7 +6,7 @@ import {
 } from "../../../utils/DummyQueryFn";
 import { api } from "../../api";
 
-const receivingApi = api
+export const receivingApi = api
   .enhanceEndpoints({ addTagTypes: ["Orders", "Order", "Generate"] })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -21,7 +21,7 @@ const receivingApi = api
 
         // This is a dummy implementation of the request
         // Remove this when the backend is ready
-        queryFn: dummyReceiveMoveOrder,
+        // queryFn: dummyReceiveMoveOrder,
       }),
 
       getWrongItems: builder.query({
@@ -44,7 +44,7 @@ const receivingApi = api
 
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
-        queryFn: dummyGetAllReceivedOrders,
+        // queryFn: dummyGetAllReceivedOrders,
       }),
 
       getReceivedOrderById: builder.query({

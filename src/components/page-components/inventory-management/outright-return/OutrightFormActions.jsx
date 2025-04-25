@@ -10,7 +10,7 @@ import { handleCatchErrorMessage } from "../../../../utils/CustomFunctions";
 import moment from "moment";
 import { Cancel, SaveOutlined } from "@mui/icons-material";
 
-const MiscOutFormActions = () => {
+const OutrightFormActions = () => {
   const navigate = useNavigate();
   const confirm = useConfirm();
   const snackbar = useSnackbar();
@@ -23,7 +23,7 @@ const MiscOutFormActions = () => {
   const [transferOut] = useTransferOutMutation();
 
   const handleCancel = () => {
-    navigate("/inventory-management/miscellaneous-in", { replace: true });
+    navigate("/inventory-management/outright-return", { replace: true });
   };
 
   const onSubmit = async (data) => {
@@ -38,11 +38,11 @@ const MiscOutFormActions = () => {
           amount: item.price,
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
-        to: data.to.id,
+        to: 25,
       };
 
       await confirm({
-        children: "Are you sure you want to transfer out these items?",
+        children: "Are you sure you want to return these items?",
         question: true,
         callback: () => transferOut(transformedData).unwrap(),
       });
@@ -52,7 +52,7 @@ const MiscOutFormActions = () => {
         variant: "success",
       });
 
-      navigate("/inventory-management/transfer-out", { replace: true });
+      navigate("/inventory-management/outright-return", { replace: true });
     } catch (error) {
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
@@ -71,10 +71,10 @@ const MiscOutFormActions = () => {
         disabled={!isValid}
         endIcon={<SaveOutlined />}
       >
-        Submit
+        return
       </SecondaryButton>
     </Stack>
   );
 };
 
-export default MiscOutFormActions;
+export default OutrightFormActions;

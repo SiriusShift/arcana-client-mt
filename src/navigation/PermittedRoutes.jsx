@@ -22,6 +22,8 @@ const PermittedRoutes = () => {
     permissions?.includes(subItem.name)
   );
 
+  console.log(currentNavItem);
+
   const permittedParentPath = allowedNavigationData?.map((item) => {
     return permissions?.includes(item.name) ? item.path : null;
   });
@@ -43,7 +45,23 @@ const PermittedRoutes = () => {
     permittedParentPath?.includes("/inventory-management/receiving") ||
     permittedSubPath?.includes("/inventory-management/receiving") ||
     permittedParentPath?.includes("/inventory-management/transfer-in") ||
-    permittedSubPath?.includes("/inventory-management/transfer-in");
+    permittedSubPath?.includes("/inventory-management/transfer-in") ||
+    permittedParentPath?.includes("/inventory-management/transfer-out") ||
+    permittedSubPath?.includes("/inventory-management/transfer-out") ||
+    permittedParentPath?.includes("/inventory-management/outright-return") ||
+    permittedSubPath?.includes("/inventory-management/outright-return") ||
+    permittedParentPath?.includes("/inventory-management/miscellaneous-in") ||
+    permittedSubPath?.includes("/inventory-management/miscellaneous-in") ||
+    permittedParentPath?.includes("/inventory-management/miscellaneous-issue") ||
+    permittedSubPath?.includes("/inventory-management/miscellaneous-issue") ||
+    permittedParentPath?.includes("/inventory-management/freebies") ||
+    permittedSubPath?.includes("/inventory-management/freebies") ||
+    permittedParentPath?.includes("/inventory-management/sampling") ||
+    permittedSubPath?.includes("/inventory-management/sampling") ||
+    permittedParentPath?.includes("/inventory-management/return") ||
+    permittedSubPath?.includes("/inventory-management/return") ||
+    permittedParentPath?.includes("/inventory-management/callsheet") ||
+    permittedSubPath?.includes("/inventory-management/callsheet");
 
   if (hasParamsPermission) {
     return <MainLayout />;

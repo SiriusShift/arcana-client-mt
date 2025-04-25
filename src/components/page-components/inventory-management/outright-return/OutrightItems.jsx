@@ -1,7 +1,7 @@
 import ItemsWithBBDForm from "../common/ItemsWithBBDForm";
 
-const OuriteItems = ({ items = [], isFetching }) => {
+const OutrightItems = ({ items = [], isFetching }) => {
   return <ItemsWithBBDForm withBbd isTransferOut items={items} isFetching={isFetching} />;
 };
 
-export default OuriteItems;
+export default OutrightItems;

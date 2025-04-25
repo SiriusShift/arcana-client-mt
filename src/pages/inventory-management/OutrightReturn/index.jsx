@@ -56,7 +56,7 @@ function Outright() {
   const dateTimeArray = ["transactionDate", "dateReceived"];
 
   const handleAdd = () => {
-    navigate("ourite-return-form");
+    navigate("outright-return-form");
   };
 
   // Functions
@@ -68,7 +68,7 @@ function Outright() {
     );
   };
 
-  if (location.pathname === "/inventory-management/ourite-return") {
+  if (location.pathname === "/inventory-management/outright-return") {
     return (
       <>
         {/* <GenerateMoveOrderModal
@@ -78,7 +78,7 @@ function Outright() {
 
         <Box className="commonPageLayout">
           <PageHeaderAdd
-            pageTitle="Ourite Return"
+            pageTitle="Outright Return"
             addTitle="Return"
             removeArchive
             removeSearch

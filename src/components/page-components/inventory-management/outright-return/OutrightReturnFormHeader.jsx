@@ -2,13 +2,11 @@ import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 import { Box, IconButton, Paper, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-
-
-const MiscInFormHeader = () => {
+const OutrightReturnFormHeader = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/inventory-management/miscellaneous-in", { replace: true });
+    navigate("/inventory-management/outright-return", { replace: true });
   };
 
   return (
@@ -21,7 +19,7 @@ const MiscInFormHeader = () => {
             </IconButton>
 
             <Typography className="pageHeader__title">
-              Miscellaneous In Form
+              Outright Return Form
             </Typography>
           </Box>
         </Box>
@@ -30,4 +28,4 @@ const MiscInFormHeader = () => {
   );
 };
 
-export default MiscInFormHeader;
+export default OutrightReturnFormHeader;

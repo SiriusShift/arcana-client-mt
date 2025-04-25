@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const MiscOutFormHeader = () => {
+const MiscReceiptFormHeader = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/inventory-management/miscellaneous-in", { replace: true });
+    navigate("/inventory-management/miscellaneous-receipt", { replace: true });
   };
 
   return (
@@ -21,7 +21,7 @@ const MiscOutFormHeader = () => {
             </IconButton>
 
             <Typography className="pageHeader__title">
-              Miscellaneous Out Form
+              Miscellaneous Receipt Form
             </Typography>
           </Box>
         </Box>
@@ -30,4 +30,4 @@ const MiscOutFormHeader = () => {
   );
 };
 
-export default MiscOutFormHeader;
+export default MiscReceiptFormHeader;

@@ -2,11 +2,13 @@ import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 import { Box, IconButton, Paper, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const OuriteReturnFormHeader = () => {
+
+
+const MiscIssueFormHeader = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/inventory-management/ourite-return", { replace: true });
+    navigate("/inventory-management/miscellaneous-issue", { replace: true });
   };
 
   return (
@@ -19,7 +21,7 @@ const OuriteReturnFormHeader = () => {
             </IconButton>
 
             <Typography className="pageHeader__title">
-              Ourite Return Form
+              Miscellaneous Issue Form
             </Typography>
           </Box>
         </Box>
@@ -28,4 +30,4 @@ const OuriteReturnFormHeader = () => {
   );
 };
 
-export default OuriteReturnFormHeader;
+export default MiscIssueFormHeader;

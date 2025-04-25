@@ -8,8 +8,8 @@ import { transferOutSchema } from "../../../schema/schema";
 import { useGetAllTransferOutsQuery, useGetTransferOutByIdQuery } from "../../../features/inventory-management/api/transferOutApi";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
-import OutrightReturnFormHeader from "../../../components/page-components/inventory-management/outright-return/OuriteReturnFormHeader";
-import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OurightItems";
+import OutrightReturnFormHeader from "../../../components/page-components/inventory-management/outright-return/OutrightReturnFormHeader";
+import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OutrightItems";
 
 const ViewOutright = () => {
   const { id } = useParams();
@@ -35,7 +35,7 @@ const ViewOutright = () => {
   
   useEffect(() => {
     if (isError) {
-      navigate("/inventory-management/transfer-out", { replace: true });
+      navigate("/inventory-management/outright-return", { replace: true });
     }
   }, [isError, navigate]);
 

@@ -300,6 +300,7 @@ function ReceivingItems({
                             autoComplete="off"
                             type="text"
                             value={value || ""}
+                            required
                             onValueChange={(values) => {
                               const { value: newValue } = values;
 

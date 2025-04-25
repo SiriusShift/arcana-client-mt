@@ -68,6 +68,14 @@ const reportsApi = api
         }),
         providesTags: ["CheckIn Report"],
       }),
+      getPaymentReports: builder.query({
+        query: (params) => ({
+          url: "/get-payment-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Payment Report"],
+      }),
       getReturnByCDOReports: builder.query({
         query: (params) => ({
           url: "/arcana-return-by-cdo-reports",
@@ -130,8 +138,49 @@ const reportsApi = api
           method: "GET",
           params,
         }),
-        providesTags: ["CheckIn Report"],
-      })
+        providesTags: ["Void Report"],
+      }),
+      getMrpRollbackReports: builder.query({
+        query: (params) => ({
+          url: "/mrp-rollback",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Rollback Report"],
+      }),
+      getCashReceiptReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-gl-cash-receipt",
+          method: "GET",
+          params,
+          headers: {
+            "x-api-key": import.meta.env.VITE_GL_KEY,
+          }
+        }),
+        providesTags: ["Cash Receipt Report"],
+      }),
+      getInventoriablesReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-gl",
+          method: "GET",
+          params,
+          headers: {
+            "x-api-key": import.meta.env.VITE_GL_KEY,
+          }
+        }),
+        providesTags: ["Inventoriable Report"],
+      }),
+      getSalesGTReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-gt-sales",
+          method: "GET",
+          params,
+          headers: {
+            "x-api-key": import.meta.env.VITE_GL_KEY,
+          }
+        }),
+        providesTags: ["Sales GT Report"],
+      }),
     }),
   });
 
@@ -151,5 +200,10 @@ export const {
   useGetSamplingReportsQuery,
   useGetReturnReportsQuery,
   useGetReplaceReportsQuery,  
-  useGetVoidTransactionsReportsQuery
-} = reportsApi;
+  useGetVoidTransactionsReportsQuery,
+  useGetPaymentReportsQuery,
+  useGetMrpRollbackReportsQuery,
+  useGetCashReceiptReportsQuery,
+  useGetInventoriablesReportsQuery,
+  useGetSalesGTReportsQuery
+} = reportsApi

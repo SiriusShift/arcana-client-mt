@@ -48,7 +48,9 @@ function Return() {
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
-  const [noReplace, isLoading] = useNoReplaceItemsMutation();
+  const [noReplace, {isLoading}] = useNoReplaceItemsMutation();
+
+  console.log(isLoading)
 
   const paymentNavigation = useMemo(
     () => [
@@ -132,9 +134,9 @@ function Return() {
     onCancelClose();
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try{
-      noReplace({returnOrderID: selectedRowData?.returnId, accessBy: 0, amount: selectedRowData?.totalReturnPrice}).unwrap();
+      await noReplace({returnOrderID: selectedRowData?.returnId, accessBy: 0, amount: selectedRowData?.totalReturnPrice}).unwrap();
       onCancelClose();
     }catch(err){
       console.log(err);
@@ -246,7 +248,7 @@ function Return() {
         open={isCancelOpen}
         onClose={handleClose}
         onYes={handleSubmit}
-        // isLoading={returnItemsLoading || replaceItemsLoading}
+        isLoading={isLoading}
         question>
           Are you sure you want to cancel replacement?
         </CommonDialog>

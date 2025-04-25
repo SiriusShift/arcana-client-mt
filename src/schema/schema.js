@@ -1149,8 +1149,8 @@ export const freebiesSchema = {
 
 export const samplingSchema = {
   schema: yup.object({
-    // client: yup.object().required("Client is required"),
-    description: yup.string().required("Description is required"),
+    client: yup.object().required("Client is required"),
+    // description: yup.string().required("Description is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
@@ -1335,6 +1335,7 @@ export const bbdCallsheet = {
 export const outrightReturnSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
+    remarks: yup.object().required("Remarks is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
@@ -1350,6 +1351,7 @@ export const outrightReturnSchema = {
   }),
   defaultValues: {
     transactionDate: moment(),
+    remarks: null,
     items: [
       {
         item: null,
@@ -1365,13 +1367,14 @@ export const miscInSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
     to: yup.object().required("Client is required"),
+    remarks: yup.object().required("Remarks is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
-          bbd: yup.object().required("BBD is required"),
+          // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
         })
@@ -1380,10 +1383,11 @@ export const miscInSchema = {
   }),
   defaultValues: {
     transactionDate: moment(),
+    remarks: null,
     items: [
       {
         item: null,
-        bbd: null,
+        // bbd: null,
         quantity: null,
         reason: "",
       },
@@ -1394,14 +1398,16 @@ export const miscInSchema = {
 export const miscOutSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
-    from: yup.object().required("Client is required"),
+    to: yup.object().required("Client is required"),
+        remarks: yup.object().required("Remarks is required"),
+    
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
-          bbd: yup.object().required("BBD is required"),
+          // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
         })
@@ -1410,13 +1416,23 @@ export const miscOutSchema = {
   }),
   defaultValues: {
     transactionDate: moment(),
+    remarks: null,
     items: [
       {
         item: null,
-        bbd: null,
+        // bbd: null,
         quantity: null,
         reason: "",
       },
     ],
   },
 };
+
+export const reasonSchema = {
+  schema: yup.object({
+    reason: yup.string().required("Reason is required"),
+  }),
+  defaultValues: {
+    reason: "",
+  },
+};  

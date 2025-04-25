@@ -64,15 +64,17 @@ import ViewReturn from "../pages/inventory-management/Return/ViewReturn";
 import Reports from "../pages/Reports";
 import Cheque from "../pages/cheque";
 import Attendance from "../pages/check-in";
-import Outrite from "../pages/inventory-management/OuriteReturn";
-import OuriteForm from "../pages/inventory-management/OuriteReturn/OuriteForm";
-import ViewOutright from "../pages/inventory-management/OuriteReturn/ViewOutrightReturn";
-import MiscIn from "../pages/inventory-management/MiscIn/index"
-import MiscOut from "../pages/inventory-management/MiscOut/index"
-import MiscInForm from "../pages/inventory-management/MiscIn/MiscInForm";
-import MiscOutForm from "../pages/inventory-management/MiscOut/MiscOutForm";
-import ViewMiscIn from "../pages/inventory-management/MiscIn/ViewMiscIn";
-
+import Outright from "../pages/inventory-management/OutrightReturn";
+import OutrightForm from "../pages/inventory-management/OutrightReturn/OutrightForm";
+import ViewOutright from "../pages/inventory-management/OutrightReturn/ViewOutrightReturn";
+import MiscReceipt from "../pages/inventory-management/MiscReceipt/index"
+import MiscOut from "../pages/inventory-management/MiscIssue/index"
+import MiscReceiptForm from "../pages/inventory-management/MiscReceipt/MiscReceiptForm";
+import ViewMiscReceipt from "../pages/inventory-management/MiscReceipt/ViewMiscReceipt";
+import MiscIssue from "../pages/inventory-management/MiscIssue/index";
+import MiscIssueForm from "../pages/inventory-management/MiscIssue/MiscIssueForm";
+import ViewMiscIssue from "../pages/inventory-management/MiscIssue/ViewMiscIssue";
+import ReasonSetup from "../pages/inventory-management/ReasonSetup/index";
 
 export const router = createBrowserRouter([
   {
@@ -273,12 +275,12 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: "ourite-return",
-            element: <Outrite />,
+            path: "outright-return",
+            element: <Outright />,
             children: [
               {
-                path: "ourite-return-form",
-                element: <OuriteForm />,
+                path: "outright-return-form",
+                element: <OutrightForm />,
               },
               {
                 path: ":id",
@@ -287,28 +289,36 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: "miscellaneous-in",
-            element: <MiscIn />,
+            path: "miscellaneous-receipt",
+            element: <MiscReceipt />,
             children: [
               {
-                path: "miscellaneous-in-form",
-                element: <MiscInForm />,
+                path: "miscellaneous-receipt-form",
+                element: <MiscReceiptForm />,
               },
               {
                 path: ":id",
-                element: <ViewMiscIn />
+                element: <ViewMiscReceipt />
               }
             ]
           },
           {
-            path: "miscellaneous-out",
-            element: <MiscOut />,
+            path: "miscellaneous-issue",
+            element: <MiscIssue />,
             children: [
               {
-                path: "miscellaneous-out-form",
-                element: <MiscOutForm />,
+                path: "miscellaneous-issue-form",
+                element: <MiscIssueForm />,
+              },
+              {
+                path: ":id",
+                element: <ViewMiscIssue />
               }
             ]
+          },
+          {
+            path: "reason-setup",
+            element: <ReasonSetup />
           },
           {
             path: "transfer-in",

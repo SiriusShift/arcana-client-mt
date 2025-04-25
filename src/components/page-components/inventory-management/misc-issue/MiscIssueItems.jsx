@@ -1,9 +1,10 @@
 import ItemsWithBBDForm from "../common/ItemsWithBBDForm";
 
-const MiscInItems = ({ items = [], isFetching }) => {
+const MiscIssueItems = ({ items = [], isFetching }) => {
+
   return (
     <ItemsWithBBDForm
-      withBbd
+      // withBbd
       misc
       items={items}
       isFetching={isFetching}
@@ -11,4 +12,4 @@ const MiscInItems = ({ items = [], isFetching }) => {
   );
 };
 
-export default MiscInItems;
+export default MiscIssueItems;

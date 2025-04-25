@@ -59,7 +59,8 @@ import {
   Today,
   Archive,
   Unarchive,
-  KeyboardReturn
+  KeyboardReturn,
+  ReportProblem
 } from "@mui/icons-material";
 
 export const getIconElement = (iconName, color, fontSize) => {
@@ -542,6 +543,15 @@ export const getIconElement = (iconName, color, fontSize) => {
     ),
     KeyboardReturn: (
       <KeyboardReturn
+        sx={{
+          color: color && `${color} !important`,
+          fontSize: fontSize && `${fontSize} !important`,
+        }}
+      />
+    ),
+
+    ReportProblem: (
+      <ReportProblem
         sx={{
           color: color && `${color} !important`,
           fontSize: fontSize && `${fontSize} !important`,

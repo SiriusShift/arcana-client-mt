@@ -10,8 +10,9 @@ import { useGetAllReceivedOrdersQuery } from "../../../features/inventory-manage
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
 import moment from "moment";
+import { useGetMiscIssueQuery } from "../../../features/inventory-management/api/miscApi";
 
-function MiscOut() {
+function MiscIssue() {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -23,7 +24,7 @@ function MiscOut() {
   const [page, setPage] = useState(0);
 
   // RTK Query
-  const { data, isFetching } = useGetAllReceivedOrdersQuery({
+  const { data, isFetching } = useGetMiscIssueQuery({
     Search: search,
     PageNumber: page + 1,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
@@ -33,25 +34,23 @@ function MiscOut() {
 
   // Common Table Props
   const tableHeads = [
-    "Move Order ID",
-    "Customer Name",
+    "ID",
     "Cluster",
-    "Transaction Date",
+    "CDO",
     "Date Received",
   ];
 
   const customOrderKeys = [
-    "moveOrderId",
-    "customerName",
+    "id",
     "cluster",
-    "transactionDate",
+    "cdoName",
     "dateReceived",
   ];
 
   const dateTimeArray = ["transactionDate", "dateReceived"];
 
   const handleAdd = () => {
-    navigate("miscellaneous-out-form");
+    navigate("miscellaneous-issue-form");
   };
 
   // Functions
@@ -63,7 +62,7 @@ function MiscOut() {
     );
   };
 
-  if (location.pathname === "/inventory-management/miscellaneous-out") {
+  if (location.pathname === "/inventory-management/miscellaneous-issue") {
     return (
       <>
         {/* <GenerateMoveOrderModal
@@ -73,7 +72,7 @@ function MiscOut() {
 
         <Box className="commonPageLayout">
           <PageHeaderAdd
-            pageTitle="Miscellaneous Out"
+            pageTitle="Miscellaneous Issue"
             addTitle="Add"
             removeArchive
             removeSearch
@@ -114,4 +113,4 @@ function MiscOut() {
   return <Outlet />;
 }
 
-export default MiscOut;
+export default MiscIssue;

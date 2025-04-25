@@ -9,8 +9,10 @@ import useSnackbar from "../../../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../../../utils/CustomFunctions";
 import moment from "moment";
 import { Cancel, SaveOutlined } from "@mui/icons-material";
+import { usePostMiscReceiptMutation } from "../../../../features/inventory-management/api/miscApi";
+import { receivingApi } from "../../../../features/inventory-management/api/receivingApi";
 
-const OutrightFormActions = () => {
+const MiscReceiptFormActions = () => {
   const navigate = useNavigate();
   const confirm = useConfirm();
   const snackbar = useSnackbar();
@@ -20,39 +22,43 @@ const OutrightFormActions = () => {
     handleSubmit,
   } = useFormContext();
 
-  const [transferOut] = useTransferOutMutation();
+  const [trigger] = usePostMiscReceiptMutation();
 
   const handleCancel = () => {
-    navigate("/inventory-management/outright-return", { replace: true });
+    navigate("/inventory-management/miscellaneous-receipt", { replace: true });
   };
 
   const onSubmit = async (data) => {
     console.log(data);
     try {
       const transformedData = {
-        transferItems: data.items.map((item) => ({
+        items: data.items.map((item) => ({
           itemCode: item.item.itemCode,
-          quantity: item.quantity,
+          actualQuantity: item.quantity,
           reason: item.reason,
           bbd: moment(item.bbd).format("YYYY-MM-DD"),
           amount: item.price,
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
-        to: 25,
+        toCdo: data?.to?.id,
       };
+
+      console.log("test")
 
       await confirm({
         children: "Are you sure you want to transfer out these items?",
         question: true,
-        callback: () => transferOut(transformedData).unwrap(),
+        callback: () => trigger(transformedData).unwrap(),
       });
 
+
       snackbar({
-        message: "Transfer out successful",
+        message: "Miscellaneous In successful",
         variant: "success",
       });
 
-      navigate("/inventory-management/ourite-return", { replace: true });
+      // dispatch(receivingApi.util.invalidateTags(["Orders", "Order", "Generate"]));
+      navigate("/inventory-management/miscellaneous-receipt", { replace: true });
     } catch (error) {
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
@@ -71,10 +77,10 @@ const OutrightFormActions = () => {
         disabled={!isValid}
         endIcon={<SaveOutlined />}
       >
-        return
+        Submit
       </SecondaryButton>
     </Stack>
   );
 };
 
-export default OutrightFormActions;
+export default MiscReceiptFormActions;

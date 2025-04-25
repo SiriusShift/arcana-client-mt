@@ -124,7 +124,7 @@ const ItemsWithBBDForm = ({
           gap={1}
           ref={parent}
         >
-          {isFetching ? (
+          {isFetching || isProductFetching ? (
             <FormItemsSkeleton />
           ) : (
             <>
@@ -141,11 +141,11 @@ const ItemsWithBBDForm = ({
 
                       // Extract the itemCodes of the selected items, excluding the current row's itemCode
                       const selectedCodes = selectedItems
-                        .filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
-                        .map((item) => item?.item?.itemCode);
+                        ?.filter((_, idx) => idx !== index)  // Exclude the current row to allow reselecting the same option
+                        ?.map((item) => item?.item?.itemCode);
 
                       // Disable the option if its itemCode is already selected in other rows
-                      return selectedCodes.includes(option.itemCode);
+                      return selectedCodes?.includes(option?.itemCode);
                     }}
                     disabled={viewOnly}
                     isOptionEqualToValue={() => true}
@@ -155,6 +155,7 @@ const ItemsWithBBDForm = ({
                         {...params}
                         size="small"
                         label="Item Code"
+                        required
                         sx={{ width: "200px" }}
                       />
                     )}
@@ -229,6 +230,7 @@ const ItemsWithBBDForm = ({
                           inputRef={ref}
                           sx={{ maxWidth: "140px" }}
                           disabled={viewOnly}
+                          required
                           customInput={TextField}
                           thousandSeparator
                           allowLeadingZeros={false}
@@ -309,11 +311,12 @@ const ItemsWithBBDForm = ({
                           field: { onChange, onBlur, value, ref },
                         }) => (
                           <DatePicker
-                            label="BBD*"
+                            label="BBD"
                             size="small"
                             slotProps={{
                               textField: {
                                 size: "small",
+                                required: true,
                               },
                             }}
                             inputFormat="MM/dd/yyyy"
@@ -444,8 +447,8 @@ const ItemsWithBBDForm = ({
                 </Stack>
               ))}
 
-              {!viewOnly &&
-                watchItems.length !== productData?.priceModeItems?.length && (
+              {!viewOnly && 
+                (watchItems.length !== (misc ? products?.length : productData?.priceModeItems?.length )) && (
                   <SecondaryButton
                     endIcon={<Add />}
                     sx={{ width: "fit-content", alignSelf: "end" }}

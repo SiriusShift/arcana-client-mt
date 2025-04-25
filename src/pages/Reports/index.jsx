@@ -27,6 +27,11 @@ import {
   useGetSamplingReportsQuery,
   useGetReturnReportsQuery,
   useGetReplaceReportsQuery,
+  useGetPaymentReportsQuery,
+  useGetMrpRollbackReportsQuery,
+  useGetCashReceiptReportsQuery,
+  useGetInventoriablesReportsQuery,
+  useGetSalesGTReportsQuery,
 } from "../../features/reports/api/reportsApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
@@ -85,6 +90,16 @@ function Reports() {
     replace: true,
     //Void Transactions Report
     vtr: true,
+    //Payment Reports
+    pr: true,
+    //Rollback Reports
+    mrr: true,
+    //GL Cash Receipt
+    glcr: true,
+    //GL Inventoriables
+    gli: true,
+    //GL Sales GT
+    glgt: true,
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
@@ -282,6 +297,65 @@ function Reports() {
       }
     );
 
+  const { data: paymentReportData, isFetching: paymentFetching } =
+    useGetPaymentReportsQuery(
+      {
+        PageNumber: page + 1,
+        PageSize: rowsPerPage,
+        DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+        DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+        clusterId: clusterId?.value || "",
+      },
+      {
+        skip: isActive.pr,
+      }
+    );
+
+  const { data: rollbackReportData, isFetching: rollbackFetching } =
+    useGetMrpRollbackReportsQuery(
+      {
+        PageNumber: page + 1,
+        PageSize: rowsPerPage,
+        DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+        DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+        clusterId: clusterId?.value || "",
+      },
+      {
+        skip: isActive.mrr,
+      }
+    );
+  const { data: glCashReceiptReportData, isFetching: glCashReceiptFetching } =
+    useGetCashReceiptReportsQuery(
+      {
+        adjustment_month: moment(watch("dateTo")).format("YYYY-MM"),
+      },
+      {
+        skip: isActive.glcr,
+      }
+    );
+
+  const {
+    data: glInventoriableReportData,
+    isFetching: glInventoriableFetching,
+  } = useGetInventoriablesReportsQuery(
+    {
+      adjustment_month: moment(watch("dateTo")).format("YYYY-MM"),
+    },
+    {
+      skip: isActive.gli,
+    }
+  );
+
+  const { data: glSalesGTReportData, isFetching: glSalesGTFetching } =
+    useGetSalesGTReportsQuery(
+      {
+        adjustment_month: moment(watch("dateTo")).format("YYYY-MM"),
+      },
+      {
+        skip: isActive.glgt,
+      }
+    );
+
   //functions
   const handleSubmitDate = () => {
     useDownloadExcel();
@@ -378,6 +452,11 @@ function Reports() {
       listingFeeReportData,
       checkInFiloReportData,
       voidTransactionsReportData,
+      paymentReportData,
+      rollbackReportData,
+      glCashReceiptReportData,
+      glInventoriableReportData,
+      glSalesGTReportData,
       receivingReportData,
       returnByCdoReportData,
       transferOutReportData,
@@ -391,6 +470,11 @@ function Reports() {
       "lf",
       "cf",
       "vtr",
+      "pr",
+      "mrr",
+      "glcr",
+      "gli",
+      "glgt",
       "rr",
       "rcdo",
       "tor",
@@ -420,6 +504,11 @@ function Reports() {
     receivingReportData,
     returnByCdoReportData,
     voidTransactionsReportData,
+    paymentReportData,
+    rollbackReportData,
+    glCashReceiptReportData,
+    glInventoriableReportData,
+    glSalesGTReportData,
     // priceModeReportData,
     watch("dateFrom"),
     watch("dateTo"),
@@ -504,6 +593,27 @@ function Reports() {
     ],
     ["paymentType", "amount", "createdDate", "transactedBy"],
     ["user", "timeIn", "timeOut", "duration"],
+    [
+      "date",
+      "invoiceNo",
+      "itemDescription",
+      "quantity",
+      "unitPrice",
+      "amount",
+      "outlet",
+      "status",
+    ],
+    [
+      "transactionId",
+      "payee",
+      "referenceNo",
+      "date",
+      "paymentMethod",
+      "paymentAmount",
+      "addedBy",
+      "status",
+      "status",
+    ],
   ];
 
   const tableHeads = [
@@ -561,6 +671,27 @@ function Reports() {
     ],
     ["Payment Type", "Amount", "Created Date", "Transacted By"],
     ["User", "Time In", "Time Out", "Duration"],
+    [
+      "Date",
+      "Invoice Number",
+      "Item Description",
+      "Quantity",
+      "Unit Price",
+      "Amount",
+      "Outlet",
+      "Status",
+    ],
+    [
+      "Transaction ID",
+      "Payee",
+      "Reference No",
+      "Date",
+      "Payment Method",
+      "Payment Amount",
+      "Added By",
+      "Status",
+      "Status",
+    ],
     // [
     //   "Move Order ID",
     //   "Date Received",
@@ -638,17 +769,48 @@ function Reports() {
           ) : (
             ""
           )}
-          {activeReport?.value != "SOA-reports" && (
-            <>
+          {activeReport?.value != "SOA-reports" &&
+            activeReport?.value !== "listing-fee-reports" &&
+            activeReport?.value !== "arcana-gl-cash-receipt" && (
+              <>
+                <Controller
+                  name="dateFrom"
+                  control={control}
+                  render={({ field }) => (
+                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                      <DatePicker
+                        {...field}
+                        maxDate={moment()}
+                        label="Date From"
+                        slotProps={{
+                          textField: {
+                            size: "small",
+                          },
+                        }}
+                        sx={{ width: "150px" }}
+                      />
+                    </LocalizationProvider>
+                  )}
+                />
+              </>
+            )}
+          {activeReport?.value !== "listing-fee-reports" &&
+            activeReport?.value !== "arcana-gl-cash-receipt" &&
+            activeReport?.value !== "arcana-gl" &&
+            activeReport?.value !== "arcana-gt" && (
               <Controller
-                name="dateFrom"
+                name="dateTo"
                 control={control}
                 render={({ field }) => (
                   <LocalizationProvider dateAdapter={AdapterMoment}>
                     <DatePicker
-                      {...field}
+                      minDate={
+                        activeReport?.value != "SOA-reports" &&
+                        watch("dateFrom")
+                      }
                       maxDate={moment()}
-                      label="Date From"
+                      {...field}
+                      label="Date To"
                       slotProps={{
                         textField: {
                           size: "small",
@@ -659,30 +821,31 @@ function Reports() {
                   </LocalizationProvider>
                 )}
               />
-            </>
-          )}
-          <Controller
-            name="dateTo"
-            control={control}
-            render={({ field }) => (
-              <LocalizationProvider dateAdapter={AdapterMoment}>
-                <DatePicker
-                  minDate={
-                    activeReport?.value != "SOA-reports" && watch("dateFrom")
-                  }
-                  maxDate={moment()}
-                  {...field}
-                  label="Date To"
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
-                  }}
-                  sx={{ width: "150px" }}
-                />
-              </LocalizationProvider>
             )}
-          />
+          {(activeReport?.value === "arcana-gl-cash-receipt" ||
+            activeReport?.value === "arcana-gl" ||
+            activeReport?.value === "arcana-gt") && (
+            <Controller
+              name="dateTo"
+              control={control}
+              render={({ field }) => (
+                <LocalizationProvider dateAdapter={AdapterMoment}>
+                  <DatePicker
+                    {...field}
+                    label="Month"
+                    views={["year", "month"]} // 👈 Makes it a Month Picker
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                      },
+                    }}
+                    sx={{ width: "150px" }}
+                  />
+                </LocalizationProvider>
+              )}
+            />
+          )}
+
           {activeReport?.value === "SOA-reports" && !soaFetching ? (
             <SOAPDFDownload
               soaReportData={soaReportData}
@@ -722,7 +885,12 @@ function Reports() {
       checkInFetching ||
       listingFeeFetching ||
       checkInFiloFetching ||
-      voidTransactionsFetching ? (
+      voidTransactionsFetching ||
+      rollbackFetching ||
+      paymentFetching ||
+      glCashReceiptFetching ||
+      glInventoriableFetching ||
+      glSalesGTFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
@@ -735,7 +903,8 @@ function Reports() {
             activeArray?.pendingSoa ||
             activeArray?.listingHistory ||
             activeArray?.result ||
-            activeArray?.mo
+            activeArray?.mo ||
+            activeArray?.to
           }
           tableHeads={tableHeads[activeReport?.index]}
           customOrderKeys={customOrderKeys[activeReport?.index]}

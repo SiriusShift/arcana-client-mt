@@ -169,6 +169,13 @@ function PaymentModalForm({
         paymentAmount: data.paymentAmount,
         remarks: data.remarks,
       };
+    } else if (data.paymentMethod.value === "Sales Return"){
+      transformedData = {
+        paymentMethod: data.paymentMethod,
+        paymentAmount: data.paymentAmount,
+        // invoiceAttachment: data.invoiceAttachment,
+        returnId: data.returnId,
+      };
     } else {
       transformedData = {
         paymentMethod: data.paymentMethod,
@@ -786,8 +793,8 @@ function PaymentModalForm({
                 <ControlledAutocomplete
                   name="returnId"
                   control={control}
-                  options={returnData?.value?.salesReturn}
-                  getOptionLabel={(option) => option.returnOrderId}
+                  options={returnData?.value?.salesReturn || []}
+                  getOptionLabel={(option) => option.returnOrderId + " - " + moment(option.createdAt).format("MM/DD/YYYY")}
                   disableClearable
                   isOptionEqualToValue={() => true}
                   renderInput={(params) => (
@@ -800,10 +807,11 @@ function PaymentModalForm({
                     />
                   )}
                   onChange={(_, value) => {
-                    if(value?.totalReturnPrice < remainingBalance){
-                      setValue("paymentAmount", value.totalReturnPrice);
+                    console.log(value?.remaining, remainingBalance)
+                    if(value?.remaining < remainingBalance){
+                      setValue("paymentAmount", value.remaining);
                     }else{
-                      setValue("paymentAmount", remainingBalance - value.totalReturnPrice);
+                      setValue("paymentAmount",  remainingBalance);
                     }
                     return value;
                   }}

@@ -8,15 +8,12 @@ import { transferOutSchema } from "../../../schema/schema";
 import { useGetAllTransferOutsQuery, useGetTransferOutByIdQuery } from "../../../features/inventory-management/api/transferOutApi";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
-import OutrightReturnFormHeader from "../../../components/page-components/inventory-management/outright-return/OuriteReturnFormHeader";
-import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OurightItems";
-import MiscInFormHeader from "../../../components/page-components/inventory-management/misc-in/MiscInFormHeader";
-import MiscInFormDetails from "../../../components/page-components/inventory-management/misc-in/MiscInFormDetails";
-import MiscInItems from "../../../components/page-components/inventory-management/misc-in/MiscInItems";
-import { useGetAllReceivedOrdersQuery } from "../../../features/inventory-management/api/receivingApi";
+import MiscIssueItems from "../../../components/page-components/inventory-management/misc-issue/MiscIssueItems";
 import moment from "moment";
+import MiscIssueFormHeader from "../../../components/page-components/inventory-management/misc-issue/MiscIssueFormHeader";
+import { useGetMiscIssueQuery } from "../../../features/inventory-management/api/miscApi";
 
-const ViewMiscIn = () => {
+const ViewMiscIssue = () => {
   const { id } = useParams();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -30,7 +27,7 @@ const ViewMiscIn = () => {
     defaultValues: transferOutSchema.defaultValues,
   });
 
-  const { data, isFetching, isError } = useGetAllReceivedOrdersQuery({
+  const { data, isFetching, isError } = useGetMiscIssueQuery({
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     MiscInId: id,
@@ -40,20 +37,20 @@ const ViewMiscIn = () => {
   
   useEffect(() => {
     if (isError) {
-      navigate("/inventory-management/miscellaneous-in", { replace: true });
+      navigate("/inventory-management/miscellaneous-issue", { replace: true });
     }
   }, [isError, navigate]);
 
   return (
     <Box className="commonPageLayout">
-      <MiscInFormHeader />
+      <MiscIssueFormHeader />
 
       <FormProvider {...methods}>
-        <MiscInFormDetails />
-        <MiscInItems items={data?.value?.mo[0]?.moveItems || []} isFetching={isFetching} />
+        {/* <MiscOutFormDetails /> */}
+        <MiscIssueItems items={data?.value?.mo[0]?.misceOutItems || []} isFetching={isFetching} />
       </FormProvider>
     </Box>
   );
 };
 
-export default ViewMiscIn;
+export default ViewMiscIssue;

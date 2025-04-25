@@ -75,43 +75,68 @@ export const reportNames = [
 		value: "void-transaction-reports"
 	},
   {
-    label: "Receiving Reports",
+    label: "Payment Reports",
     index: 8,
+    value: "payment-reports",
+  },
+  {
+    label: "MRP Rollback",
+    index: 9,
+    value: "mrp-rollback",
+  },
+  {
+    label: "GL Cash Receipt",
+    index: 10,
+    value: "arcana-gl-cash-receipt"
+  },
+  {
+    label: "GL Inventoriables",
+    index: 11,
+    value: "arcana-gl"
+  },
+  {
+    label: "GL Sales GT",
+    index: 12,
+    value: "arcana-gt"
+  },
+  {
+    label: "Receiving Reports",
+    index: 13,
     value: "arcana-mo-reports",
   },
   {
     label: "Return by CDO Reports",
-    index: 9,
+    index: 14,
     value: "arcana-return-by-cdo-reports",
   },
   {
     label: "Transfer Out Reports",
-    index: 10,
+    index: 15,
     value: "arcana-transfer-out-reports",
   },
   {
     label: "Transfer In Reports",
-    index: 11,
+    index: 16,
     value: "arcana-transfer-in-reports",
   },
   {
     label: "Freebie Reports",
-    index: 12,
+    index: 17,
     value: "arcana-freebie-report",
   },
   {
     label: "Sampling Reports",
-    index: 13,
+    index: 18,
     value: "arcana-sampling-report",
   },
   {
     label: "Return Reports",
-    index: 14,
+    index: 19,
     value: "arcana-return-report",
   },
   {
     label: "Replace Reports",
-    index: 15,
+    index: 20,
     value: "arcana-replace-report",
   },
 ];

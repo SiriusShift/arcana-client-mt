@@ -13,7 +13,7 @@ function InventoryMRP() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const userDetails = useSelector((state) => state.login.userDetails);
-  const [clusterId, setClusterId] = useState(userDetails?.roleName === "CDO" ? " " : 1);
+  const [clusterId, setClusterId] = useState((userDetails?.roleName === "CDO" || userDetails?.roleName === "Marketing") ? " " : 1);
 
 
   // RTK Query
@@ -29,7 +29,6 @@ function InventoryMRP() {
 
   console.log(data);
 
-  // CommonTable Props
   const tableHeads = [
     "Item Code",
     "Item Description",
@@ -37,11 +36,13 @@ function InventoryMRP() {
     "Receiving (+)",
     "Transfer In (+)",
     "Transfer Out (-)",
-    "Ourite",
+    "Outright",
     "Freebies (-)",
     "Sampling (-)",
     "Replaced (-)",
     "Sales (-)",
+    "Misc Issue (-)",
+    "Misc Receipt (+)",
     "Returned by Client (+)",
     "Reserved",
     "For Releasing",
@@ -61,6 +62,8 @@ function InventoryMRP() {
     "sampling",
     "replace",
     "sales",
+    "miscOut",
+    "miscIn",
     "returnByClient",
     "reserve",
     "forReleasing",
@@ -80,7 +83,7 @@ function InventoryMRP() {
         removeArchive
         removeAdd
         removeAllItem
-        removeFilter={userDetails?.roleName.includes("CDO")}
+        removeFilter={userDetails?.roleName.includes("CDO") || userDetails?.roleName.includes("Marketing") ? true : false}
         filterChoices={clusterOptions}
         setSearch={setSearch}
         setFilter={setClusterId}
