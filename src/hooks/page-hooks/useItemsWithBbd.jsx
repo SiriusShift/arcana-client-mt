@@ -2,10 +2,12 @@
 import { useState, useEffect } from "react";
 import { useFieldArray, useWatch, useFormContext } from "react-hook-form";
 import { useGetAllItemsWithBbdQuery } from "../../features/inventory-management/api/inventoryApi";
-import useConfirm from "../../hooks/useConfirm";
+import useConfirm from "../useConfirm";
 import moment from "moment";
 import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi";
 import { useGetAllItemsInventoryQuery } from "../../features/inventory-management/api/inventoryMrpApi";
+import { useGetReasonsQuery } from "../../features/inventory-management/api/reasonApi";
+import { useGetAllReceivedOrdersQuery } from "../../features/inventory-management/api/receivingApi";
 
 const useItemsWithBbd = ({
   items = [],
@@ -37,15 +39,37 @@ const useItemsWithBbd = ({
     name: itemsFieldName,
   });
 
-  const watchItems = useWatch({
-    control,
-    name: itemsFieldName,
-  });
+  const watchItems =
+    useWatch({
+      control,
+      name: itemsFieldName,
+    }) || [];
 
   const itemsFieldState = getFieldState(itemsFieldName);
 
   const { data: productData, isFetching: isItemsWithBBDFetching } =
     useGetAllItemsInventoryQuery();
+
+  // const { data: mo, isLoading } = useGetAllReceivedOrdersQuery({
+  //   PageSize: 1000,
+  // }, {
+  //   skip: !watch("type")
+  // });
+
+  // console.log(mo)
+
+  const {
+    data,
+    // isFetching: isFetchingReason,
+    // error,
+  } = useGetReasonsQuery(
+    {
+      isActive: true,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   let transformedItems = items?.map((item) => {
     console.log("testing123", item);
@@ -66,7 +90,6 @@ const useItemsWithBbd = ({
     };
   });
 
-  console.log("testing 1!", transformedItems, watchItems);
   console.log(items);
 
   const handleAddItem = () => {
@@ -113,16 +136,23 @@ const useItemsWithBbd = ({
 
   useEffect(() => {
     if (items.length > 0) {
-      if (itemsFieldName === "replaceItems" || itemsFieldName === "returnItems") {
-        const isDirty = dirtyFields?.[itemsFieldName] && Object.keys(dirtyFields[itemsFieldName]).length > 0;
-  
+      if (
+        itemsFieldName === "replaceItems" ||
+        itemsFieldName === "returnItems"
+      ) {
+        const isDirty =
+          dirtyFields?.[itemsFieldName] &&
+          Object.keys(dirtyFields[itemsFieldName]).length > 0;
+
         if (isDirty) {
           console.log("Skipping update: User has edited returnItems.");
           return;
         }
-  
+
         const newItems = items.map((item) => ({
-          item: productData?.find((product) => product.itemCode === item.itemCode),
+          item: productData?.find(
+            (product) => product.itemCode === item.itemCode
+          ),
           itemDescription: item.itemDescription,
           price: item.price,
           netPrice: item.net,
@@ -131,8 +161,24 @@ const useItemsWithBbd = ({
           bbd: item.bbd,
           reason: item.reason ?? "",
         }));
-  
+
         setValue(itemsFieldName, newItems);
+      } else if (watch("type")?.value === "Outright") {
+        console.log("data outright", data, items);
+        const newItems = items.map((item) => ({
+          item: item,
+          itemDescription: item.itemDescription,
+          uom: item.uom,
+          price: item.amount,
+          received: watch("moveOrder")?.moveItems.find(
+            (moveItem) => moveItem.itemCode === item.itemCode).actualQuantity,
+          quantity: item.quantity,
+          bbd: item.bbd,
+          reason: item.reason,
+          remarks: data?.find((reason) => reason.id === item.reasonId),
+        }));
+
+        setValue("items", newItems);
       } else {
         const newItems = items.map((item) => ({
           item: item,
@@ -142,13 +188,13 @@ const useItemsWithBbd = ({
           quantity: item.quantity,
           bbd: item.bbd,
           reason: item.reason,
+          ...(data && { remarks: data?.find((reason) => reason.id === item.reasonId) }),
         }));
-  
+
         setValue("items", newItems);
       }
     }
   }, [items, productData, setValue, dirtyFields, itemsFieldName]);
-  
 
   return {
     bbdCache,
@@ -165,7 +211,7 @@ const useItemsWithBbd = ({
     control,
     itemsFieldState,
     isValid,
-    errors
+    errors,
   };
 };
 

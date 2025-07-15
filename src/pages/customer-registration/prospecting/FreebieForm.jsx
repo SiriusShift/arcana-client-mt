@@ -22,12 +22,22 @@ import CommonDialog from "../../../components/common/CommonDialog";
 import ReleaseFreebieModal from "../../../components/modals/ReleaseFreebieModal";
 import { debounce } from "../../../utils/CustomFunctions";
 import { setSelectedRow } from "../../../features/misc/reducers/selectedRowSlice";
-import { setFreebies } from "../../../features/registration/reducers/regularRegistrationSlice";
+import {
+  resetFreebies,
+  setFreebies,
+} from "../../../features/registration/reducers/regularRegistrationSlice";
 import useSnackbar from "../../../hooks/useSnackbar";
 import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
 import { RemoveCircleOutline } from "@mui/icons-material";
-import { priceModeItemsApi, useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
+import {
+  priceModeItemsApi,
+  useGetAllItemsByPriceModeIdQuery,
+} from "../../../features/setup/api/priceModeItemsApi";
 import { NumericFormat } from "react-number-format";
+import {
+  inventoryMrpApi,
+  useGetInventoryMrpQuery,
+} from "../../../features/inventory-management/api/inventoryMrpApi";
 
 function FreebieForm({
   isFreebieFormOpen,
@@ -35,6 +45,7 @@ function FreebieForm({
   updateFreebies,
   direct,
 }) {
+  console.log(isFreebieFormOpen, "isFreebieFormOpen");
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [total, setTotalQuantity] = useState(1);
 
@@ -47,9 +58,16 @@ function FreebieForm({
     (state) => state.regularRegistration.value.directFreebie.freebies
   );
   const dispatch = useDispatch();
+  console.log(freebiesDirect, "freebiesDirect");
 
-  const { signatureDirect, photoProofDirect } =
-    useContext(DirectReleaseContext);
+  const {
+    signatureDirect,
+    photoProofDirect,
+    setSignatureDirect,
+    setPhotoProofDirect,
+  } = useContext(DirectReleaseContext);
+
+  // console.log(signatureDirect, photoProofDirect, "signature and photo proof");
 
   //Disclosures
   const {
@@ -107,6 +125,8 @@ function FreebieForm({
       : requestFreebiesSchema.defaultValues,
   });
 
+  console.log(watch());
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "freebies",
@@ -131,10 +151,29 @@ function FreebieForm({
       }
     );
 
-  console.log(watch("freebies"));
-  //IF store type is distributor
-  const lengthArray = selectedRowData?.storeType === "Distributor" ? 10 : 5;
+  const { data: mrp, isFetching: isInventoryMrpFetching } =
+    useGetInventoryMrpQuery(
+      {
+        PageNumber: 1,
+        PageSize: 1000,
+      },
+      { refetchOnMountOrArgChange: true }
+    );
 
+  //IF store type is distributor
+  const lengthArray = direct
+    ? selectedRowData?.storeType?.storeTypeName === "Distributor"
+      ? 10
+      : 5
+    : selectedRowData?.storeType === "Distributor"
+    ? 10
+    : 5;
+  const isDistributor = direct
+    ? selectedRowData?.storeType?.storeTypeName === "Distributor"
+    : selectedRowData?.storeType === "Distributor";
+  console.log(lengthArray);
+
+  console.log(watch());
   //Drawer Functions
   const onFreebieSubmit = async (data) => {
     if (hasDuplicateItemCodes(watch("freebies"))) {
@@ -154,6 +193,9 @@ function FreebieForm({
           params: { freebieId: data.freebieRequestId },
           freebies: data.freebies.map((freebie) => ({
             itemId: freebie.itemId.itemId,
+            availQuantity: mrp?.mo?.find(
+              (item) => item.itemCode === freebie.itemId.itemCode
+            )?.reserve,
             quantity: freebie.quantity,
           })),
         }).unwrap();
@@ -168,9 +210,12 @@ function FreebieForm({
         }).unwrap();
         setSnackbarMessage("Freebies requested successfully");
       }
+      console.log("tets");
 
       dispatch(setSelectedRow(response?.value));
       dispatch(priceModeItemsApi.util.invalidateTags(["Price Mode Items"]));
+      dispatch(inventoryMrpApi.util.invalidateTags(["Inventory MRP"]));
+      console.log("tets");
       handleDrawerClose();
       debounce(onRedirectReleaseOpen(), 2000);
       onSuccessOpen();
@@ -190,7 +235,7 @@ function FreebieForm({
 
     onConfirmSubmitClose();
   };
-  
+
   const handleRemove = async (index) => {
     remove(index);
     setTotalQuantity(
@@ -198,9 +243,10 @@ function FreebieForm({
         return acc + (parseInt(curr.quantity, 10) || 0);
       }, 0)
     );
-  }
+  };
 
   const handleDrawerClose = () => {
+    console.log("handleDrawerClose called");
     reset();
     setTotalQuantity(1);
     onFreebieFormClose();
@@ -226,6 +272,8 @@ function FreebieForm({
       return;
     }
 
+    console.log(data, "freebies data");
+
     dispatch(setFreebies(data.freebies));
     setSnackbarMessage("Freebies saved successfully");
     onSuccessOpen();
@@ -235,12 +283,9 @@ function FreebieForm({
 
   //Misc Functions
   const handleFreebieError = () => {
-    if (fields.length === 1 && selectedRowData?.storeType !== "Distributor") {
+    if (fields.length === 1 && !isDistributor) {
       snackbar({ message: "Must have at least 1 freebie", variant: "error" });
-    } else if (
-      fields.length === 5 &&
-      selectedRowData?.storeType !== "Distributor"
-    ) {
+    } else if (fields.length === 5 && !isDistributor) {
       snackbar({ message: "Maximum of 5 freebies only", variant: "error" });
     }
   };
@@ -326,6 +371,7 @@ function FreebieForm({
       <CommonDrawer
         drawerHeader={updateFreebies ? "Update Freebies" : "Request Freebies"}
         open={isFreebieFormOpen}
+        zIndex={1300}
         onClose={isDirty ? onConfirmCancelOpen : handleDrawerClose}
         width="1000px"
         disableSubmit={
@@ -457,6 +503,7 @@ function FreebieForm({
                       );
 
                       const tempTotal = currentTotal + inputValue;
+                      console.log(currentTotal, tempTotal);
 
                       // Get available quantity for this item
                       const availableQuantity =
@@ -465,23 +512,27 @@ function FreebieForm({
                             item.itemCode ===
                             watch("freebies")[index]?.itemId?.itemCode
                         )?.availQuantity || 0;
+                      console.log(availableQuantity);
 
                       // Check for validation errors
-                      let errorMessage = "";
-                      if (tempTotal > lengthArray) {
-                        errorMessage = `Maximum of ${lengthArray} freebies allowed`;
-                      } else if (inputValue > availableQuantity) {
-                        errorMessage = `Quantity cannot exceed available stock (${availableQuantity})`;
-                      }
+                      // let errorMessage = "";
+                      // if (tempTotal > lengthArray) {
+                      //   errorMessage = `Maximum of ${lengthArray} freebies allowed`;
+                      // } else if (
+                      //   inputValue > availableQuantity &&
+                      //   availableQuantity > 0
+                      // ) {
+                      //   errorMessage = `Quantity cannot exceed available stock (${availableQuantity})`;
+                      // }
 
-                      // Only show snackbar if there's an error
-                      if (errorMessage) {
-                        snackbar({
-                          message: errorMessage,
-                          variant: "error",
-                        });
-                        return; // Prevent state update if error occurs
-                      }
+                      // // Only show snackbar if there's an error
+                      // if (errorMessage) {
+                      //   snackbar({
+                      //     message: errorMessage,
+                      //     variant: "error",
+                      //   });
+                      //   return; // Prevent state update if error occurs
+                      // }
 
                       // Update value in the form state if no validation error
                       onChange({ target: { value: inputValue } });
@@ -499,7 +550,6 @@ function FreebieForm({
                     allowNegative={false}
                     isAllowed={({ value }) => {
                       const inputValue = parseInt(value) || 0;
-                      
 
                       // Get the current total of all quantities, excluding the current item
                       const currentTotal = watch("freebies").reduce(
@@ -509,8 +559,11 @@ function FreebieForm({
                             : acc,
                         0
                       );
+                      console.log("current total", currentTotal);
 
-                      const tempTotal = currentTotal + inputValue;
+                      const tempTotal =
+                        Number(currentTotal) + Number(inputValue);
+                      console.log("temp total", tempTotal);
 
                       // Get available quantity for this item
                       const availableQuantity =
@@ -521,35 +574,72 @@ function FreebieForm({
                         )?.availQuantity || 0;
 
                       // Check for validation errors
-                      if (
-                        tempTotal > lengthArray ||
-                        inputValue > availableQuantity
-                      ) {
+                      console.log(
+                        inputValue,
+                        watch("freebies")[index]?.quantity
+                      );
+                      if (availableQuantity === 0 && !updateFreebies) {
+                        if (
+                          inputValue >
+                          watch("freebies")[index]?.itemId?.quantity
+                        ) {
+                          snackbar({
+                            message: `No available stock for this item`,
+                            variant: "error",
+                          });
+                          return false; // Block invalid input
+                        }
+                        return true;
+                      } else if (availableQuantity > 0 && !updateFreebies) {
+                        if (
+                          tempTotal > lengthArray ||
+                          inputValue > availableQuantity
+                        ) {
+                          snackbar({
+                            message:
+                              tempTotal > lengthArray
+                                ? `Maximum of ${lengthArray} freebies allowed`
+                                : `Quantity cannot exceed available stock (${availableQuantity})`,
+                            variant: "error",
+                          });
+                          return false; // Block invalid input
+                        }
+                        return true; // Allow valid input
+                      }
+                      if (tempTotal > lengthArray) {
                         snackbar({
-                          message:
-                            tempTotal > lengthArray
-                              ? `Maximum of ${lengthArray} freebies allowed`
-                              : `Quantity cannot exceed available stock (${availableQuantity})`,
+                          message: `Maximum of ${lengthArray} freebies allowed`,
                           variant: "error",
                         });
                         return false; // Block invalid input
                       }
-
-                      return true; // Allow valid input
+                      return true;
                     }}
                     error={!!errors?.freebies?.[index]?.quantity}
                   />
                 )}
               />
 
-              <Typography variant="caption" color={`${watch("freebies")[index]?.itemId ? "green" : "gray"}`} lineHeight="0.5">
+              <Typography
+                variant="caption"
+                color={`${
+                  mrp?.mo?.find(
+                    (item) =>
+                      item.itemCode ===
+                      watch("freebies")[index]?.itemId?.itemCode
+                  )?.reserve > 0
+                    ? "success"
+                    : "error"
+                }.main`}
+                lineHeight="0.5"
+              >
                 {watch("freebies")[index]?.itemId
                   ? `Available: ${
-                      productData?.priceModeItems.find(
+                      mrp?.mo.find(
                         (item) =>
                           item.itemCode ===
                           watch("freebies")[index]?.itemId?.itemCode
-                      )?.availQuantity
+                      )?.reserve
                     }`
                   : "Select product first"}
               </Typography>
@@ -575,8 +665,7 @@ function FreebieForm({
             alignItems: "center",
           }}
         >
-          {((total < 5 && selectedRowData?.storeType !== "Distributor") ||
-            (total < 10 && selectedRowData?.storeType === "Distributor")) && (
+          {((total < 5 && !isDistributor) || (total < 10 && isDistributor)) && (
             <SecondaryButton
               sx={{ width: "150px" }}
               onClick={() => {
@@ -636,7 +725,12 @@ function FreebieForm({
       <CommonDialog
         open={isConfirmCancelOpen}
         onClose={onConfirmCancelClose}
-        onYes={handleDrawerClose}
+        onYes={() => {
+          dispatch(resetFreebies());
+          setSignatureDirect(null);
+          setPhotoProofDirect(null);
+          handleDrawerClose();
+        }}
       >
         Are you sure you want to cancel {direct ? "save" : "request"} of
         freebies for{" "}

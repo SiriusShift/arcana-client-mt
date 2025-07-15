@@ -40,13 +40,14 @@ const MiscIssueFormActions = () => {
           amount: item.price,
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
+        reasonInfo: data?.remarks?.id,
         toCdo: data?.to?.id,
       };
 
       console.log(transformedData)
 
       await confirm({
-        children: "Are you sure you want to transfer out these items?",
+        children: "Are you sure you want to transfer these items?",
         question: true,
         callback: () => trigger(transformedData).unwrap(),
       });

@@ -54,6 +54,7 @@ function CommonTable({
   onVoid,
   onHistory,
   onDelete,
+  onPrint,
   onPrintTTA,
   onPrintFreebies,
   onTagUserInCluster,
@@ -113,6 +114,7 @@ function CommonTable({
   valueDisplayOptions = [],
   flexNone,
   nestedProperty = {},
+  border
 }) {
   console.log("map", mapData);
 
@@ -700,7 +702,7 @@ function CommonTable({
                     }
 
                     return (
-                      <TableCell key={k}>
+                      <TableCell key={k} sx={border &&  { borderRight: "1px solid #BDBDBD77"}}>
                         {pesoArray && pesoArray.includes(keys) && "₱"}
                         {/* {keys === "phoneNumber" && "+63"} */}
 
@@ -757,6 +759,7 @@ function CommonTable({
                         onAddPriceChange={onAddPriceChange && onAddPriceChange}
                         onVoid={onVoid && onVoid}
                         onHistory={onHistory && onHistory}
+                        onPrint={onPrint && onPrint}
                         onPrintTTA={onPrintTTA && onPrintTTA}
                         onPrintFreebies={onPrintFreebies && onPrintFreebies}
                         onDelete={onDelete && onDelete}

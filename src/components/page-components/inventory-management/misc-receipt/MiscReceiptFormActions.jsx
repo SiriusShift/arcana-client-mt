@@ -41,12 +41,13 @@ const MiscReceiptFormActions = () => {
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
         toCdo: data?.to?.id,
+        reasonInfo: data?.remarks?.id
       };
 
       console.log("test")
 
       await confirm({
-        children: "Are you sure you want to transfer out these items?",
+        children: "Are you sure you want to transfer these items?",
         question: true,
         callback: () => trigger(transformedData).unwrap(),
       });

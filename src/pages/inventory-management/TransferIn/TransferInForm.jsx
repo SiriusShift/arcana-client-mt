@@ -18,10 +18,13 @@ const TransferInForm = () => {
   const { data, isFetching, isUninitialized, isError } =
     useGetTransferInByIdQuery({
       Status: "For Receiving",
+      TransferOrderId: id,
       DateFrom: dateFrom,
       DateTo: dateTo,
     });
     console.log(data);
+  
+
 
   useEffect(() => {
     if (isError) {
@@ -36,7 +39,7 @@ const TransferInForm = () => {
         isFetching={isFetching || isUninitialized}
       />
 
-      <TransferInItems items={data?.to[0]?.transferItems} isFetching={isFetching} />
+      <TransferInItems items={data?.to[0].transferItems} isFetching={isFetching} />
 
       <TransferInFormSubmit />
     </Box>

@@ -4,8 +4,9 @@ const MiscIssueItems = ({ items = [], isFetching }) => {
 
   return (
     <ItemsWithBBDForm
-      // withBbd
-      misc
+      withBbd
+      isTransferOut
+      miscIssue
       items={items}
       isFetching={isFetching}
     />

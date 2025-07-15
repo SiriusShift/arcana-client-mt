@@ -24,6 +24,8 @@ import { useGetAllDiscountTypesQuery } from "../../../features/setup/api/discoun
 import { priceModeItemsApi } from "../../../features/setup/api/priceModeItemsApi";
 import { useDispatch } from "react-redux";
 import { callsheetApi } from "../../../features/inventory-management/api/callsheetApi";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   const { onClose, open } = props;
@@ -52,6 +54,9 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   //Watch Constants
   const watchDiscount = watch("discount");
   const watchSpecialDiscount = watch("specialDiscount");
+  // const watchRebate = watch("rebateAmount");
+
+  console.log(watch())
 
   //Calculations
   const specialDiscountAmount = useMemo(
@@ -64,6 +69,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
     [watchDiscount, total]
   );
 
+
   const netSales = useMemo(
     () => total - discountAmount - specialDiscountAmount,
     [total, discountAmount, specialDiscountAmount]
@@ -72,7 +78,6 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   //Constants
   const client = orderData?.clientId;
   const items = orderData?.items;
-
 
   //RTK Query
   const [createSalesTransaction] = useCreateSalesTransactionMutation();
@@ -113,10 +118,13 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
       ...transformedOrderData,
       ...data,
       discount: data.discount || 0,
+      rebateAmount: data.rebateAmount || 0,
       specialDiscount: data.specialDiscount || 0,
       specialDiscountId: data.specialDiscountId || null,
       isOneTimeSp: data.isOneTimeSp || null,
     };
+
+    console.log(combinedData);
 
     try {
       await reasonConfirm({
@@ -127,12 +135,17 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
         callback: async (remarks) => {
           try {
             // Wait for the createSalesTransaction to complete
-            const response = await createSalesTransaction({ ...combinedData, remarks }).unwrap();
-      
+            const response = await createSalesTransaction({
+              ...combinedData,
+              remarks,
+            }).unwrap();
+
             // Once the transaction is successful, invalidate the tags
-            dispatch(priceModeItemsApi.util.invalidateTags(["Price Mode Items"]));
-            dispatch(callsheetApi.util.invalidateTags(["Callsheet"]))
-      
+            dispatch(
+              priceModeItemsApi.util.invalidateTags(["Price Mode Items"])
+            );
+            dispatch(callsheetApi.util.invalidateTags(["Callsheet"]));
+
             return response; // Return the response so it can be handled as necessary
           } catch (error) {
             // Handle errors appropriately
@@ -140,7 +153,6 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
           }
         },
       });
-      
 
       resetTransaction();
       handleClose();
@@ -181,7 +193,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   useEffect(() => {
     if (open) {
       !client?.variableDiscount &&
-      setValue("discount", client?.discountPercentage * 100);
+        setValue("discount", client?.discountPercentage * 100);
       setValue("specialDiscount", client?.specialDiscount * 100);
       setValue("specialDiscountId", client?.specialDiscountId);
       setValue("isOneTimeSp", client?.isOnetimeSp);
@@ -312,6 +324,60 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
               </Typography>
             </Box>
 
+            {/* <Box className="cashoutModal__transactionInfo__costBreakdown__item">
+              <Box className="cashoutModal__transactionInfo__costBreakdown__item__labelDiscount">
+                <Typography className="cashoutModal__transactionInfo__costBreakdown__item__labelDiscount__label">
+                  Rebate
+                </Typography>
+
+                <Typography className="cashoutModal__transactionInfo__costBreakdown__item__labelDiscount__value">
+                  <Controller
+                    control={control}
+                    name="rebateAmount"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <NumericFormat
+                        type="text"
+                        size="small"
+                        customInput={TextField}
+                        autoComplete="off"
+                        value={value || ""}
+                        onValueChange={(e) => onChange(Number(e.value))}
+                        onBlur={onBlur}
+                        inputRef={discountRef}
+                        inputProps={{
+                          style: {
+                            width: "60px",
+                            //  padding: "0.5px 10px"
+                            padding: "5px 10px",
+                          },
+                        }}
+                        isAllowed={(values) => {
+                          const { floatValue } = values;
+                          // Check if the floatValue is greater than maximum amount and less than minimum amount and show a snackbar
+                          if (floatValue != null && floatValue > (total - discountAmount - specialDiscountAmount)) { 
+                            snackbar({
+                              message: `Discount should not exceed the total amount`,
+                              variant: "error",
+                            });
+                            return false;
+                          }
+                          return true;
+                        }}
+                        thousandSeparator=","
+                        allowNegative={false}
+                        allowLeadingZeros={false}
+                        fixedDecimalScale
+                      />
+                    )}
+                  />
+                </Typography>
+              </Box>
+
+              <Typography className="cashoutModal__transactionInfo__costBreakdown__item__value">
+                -{watchRebate ? formatPesoAmount(watchRebate) : ""}
+              </Typography>
+            </Box> */}
+
             <Box className="cashoutModal__transactionInfo__costBreakdown__item">
               <Box className="cashoutModal__transactionInfo__costBreakdown__item__labelDiscount">
                 <Typography className="cashoutModal__transactionInfo__costBreakdown__item__labelDiscount__label">
@@ -342,8 +408,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
               </Typography>
 
               <Typography className="cashoutModal__transactionInfo__costBreakdown__net__value">
-                ₱
-                {netSales.toFixed(2)}
+                ₱{netSales.toFixed(2)}
               </Typography>
             </Box>
           </Box>
@@ -405,6 +470,27 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
                 helperText={errors?.payee?.message}
                 error={errors?.payee}
               />
+            )}
+          />
+        </Box>
+        <Box className="cashoutModal__input">
+          <Controller
+            name="orDate"
+            control={control}
+            defaultValue={null} // ✅ Use null, not empty string
+            render={({ field: { onChange, value, ...rest } }) => (
+              <LocalizationProvider dateAdapter={AdapterMoment}>
+                <DatePicker
+                  {...rest}
+                  value={value || null} // ✅ Ensure Moment or null
+                  onChange={(date) => onChange(date)} // ✅ Pass Moment value to controller
+                  label="OR Date"
+                  disabled
+                  slotProps={{
+                    textField: { size: "small" },
+                  }}
+                />
+              </LocalizationProvider>
             )}
           />
         </Box>

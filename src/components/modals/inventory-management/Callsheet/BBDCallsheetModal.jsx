@@ -59,6 +59,8 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const validDataKey = index !== undefined && index !== null ? index : "";
   const dataInformation = data?.callSheetDtos?.[validDataKey] || {};
 
+  console.log("total", dataInformation);
+
   const {
     handleSubmit,
     formState: { errors, isValid },
@@ -84,18 +86,24 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const onSubmit = (data) => {
     console.log(data);
 
-    if(data.bbdList.length === 0){
-      dispatch(upsertItem([{
-        itemCode: dataInformation.itemCode,
-        bbds: []
-      }]));
+    if (data.bbdList.length === 0) {
+      dispatch(
+        upsertItem([
+          {
+            itemCode: dataInformation.itemCode,
+            bbds: [],
+          },
+        ])
+      );
     }
     const transformData = data?.bbdList?.map((item) => ({
       itemCode: item.itemCode,
       bbds: {
         quantity: item?.quantity,
         remainingInv: item?.remainingInv,
-        bbdDate: item.bbdDate ? moment(item?.bbdDate).format("YYYY-MM-DD") : null,
+        bbdDate: item.bbdDate
+          ? moment(item?.bbdDate).format("YYYY-MM-DD")
+          : null,
       },
     }));
 
@@ -155,7 +163,7 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       itemCode: dataInformation.itemCode || "",
       itemDescription: dataInformation.itemDescription || "",
       salesIn: dataInformation.salesIn || "",
-      remainingInv: dataInformation.remainingInv  || null,
+      remainingInv: dataInformation.remainingInv || null,
       quantity: null,
       bbdDate: null,
     });
@@ -166,36 +174,38 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       const bbdDtos = dataInformation?.bbdDtos || [];
       const callsheetItems = callsheetItem || [];
 
-      console.log(dataInformation)
+      console.log("callsheet items",callsheetItems);
 
-      const totalQuantity = callsheetItems?.length > 0
-      ? callsheetItems.find((item) => item?.itemCode === dataInformation?.itemCode)
-          ?.bbds?.reduce((acc, bbd) => acc + (bbd.quantity || 0), 0) || 0
-      : 0;
-    
+      const totalQuantity =
+        callsheetItems?.length > 0
+          ? callsheetItems
+              .find((item) => item?.itemCode === dataInformation?.itemCode)
+              ?.bbds?.reduce((acc, bbd) => acc + (bbd.quantity || 0), 0) || 0
+          : 0;
 
-      console.log(totalQuantity)
+      console.log("total quantity",totalQuantity);
 
-      setTotalQuantity(totalQuantity[0] || totalQuantity)
+      setTotalQuantity(totalQuantity[0] || totalQuantity);
       const mergedBbdList = [
         // Include callsheetItems first
         ...callsheetItems.flatMap((callsheet) => {
           if (callsheet?.itemCode === dataInformation?.itemCode) {
-            return callsheet.bbds?.map((bbd) => ({
-              itemCode: callsheet?.itemCode || "",
-              salesIn: dataInformation?.salesIn ?? 0,
-              itemDescription: dataInformation?.itemDescription || "",
-              remainingInv: bbd?.remainingInv ?? 0,
-              quantity: bbd?.quantity ?? 0,
-              bbdDate: bbd?.bbdDate
-                ? moment(bbd.bbdDate).format("YYYY-MM-DD")
-                : null,
-              bbdId: bbd?.bbdId ?? null,
-            })) || [];
+            return (
+              callsheet.bbds?.map((bbd) => ({
+                itemCode: callsheet?.itemCode || "",
+                salesIn: dataInformation?.salesIn ?? 0,
+                itemDescription: dataInformation?.itemDescription || "",
+                remainingInv: bbd?.remainingInv ?? 0,
+                quantity: bbd?.quantity ?? 0,
+                bbdDate: bbd?.bbdDate
+                  ? moment(bbd.bbdDate).format("YYYY-MM-DD")
+                  : null,
+                bbdId: bbd?.bbdId ?? null,
+              })) || []
+            );
           }
           return [];
         }),
-        
 
         // Only process bbdDtos if callsheetItems is empty
         // ...(callsheetItems.some(
@@ -404,7 +414,8 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                                 ) + (parseFloat(floatValue) || 0);
                               if (total > dataInformation.remainingInv) {
                                 snackbar({
-                                  message: "Quantity exceeds Remaining Inventory",
+                                  message:
+                                    "Quantity exceeds Remaining Inventory",
                                   variant: "error",
                                 });
                                 return false;
@@ -438,36 +449,54 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                           />
                         )}
                       />
-
                       <Controller
                         name={`bbdList[${index}].bbdDate`}
                         control={control}
                         render={({ field: { onChange, value, ref } }) => (
                           <LocalizationProvider dateAdapter={AdapterMoment}>
                             <DatePicker
-                              slotProps={{
-                                textField: {
-                                  size: "small",
-                                },
-                              }}
                               label="BBD*"
-                              size="small"
+                              slotProps={{ textField: { size: "small" } }}
                               value={value ? moment(value) : null}
                               disabled={watch("bbdList")[index]?.bbdId}
                               onChange={(newValue) =>
                                 onChange(newValue?.toDate())
-                              } // ✅ Convert Moment to JS Date
+                              }
+                              shouldDisableDate={(date) => {
+                                const currentDate = date
+                                  .startOf("day")
+                                  .toISOString();
+                                const bbdList = watch("bbdList");
+                                return bbdList.some((item, idx) => {
+                                  if (!item.bbdDate || idx === index)
+                                    return false;
+                                  return (
+                                    moment(item.bbdDate)
+                                      .startOf("day")
+                                      .toISOString() === currentDate
+                                  );
+                                });
+                              }}
                               inputRef={ref}
                               sx={{ width: "200px" }}
                             />
                           </LocalizationProvider>
                         )}
                       />
+
                       <IconButton
                         color="error"
                         disabled={watch("bbdList")[index]?.bbdId}
                         onClick={() => {
                           console.log(index);
+                          console.log(item.quantity);
+                          setTotalQuantity(
+                            watch("bbdList").reduce(
+                              (acc, item) =>
+                                Number(acc) - (Number(item.quantity) || 0),
+                              0
+                            )
+                          );
                           remove(index);
                         }}
                       >

@@ -42,8 +42,8 @@ function GenerateMoveOrderModal({ open, onClose }) {
       onClose();
       navigate("receiving-form");
     } catch (error) {
-      console.error("Error during API call:", error);
-      snackbar({ variant: "error", message: error?.message || "An error occurred" });
+      console.error("Error during API call:", error?.data?.error);
+      snackbar({ variant: "error", message: error?.data?.error?.message || "An error occurred" });
     }
   };
   

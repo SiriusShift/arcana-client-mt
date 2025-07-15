@@ -1,7 +1,7 @@
 import { dummyGetInventoryMrp } from "../../../utils/DummyQueryFn";
 import { api } from "../../api";
 
-const inventoryMrpApi = api
+export const inventoryMrpApi = api
   .enhanceEndpoints({ addTagTypes: ["Inventory MRP"] })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -12,7 +12,7 @@ const inventoryMrpApi = api
           url: "/get-inventory-mrp",
           method: "GET",
         }),
-        invalidatesTags: ["Inventory MRP"],
+        providesTags: ["Inventory MRP"],
         transformResponse : (response) => response.value
       }),
       getAllItemsInventory: builder.query({

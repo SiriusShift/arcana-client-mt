@@ -8,12 +8,34 @@ import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 import { useGetAllFreebieRequestsQuery } from "../../../features/inventory-management/api/freebiesApi";
+import useDisclosure from "../../../hooks/useDisclosure";
+import PrintFreebiesModal from "../../../components/modals/PrintFreebiesModal";
+import ReleaseFreebieModal from "../../../components/modals/ReleaseFreebieModal";
+import CancelFreebiesModal from "../../../components/modals/CancelFreebiesModal";
 
 function Freebies() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+
+  const {
+    isOpen: isPrintOpen,
+    onOpen: onPrintOpen,
+    onClose: onPrintClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isFreebieReleaseOpen,
+    onOpen: onFreebieReleaseOpen,
+    onClose: onFreebieReleaseClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isFreebieCancelOpen,
+    onOpen: onFreebieCancelOpen,
+    onClose: onFreebieCancelClose,
+  } = useDisclosure();
 
   const [tabViewing, setTabViewing] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -28,7 +50,8 @@ function Freebies() {
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransactionType: "Freebie"
+    TransactionType: "Freebie",
+    Status: tabViewing === 1 ? "For releasing" : "Released",
   });
 
   console.log(data);
@@ -59,24 +82,23 @@ function Freebies() {
   const tabs = [
     {
       case: 1,
-      name: "Pending Freebies",
-      status: "Pending",
+      name: "For releasing",
+      status: "For releasing",
     },
     {
       case: 2,
-      name: "Approved Freebies",
-      status: "Approved",
-    },
-    {
-      case: 3,
-      name: "Rejected Freebies",
-      status: "Rejected",
+      name: "Released Freebies",
+      status: "Released",
     },
   ];
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
+    navigate(
+      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   const handleAdd = () => {
@@ -88,9 +110,9 @@ function Freebies() {
       <Box className="commonPageLayout">
         <PageHeaderAddTabs
           pageTitle="Freebies"
-          // tabsList={tabs}
-          // tabViewing={tabViewing}
-          // setTabViewing={setTabViewing}
+          tabsList={tabs}
+          tabViewing={tabViewing}
+          setTabViewing={setTabViewing}
           // wide
           addTitle="Add Freebie Request"
           onOpen={handleAdd}
@@ -102,6 +124,26 @@ function Freebies() {
           setDateTo={setDateTo}
           dateFrom={dateFrom}
           dateTo={dateTo}
+        />
+
+        <PrintFreebiesModal
+          open={isPrintOpen}
+          inventory
+          // open={true}
+          onClose={onPrintClose}
+        />
+
+        <ReleaseFreebieModal
+          open={isFreebieReleaseOpen}
+          // open={true}
+          onClose={onFreebieReleaseClose}
+          inventory
+        />
+
+        <CancelFreebiesModal
+          open={isFreebieCancelOpen}
+          onClose={onFreebieCancelClose}
+          type="Freebie"
         />
 
         {isFetching ? (
@@ -117,6 +159,9 @@ function Freebies() {
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
             page={page}
+            onPrintFreebies={tabViewing === 2 && onPrintOpen}
+            onReleaseFreebie={tabViewing === 1 && onFreebieReleaseOpen}
+            onCancelFreebies={tabViewing === 1 && onFreebieCancelOpen}
             setPage={setPage}
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}

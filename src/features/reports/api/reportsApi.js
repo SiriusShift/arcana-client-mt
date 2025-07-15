@@ -8,6 +8,7 @@ const reportsApi = api
       "AS Report",
       "CheckIn Report",
       "SOA Report",
+      "Return to Depot Report",
     ],
   })
   .injectEndpoints({
@@ -76,13 +77,13 @@ const reportsApi = api
         }),
         providesTags: ["Payment Report"],
       }),
-      getReturnByCDOReports: builder.query({
+      getReturnToDepotReports: builder.query({
         query: (params) => ({
-          url: "/arcana-return-by-cdo-reports",
+          url: "/GetTransferReport",
           method: "GET",
           params,
         }),
-        providesTags: ["Return By CDO Report"],
+        providesTags: ["Return to Depot Report"],
       }),
       getTransferOutReports: builder.query({
         query: (params) => ({
@@ -102,7 +103,7 @@ const reportsApi = api
       }),
       getFreebieReports: builder.query({
         query: (params) => ({
-          url: "/arcana-freebie-report",
+          url: "/get-freebie-order",
           method: "GET",
           params,
         }),
@@ -110,7 +111,7 @@ const reportsApi = api
       }),
       getSamplingReports: builder.query({
         query: (params) => ({
-          url: "/arcana-sampling-report",
+          url: "/get-freebie-order",
           method: "GET",
           params,
         }),
@@ -118,7 +119,7 @@ const reportsApi = api
       }),
       getReturnReports: builder.query({
         query: (params) => ({
-          url: "/arcana-return-report",
+          url: "/GetReturnedOrders",
           method: "GET",
           params,
         }),
@@ -126,7 +127,7 @@ const reportsApi = api
       }),
       getReplaceReports: builder.query({
         query: (params) => ({
-          url: "/arcana-replace-report",
+          url: "/GetReplacedOrders",
           method: "GET",
           params,
         }),
@@ -157,7 +158,6 @@ const reportsApi = api
             "x-api-key": import.meta.env.VITE_GL_KEY,
           }
         }),
-        providesTags: ["Cash Receipt Report"],
       }),
       getInventoriablesReports: builder.query({
         query: (params) => ({
@@ -168,7 +168,6 @@ const reportsApi = api
             "x-api-key": import.meta.env.VITE_GL_KEY,
           }
         }),
-        providesTags: ["Inventoriable Report"],
       }),
       getSalesGTReports: builder.query({
         query: (params) => ({
@@ -179,8 +178,21 @@ const reportsApi = api
             "x-api-key": import.meta.env.VITE_GL_KEY,
           }
         }),
-        providesTags: ["Sales GT Report"],
       }),
+      getInventoryMovementReports: builder.query({
+        query: (params) => ({
+          url: "/InventoryMovement",
+          method: "GET",
+          params
+        })
+      }),
+      getInventoryTransactionsHistoryReports: builder.query({
+        query: (params) => ({
+          url: "/TransactionHistoricalReport",
+          method: "GET",
+          params
+        })
+      })
     }),
   });
 
@@ -193,7 +205,7 @@ export const {
   useCheckInReportQuery,
   useGetSOAReportsQuery,
   useGetCheckInFiloReportsQuery,
-  useGetReturnByCDOReportsQuery,
+  useGetReturnToDepotReportsQuery,
   useGetTransferOutReportsQuery,
   useGetTransferInReportsQuery,
   useGetFreebieReportsQuery,
@@ -205,5 +217,7 @@ export const {
   useGetMrpRollbackReportsQuery,
   useGetCashReceiptReportsQuery,
   useGetInventoriablesReportsQuery,
-  useGetSalesGTReportsQuery
+  useGetSalesGTReportsQuery,
+  useGetInventoryMovementReportsQuery,
+  useGetInventoryTransactionsHistoryReportsQuery
 } = reportsApi

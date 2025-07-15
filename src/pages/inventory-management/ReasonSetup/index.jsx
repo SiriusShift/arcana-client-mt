@@ -34,6 +34,7 @@ function ReasonSetup() {
   const confirm = useConfirm();
   const snackbar = useSnackbar();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const userInfo = useSelector((state) => state.login)
 
   // Drawer Disclosures
   const {
@@ -61,11 +62,14 @@ function ReasonSetup() {
 
   //RTK Query
   const [postReason, { isLoading: isAddLoading }] = usePostReasonsMutation();
-  const { data, isFetching, error } = useGetReasonsQuery({
-    isActive: status
-  },{
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, isFetching, error } = useGetReasonsQuery(
+    {
+      isActive: status,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const [putReason, { isLoading: isUpdateLoading }] = usePutReasonMutation();
   const [deleteReason] = useDeleteReasonsMutation();
@@ -77,13 +81,17 @@ function ReasonSetup() {
           reasonInfo: data.reason,
         }).unwrap();
       } else if (drawerMode === "edit") {
-        await putReason(data).unwrap();
+        await putReason({
+          reasonInfo: selectedRowData?.id,
+          updatedReason: data.reason,
+          updatedBy: userInfo?.userDetails.id
+        }).unwrap();
       }
 
       onDrawerClose();
       reset();
       snackbar({
-        message: `Other Expenses ${
+        message: `Reason ${
           drawerMode === "add" ? "added" : "updated"
         } successfully`,
         variant: "success",
@@ -99,9 +107,8 @@ function ReasonSetup() {
         children: (
           <>
             {" "}
-            Are you sure you want to {status ? "archive" : "restore"}{" "}
-            this reason
-            ?
+            Are you sure you want to {status ? "archive" : "restore"} this
+            reason ?
           </>
         ),
         question: !status,

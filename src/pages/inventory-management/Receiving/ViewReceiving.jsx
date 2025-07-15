@@ -12,7 +12,6 @@ const ViewReceivingSkeleton = () => {
     <Box className="commonPageLayout">
       <ReceivingFormHeader isFetching />
       <ReceivingItems isFetching />
-      <WrongDeliver isFetching />
     </Box>
   );
 };

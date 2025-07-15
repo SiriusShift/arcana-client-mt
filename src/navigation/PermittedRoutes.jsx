@@ -44,14 +44,16 @@ const PermittedRoutes = () => {
   const hasParamsPermission =
     permittedParentPath?.includes("/inventory-management/receiving") ||
     permittedSubPath?.includes("/inventory-management/receiving") ||
+    permittedParentPath?.includes("/inventory-management/ending-inventory") ||
+    permittedSubPath?.includes("/inventory-management/ending-inventory") ||
     permittedParentPath?.includes("/inventory-management/transfer-in") ||
     permittedSubPath?.includes("/inventory-management/transfer-in") ||
     permittedParentPath?.includes("/inventory-management/transfer-out") ||
     permittedSubPath?.includes("/inventory-management/transfer-out") ||
-    permittedParentPath?.includes("/inventory-management/outright-return") ||
-    permittedSubPath?.includes("/inventory-management/outright-return") ||
-    permittedParentPath?.includes("/inventory-management/miscellaneous-in") ||
-    permittedSubPath?.includes("/inventory-management/miscellaneous-in") ||
+    permittedParentPath?.includes("/inventory-management/return-to-depot") ||
+    permittedSubPath?.includes("/inventory-management/return-to-depot") ||
+    permittedParentPath?.includes("/inventory-management/miscellaneous-receipt") ||
+    permittedSubPath?.includes("/inventory-management/miscellaneous-receipt") ||
     permittedParentPath?.includes("/inventory-management/miscellaneous-issue") ||
     permittedSubPath?.includes("/inventory-management/miscellaneous-issue") ||
     permittedParentPath?.includes("/inventory-management/freebies") ||
@@ -61,7 +63,9 @@ const PermittedRoutes = () => {
     permittedParentPath?.includes("/inventory-management/return") ||
     permittedSubPath?.includes("/inventory-management/return") ||
     permittedParentPath?.includes("/inventory-management/callsheet") ||
-    permittedSubPath?.includes("/inventory-management/callsheet");
+    permittedSubPath?.includes("/inventory-management/callsheet") || 
+    permittedParentPath?.includes("/inventory-management/reason-setup") ||
+    permittedSubPath?.includes("/inventory-management/reason-setup"); 
 
   if (hasParamsPermission) {
     return <MainLayout />;

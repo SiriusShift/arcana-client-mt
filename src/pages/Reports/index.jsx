@@ -20,9 +20,6 @@ import {
   useGetSOAReportsQuery,
   useGetCheckInFiloReportsQuery,
   useGetVoidTransactionsReportsQuery,
-  useGetReturnByCDOReportsQuery,
-  useGetTransferOutReportsQuery,
-  useGetTransferInReportsQuery,
   useGetFreebieReportsQuery,
   useGetSamplingReportsQuery,
   useGetReturnReportsQuery,
@@ -32,6 +29,9 @@ import {
   useGetCashReceiptReportsQuery,
   useGetInventoriablesReportsQuery,
   useGetSalesGTReportsQuery,
+  useGetReturnToDepotReportsQuery,
+  useGetInventoryMovementReportsQuery,
+  useGetInventoryTransactionsHistoryReportsQuery,
 } from "../../features/reports/api/reportsApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
@@ -52,6 +52,7 @@ import { useGetAllReceivedOrdersQuery } from "../../features/inventory-managemen
 import { useGetAllTransferOutsQuery } from "../../features/inventory-management/api/transferOutApi";
 import SOAPDFDownload from "./PDFDownload";
 import useSnackbar from "../../hooks/useSnackbar";
+import ExportExcel from "../../utils/Excel";
 // import SOAReport from "../../utils/Excel"
 
 function Reports() {
@@ -75,7 +76,7 @@ function Reports() {
     //Receiving Reports
     rr: true,
     //Return By Cdo
-    rcdo: true,
+    rtd: true,
     //transfer out
     tor: true,
     //transfer in
@@ -100,24 +101,34 @@ function Reports() {
     gli: true,
     //GL Sales GT
     glgt: true,
+    //Inventory Movement
+    im: true,
+    // Inventory Transaction History
+    ith: true,
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
   const [search, setSearch] = useState("");
+  const [type, setType] = useState(null);
   const userDetails = useSelector((state) => state.login.userDetails);
   const presentDay = moment();
   const snackbar = useSnackbar();
 
-  console.log(activeArray, isActive);
+  console.log(type, "active array");
+  const isGlReport =
+    activeReport?.label === "GL Cash Receipt" ||
+    activeReport?.label === "GL Inventoriables" ||
+    activeReport?.label === "GL Sales GT";
   // const selectedRowData = useSelector((state) => state.selectedRow.value);
   // const dispatch = useDispatch();
 
-  const pesoArray = ["charges", "payment", "remainingBalance"];
+  const pesoArray = ["charges", "payment", "netSales", "remainingBalance"];
   const dateTimeArray = [
     "timeIn",
     "timeOut",
     "transactionDate",
     "dateReceived",
+    "receivedDate",
   ];
 
   const {
@@ -270,30 +281,18 @@ function Reports() {
       }
     );
 
-  const { data: returnByCdoReportData, isFetching: returnByCdoFetching } =
-    useGetReturnByCDOReportsQuery(
+  const { data: returnToDepotReportData, isFetching: returnToDepotFetching } =
+    useGetReturnToDepotReportsQuery(
       {
         ClusterId: clusterId?.value || "",
         DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
         DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
-      },
-      {
-        skip: isActive.rcdo,
-      }
-    );
-
-  const { data: transferOutReportData, isFetching: transferOutFetching } =
-    useGetAllTransferOutsQuery(
-      {
-        Search: search,
-        Page: page + 1,
+        TransferType: type?.value,
+        PageNumber: page + 1,
         PageSize: rowsPerPage,
-        DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
-        DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
-        TransferType: "Out",
       },
       {
-        skip: isActive.tor,
+        skip: isActive.rtd,
       }
     );
 
@@ -356,14 +355,144 @@ function Reports() {
       }
     );
 
+  const {
+    data: inventoryMovementReportData,
+    isFetching: inventoryMovementFetching,
+  } = useGetInventoryMovementReportsQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || "",
+    },
+    {
+      skip: isActive.im,
+    }
+  );
+
+  const {
+    data: inventoryTransactionHistoryReportData,
+    isFetching: inventoryTransactionHistoryFetching,
+  } = useGetInventoryTransactionsHistoryReportsQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || "",
+    },
+    {
+      skip: isActive.ith,
+    }
+  );
+
+  const {
+    data: inventoryFreebiesReportData,
+    isFetching: inventoryFreebiesFetching,
+  } = useGetFreebieReportsQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || "",
+      TransactionType: "Freebie",
+    },
+    {
+      skip: isActive.freebie,
+    }
+  );
+
+  const {
+    data: inventorySamplingReportData,
+    isFetching: inventorySamplingFetching,
+  } = useGetSamplingReportsQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || "",
+      TransactionType: "Sampling",
+    },
+    {
+      skip: isActive.sampling,
+    }
+  );
+
+  const {
+    data: inventoryReturnReportData,
+    isFetching: inventoryReturnFetching,
+  } = useGetReturnReportsQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || "",
+      // TransactionType: "Return",
+    },
+    {
+      skip: isActive.return,
+    }
+  );
+
+  const {
+    data: inventoryReplaceReportData,
+    isFetching: inventoryReplaceFetching,
+  } = useGetReplaceReportsQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.value || "",
+      // TransactionType: "Return",
+    },
+    {
+      skip: isActive.replace,
+    }
+  );
+
+  console.log(
+    inventoryTransactionHistoryReportData,
+    "inventoryTransactionHistoryReportData"
+  );
+
+  const parentIsFetching =
+    cdoFetching ||
+    sjFetching ||
+    asFetching ||
+    soaFetching ||
+    // priceModeFetching ||
+    checkInFetching ||
+    listingFeeFetching ||
+    checkInFiloFetching ||
+    voidTransactionsFetching ||
+    rollbackFetching ||
+    paymentFetching ||
+    glCashReceiptFetching ||
+    glInventoriableFetching ||
+    inventoryMovementFetching ||
+    inventoryTransactionHistoryFetching ||
+    returnToDepotFetching ||
+    inventoryReturnFetching ||
+    glSalesGTFetching ||
+    receivingFetching ||
+    inventoryReplaceFetching ||
+    inventorySamplingFetching ||
+    inventoryFreebiesFetching;
+
   //functions
   const handleSubmitDate = () => {
     useDownloadExcel();
   };
 
-  const onFilter = async ({ clusterId }) => {
+  const onFilter = async ({ clusterId, type }) => {
     try {
       setClusterId(clusterId);
+      setType(type);
     } catch (error) {
       console.log(error);
     }
@@ -385,6 +514,10 @@ function Reports() {
             ? `&clientId=${
                 watch("clientId")?.id || watch("clientId")?.clientId
               }`
+            : ""
+        }${
+          activeReport?.value === "GetTransferReportExport"
+            ? `&TransferType=${type?.value || ""}`
             : ""
         }`,
         {
@@ -408,9 +541,15 @@ function Reports() {
       link.href = url;
       link.setAttribute(
         "download",
-        `${activeReport.value}_${moment(watch("dateFrom")).format(
-          "YYYYMMDD"
-        )}_${moment(watch("dateTo")).format("YYYYMMDD")}.xlsx`
+        `${activeReport.value}_${
+          activeReport?.value === "GetTransferReportExport"
+            ? type?.value
+              ? type?.value
+              : ""
+            : ""
+        }${moment(watch("dateFrom")).format("YYYYMMDD")}_${moment(
+          watch("dateTo")
+        ).format("YYYYMMDD")}.xlsx`
       );
       document.body.appendChild(link);
       link.click();
@@ -425,6 +564,10 @@ function Reports() {
     } finally {
       setIsDownloading(false); // Stop loading
     }
+  };
+
+  const handleGlReport = async (data) => {
+    ExportExcel(data, activeReport.label);
   };
 
   //useEffect()
@@ -442,6 +585,7 @@ function Reports() {
     };
   }, [receivingReportData]);
   useEffect(() => {
+    console.log("active Report");
     const reports = [
       cdoReportData,
       sjReportData,
@@ -454,12 +598,20 @@ function Reports() {
       voidTransactionsReportData,
       paymentReportData,
       rollbackReportData,
+      inventoryMovementReportData,
+      inventoryTransactionHistoryReportData,
+
+      receivingReportData,
+      returnToDepotReportData,
+
+      inventoryFreebiesReportData,
+      inventorySamplingReportData,
+      inventoryReturnReportData,
+      inventoryReplaceReportData,
+
       glCashReceiptReportData,
       glInventoriableReportData,
       glSalesGTReportData,
-      receivingReportData,
-      returnByCdoReportData,
-      transferOutReportData,
     ];
     const keys = [
       "cdo",
@@ -472,18 +624,32 @@ function Reports() {
       "vtr",
       "pr",
       "mrr",
+      "im",
+      "ith",
+
+      "rr",
+      "rtd",
+
+      "freebie",
+      "sampling",
+      "return",
+      "replace",
+
       "glcr",
       "gli",
       "glgt",
-      "rr",
-      "rcdo",
-      "tor",
+      // "tor",
       // 'pm',/
     ];
 
-    if (activeReport?.index !== undefined) {
-      console.log(reports[activeReport.index]?.value);
-      setActiveArray(reports[activeReport.index]?.value);
+    if (activeReport?.index !== undefined && !parentIsFetching) {
+      console.log("active report", reports[activeReport.index]?.value);
+      if (isGlReport) {
+        console.log("active report");
+        setActiveArray(reports[activeReport.index]);
+      } else {
+        setActiveArray(reports[activeReport.index]?.value);
+      }
 
       const newIsActive = keys.reduce((acc, key, idx) => {
         acc[key] = idx !== activeReport.index;
@@ -499,14 +665,23 @@ function Reports() {
     asReportData,
     checkInReportData,
     soaReportData,
+    parentIsFetching,
     listingFeeReportData,
     checkInFiloReportData,
     receivingReportData,
-    returnByCdoReportData,
+    returnToDepotReportData,
     voidTransactionsReportData,
     paymentReportData,
+    inventoryMovementReportData,
     rollbackReportData,
     glCashReceiptReportData,
+    receivingReportData,
+    returnToDepotReportData,
+
+    inventoryFreebiesReportData,
+    inventorySamplingReportData,
+    inventoryReturnReportData,
+    inventoryReplaceReportData,
     glInventoriableReportData,
     glSalesGTReportData,
     // priceModeReportData,
@@ -565,7 +740,6 @@ function Reports() {
       "businessName",
       "customerName",
       "invoiceNo",
-      "grossSales",
       "netSales",
       "cluster",
     ],
@@ -614,6 +788,57 @@ function Reports() {
       "status",
       "status",
     ],
+    [
+      "itemId",
+      "itemCode",
+      "itemDescription",
+      "fromDepot",
+      "receiving",
+      "transferIn",
+      "transferOut",
+      "returnToDepot",
+      "freebie",
+      "sampling",
+      "replace",
+      "returnByClient",
+      "sales",
+      "temporaryReturn",
+      "miscReceipt",
+      "miscIssue",
+      "reserve",
+      "forReleasing",
+      "soh",
+    ],
+    [
+      "itemId",
+      "itemCode",
+      "itemDescription",
+      "totalIn",
+      "totalOut",
+      "stockOnHand",
+    ],
+    [
+      "id",
+      "module",
+      "type",
+      "totalQuantity",
+      "receivedDate",
+      "status",
+      "createdByName",
+      "cluster",
+      "recipient",
+    ],
+    ["misInId", "moveOrderId", "customerName", "dateReceived", "route"],
+    ["id", "transactionDate", "transactionType", "totalQuantity", "status"],
+    [
+      "id",
+      "clientName",
+      "businessName",
+      "transactionType",
+      "totalQuantity",
+      "createdDate",
+    ],
+    ["id", "description", "transactionType", "totalQuantity", "createdDate"],
   ];
 
   const tableHeads = [
@@ -643,7 +868,6 @@ function Reports() {
       "Business Name",
       "Business Owner",
       "Invoice Number",
-      "Gross Sales",
       "Net Sales",
       "Cluster",
     ],
@@ -692,6 +916,63 @@ function Reports() {
       "Status",
       "Status",
     ],
+    [
+      "Item ID",
+      "Item Code",
+      "Item Description",
+      "From Depot",
+      "Receiving",
+      "Transfer In",
+      "Transfer Out",
+      "Return To Depot",
+      "Freebie",
+      "Sampling",
+      "Replace",
+      "Return By Client",
+      "Sales",
+      "Temporary Return",
+      "Misc Receipt",
+      "Misc Issue",
+      "Reserve",
+      "For Releasing",
+      "SOH",
+    ],
+    [
+      "Item ID",
+      "Item Code",
+      "Item Description",
+      "Total In",
+      "Total Out",
+      "Stock On Hand",
+    ],
+    [
+      "ID",
+      "Module",
+      "Type",
+      "Total Quantity",
+      "Received Date",
+      "Status",
+      "Created By",
+      "Cluster",
+      "Recipient",
+    ],
+    ["ID", "Move Order ID", "Customer Name", "Date Received", "Route"],
+    ["ID", "Transaction Date", "Transaction Type", "Total Quantity", "Status"],
+    [
+      "ID",
+      "Client Name",
+      "Business Name",
+      "Transaction Type",
+      "Total Quantity",
+      "Created Date",
+    ],
+    [
+      "ID",
+      "Description",
+      "Transaction Type",
+      "Total Quantity",
+      "Created Date",
+    ],
     // [
     //   "Move Order ID",
     //   "Date Received",
@@ -731,10 +1012,16 @@ function Reports() {
           {(userDetails?.roleName === "Admin" ||
             userDetails?.roleName === "Treasury" ||
             userDetails?.roleName === "GAS" ||
-            userDetails?.roleName === "Finance") &&
+            userDetails?.roleName === "Finance" ||
+            (userDetails?.roleName === "CDO" &&
+              activeReport?.value === "GetTransferReportExport")) &&
             activeReport?.value !== "SOA-reports" &&
             activeReport?.value !== "listing-fee-reports" && (
-              <CommonFilter filter={onFilter} clusterFilter />
+              <CommonFilter
+                filter={onFilter}
+                typeFilter={activeReport?.value === "GetTransferReportExport"}
+                clusterFilter={userDetails?.roleName !== "CDO" ? true : null}
+              />
             )}
           {activeReport?.value === "SOA-reports" ||
           activeReport?.value === "listing-fee-reports" ? (
@@ -771,7 +1058,7 @@ function Reports() {
           )}
           {activeReport?.value != "SOA-reports" &&
             activeReport?.value !== "listing-fee-reports" &&
-            activeReport?.value !== "arcana-gl-cash-receipt" && (
+            !isGlReport && (
               <>
                 <Controller
                   name="dateFrom"
@@ -794,37 +1081,31 @@ function Reports() {
                 />
               </>
             )}
-          {activeReport?.value !== "listing-fee-reports" &&
-            activeReport?.value !== "arcana-gl-cash-receipt" &&
-            activeReport?.value !== "arcana-gl" &&
-            activeReport?.value !== "arcana-gt" && (
-              <Controller
-                name="dateTo"
-                control={control}
-                render={({ field }) => (
-                  <LocalizationProvider dateAdapter={AdapterMoment}>
-                    <DatePicker
-                      minDate={
-                        activeReport?.value != "SOA-reports" &&
-                        watch("dateFrom")
-                      }
-                      maxDate={moment()}
-                      {...field}
-                      label="Date To"
-                      slotProps={{
-                        textField: {
-                          size: "small",
-                        },
-                      }}
-                      sx={{ width: "150px" }}
-                    />
-                  </LocalizationProvider>
-                )}
-              />
-            )}
-          {(activeReport?.value === "arcana-gl-cash-receipt" ||
-            activeReport?.value === "arcana-gl" ||
-            activeReport?.value === "arcana-gt") && (
+          {activeReport?.value !== "listing-fee-reports" && !isGlReport && (
+            <Controller
+              name="dateTo"
+              control={control}
+              render={({ field }) => (
+                <LocalizationProvider dateAdapter={AdapterMoment}>
+                  <DatePicker
+                    minDate={
+                      activeReport?.value != "SOA-reports" && watch("dateFrom")
+                    }
+                    maxDate={moment()}
+                    {...field}
+                    label="Date To"
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                      },
+                    }}
+                    sx={{ width: "150px" }}
+                  />
+                </LocalizationProvider>
+              )}
+            />
+          )}
+          {isGlReport && (
             <Controller
               name="dateTo"
               control={control}
@@ -854,6 +1135,24 @@ function Reports() {
               listingFeeFetching={listingFeeFetching}
               dateTo={watch("dateTo")}
             />
+          ) : isGlReport ? (
+            <SecondaryButton
+              size="medium"
+              sx={{ mr: "10px", height: "100%" }}
+              onClick={() => handleGlReport(activeArray)}
+              disabled={
+                !activeReport ||
+                isDownloading ||
+                !watch("dateFrom") ||
+                !watch("dateTo") ||
+                activeArray?.transactions?.length < 1 ||
+                activeArray?.checkIn?.length < 1 ||
+                activeArray?.to?.length < 1 ||
+                activeArray?.length < 1
+              }
+            >
+              <GetApp />
+            </SecondaryButton>
           ) : (
             <SecondaryButton
               size="medium"
@@ -864,8 +1163,11 @@ function Reports() {
                 isDownloading ||
                 !watch("dateFrom") ||
                 !watch("dateTo") ||
-                activeArray?.transactions < 1 ||
-                activeArray?.checkIn < 1
+                activeArray?.transactions?.length < 1 ||
+                activeArray?.checkIn?.length < 1 ||
+                activeArray?.to?.length < 1 ||
+                activeArray?.data?.length < 1 ||
+                parentIsFetching
               }
               // disabled={
               //   // isExportLoading ||
@@ -877,20 +1179,7 @@ function Reports() {
           )}
         </Box>
       </Box>
-      {cdoFetching ||
-      sjFetching ||
-      asFetching ||
-      soaFetching ||
-      // priceModeFetching ||
-      checkInFetching ||
-      listingFeeFetching ||
-      checkInFiloFetching ||
-      voidTransactionsFetching ||
-      rollbackFetching ||
-      paymentFetching ||
-      glCashReceiptFetching ||
-      glInventoriableFetching ||
-      glSalesGTFetching ? (
+      {parentIsFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
@@ -904,7 +1193,9 @@ function Reports() {
             activeArray?.listingHistory ||
             activeArray?.result ||
             activeArray?.mo ||
-            activeArray?.to
+            activeArray?.to ||
+            activeArray?.data ||
+            activeArray
           }
           tableHeads={tableHeads[activeReport?.index]}
           customOrderKeys={customOrderKeys[activeReport?.index]}

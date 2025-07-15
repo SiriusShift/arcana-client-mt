@@ -112,25 +112,28 @@ const ItemsWithBBDPriceForm = ({
           px={2}
           direction="row"
         >
-          <Box sx={{ display: "flex", gap: "10px", alignItems: "center"}}>
-          <Typography
-            fontSize="1.2rem"
-            fontWeight="500"
-            sx={{ color: "white !important" }}
-          >
-            {itemsFormTitle}
-          </Typography>
-          {itemsFieldName === "replaceItems" && (
+          <Box sx={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <Typography
               fontSize="1.2rem"
-              fontWeight="300"
+              fontWeight="500"
               sx={{ color: "white !important" }}
             >
-              - Return Sum: {watch("returnItems").reduce((acc, item) => acc + item.netPrice, 0)}
+              {itemsFormTitle}
             </Typography>
-          )}
+            {itemsFieldName === "replaceItems" && (
+              <Typography
+                fontSize="1.2rem"
+                fontWeight="300"
+                sx={{ color: "white !important" }}
+              >
+                - Return Sum:{" "}
+                {watch("returnItems").reduce(
+                  (acc, item) => acc + item.netPrice,
+                  0
+                )}
+              </Typography>
+            )}
           </Box>
-
 
           {!viewOnly && (
             <Box
@@ -250,6 +253,12 @@ const ItemsWithBBDPriceForm = ({
                         size="small"
                         autoComplete="off"
                         onValueChange={(e) => {
+                          const quantity = watchItems?.[index]?.quantity || 0;
+                          if (quantity !== null) {
+                            const net = e.floatValue * quantity || 0;
+                            setValue(`${itemsFieldName}[${index}].netPrice`, net);
+                          }
+
                           onChange(e.value === "" ? null : Number(e.value));
                         }}
                         onBlur={onBlur}
@@ -405,12 +414,6 @@ const ItemsWithBBDPriceForm = ({
                               e.value === "" ? null : Number(e.value);
                             const itemPrice = watchItems?.[index]?.price || 0;
                             const net = enteredValue * itemPrice || 0;
-
-                            // Validate against available stock before updating
-                            const availQuantity =
-                              watchItems[index]?.item?.availQuantity || 0;
-
-                            console.log(watchItems[index]?.item?.availQuantity);
 
                             // Update the value and net price
                             onChange(enteredValue);

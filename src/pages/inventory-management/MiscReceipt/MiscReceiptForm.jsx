@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { miscInSchema, outrightReturnSchema, transferOutSchema } from "../../../schema/schema";
 import MiscReceiptFormHeader from "../../../components/page-components/inventory-management/misc-receipt/MiscReceiptFormHeader";
 import MiscReceiptFormDetails from "../../../components/page-components/inventory-management/misc-receipt/MiscReceiptFormDetails";
-import OutrightFormActions from "../../../components/page-components/inventory-management/outright-return/OutrightFormActions";
+import OutrightFormActions from "../../../components/page-components/inventory-management/misc-receipt/MiscReceiptFormActions";
 import MiscReceiptFormActions from "../../../components/page-components/inventory-management/misc-receipt/MiscReceiptFormActions";
 import MiscReceiptItems from "../../../components/page-components/inventory-management/misc-receipt/MiscReceiptItems";
 

@@ -206,7 +206,7 @@ function LoginPage() {
 
             <Box className="login__formWrapper__footer">
               <img src={MisLogo} alt="mis-logo" />
-              <Typography>© 2023 Powered by</Typography>
+              <Typography>© {new Date().getFullYear()} Powered by</Typography>
               <Typography>Management Information System</Typography>
             </Box>
           </Box>

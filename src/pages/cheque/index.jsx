@@ -194,7 +194,7 @@ function cheque() {
         <Autocomplete
           name="clientId"
           control={control}
-          options={listingFeeClients?.listingFees}
+          options={listingFeeClients?.listingFees || []}
           getOptionLabel={(option) =>
             option?.businessName?.toUpperCase() +
             ", " +

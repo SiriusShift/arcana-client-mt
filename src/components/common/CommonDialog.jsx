@@ -71,7 +71,7 @@ function CommonDialog({
               }
             </DangerButton>
 
-            <SecondaryButton type="submit" disabled={isLoading || disableYes}>
+            <SecondaryButton type="submit" disabled={isLoading || disableYes || isLoadingNo}>
               {isLoading ? (
                 <CircularProgress size="20px" color="white" />
               ) : ( 

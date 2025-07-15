@@ -32,17 +32,20 @@ import useSnackbar from "../../hooks/useSnackbar";
 import useConfirm from "../../hooks/useConfirm";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import PageHeaderFilterAdd from "../../components/PageHeaderFilterAdd";
+import { clusterOptions } from "../../utils/Constants";
 
 function CheckIn() {
+  const userData = useSelector((state) => state.login.userDetails);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [typeCustomer, setTypeCustomer] = useState(null);
+  const [clusterId, setClusterId] = useState(userData?.roleName === "CDO" ? " " : 1);
   const [search, setSearch] = useState("");
   const location = useGeolocation();
   const confirm = useConfirm();
   const snackbar = useSnackbar();
   const webcamRef = useRef(null);
-  const userData = useSelector((state) => state.login.userDetails);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   console.log(typeCustomer);
 
@@ -106,23 +109,24 @@ function CheckIn() {
   console.log("error", errors);
   console.log(watch());
 
-    // RTK Query
-    const { data, isFetching } = useGetCheckinQuery({
-      PageNumber: page + 1,
-      PageSize: rowsPerPage,
-      Search: search,
-      DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD"),
-      DateTo: moment(watch("dateTo")).format("YYYY-MM-DD"),
+  // RTK Query
+  const { data, isFetching } = useGetCheckinQuery({
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+    Search: search,
+    ClusterId: clusterId,
+    DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD"),
+    DateTo: moment(watch("dateTo")).format("YYYY-MM-DD"),
+  });
+
+  const { data: clients, isFetching: isFetchingClients } =
+    useGetAllClientsForCheckInQuery({
+      Origin: typeCustomer?.label,
     });
-  
-    const { data: clients, isFetching: isFetchingClients } =
-      useGetAllClientsForCheckInQuery({
-        Origin: typeCustomer?.label,
-      });
-  
-    const [postCheckin, { isLoading: isPosting }] = usePostCheckinMutation();
-  
-    const [patchCheckin] = usePatchTimeOutMutation();
+
+  const [postCheckin, { isLoading: isPosting }] = usePostCheckinMutation();
+
+  const [patchCheckin] = usePatchTimeOutMutation();
 
   //Functions
   const onDrawerSubmit = async (data) => {
@@ -271,13 +275,20 @@ function CheckIn() {
 
   return (
     <Box className="commonPageLayout" sx={{ gap: "0px" }}>
-      <PageHeaderAdd
-        onOpen={handleAddOpen}
+      <PageHeaderFilterAdd
         pageTitle="Check In"
         removeArchive
+        removeAllItem
+        removeFilter={userData?.roleName.includes("CDO") ? true : false}
+        filterChoices={clusterOptions}
         setSearch={setSearch}
+        onOpen={handleAddOpen}
+        setFilter={setClusterId}
+        choiceLabel="label"
+        choiceValue="value"
       />
-      <Box className="mixin" sx={{ justifyContent: "end"}}>
+
+      <Box className="mixin" sx={{ justifyContent: "end" }}>
         <Box className="mixin__right">
           <Controller
             name="dateFrom"

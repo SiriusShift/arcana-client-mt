@@ -36,7 +36,7 @@ function InventoryMRP() {
     "Receiving (+)",
     "Transfer In (+)",
     "Transfer Out (-)",
-    "Outright",
+    "Return To Depot (-)",
     "Freebies (-)",
     "Sampling (-)",
     "Replaced (-)",
@@ -46,7 +46,7 @@ function InventoryMRP() {
     "Returned by Client (+)",
     "Reserved",
     "For Releasing",
-    "Temporary Return",
+    // "Temporary Return",
     "SOH",
   ];
 
@@ -57,7 +57,7 @@ function InventoryMRP() {
     "receiving",
     "transferIn",
     "transferOut",
-    "outright",
+    "returnToDepot",
     "freebie",
     "sampling",
     "replace",
@@ -67,7 +67,7 @@ function InventoryMRP() {
     "returnByClient",
     "reserve",
     "forReleasing",
-    "temporaryReturn",
+    // "temporaryReturn",
     "soh",
   ];
 
@@ -83,7 +83,7 @@ function InventoryMRP() {
         removeArchive
         removeAdd
         removeAllItem
-        removeFilter={userDetails?.roleName.includes("CDO") || userDetails?.roleName.includes("Marketing") ? true : false}
+        removeFilter={userDetails?.roleName.includes("CDO") || userDetails?.roleName.includes("Marketing") || userDetails?.roleName.includes("Depot") ? true : false}
         filterChoices={clusterOptions}
         setSearch={setSearch}
         setFilter={setClusterId}
@@ -97,6 +97,7 @@ function InventoryMRP() {
         <CommonTable
           evenLesserCompact
           moveNoDataUp
+          border
           mapData={data?.mo}
           tableHeads={tableHeads}
           customOrderKeys={customOrderKeys}

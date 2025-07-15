@@ -11,6 +11,8 @@ import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
 import moment from "moment";
 import { useGetAllTransferOutsQuery } from "../../../features/inventory-management/api/transferOutApi";
+import { useGetReturnToDepotQuery } from "../../../features/inventory-management/api/transferOutApi";
+import PrintInventoryModal from "../../../components/modals/PrintInventoryModal";
 
 function Outright() {
   const navigate = useNavigate();
@@ -25,15 +27,21 @@ function Outright() {
 
   const pesoArray = ["totalAmount"];
 
+  const {
+    isOpen: isPrintOpen,
+    onOpen: onPrintOpen,
+    onClose: onPrintClose,
+  } = useDisclosure();
+
   // RTK Query
-  const { data, isFetching } = useGetAllTransferOutsQuery({
+  const { data, isFetching } = useGetReturnToDepotQuery({
     Search: search,
     Page: page + 1,
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     Status: "Received",
-    TransferType: "Outright",
+    // TransferType: "Outright",
   });
 
   // Common Table Props
@@ -41,6 +49,7 @@ function Outright() {
     "ID",
     "CDO",
     "Transaction Date",
+    "Transfer Type",
     "Total Amount",
     "Total Quantity",
   ];
@@ -49,6 +58,7 @@ function Outright() {
     "id",
     "createdBy",
     "transactionDate",
+    "transferType",
     "totalAmount",
     "totalQuantity",
   ];
@@ -56,7 +66,7 @@ function Outright() {
   const dateTimeArray = ["transactionDate", "dateReceived"];
 
   const handleAdd = () => {
-    navigate("outright-return-form");
+    navigate("return-form");
   };
 
   // Functions
@@ -68,7 +78,7 @@ function Outright() {
     );
   };
 
-  if (location.pathname === "/inventory-management/outright-return") {
+  if (location.pathname === "/inventory-management/return-to-depot") {
     return (
       <>
         {/* <GenerateMoveOrderModal
@@ -78,7 +88,7 @@ function Outright() {
 
         <Box className="commonPageLayout">
           <PageHeaderAdd
-            pageTitle="Outright Return"
+            pageTitle="Return to Depot"
             addTitle="Return"
             removeArchive
             removeSearch
@@ -110,9 +120,11 @@ function Outright() {
               page={page}
               pesoArray={pesoArray}
               setPage={setPage}
+              onPrint={onPrintOpen}
             />
           )}
         </Box>
+        <PrintInventoryModal type={selectedRowData?.transferType} open={isPrintOpen} onClose={onPrintClose} data={selectedRowData} copies={3}/>
       </>
     );
   }

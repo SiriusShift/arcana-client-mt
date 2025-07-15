@@ -647,6 +647,7 @@ function ForReleasing() {
       <CancelFreebiesModal
         open={isFreebieCancelOpen}
         onClose={onFreebieCancelClose}
+        type="Prospecting"
       />
 
       <CommonDialog

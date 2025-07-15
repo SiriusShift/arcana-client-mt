@@ -95,6 +95,7 @@ function SalesTransaction() {
   //Hook Form Constant Values
   const watchAllValues = watch();
   const watchClientId = watch("clientId");
+  const watchCreditBalance = watch("clientId")?.remainingCredits;
 
   //RTK Query: Autocomplete
   const {
@@ -105,14 +106,18 @@ function SalesTransaction() {
     refetchOnMountOrArgChange: true,
   });
   const { data: productData, isFetching: isProductFetching } =
-    useGetAllItemsByPriceModeIdQuery({
-      Status: true,
-      Page: 1,
-      PageSize: 1000,
-      Search: search,
-      PriceModeId: watch("clientId") ? watch("clientId").priceModeId : -1,
-    }, {
-      refetchOnMountOrArgChange: true,});
+    useGetAllItemsByPriceModeIdQuery(
+      {
+        Status: true,
+        Page: 1,
+        PageSize: 1000,
+        Search: search,
+        PriceModeId: watch("clientId") ? watch("clientId").priceModeId : -1,
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
 
   //Functions
   const debouncedSetSearch = debounce((value) => {
@@ -125,19 +130,38 @@ function SalesTransaction() {
     }, 0);
   }, [watchAllValues]);
 
+  console.log(watch());
+
   const handleAddItem = (item, quantity, price) => {
+    const tempTotal = totalAmount + (price || item?.currentPrice) * quantity;
+    console.log("temporary total: ", tempTotal)
+    if(watchCreditBalance < tempTotal && watch("clientId")?.termType === "Credit Type") {
+      snackbar({
+        message: "Insufficient credit balance",
+        variant: "warning",
+      });
+      console.log("Insufficient credit balance");
+      return;
+    }
     const existingItemIndex = watch("items").findIndex(
       (existingItem) =>
         existingItem.itemId.priceModeItemId === item.priceModeItemId &&
         existingItem.itemId.currentPrice === price
     );
 
-    const tempQuantity = quantity + (watch("items")[existingItemIndex]?.quantity && parseInt(watch("items")[existingItemIndex].quantity) || 0);
+    const tempQuantity =
+      quantity +
+      ((watch("items")[existingItemIndex]?.quantity &&
+        parseInt(watch("items")[existingItemIndex].quantity)) ||
+        0);
     console.log(item);
 
-    if(tempQuantity > item.availQuantity){
-      snackbar({ message: "Quantity exceeds available quantity", variant: "warning" });
-      return 
+    if (tempQuantity > item.availQuantity) {
+      snackbar({
+        message: "Quantity exceeds available quantity",
+        variant: "warning",
+      });
+      return;
     }
 
     if (existingItemIndex !== -1) {
@@ -281,6 +305,9 @@ function SalesTransaction() {
                     }}
                     data-tour="search"
                   />
+                  {(watch("clientId")?.termType === "Credit Type") && (
+                    <Typography>Available Credit: {watch("clientId")?.remainingCredits}</Typography>
+                  )}
 
                   <Box
                     className="salesTransaction__body__itemsForm__searchFilter__right"
@@ -305,17 +332,16 @@ function SalesTransaction() {
                       </IconButton>
                     </Tooltip> */}
 
-                    <Tooltip title="Filters">
+                    {/* <Tooltip title="Filters">
                       <Box ref={filterRef}>
                         <IconButton
                           onClick={() => setViewFilters((prev) => !prev)}
                           sx={{ height: "100%" }}
                         >
-                          {/* Filters &nbsp; */}
                           <Tune />
                         </IconButton>
                       </Box>
-                    </Tooltip>
+                    </Tooltip> */}
 
                     <Popover
                       open={viewFilters}
@@ -451,7 +477,11 @@ function SalesTransaction() {
                               {item.isClearPack === true ? "© " : ""}
                               {item.itemDescription}
                             </Typography>
-                            <Typography color="green" fontSize="13px" fontWeight="700">
+                            <Typography
+                              color="green"
+                              fontSize="13px"
+                              fontWeight="700"
+                            >
                               Available: {item.availQuantity}
                             </Typography>
                           </Box>
@@ -513,9 +543,23 @@ function SalesTransaction() {
                             : remove(index);
                         }}
                         onPlus={() => {
-                          if(watch("items")[index]?.quantity + 1 > orderItem?.itemId?.availQuantity){
-                            snackbar({ message: "Quantity exceeds available quantity", variant: "warning" });
-                            return
+                          const tempTotal = totalAmount + orderItem?.itemId?.currentPrice;
+                          console.log(tempTotal)
+                          if (
+                            watch("items")[index]?.quantity + 1 >
+                            orderItem?.itemId?.availQuantity
+                          ) {
+                            snackbar({
+                              message: "Quantity exceeds available quantity",
+                              variant: "warning",
+                            });
+                            return;
+                          }else if (tempTotal > watchCreditBalance && watch("clientId")?.termType === "Credit Type") {
+                            snackbar({
+                              message: "Insufficient credit balance",
+                              variant: "warning",
+                            });
+                            return;
                           }
                           update(index, {
                             itemId: watch("items")[index]?.itemId,
@@ -523,6 +567,8 @@ function SalesTransaction() {
                               parseInt(watch("items")[index].quantity) + 1,
                           });
                         }}
+                        watch={watchAllValues}
+                        creditBalance={watchCreditBalance}
                         onSwipeLeft={() => remove(index)}
                       />
                     ))

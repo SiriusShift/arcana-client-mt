@@ -8,6 +8,8 @@ import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import { useGetAllSamplingsQuery } from "../../../features/inventory-management/api/samplingApi";
+import useDisclosure from "../../../hooks/useDisclosure";
+import PrintInventoryModal from "../../../components/modals/PrintInventoryModal";
 
 function Sampling() {
   const navigate = useNavigate();
@@ -21,27 +23,36 @@ function Sampling() {
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
+  const {
+    isOpen: isPrintOpen,
+    onOpen: onPrintOpen,
+    onClose: onPrintClose,
+  } = useDisclosure();
+
   const { data, isFetching } = useGetAllSamplingsQuery({
     Search: search,
     Page: page + 1,
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransactionType: "Sampling"
+    TransactionType: "Sampling",
+    Status: "Released"
   });
 
   const tableHeads = [
     "ID",
-    "Owner's Name",
-    "Business Name",
+    // "Owner's Name",
+    // "Business Name",
+    "Description",
     "Total Quantity",
     "Transaction Date",
   ];
 
   const customOrderKeys = [
     "id",
-    "clientName",
-    "businessName",
+    // "clientName",
+    // "businessName",
+    "description",
     "totalQuantity",
     "createdDate",
   ];
@@ -55,7 +66,11 @@ function Sampling() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}?dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
+    navigate(
+      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   const handleAdd = () => {
@@ -98,8 +113,16 @@ function Sampling() {
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
             onView={handleView}
+            onPrint={onPrintOpen}
           />
         )}
+        <PrintInventoryModal
+          data={selectedRowData}
+          type="Sampling"
+          onClose={onPrintClose}
+          copies={0}
+          open={isPrintOpen}
+        />
       </Box>
     );
   }

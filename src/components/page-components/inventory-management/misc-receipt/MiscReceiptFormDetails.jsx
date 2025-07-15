@@ -28,9 +28,10 @@ const MiscReceiptFormDetailsSkeleton = () => {
 const MiscReceiptFormDetails = ({ details, isFetching }) => {
   const currentUser = useSelector((state) => state.login.userDetails);
 
-  const { control, setValue } = useFormContext();
+  const { control, setValue, watch } = useFormContext();
   const viewOnly = !!details;
 
+  console.log(watch())
   //Get reasons
   const {
     data,
@@ -38,12 +39,14 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
     error,
   } = useGetReasonsQuery(
     {
-      isActive: true,
+      isActive: !viewOnly && true,
     },
     {
       refetchOnMountOrArgChange: true,
     }
   );
+
+  console.log(data)
 
   // Get role CDO ID
   const { data: roleData, isFetching: isRolesFetching } =
@@ -70,7 +73,7 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
           Page: 1,
           PageSize: 1000,
           Status: true,
-          isDepot: true,
+          // isDepot: true,
         },
         {
           preferCacheValue: true,
@@ -83,9 +86,13 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
     if (details) {
       setValue(
         "to",
-        cdoData?.users.find((user) => user.fullname === details.transferTo)
+        cdoData?.users.find((user) => user.id === details.toCDO)
       );
-      setValue("transactionDate", moment(details.transactionDate));
+      setValue("transactionDate", moment(details.dateReceived));
+      setValue(
+        "remarks",
+        data?.find((item) => item?.id === details?.reasonId)
+      );
     }
   }, [details, setValue, cdoData]);
 
@@ -96,7 +103,7 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
   return (
     <Stack
       direction="row"
-      style={{ display: "flex", justifyContent: "space-between" }}
+      style={{ display: "flex", justifyContent: "space-between", paddingTop: 5, overflow: "auto" }}
       spacing={1.5}
     >
       <div style={{ display: "flex", gap: 10 }}>
@@ -163,7 +170,9 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
             sx={{ minWidth: "300px" }}
           />
         )}
+        disabled={viewOnly}
       />
+  
     </Stack>
   );
 };

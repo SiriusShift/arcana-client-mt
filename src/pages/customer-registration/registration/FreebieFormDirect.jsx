@@ -126,7 +126,7 @@ function FreebieFormDirect({
         response = await postRequestFreebies({
           clientId: data.clientId,
           freebies: data.freebies.map((freebie) => ({
-            itemId: freebie.itemId.id,
+            itemId: freebie.itemId.itemId,
             quantity: freebie.quantity,
           })),
         }).unwrap();

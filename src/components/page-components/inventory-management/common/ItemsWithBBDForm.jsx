@@ -7,7 +7,7 @@ import {
   Button,
   Box,
 } from "@mui/material";
-import { Controller } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
 import SecondaryButton from "../../../SecondaryButton";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
@@ -20,22 +20,32 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi";
 import useSnackbar from "../../../../hooks/useSnackbar";
-import { useGetAllItemsInventoryQuery } from "../../../../features/inventory-management/api/inventoryMrpApi";
+import {
+  useGetAllItemsInventoryQuery,
+  useGetInventoryMrpQuery,
+} from "../../../../features/inventory-management/api/inventoryMrpApi";
+import { useGetReasonsQuery } from "../../../../features/inventory-management/api/reasonApi";
+import { useEffect } from "react";
 
 const ItemsWithBBDForm = ({
   items = [],
   isFetching,
   misc,
+  miscIssue,
   ourite,
   isTransferOut,
   withBbd,
+  withReason,
+  moveOrderData,
 }) => {
   const viewOnly = items.length > 0 || isFetching;
   const snackbar = useSnackbar();
 
-  console.log(items);
+  console.log(moveOrderData);
 
   const [parent] = useAutoAnimate();
+  const { watch } = useFormContext();
+  console.log(watch());
 
   const {
     bbdCache,
@@ -51,10 +61,28 @@ const ItemsWithBBDForm = ({
     dirtyFields,
     setValue,
     control,
-    errors
+    errors,
   } = useItemsWithBbd({ items });
 
+  console.log(errors);
+
   console.log(watchItems);
+
+  useEffect(() => {
+    if (!items) {
+      setValue("items", [
+        {
+          item: null,
+          itemDescription: "",
+          uom: "",
+          quantity: null,
+          bbd: null,
+          reason: "",
+          remarks: null,
+        },
+      ]);
+    }
+  }, [watch("type")]);
 
   const { data: productData, isFetching: isProductFetching } =
     useGetAllItemsByPriceModeIdQuery(
@@ -63,11 +91,38 @@ const ItemsWithBBDForm = ({
         Page: 1,
         PageSize: 1000,
         PriceModeId: 1,
+        ...(watch("to")?.id && miscIssue && { UserId: watch("to")?.id }),
       },
       {
         refetchOnMountOrArgChange: true,
       }
     );
+
+  console.log(productData);
+
+  const { data: mrp, isFetching: isInventoryMrpFetching } =
+    useGetInventoryMrpQuery(
+      {
+        PageNumber: 1,
+        PageSize: 1000,
+      },
+      { refetchOnMountOrArgChange: true }
+    );
+
+  const {
+    data,
+    isFetching: isFetchingReason,
+    error,
+  } = useGetReasonsQuery(
+    {
+      isActive: true,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  console.log(watch());
 
   const { data: products, isFetching: isItemsFetching } =
     useGetAllItemsInventoryQuery();
@@ -128,12 +183,20 @@ const ItemsWithBBDForm = ({
             <FormItemsSkeleton />
           ) : (
             <>
-              {fields.map((item, index) => (
+              {fields?.map((item, index) => (
                 <Stack key={item.id} direction="row" gap={1}>
                   <ControlledAutocomplete
                     name={`items[${index}].item`}
                     control={control}
-                    options={misc ? products : productData?.priceModeItems || []}
+                    options={
+                      misc
+                        ? products
+                        : watch("type")?.value === "Outright"
+                        ? watch("moveOrder")?.moveItems.filter(
+                            (item) => item?.actualQuantity > 0
+                          ) || []
+                        : productData?.priceModeItems || []
+                    }
                     getOptionLabel={(option) => option?.itemCode || ""}
                     getOptionDisabled={(option) => {
                       // Get all selected items across all rows
@@ -141,7 +204,7 @@ const ItemsWithBBDForm = ({
 
                       // Extract the itemCodes of the selected items, excluding the current row's itemCode
                       const selectedCodes = selectedItems
-                        ?.filter((_, idx) => idx !== index)  // Exclude the current row to allow reselecting the same option
+                        ?.filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
                         ?.map((item) => item?.item?.itemCode);
 
                       // Disable the option if its itemCode is already selected in other rows
@@ -157,9 +220,11 @@ const ItemsWithBBDForm = ({
                         label="Item Code"
                         required
                         sx={{ width: "200px" }}
+                        helperText={errors?.items?.[index]?.item?.message}
                       />
                     )}
                     onChange={(_, value) => {
+                      console.log(value);
                       setValue(
                         `items[${index}].itemDescription`,
                         value?.itemDescription
@@ -170,6 +235,24 @@ const ItemsWithBBDForm = ({
                             `items[${index}].price`,
                             value?.currentPrice
                           );
+                      }
+                      console.log(
+                        products?.find(
+                          (item) => item?.itemCode === value?.itemCode
+                        )
+                      );
+                      {
+                        watch("type")?.value === "Outright" &&
+                          setValue(
+                            `items[${index}].received`,
+                            value?.actualQuantity
+                          );
+                        setValue(
+                          `items[${index}].price`,
+                          products?.find(
+                            (item) => item?.itemCode === value?.itemCode
+                          )?.currentPrice
+                        );
                       }
                       setValue(`items[${index}].uom`, value?.uom);
                       setValue(`items[${index}].bbd`, null);
@@ -190,6 +273,9 @@ const ItemsWithBBDForm = ({
                         value={field.value || ""}
                         inputRef={field.ref}
                         disabled
+                        helperText={
+                          errors?.items?.[index]?.itemDescription?.message
+                        }
                         sx={{ flex: 1 }}
                       />
                     )}
@@ -208,6 +294,7 @@ const ItemsWithBBDForm = ({
                         value={value || ""}
                         inputRef={ref}
                         sx={{ maxWidth: "120px" }}
+                        helperText={errors?.items?.[index]?.uom?.message}
                         disabled
                       />
                     )}
@@ -331,6 +418,10 @@ const ItemsWithBBDForm = ({
                               <TextField
                                 {...params}
                                 size="small"
+                                helperText={
+                                  errors?.items?.[index]?.bbd?.message
+                                }
+                                error={!!errors?.items?.[index]?.bbd}
                                 autoComplete="off"
                                 onBlur={onBlur} // Pass blur event
                               />
@@ -339,6 +430,30 @@ const ItemsWithBBDForm = ({
                         )}
                       />
                     </LocalizationProvider>
+                  )}
+
+                  {watch("type")?.value === "Outright" && (
+                    <Controller
+                      control={control}
+                      name={`items[${index}].received`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <NumericFormat
+                          label="Received"
+                          size="small"
+                          onBlur={onBlur}
+                          value={value ?? ""}
+                          inputRef={ref}
+                          sx={{ maxWidth: "120px" }}
+                          disabled
+                          customInput={TextField}
+                          thousandSeparator
+                          helperText={errors?.items?.[index]?.received?.message}
+                          error={!!errors?.items?.[index]?.received}
+                          allowLeadingZeros={false}
+                          allowNegative={false}
+                        />
+                      )}
+                    />
                   )}
 
                   <Stack gap={0.6} alignItems="center">
@@ -351,52 +466,69 @@ const ItemsWithBBDForm = ({
                           size="small"
                           autoComplete="off"
                           required
-                          onValueChange={(e) => {
-                            onChange(e.value === "" ? null : Number(e.value));
+                          value={value ?? ""}
+                          inputRef={ref}
+                          customInput={TextField}
+                          sx={{ maxWidth: "120px" }}
+                          thousandSeparator
+                          allowLeadingZeros={false}
+                          allowNegative={false}
+                          disabled={
+                            viewOnly || (withBbd && !watchItems?.[index]?.bbd)
+                          }
+                          onValueChange={({ floatValue, value: rawValue }) => {
+                            onChange(rawValue === "" ? null : floatValue);
                           }}
-                          isAllowed={(values) => {
-                            const { floatValue } = values;
+                          isAllowed={({ floatValue, value: rawValue }) => {
+                            // Disallow non-numeric input
+                            if (!/^\d*$/.test(rawValue)) return false;
 
-                            if (!/^\d*$/.test(values.value)) return false;
+                            const selectedItem = miscIssue
+                              ? productData?.priceModeItems?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.item?.itemCode
+                                )
+                              : mrp?.mo?.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.item?.itemCode
+                                );
+                            console.log(selectedItem);
+
+                            console.log(selectedItem);
+
+                            const availableQty = miscIssue
+                              ? selectedItem?.availQuantity
+                              : selectedItem?.reserve;
 
                             if (
                               floatValue != null &&
                               !misc &&
-                              floatValue >
-                                productData?.priceModeItems.find(
-                                  (item) =>
-                                    item.itemCode ===
-                                    watchItems[index]?.item?.itemCode
-                                )?.availQuantity
+                              availableQty != null &&
+                              floatValue > availableQty
                             ) {
                               snackbar({
-                                message:
-                                  "Quantity should be less than available quantity",
+                                message: `Quantity should not exceed available quantity (${availableQty})`,
+                                variant: "warning",
+                              });
+                              return false;
+                            } else if (
+                              watch("type")?.value === "Outright" &&
+                              floatValue > watch("items")[index]?.received
+                            ) {
+                              snackbar({
+                                message: `Quantity should not exceed received quantity (${
+                                  watch("items")[index]?.received
+                                })`,
                                 variant: "warning",
                               });
                               return false;
                             }
-                            return true;
 
-                            // if (
-                            //   floatValue != null &&
-                            //   floatValue > watchItems?.[index]?.bbd?.quantity
-                            // ) {
-                            //   return false;
-                            // }
-                            // return true;
+                            return true;
                           }}
                           onBlur={onBlur}
-                          value={value || ""}
-                          inputRef={ref}
-                          sx={{ maxWidth: "120px" }}
-                          disabled={
-                            viewOnly || (withBbd && !watchItems?.[index]?.bbd)
-                          }
-                          customInput={TextField}
-                          thousandSeparator
-                          allowLeadingZeros={false}
-                          allowNegative={false}
                         />
                       )}
                     />
@@ -405,22 +537,66 @@ const ItemsWithBBDForm = ({
                       <Typography
                         variant="caption"
                         color={`${
-                          watchItems[index]?.item?.itemCode ? "green" : "grey"
+                          !watchItems[index]?.item?.itemCode
+                            ? "grey"
+                            : miscIssue
+                            ? productData?.priceModeItems?.find(
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.item?.itemCode
+                              )?.availQuantity > 5
+                              ? "success.main"
+                              : "error.main"
+                            : mrp?.mo?.find(
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.item?.itemCode
+                              )?.reserve > 5
+                            ? "success.main"
+                            : "error.main"
                         }`}
                         lineHeight="0.5"
                       >
                         {watchItems[index]?.item?.itemCode
                           ? `Available: ${
-                              productData?.priceModeItems.find(
-                                (item) =>
-                                  item.itemCode ===
-                                  watchItems[index]?.item?.itemCode
-                              )?.availQuantity
+                              miscIssue
+                                ? productData?.priceModeItems?.find(
+                                    (item) =>
+                                      item.itemCode ===
+                                      watchItems[index]?.item?.itemCode
+                                  )?.availQuantity
+                                : mrp?.mo?.find(
+                                    (item) =>
+                                      item.itemCode ===
+                                      watchItems[index]?.item?.itemCode
+                                  )?.reserve ?? "NONE"
                             }`
                           : "Select BBD first"}
                       </Typography>
                     )}
                   </Stack>
+
+                  {withReason && (
+                    <ControlledAutocomplete
+                      name={`items[${index}].remarks`}
+                      control={control}
+                      options={data || []}
+                      getOptionLabel={(option) => option?.reasonInfo || ""}
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
+                      }
+                      loading={isFetchingReason || isFetching}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          label="Reason"
+                          sx={{ minWidth: "200px" }}
+                        />
+                      )}
+                      disabled={viewOnly}
+                    />
+                  )}
 
                   <Controller
                     control={control}
@@ -440,6 +616,7 @@ const ItemsWithBBDForm = ({
                     <IconButton
                       color="error"
                       onClick={() => handleRemove(index)}
+                      disabled={watch("type")?.value === "Outright"}
                     >
                       <RemoveCircleOutline />
                     </IconButton>
@@ -447,8 +624,11 @@ const ItemsWithBBDForm = ({
                 </Stack>
               ))}
 
-              {!viewOnly && 
-                (watchItems.length !== (misc ? products?.length : productData?.priceModeItems?.length )) && (
+              {!viewOnly &&
+                watchItems?.length !==
+                  (misc
+                    ? products?.length
+                    : productData?.priceModeItems?.length) && (
                   <SecondaryButton
                     endIcon={<Add />}
                     sx={{ width: "fit-content", alignSelf: "end" }}

@@ -403,7 +403,7 @@ export const requestFreebiesSchema = {
     freebies: yup.array().of(
       yup.object({
         itemId: yup.object().required("Product Code Required"),
-        quantity: yup.number().required("Quantity is required"),
+        quantity: yup.number().required("Quantity is required").positive(),
       })
     ),
   }),
@@ -423,7 +423,7 @@ export const requestFreebiesDirectSchema = {
     freebies: yup.array().of(
       yup.object({
         itemId: yup.object().required("Product Code Required"),
-        quantity: yup.number().required("Quantity is required"),
+        quantity: yup.number().required("Quantity is required").positive(),
         uom: yup.string(),
         itemDescription: yup.string(),
       })
@@ -490,6 +490,10 @@ export const regularRegisterSchema = {
   },
 };
 
+const today = moment();
+const minDate = today.clone().subtract(117, "years").toDate();
+const maxDate = today.clone().subtract(18, "years").toDate();
+
 export const directRegisterPersonalSchema = {
   schema: yup.object({
     ownersName: yup.string().required("Owner's name is required"),
@@ -505,7 +509,17 @@ export const directRegisterPersonalSchema = {
       })
       .required(),
     phoneNumber: yup.string().required("Phone number is required"),
-    dateOfBirth: yup.date().required("Birthdate is required"),
+    dateOfBirth: yup
+      .date()
+      .required("Birthdate is required")
+      .min(
+        minDate,
+        `Date must be after ${moment(minDate).format("MMMM D, YYYY")}`
+      )
+      .max(
+        maxDate,
+        `Date must be before ${moment(maxDate).format("MMMM D, YYYY")}`
+      ),
     tinNumber: yup.string(),
     // tinNumber: yup.string().required("TIN number is required"),
     businessName: yup.string().required("Business name is required"),
@@ -684,12 +698,14 @@ export const approverSettingsSchema = {
         "Each item's minimum value must be greater than the previous item's minimum value",
         function (value) {
           console.log("Validating approversWithLimitDigit:", value); // Debugging
-      
+
           if (!Array.isArray(value) || value.length === 0) return true; // Allow empty array
-      
+
           for (let i = 1; i < value.length; i++) {
             console.log(
-              `Comparing: ${value[i].minValue} (current) vs ${value[i - 1].minValue} (previous)`
+              `Comparing: ${value[i].minValue} (current) vs ${
+                value[i - 1].minValue
+              } (previous)`
             );
             if (value[i].minValue <= value[i - 1].minValue) {
               return false;
@@ -697,8 +713,7 @@ export const approverSettingsSchema = {
           }
           return true;
         }
-      )
-      
+      ),
   }),
   defaultValues: {
     moduleName: "",
@@ -870,127 +885,129 @@ export const paymentTransactionSchema = {
       .min(1, "At least one payment is required"),
     invoiceNo: yup.array().of(yup.number()),
     receiptNo: yup.number().required("Receipt number is required"),
+    paymentDate: yup.date().required("Date is required"),
     receiptAttachment: yup.mixed().required("Receipt attachment is required"),
   }),
   defaultValues: {
     transactionId: [],
     payments: [],
     invoiceNo: [],
+    paymentDate: moment(),
     receiptAttachment: null,
     receiptNo: null,
   },
 };
 
 export const paymentSchema = {
-	schema: yup.object({
-	  paymentMethod: yup.object().required("Payment Type is required"),
-	  paymentAmount: yup.number().required("Amount is required"),
-	  // invoiceAttachment: yup.mixed().required("Invoice Attachment is required"),
-  
-	  //Cheque Validations
-	  payee: yup.string().when("paymentMethod.label", {
-		is: "Cheque",
-		then: (schema) => schema.required("Payee is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-	  chequeDate: yup.date().when("paymentMethod.label", {
-		is: "Cheque",
-		then: (schema) => schema.required("Cheque date is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-	  bankName: yup.string().when("paymentMethod.label", {
-		is: "Cheque",
-		then: (schema) => schema.required("Bank name is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-	  chequeNo: yup.string().when("paymentMethod.label", {
-		is: "Cheque",
-		then: (schema) => schema.required("Cheque number is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-	  dateReceived: yup.date().when("paymentMethod.label", {
-		is: "Cheque",
-		then: (schema) => schema.required("Date received is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-	  // chequeAmount: yup.string().when("paymentMethod.label", {
-	  //   is: "Cheque",
-	  //   then: (schema) => schema.required("Cheque paymentAmount is required"),
-	  //   otherwise: (schema) => schema.nullable(),
-	  // }),
-  
-	  //Online
-	  accountName: yup.string().when("paymentMethod.label", {
-		is: "Online",
-		then: (schema) => schema.required("Account name is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-  
-	  paymentChannel: yup.object().when("paymentMethod.label", {
-		is: "Online",
-		then: (schema) => schema.required("Payment Channel is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-  
-	  referenceNo: yup.string().when("paymentMethod.label", {
-		is: "Online",
-		then: (schema) => schema.required("Reference number is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-  
-	  //Offset
-	  remarks: yup.string().when("paymentMethod.label", {
-		is: "Offset",
-		then: (schema) => schema.required("Remarks is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-  
-	  //Withholding
-	  attachment: yup.mixed().when("paymentMethod.label", {
-		is: "Withholding",
-		then: (schema) => schema.required("Attachment  is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-  
-	  //Others
-	  otherExpense: yup.object().when("paymentMethod.value", {
-		is: "Others",
-		then: (schema) => schema.required("Other expense is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-  
-	  remarks: yup.string().when("paymentMethod.value", {
-		is: "Others With Remarks",
-		then: (schema) => schema.required("Remarks is required"),
-		otherwise: (schema) => schema.nullable(),
-	  }),
-  
-	  returnId: yup.object().when("paymentMethod.label", {
-		is: "Sales Return",
-		then: (schema) => schema.required("Return Id is required"),
-		otherwise: (schema) => schema.nullable(),
-	  })
-  
-	  //
-	}),
-	defaultValues: {
-	  paymentMethod: null,
-	  paymentAmount: null,
-	  payee: "",
-	  chequeDate: null,
-	  bankName: "",
-	  chequeNo: "",
-	  dateReceived: null,
-	  // chequeAmount: "",
-	  accountName: "",
-	  paymentChannel: null,
-	  referenceNo: "",
-	  remarks: "",
-	  // invoiceAttachment: null,
-	  attachment: null,
-	  otherExpense: null,
-	},
-  };
+  schema: yup.object({
+    paymentMethod: yup.object().required("Payment Type is required"),
+    paymentAmount: yup.number().required("Amount is required"),
+    // invoiceAttachment: yup.mixed().required("Invoice Attachment is required"),
+
+    //Cheque Validations
+    payee: yup.string().when("paymentMethod.label", {
+      is: "Cheque",
+      then: (schema) => schema.required("Payee is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+    chequeDate: yup.date().when("paymentMethod.label", {
+      is: "Cheque",
+      then: (schema) => schema.required("Cheque date is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+    bankName: yup.string().when("paymentMethod.label", {
+      is: "Cheque",
+      then: (schema) => schema.required("Bank name is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+    chequeNo: yup.string().when("paymentMethod.label", {
+      is: "Cheque",
+      then: (schema) => schema.required("Cheque number is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+    dateReceived: yup.date().when("paymentMethod.label", {
+      is: "Cheque",
+      then: (schema) => schema.required("Date received is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+    // chequeAmount: yup.string().when("paymentMethod.label", {
+    //   is: "Cheque",
+    //   then: (schema) => schema.required("Cheque paymentAmount is required"),
+    //   otherwise: (schema) => schema.nullable(),
+    // }),
+
+    //Online
+    accountName: yup.string().when("paymentMethod.label", {
+      is: "Online",
+      then: (schema) => schema.required("Account name is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    paymentChannel: yup.object().when("paymentMethod.label", {
+      is: "Online",
+      then: (schema) => schema.required("Payment Channel is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    referenceNo: yup.string().when("paymentMethod.label", {
+      is: "Online",
+      then: (schema) => schema.required("Reference number is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    //Offset
+    remarks: yup.string().when("paymentMethod.label", {
+      is: "Offset",
+      then: (schema) => schema.required("Remarks is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    //Withholding
+    attachment: yup.mixed().when("paymentMethod.label", {
+      is: "Withholding",
+      then: (schema) => schema.required("Attachment  is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    //Others
+    otherExpense: yup.object().when("paymentMethod.value", {
+      is: "Others",
+      then: (schema) => schema.required("Other expense is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    remarks: yup.string().when("paymentMethod.value", {
+      is: "Others With Remarks",
+      then: (schema) => schema.required("Remarks is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    returnId: yup.object().when("paymentMethod.label", {
+      is: "Sales Return",
+      then: (schema) => schema.required("Return Id is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+    //
+  }),
+  defaultValues: {
+    paymentMethod: null,
+    paymentAmount: null,
+    payee: "",
+    chequeDate: null,
+    bankName: "",
+    chequeNo: "",
+    dateReceived: null,
+    // chequeAmount: "",
+    accountName: "",
+    paymentChannel: null,
+    referenceNo: "",
+    remarks: "",
+    // invoiceAttachment: null,
+    attachment: null,
+    otherExpense: null,
+  },
+};
 
 export const salesTransactionSchema = {
   schema: yup.object({
@@ -1013,6 +1030,8 @@ export const cashoutSchema = {
     invoiceNo: yup.string().required("Invoice No. is required"),
     invoiceType: yup.string().required("Invoice Type is required"),
     discount: yup.number().required("Discount is required").nullable(),
+    // rebateAmount: yup.number().required("Rebate is required").nullable(),
+    orDate: yup.date().required("Date is required"),
     specialDiscount: yup.number().nullable(),
     specialDiscountId: yup.number().nullable(),
     isOneTimeSp: yup.bool().nullable(),
@@ -1021,6 +1040,8 @@ export const cashoutSchema = {
     invoiceNo: "",
     invoiceType: "",
     discount: null,
+    // rebateAmount: 0,
+    orDate: moment(),
     specialDiscount: null,
     specialDiscountId: null,
     isOneTimeSp: null,
@@ -1149,8 +1170,8 @@ export const freebiesSchema = {
 
 export const samplingSchema = {
   schema: yup.object({
-    client: yup.object().required("Client is required"),
-    // description: yup.string().required("Description is required"),
+    // client: yup.object().required("Client is required"),
+    description: yup.string().required("Description is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
@@ -1316,7 +1337,7 @@ export const bbdCallsheet = {
         remainingInv: yup.number().required("Remaining Inventory required"),
         itemCode: yup.string().required("Item Code is required"),
         quantity: yup.number().required("Quantity is required"),
-        bbdDate: yup.string().nullable()
+        bbdDate: yup.string().nullable(),
       })
     ),
   }),
@@ -1326,7 +1347,7 @@ export const bbdCallsheet = {
         itemCode: "",
         remainingInv: null,
         bbd: "",
-        quantity: null
+        quantity: null,
       },
     ],
   },
@@ -1335,28 +1356,35 @@ export const bbdCallsheet = {
 export const outrightReturnSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
-    remarks: yup.object().required("Remarks is required"),
+    moveOrder: yup.object().nullable(),
     transactionDate: yup.date().required("Transaction Date is required"),
+    type: yup.object().required("Type is required"),
     items: yup
       .array()
       .of(
         yup.object({
           item: yup.object().required("Item Code is required"),
           bbd: yup.object().required("BBD is required"),
+          price: yup.number().required("Price is required"),
           quantity: yup.number().required("Quantity is required").min(1),
-          reason: yup.string(),
+          remarks: yup.object().required("Remarks is required"),
+          reason: yup.string().nullable(),
         })
       )
       .min(1, "At least one product is required"),
+    referenceNo: yup.number().required("Reference No. is required"),
   }),
   defaultValues: {
     transactionDate: moment(),
-    remarks: null,
+    moveOrder: null,
+    type: null,
     items: [
       {
         item: null,
         bbd: null,
+        received: null,
         quantity: null,
+        remarks: null,
         reason: "",
       },
     ],
@@ -1384,6 +1412,7 @@ export const miscInSchema = {
   defaultValues: {
     transactionDate: moment(),
     remarks: null,
+    to: null,
     items: [
       {
         item: null,
@@ -1399,8 +1428,7 @@ export const miscOutSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
     to: yup.object().required("Client is required"),
-        remarks: yup.object().required("Remarks is required"),
-    
+    remarks: yup.object().required("Remarks is required"),
     transactionDate: yup.date().required("Transaction Date is required"),
     items: yup
       .array()
@@ -1416,6 +1444,7 @@ export const miscOutSchema = {
   }),
   defaultValues: {
     transactionDate: moment(),
+    to: null,
     remarks: null,
     items: [
       {
@@ -1435,4 +1464,4 @@ export const reasonSchema = {
   defaultValues: {
     reason: "",
   },
-};  
+};

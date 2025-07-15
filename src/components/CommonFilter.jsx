@@ -12,7 +12,7 @@ import SecondaryButton from "./SecondaryButton";
 import { useSelector } from "react-redux";
 import useDisclosure from "../hooks/useDisclosure";
 import { FilterList } from "@mui/icons-material";
-import { clusterOptions, paymentTypes, invoiceTypes } from "../utils/constants";
+import { clusterOptions, paymentTypes, invoiceTypes, returnToDepot, transferTypes } from "../utils/constants";
 import { useGetAllOtherExpensesQuery } from "../features/setup/api/otherExpensesApi";
 import { useGetAllStoreTypesQuery } from "../features/setup/api/storeTypeApi";
 
@@ -24,6 +24,7 @@ function CommonFilter({
   paymentMethodFilter,
   // expenseTypeFilter,
   businessTypeFilter,
+  typeFilter,
   // invoiceTypeFilter,
   // validityFilter,
   // uploadStatusFilter,
@@ -43,6 +44,7 @@ function CommonFilter({
     // uploadStatus: null,
     // frequence: null,
     paymentMethod: null,
+    type: null,
     // status: null,
   });
 
@@ -54,34 +56,35 @@ function CommonFilter({
   const userDetails = useSelector((state) => state.login.userDetails);
   console.log(userDetails);
 
-
   //Function
   const resetFilter = () => {
     setFilters({
-       // search: "",
-    clusterId: null,
-    // paymentType: null,
-    // expenseType: null,
-    businessType: null,
-    // invoiceType: null,
-    // validity: null,
-    // uploadStatus: null,
-    // frequence: null,
-    paymentMethod: null,
-    // status: null,
+      // search: "",
+      clusterId: null,
+      // paymentType: null,
+      // expenseType: null,
+      businessType: null,
+      // invoiceType: null,
+      // validity: null,
+      // uploadStatus: null,
+      // frequence: null,
+      paymentMethod: null,
+      type: null,
+      // status: null,
     });
     filter({
-       // search: "",
-    clusterId: null,
-    // paymentType: null,
-    // expenseType: null,
-    businessType: null,
-    // invoiceType: null,
-    // validity: null,
-    // uploadStatus: null,
-    // frequence: null,
-    paymentMethod: null,
-    // status: null,
+      // search: "",
+      clusterId: null,
+      // paymentType: null,
+      // expenseType: null,
+      businessType: null,
+      // invoiceType: null,
+      // validity: null,
+      // uploadStatus: null,
+      // frequence: null,
+      paymentMethod: null,
+      type: null,
+      // status: null,
     });
   };
 
@@ -138,8 +141,10 @@ function CommonFilter({
           {paymentMethodFilter && transactionStatus !== "Pending" && (
             <Autocomplete
               options={paymentTypes.filter((type) => {
-                return userDetails?.username !== "rsunga" && userDetails?.username !== "admin" ?
-                type?.label !== "Withholding" : type.label
+                return userDetails?.username !== "rsunga" &&
+                  userDetails?.username !== "admin"
+                  ? type?.label !== "Withholding"
+                  : type.label;
               })}
               getOptionLabel={(option) => option?.label}
               onChange={(_, value) => {
@@ -156,6 +161,8 @@ function CommonFilter({
               )}
             />
           )}
+
+          {}
 
           {/* {expenseTypeFilter && (
             <Autocomplete
@@ -176,7 +183,6 @@ function CommonFilter({
             ></Autocomplete>
           )} */}
 
-
           {businessTypeFilter && (
             <Autocomplete
               options={storeTypeData?.storeTypes}
@@ -191,6 +197,24 @@ function CommonFilter({
                   size="small"
                   sx={{ width: "300px" }}
                   label="Business Type"
+                />
+              )}
+            ></Autocomplete>
+          )}
+          {typeFilter && (
+            <Autocomplete
+              options={transferTypes}
+              getOptionLabel={(option) => option?.name}
+              onChange={(_, value) => {
+                setFilters({ ...filters, type: value });
+              }}
+              value={filters?.type}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  sx={{ width: "300px" }}
+                  label="Type"
                 />
               )}
             ></Autocomplete>

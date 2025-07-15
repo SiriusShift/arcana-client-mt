@@ -35,7 +35,10 @@ import {
   handleCatchErrorMessage,
 } from "../../utils/CustomFunctions";
 import { getIconElement } from "../../components/GetIconElement";
-import { paymentTransactionApi, useCreatePaymentTransactionMutation } from "../../features/sales-management/api/paymentTransactionApi";
+import {
+  paymentTransactionApi,
+  useCreatePaymentTransactionMutation,
+} from "../../features/sales-management/api/paymentTransactionApi";
 import PaymentListSkeleton from "../../components/skeletons/PaymentListSkeleton";
 import PaymentHistoriesModal from "../../components/modals/sales-management/PaymentHistoriesModal";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
@@ -44,6 +47,8 @@ import moment from "moment";
 import ReceiptInput from "../../components/modals/sales-management/ReceiptInput";
 import ViewPhotoModal from "../../components/modals/ViewPhotoModal";
 import { useDispatch } from "react-redux";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 
 function PaymentPage({
   setPaymentMode,
@@ -136,6 +141,7 @@ function PaymentPage({
 
     data.transactionId.map((id, index) => formData.append(`transactionId`, id));
     formData.append(`receiptNo`, data.receiptNo);
+    formData.append(`paymentDate`, data?.paymentDate.toISOString());
     formData.append(`receipt`, data.receiptAttachment);
 
     data.payments.map((payment, index) => {
@@ -189,12 +195,17 @@ function PaymentPage({
           payment.otherExpense.id
         );
       //IF PAYMENT IS OTHERS WITH REMARKS
-      payment.remarks && 
+      payment.remarks &&
         formData.append(`Payments[${index}].reason`, payment.remarks);
 
-      payment.returnId && 
-        formData.append(`Payments[${index}].returnId`, payment.returnId?.returnOrderId);
+      payment.returnId &&
+        formData.append(
+          `Payments[${index}].returnId`,
+          payment.returnId?.returnOrderId
+        );
     });
+
+    console.log(formData)
 
     try {
       await confirm({
@@ -203,7 +214,11 @@ function PaymentPage({
         callback: () => createPaymentTransaction(formData).unwrap(),
       });
 
-      dispatch(paymentTransactionApi.util.invalidateTags(["Payment Transaction Histories"]))
+      dispatch(
+        paymentTransactionApi.util.invalidateTags([
+          "Payment Transaction Histories",
+        ])
+      );
 
       handleReset();
       snackbar({
@@ -425,7 +440,9 @@ function PaymentPage({
                   ", " +
                   option.businessAddress?.province?.toUpperCase() +
                   " - " +
-                  option.ownersName?.toUpperCase() + " - " + option.id || "" 
+                  option.ownersName?.toUpperCase() +
+                  " - " +
+                  option.id || ""
               }
               disabled={watch("payments").length > 0}
               loading={isClientFetching}
@@ -721,7 +738,10 @@ function PaymentPage({
                         onChange(e.target.files[0]);
                       }}
                       type="file"
-                      inputProps={{ ref: receiptUploadRef, accept: "image/png, image/jpeg, image/jpg" }}
+                      inputProps={{
+                        ref: receiptUploadRef,
+                        accept: "image/png, image/jpeg, image/jpg",
+                      }}
                       size="small"
                       label="Attachment"
                       helperText={errors?.attachment?.message}
@@ -788,6 +808,29 @@ function PaymentPage({
                 )}
               />
             </Box>
+            <Box className="paymentPage__body__payments__date">
+              <Controller
+                name="paymentDate"
+                control={control}
+                defaultValue={null} // ✅ Use null, not empty string
+                render={({ field: { onChange, value, ...rest } }) => (
+                  <LocalizationProvider dateAdapter={AdapterMoment}>
+                    <DatePicker
+                      {...rest}
+                      value={value || null} // ✅ Ensure Moment or null
+                      onChange={(date) => onChange(date)} // ✅ Pass Moment value to controller
+                      label="Payment Date"
+                      sx={{ width: "100%" }}
+                      disabled
+                      slotProps={{
+                        textField: { size: "small" },
+
+                      }}
+                    />
+                  </LocalizationProvider>
+                )}
+              />
+            </Box>
             <Box className="paymentPage__body__payments__footer">
               <Box className="paymentPage__body__payments__footer__paymentsInfo">
                 <Box className="paymentPage__body__payments__footer__paymentsInfo__paymentTotal">
@@ -836,7 +879,12 @@ function PaymentPage({
                 size="medium"
                 endIcon={<Payment />}
                 onClick={handleSubmit(onSubmit)}
-                disabled={paymentFields.length === 0 || !isValid || !isDirty || watch("invoiceNo").length < 1}
+                disabled={
+                  paymentFields.length === 0 ||
+                  !isValid ||
+                  !isDirty ||
+                  watch("invoiceNo").length < 1
+                }
               >
                 Pay Now
               </SecondaryButton>

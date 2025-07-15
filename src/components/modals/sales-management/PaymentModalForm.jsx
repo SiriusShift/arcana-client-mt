@@ -169,7 +169,7 @@ function PaymentModalForm({
         paymentAmount: data.paymentAmount,
         remarks: data.remarks,
       };
-    } else if (data.paymentMethod.value === "Sales Return"){
+    } else if (data.paymentMethod.value === "Sales Return") {
       transformedData = {
         paymentMethod: data.paymentMethod,
         paymentAmount: data.paymentAmount,
@@ -334,6 +334,18 @@ function PaymentModalForm({
                 )}
                 getOptionLabel={(option) => option.label.toUpperCase()}
                 renderOption={(props, option) => {
+                  const showBalanceAvailable =
+                    (option.value === "Advance Payment" &&
+                      remainingAdvancePayment > 0) ||
+                    (option.value === "Listing Fee" &&
+                      remainingListingFee > 0) ||
+                    (option.value === "Sales Return" &&
+                      returnData?.value?.salesReturn?.length > 0) ||
+                    (option.value === "Others" &&
+                      otherExpensesBalanceData?.others?.find(
+                        (item) => item.balance > 0
+                      ));
+
                   const notifIcon = (
                     <InfoOutlined
                       sx={{
@@ -344,26 +356,14 @@ function PaymentModalForm({
                     />
                   );
 
-                  const isAdvancePaymentNotif =
-                    option.value === "Advance Payment" &&
-                    remainingAdvancePayment > 0;
-
-                  const isListingFeeNotif =
-                    option.value === "Listing Fee" && remainingListingFee > 0;
-
                   return (
                     <Tooltip
-                      title={
-                        isAdvancePaymentNotif || isListingFeeNotif
-                          ? "Balance available"
-                          : ""
-                      }
+                      title={showBalanceAvailable ? "Balance available" : ""}
                       followCursor
                     >
                       <li {...props}>
                         {option.label.toUpperCase()}
-                        {isAdvancePaymentNotif && notifIcon}
-                        {isListingFeeNotif && notifIcon}
+                        {showBalanceAvailable && notifIcon}
                       </li>
                     </Tooltip>
                   );
@@ -794,7 +794,11 @@ function PaymentModalForm({
                   name="returnId"
                   control={control}
                   options={returnData?.value?.salesReturn || []}
-                  getOptionLabel={(option) => option.returnOrderId + " - " + moment(option.createdAt).format("MM/DD/YYYY")}
+                  getOptionLabel={(option) =>
+                    option.returnOrderId +
+                    " - " +
+                    moment(option.createdAt).format("MM/DD/YYYY")
+                  }
                   disableClearable
                   isOptionEqualToValue={() => true}
                   renderInput={(params) => (
@@ -807,11 +811,11 @@ function PaymentModalForm({
                     />
                   )}
                   onChange={(_, value) => {
-                    console.log(value?.remaining, remainingBalance)
-                    if(value?.remaining < remainingBalance){
+                    console.log(value?.remaining, remainingBalance);
+                    if (value?.remaining < remainingBalance) {
                       setValue("paymentAmount", value.remaining);
-                    }else{
-                      setValue("paymentAmount",  remainingBalance);
+                    } else {
+                      setValue("paymentAmount", remainingBalance);
                     }
                     return value;
                   }}

@@ -54,6 +54,7 @@ function CommonActions({
   onManageApprovers,
   onPrintTTA,
   onPrintFreebies,
+  onPrint,
   onAddPriceChange,
   onVoid,
   onDelete,
@@ -119,7 +120,9 @@ function CommonActions({
       onPrintTTA();
     } else if (action === "printFreebies") {
       onPrintFreebies();
-    } else if (action === "addPriceChange") {
+    } else if (action === "print"){
+      onPrint(); 
+    }else if (action === "addPriceChange") {
       onAddPriceChange();
     } else if (action === "delete") {
       onDelete();
@@ -606,6 +609,20 @@ function CommonActions({
             Print Freebies
           </MenuItem>
         )}
+
+        {onPrint && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("print");
+            }}
+            disabled={disableActions ? disableActions?.includes("print") : false}
+          >
+            <Print />
+            Print
+          </MenuItem>
+        )}
+        
 
         {onAttach && (
           <MenuItem

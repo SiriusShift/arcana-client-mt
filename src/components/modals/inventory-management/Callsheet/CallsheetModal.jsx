@@ -93,9 +93,9 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
       confirm({
         children: "Are you sure you want to update callsheet?",
         question: true,
-        callback: () => {
+        callback: async () => {
           try{
-            triggerUpdate({
+            await triggerUpdate({
               accessBy: 0,
               clientId: selectedRowData?.clientId,
               item: transformData,

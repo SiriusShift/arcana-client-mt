@@ -48,12 +48,12 @@ const TransferOutFormDetails = ({ details, isFetching }) => {
           Page: 1,
           PageSize: 1000,
           Status: true,
-          isDepot: true,
+          isMarketing: true
         },
         {
           preferCacheValue: true,
         }
-      );
+      ); 
     }
   }, [cdoRoleId, triggerCDO]);
 

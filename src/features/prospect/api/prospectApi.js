@@ -1,6 +1,6 @@
 import { api } from "../../api";
 
-const prospectApi = api
+export const prospectApi = api
   .enhanceEndpoints({ addTagTypes: ["Prospecting", "Notification"] })
   .injectEndpoints({
     tagTypes: ["Prospecting"],
@@ -103,11 +103,11 @@ const prospectApi = api
       }),
 
       putRejectFreebies: builder.mutation({
-        query: (id) => ({
-          url: `/Freebies/RejectFreebies/${id}`,
+        query: (body) => ({
+          url: `/Freebies/RejectFreebies`,
           method: "PUT",
           // params: params,
-          // body: body,
+          body: body,
         }),
         invalidatesTags: ["Prospecting"],
       }),

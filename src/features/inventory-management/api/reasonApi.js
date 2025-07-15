@@ -29,10 +29,11 @@ export const reasonApi = api
       }),
       putReason: builder.mutation({
         query: ({ id, ...body }) => ({
-          url: `/UpdateReason/${id}`,
+          url: `/UpdateReason`,
           method: "PUT",
           body,
         }),
+        invalidatesTags: ["Reasons"],
       })
     }),
   });

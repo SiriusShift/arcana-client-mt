@@ -44,7 +44,7 @@ function MiscIssue() {
     "id",
     "cluster",
     "cdoName",
-    "dateReceived",
+    "transactionDate",
   ];
 
   const dateTimeArray = ["transactionDate", "dateReceived"];
@@ -56,7 +56,7 @@ function MiscIssue() {
   // Functions
   const handleView = () => {
     navigate(
-      `${selectedRowData?.moveOrderId}?dateFrom=${moment(dateFrom).format(
+      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
         "YYYY-MM-DD"
       )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
     );

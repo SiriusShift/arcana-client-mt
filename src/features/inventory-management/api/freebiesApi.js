@@ -5,7 +5,7 @@ import {
   dummyRequestFreebies,
 } from "../../../utils/DummyQueryFn";
 
-const freebiesApi = api
+export const freebiesApi = api
   .enhanceEndpoints({ addTagTypes: ["Freebie", "Freebies", "Items With BBD"] })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -38,6 +38,15 @@ const freebiesApi = api
         // queryFn: dummyGetAllFreebiesRequests,
       }),
 
+      putReleaseFreebieRequest: builder.mutation({
+        query: ({id, body}) => ({
+          url: `/ReleaseFreebieOrders/${id}`,
+          method: "PUT",
+          body: body,
+        }),
+        invalidatesTags: ["Freebies"]
+      }),
+
       getFreebieRequestById: builder.query({
         // Uncomment this when the backend is ready
         // query: (id) => ({
@@ -59,4 +68,5 @@ export const {
   useRequestFreebiesMutation,
   useGetAllFreebieRequestsQuery,
   useGetFreebieRequestByIdQuery,
+  usePutReleaseFreebieRequestMutation
 } = freebiesApi;

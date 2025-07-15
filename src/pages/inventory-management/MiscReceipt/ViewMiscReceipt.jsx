@@ -1,14 +1,12 @@
 import { Box } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { transferOutSchema } from "../../../schema/schema";
-import { useGetAllTransferOutsQuery, useGetTransferOutByIdQuery } from "../../../features/inventory-management/api/transferOutApi";
+import { miscInSchema, transferOutSchema } from "../../../schema/schema";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
-import OutrightReturnFormHeader from "../../../components/page-components/inventory-management/outright-return/OutrightReturnFormHeader";
-import OutrightItems from "../../../components/page-components/inventory-management/outright-return/OutrightItems";
 import MiscReceiptFormHeader from "../../../components/page-components/inventory-management/misc-receipt/MiscReceiptFormHeader";
 import MiscReceiptItems from "../../../components/page-components/inventory-management/misc-receipt/MiscReceiptItems";
+import MiscReceiptFormDetails from "../../../components/page-components/inventory-management/misc-receipt/MiscReceiptFormDetails";
 import { useGetAllReceivedOrdersQuery } from "../../../features/inventory-management/api/receivingApi";
 import moment from "moment";
 
@@ -22,8 +20,8 @@ const ViewMiscReceipt = () => {
   const navigate = useNavigate();
 
   const methods = useForm({
-    resolver: yupResolver(transferOutSchema.schema),
-    defaultValues: transferOutSchema.defaultValues,
+    resolver: yupResolver(miscInSchema.schema),
+    defaultValues: miscInSchema.defaultValues,
   });
 
   const { data, isFetching, isError } = useGetAllReceivedOrdersQuery({
@@ -33,7 +31,7 @@ const ViewMiscReceipt = () => {
     IsMiscellaneousIn: true
   });
 
-  console.log(data)
+  console.log(methods.watch())
   
   useEffect(() => {
     if (isError) {
@@ -46,6 +44,7 @@ const ViewMiscReceipt = () => {
       <MiscReceiptFormHeader />
 
       <FormProvider {...methods}>
+        <MiscReceiptFormDetails details={data?.value?.mo[0]}/>
         <MiscReceiptItems items={data?.value?.mo[0]?.moveItems || []} isFetching={isFetching} />
       </FormProvider>
     </Box>

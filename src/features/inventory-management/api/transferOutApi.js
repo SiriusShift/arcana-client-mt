@@ -7,7 +7,7 @@ import {
 
 const transferOutApi = api
   .enhanceEndpoints({
-    addTagTypes: ["Transfer Out", "Transfer Outs", "Items With BBD"],
+    addTagTypes: ["Transfer Out", "Transfer Outs", "Items With BBD", "Return To Depot"],
   })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -17,7 +17,7 @@ const transferOutApi = api
           method: "POST",
           body,
         }),
-        invalidatesTags: ["Transfer Out", "Transfer Outs", "Items With BBD"],
+        invalidatesTags: ["Transfer Out", "Transfer Outs", "Items With BBD", "Return To Depot"],
 
         // This is a dummy implementation of the request
         // Remove this when the backend is ready
@@ -37,6 +37,16 @@ const transferOutApi = api
         // This is a dummy implementation of the response
         // Remove this when the backend is ready
         // queryFn: dummyGetAllTransferOuts,
+      }),
+
+      getReturnToDepot: builder.query({
+        query: (params) => ({
+          url: "/GetTransferToDepot",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Return To Depot"],
+        // transformResponse: (response) => response.value
       }),
 
       // getTransferOutById: builder.query({
@@ -61,4 +71,5 @@ export const {
   useGetAllTransferOutsQuery,
   useLazyGetTransferOutByIdQuery,
   useGetTransferOutByIdQuery,
+  useGetReturnToDepotQuery
 } = transferOutApi;

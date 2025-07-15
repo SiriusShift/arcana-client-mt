@@ -55,7 +55,7 @@ const MiscIssueFormDetails = ({ details, isFetching }) => {
     error,
   } = useGetReasonsQuery(
     {
-      isActive: true,
+      isActive: !viewOnly && true,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -70,7 +70,7 @@ const MiscIssueFormDetails = ({ details, isFetching }) => {
           Page: 1,
           PageSize: 1000,
           Status: true,
-          isDepot: true,
+          // isDepot: true,
         },
         {
           preferCacheValue: true,
@@ -80,14 +80,18 @@ const MiscIssueFormDetails = ({ details, isFetching }) => {
   }, [cdoRoleId, triggerCDO]);
 
   useEffect(() => {
-    if (details) {
+    if (details && data) {
       setValue(
         "to",
-        cdoData?.users.find((user) => user.fullname === details.transferTo)
+        cdoData?.users.find((user) => user.fullname === details.cdoName)
       );
-      setValue("transactionDate", moment(details.transactionDate));
+      setValue("transactionDate", moment(details.dateReceived));
+      setValue(
+        "remarks",
+        data?.find((item) => item?.id === details?.reasonInfo)
+      );
     }
-  }, [details, setValue, cdoData]);
+  }, [details, setValue, cdoData, data]);
 
   if (isFetching || isCdoFetching || isRolesFetching) {
     return <MiscIssueFormDetailsSkeleton />;
@@ -152,6 +156,7 @@ const MiscIssueFormDetails = ({ details, isFetching }) => {
         name="remarks"
         control={control}
         options={data || []}
+        disabled={viewOnly}
         getOptionLabel={(option) => option?.reasonInfo || ""}
         // isOptionEqualToValue={(option, value) => option.id === value.id}
         loading={isFetchingReason}

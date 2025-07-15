@@ -108,14 +108,17 @@ function ReceivingItems({
 
   useEffect(() => {
     reset({
-      items: items?.map((item) => ({
+      items: items?.map((item) => {
+        console.log(item.actualQuantity)
+        return {
         itemCode: item?.itemCode || "",
         itemDescription: item?.itemDescription || "",
         uom: item?.uom || "",
         quantity: item?.quantity || null,
-        actualQuantity: item?.actualQuantity || null,
-        reason: item?.reason || "",
-      })),
+        actualQuantity: item?.actualQuantity ?? null,
+        variance: (item?.actualQuantity && item?.quantity) ? item?.quantity - item?.actualQuantity : null,
+        reason: item?.reason || ""}
+      }),
     });
   }, [items, reset]);
 
@@ -299,7 +302,7 @@ function ReceivingItems({
                             size="small"
                             autoComplete="off"
                             type="text"
-                            value={value || ""}
+                            value={value ?? ""}
                             required
                             onValueChange={(values) => {
                               const { value: newValue } = values;
@@ -360,12 +363,12 @@ function ReceivingItems({
                                   (item) =>
                                     item.itemCode ===
                                     watchItems[index]?.itemCode
-                                )?.soh
+                                )?.reserve
                               ? data?.mo?.find(
                                   (item) =>
                                     item.itemCode ===
                                     watchItems[index]?.itemCode
-                                )?.soh < 5
+                                )?.reserve < 5
                                 ? "orange"
                                 : "green"
                               : "red"
@@ -373,7 +376,7 @@ function ReceivingItems({
                           lineHeight="0.5"
                         >
                           {watchItems[index]?.itemCode
-                            ? `SOH: ${
+                            ? `Available: ${
                                 data?.mo?.find(
                                   (item) =>
                                     item.itemCode ===
@@ -395,7 +398,7 @@ function ReceivingItems({
                           autoComplete="off"
                           onChange={onChange}
                           onBlur={onBlur}
-                          value={value || ""}
+                          value={value ?? ""}
                           inputRef={ref}
                           sx={{ maxWidth: "120px" }}
                           disabled
@@ -408,22 +411,23 @@ function ReceivingItems({
                       name={`items[${index}].reason`}
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <TextField
-                          label="Remarks (optional)"
+                          label="Remarks"
                           size="small"
                           autoComplete="off"
                           onChange={onChange}
                           onBlur={onBlur}
                           value={value || ""}
                           inputRef={ref}
-                          disabled={
-                            disableFields ||
-                            items?.some(
-                              (item, itemIndex) =>
-                                item.itemCode ===
-                                  watch(`items[${index}].itemCode`) &&
-                                itemIndex === index // Disable rows with the same itemCode except the current row
-                            )
-                          }
+                          disabled={disableFields}
+                          // disabled={
+                          //   disableFields ||
+                          //   items?.some(
+                          //     (item, itemIndex) =>
+                          //       item.itemCode ===
+                          //         watch(`items[${index}].itemCode`) &&
+                          //       itemIndex === index // Disable rows with the same itemCode except the current row
+                          //   )
+                          // }
                         />
                       )}
                     />

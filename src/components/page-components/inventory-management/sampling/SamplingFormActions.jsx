@@ -36,7 +36,8 @@ const SamplingFormActions = () => {
           bbd: moment(item.bbd).format("YYYY-MM-DD"),
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
-        // clientId: data.client.id,
+        clientId: 0,
+        description: data.description,
         transactionType: "Sampling"
       };
 

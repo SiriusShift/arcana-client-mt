@@ -28,6 +28,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import useDisclosure from "../../../hooks/useDisclosure";
 import CommonDialog from "../../../components/common/CommonDialog";
 import {
+  useGetFreebiesByClientIdQuery,
   useLazyGetAttachmentsByClientIdQuery,
   useLazyGetListingFeeByClientIdQuery,
   useLazyGetOtherExpensesByClientIdQuery,
@@ -49,6 +50,7 @@ import {
   resetListingFeeForRegistration,
   resetTermsAndConditions,
   setExpensesForRegistration,
+  setFreebies,
   setIsExpensesValid,
   setIsListingFeeValid,
   setListingFeeForRegistration,
@@ -89,6 +91,7 @@ import {
 } from "../../../features/otherExpenses/api/otherExpensesRegApi";
 import { useGetAllProductsQuery } from "../../../features/setup/api/productsApi";
 import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
+import { set } from "lodash";
 
 function DirectRegisterForm({
   open,
@@ -105,7 +108,6 @@ function DirectRegisterForm({
     setRepresentativeRequirementsIsLink,
     setRequirementsMode,
   } = useContext(AttachmentsContext);
-  
 
   const snackbar = useSnackbar();
 
@@ -127,8 +129,10 @@ function DirectRegisterForm({
     setPhotoProofDirect,
   } = useContext(DirectReleaseContext);
 
+  // console.log(photoProofDirect, signatureDirect);
+
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  console.log("selected row",selectedRowData);
+  console.log("selected row", selectedRowData);
   const termsAndConditions = useSelector(
     (state) => state.regularRegistration.value.termsAndConditions
   );
@@ -236,8 +240,8 @@ function DirectRegisterForm({
             }
             return true;
           }
-          
-          if(key === "withholdingIssuance"){
+
+          if (key === "withholdingIssuance") {
             return true;
           }
 
@@ -247,7 +251,7 @@ function DirectRegisterForm({
       icon: <Gavel />,
       disabled: false,
     },
-    
+
     termsAndConditions["terms"] !== 1 && {
       label: "Attachments",
       isValid:
@@ -271,7 +275,6 @@ function DirectRegisterForm({
       disabled: false,
     },
   ].filter(Boolean);
-
 
   navigators[1].disabled = !editMode && activeTab === "Personal Info";
   navigators[2].disabled = !navigators[0].isValid || !navigators[1].isValid;
@@ -311,12 +314,13 @@ function DirectRegisterForm({
       Page: 1,
       PageSize: 1000,
     });
-    console.log("cluster",clusterData);
+  console.log("cluster", clusterData);
   const { data: productData } = useGetAllProductsQuery({
     Status: true,
     page: 1,
     pageSize: 1000,
   });
+
   const { data: expensesDataChoices } = useGetAllOtherExpensesQuery({
     Status: true,
     page: 1,
@@ -329,6 +333,10 @@ function DirectRegisterForm({
   //Fetch Terms, Attachments, Listing Fee, and OtherExpenses
   const [triggerTerms, { data: termsData, isLoading: isTermsDataLoading }] =
     useLazyGetTermsByClientIdQuery();
+  const { data, isLoading } = useGetFreebiesByClientIdQuery({
+    id: selectedRowData?.id,
+  });
+  console.log(productData, data, "productData");
   const [
     triggerAttachments,
     { data: attachmentsData, isLoading: isAttachmentsDataLoading },
@@ -346,7 +354,7 @@ function DirectRegisterForm({
   const { data: priceModeData, isLoading: isPriceModeLoading } =
     useGetAllPriceModeForClientsQuery();
 
-    // console.log(watch())
+  // console.log(watch())
 
   //Drawer Functions
   const onSubmit = async (data) => {
@@ -381,7 +389,8 @@ function DirectRegisterForm({
           ...(freebiesDirect?.length > 0
             ? {
                 freebies: freebiesDirect.map((freebie) => ({
-                  itemId: freebie.itemId.id,
+                  itemId: freebie.itemId.itemId,
+                  quantity: freebie.quantity,
                 })),
               }
             : {}),
@@ -393,32 +402,33 @@ function DirectRegisterForm({
           ...(freebiesDirect?.length > 0
             ? {
                 freebies: freebiesDirect.map((freebie) => ({
-                  itemId: freebie.itemId.id,
+                  itemId: freebie.itemId.itemId,
+                  quantity: freebie.quantity,
                 })),
               }
             : {}),
         }).unwrap();
+      }
 
-        if (freebiesDirect && signatureDirect && photoProofDirect) {
-          const signatureFile = new File(
-            [base64ToBlob(signatureDirect)],
-            `signature_${Date.now()}.jpg`,
-            { type: "image/jpeg" }
-          );
+      if (freebiesDirect && signatureDirect && photoProofDirect) {
+        const signatureFile = new File(
+          [base64ToBlob(signatureDirect)],
+          `signature_${Date.now()}.jpg`,
+          { type: "image/jpeg" }
+        );
 
-          const formData = new FormData();
-          formData.append("PhotoProof", photoProofDirect);
-          formData.append("ESignature", signatureFile);
+        const formData = new FormData();
+        formData.append("PhotoProof", photoProofDirect);
+        formData.append("ESignature", signatureFile);
 
-          await putReleaseFreebies({
-            id: response?.value?.id,
-            body: formData,
-          }).unwrap();
+        await putReleaseFreebies({
+          id: response?.value?.id || selectedRowData?.id,
+          body: formData,
+        }).unwrap();
 
-          setPhotoProofDirect(null);
-          setSignatureDirect(null);
-          dispatch(resetFreebies());
-        }
+        setPhotoProofDirect(null);
+        setSignatureDirect(null);
+        dispatch(resetFreebies());
       }
 
       const clientId = editMode ? selectedRowData?.id : response?.value?.id;
@@ -559,8 +569,6 @@ function DirectRegisterForm({
       }
     }
 
-    
-
     if (editMode) {
       await putUpdateClientAttachments({
         id: selectedRowData?.id,
@@ -590,7 +598,7 @@ function DirectRegisterForm({
           params: { listingFeeId: listingFeeData?.listingFees?.[0]?.id },
           total: parseInt(totalAmount),
           listingItems: listingFees.map((listingItem) => ({
-            itemId: listingItem.itemId.id,
+            itemId: listingItem.itemId.itemId,
             sku: listingItem.sku,
             unitCost: parseFloat(listingItem.unitCost),
           })),
@@ -601,7 +609,7 @@ function DirectRegisterForm({
           clientId,
           total: parseInt(totalAmount),
           listingItems: listingFees.map((listingItem) => ({
-            itemId: listingItem.itemId.id,
+            itemId: listingItem.itemId.itemId,
             sku: listingItem.sku,
             unitCost: parseFloat(listingItem.unitCost),
           })),
@@ -612,7 +620,7 @@ function DirectRegisterForm({
         clientId,
         total: parseInt(totalAmount),
         listingItems: listingFees.map((listingItem) => ({
-          itemId: listingItem.itemId.id,
+          itemId: listingItem.itemId.itemId,
           sku: listingItem.sku,
           unitCost: parseFloat(listingItem.unitCost),
         })),
@@ -657,6 +665,7 @@ function DirectRegisterForm({
   };
 
   const handleDrawerClose = () => {
+    console.log("first");
     onClose();
     onCancelConfirmClose();
     handleResetForms();
@@ -665,6 +674,7 @@ function DirectRegisterForm({
   const handleResetForms = () => {
     reset();
     clearErrors();
+    console.log("test");
     // setValue("phoneNumber", "");
 
     setSameAsOwnersAddress(false);
@@ -699,13 +709,16 @@ function DirectRegisterForm({
       authorizationLetter: false,
     });
 
+    console.log("test");
+
     setRequirementsMode(null);
     dispatch(resetTermsAndConditions());
-    // dispatch(resetListingFeeForRegistration());
-    // dispatch(resetExpensesForRegistration());
+    dispatch(resetListingFeeForRegistration());
+    dispatch(resetExpensesForRegistration());
     dispatch(resetFreebies());
     setEditMode(false);
     setActiveTab("Personal Info");
+    console.log("REsetted Listing and Expenses");
   };
 
   const customRibbonContent = (
@@ -721,7 +734,8 @@ function DirectRegisterForm({
           return isTermsDataLoading ||
             isAttachmentsDataLoading ||
             isListingFeeLoading ||
-            isExpensesLoading ? (
+            isExpensesLoading ||
+            isLoading ? (
             <Skeleton key={i} sx={{ transform: "none" }} />
           ) : (
             <Button
@@ -908,19 +922,27 @@ function DirectRegisterForm({
       setValue(
         "storeTypeId",
         storeTypeData?.storeTypes?.find(
-          (item) => item.storeTypeName === selectedRowData?.storeType || selectedRowData.storeType.id === item.id
+          (item) =>
+            item.storeTypeName === selectedRowData?.storeType ||
+            selectedRowData.storeType.id === item.id
         )
       );
       setValue("businessAddress", selectedRowData?.businessAddress);
       setValue(
         "clusterId",
         clusterData?.cluster?.find(
-          (item) => selectedRowData?.clusterId === item.id || selectedRowData.clusterId.id === item.id
+          (item) =>
+            selectedRowData?.clusterId === item.id ||
+            selectedRowData.clusterId.id === item.id
         )
       );
       setValue(
         "priceModeId",
-        priceModeData.find((item) => selectedRowData?.priceModeId === item.id || selectedRowData.priceModeId.id === item.id)
+        priceModeData.find(
+          (item) =>
+            selectedRowData?.priceModeId === item.id ||
+            selectedRowData.priceModeId.id === item.id
+        )
       );
       setValue(
         "authorizedRepresentative",
@@ -938,6 +960,26 @@ function DirectRegisterForm({
       ) {
         setSameAsOwnersAddress(true);
       }
+
+      console.log(data?.freebies?.[0]?.freebies, "testing dispatch!");
+
+      dispatch(
+        setFreebies(
+          data?.freebies?.[0]?.freebies?.map((freebie) => ({
+            itemId: productData?.items?.find(
+              (item) => item.itemCode === freebie.itemCode
+            ),
+            quantity: freebie.quantity,
+            uom: freebie?.uom,
+            itemDescription: freebie?.itemDescription,
+          }))
+        )
+      );
+
+      console.log("testing dispatch!");
+
+      setSignatureDirect(data?.freebies?.[0]?.eSignature);
+      setPhotoProofDirect(data?.freebies?.[0]?.photoProof);
 
       // Terms & Conditions
       dispatch(
@@ -977,7 +1019,7 @@ function DirectRegisterForm({
 
       // Attachments
       // API Version
-      if(attachmentsData?.attachments?.length === 1){
+      if (attachmentsData?.attachments?.length === 1) {
         if (includeAuthorizedRepresentative) {
           setRequirementsMode("representative");
 
@@ -1027,14 +1069,13 @@ function DirectRegisterForm({
             // )?.documentLink,
           });
           setOwnersRequirementsIsLink({
-            signature: true,  
+            signature: true,
             // storePhoto: true,
             // businessPermit: true,
             // photoIdOwner: true,
           });
         }
-      }
-      else if (attachmentsData?.attachments?.length > 4) {
+      } else if (attachmentsData?.attachments?.length > 4) {
         if (includeAuthorizedRepresentative) {
           setRequirementsMode("representative");
         } else {
@@ -1590,9 +1631,13 @@ function DirectRegisterForm({
                       }
                       disableClearable
                       loading={isStoreTypeLoading}
-                      // value={storeTypeData?.storeTypes?.find(
-                      //   (store) => store.storeTypeName === selectedStoreType
-                      // )}
+                      onChange={(_, value) => {
+                        dispatch(resetFreebies());
+                        setSignatureDirect(null);
+                        setPhotoProofDirect(null);
+
+                        return value;
+                      }}
                       isOptionEqualToValue={(option, value) =>
                         option.id === value.id
                       }

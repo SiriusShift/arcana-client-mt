@@ -82,64 +82,105 @@ export const reportNames = [
   {
     label: "MRP Rollback",
     index: 9,
-    value: "mrp-rollback",
+    value: "MRPRollbackExport",
   },
   {
-    label: "GL Cash Receipt",
+    label: "Inventory Movement",
     index: 10,
-    value: "arcana-gl-cash-receipt"
+    value: "InventoryMovementExport"
   },
   {
-    label: "GL Inventoriables",
+    label: "Inventory History",
     index: 11,
-    value: "arcana-gl"
-  },
-  {
-    label: "GL Sales GT",
-    index: 12,
-    value: "arcana-gt"
+    value: "TransactionHistoricalExport"
   },
   {
     label: "Receiving Reports",
-    index: 13,
+    index: 12,
     value: "arcana-mo-reports",
   },
   {
-    label: "Return by CDO Reports",
-    index: 14,
-    value: "arcana-return-by-cdo-reports",
-  },
-  {
-    label: "Transfer Out Reports",
-    index: 15,
-    value: "arcana-transfer-out-reports",
-  },
-  {
-    label: "Transfer In Reports",
-    index: 16,
-    value: "arcana-transfer-in-reports",
+    label: "Transfer Reports",
+    index: 13,
+    value: "GetTransferReportExport",
   },
   {
     label: "Freebie Reports",
-    index: 17,
+    index: 14,
     value: "arcana-freebie-report",
   },
   {
     label: "Sampling Reports",
-    index: 18,
+    index: 15,
     value: "arcana-sampling-report",
   },
   {
     label: "Return Reports",
-    index: 19,
+    index: 16,
     value: "arcana-return-report",
   },
   {
     label: "Replace Reports",
-    index: 20,
+    index: 17,
     value: "arcana-replace-report",
   },
+    {
+    label: "GL Cash Receipt",
+    index: 18,
+    value: "arcana-gl-cash-receipt"
+  },
+  {
+    label: "GL Inventoriables",
+    index: 19,
+    value: "arcana-gl"
+  },
+  {
+    label: "GL Sales GT",
+    index: 20,
+    value: "arcana-gt"
+  },
 ];
+
+export const returnToDepot = [
+  {
+    id: 1,
+    name: "Outright Return",
+    value: "Outright",
+  },
+  {
+    id: 2,
+    name: "Pull Out",
+    value: "Pullout",
+  },
+  {
+    id: 3,
+    name: "Return from Sampling",
+    value: "ReturnSampling"
+  }
+]
+
+export const transferTypes = [
+  {
+    id: 1,
+    name: "Outright Return",
+    value: "Outright",
+  },
+  {
+    id: 2,
+    name: "Pull Out",
+    value: "Pullout",
+  },
+  {
+    id: 3,
+    name: "Transfer In",
+    value: "In",
+  },
+  {
+    id: 4,
+    name: "Transfer Out",
+    value: "Out",
+  }
+]
 
 export const regions = [
   {
@@ -245,6 +286,12 @@ export const paymentTypes = [
 	  uppercase: "OTHERS",
 	  icon: "MoreHoriz",
 	},
+  {
+    label: "Rebate",
+    value: "Rebate",
+    uppercase: "REBATE",
+    icon: "KeyboardReturn",
+  }
   ];
 
 export const paymentTypesAdvPayment = [
@@ -283,3 +330,4 @@ export const invoiceTypes = [
     value: "CI",
   },
 ];
+

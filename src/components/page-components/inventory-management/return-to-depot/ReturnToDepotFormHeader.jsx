@@ -2,11 +2,11 @@ import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 import { Box, IconButton, Paper, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const OutrightReturnFormHeader = () => {
+const ReturnToDepotFormHeader = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/inventory-management/outright-return", { replace: true });
+    navigate("/inventory-management/return-to-depot", { replace: true });
   };
 
   return (
@@ -19,7 +19,7 @@ const OutrightReturnFormHeader = () => {
             </IconButton>
 
             <Typography className="pageHeader__title">
-              Outright Return Form
+              Return to Depot Form
             </Typography>
           </Box>
         </Box>
@@ -28,4 +28,4 @@ const OutrightReturnFormHeader = () => {
   );
 };
 
-export default OutrightReturnFormHeader;
+export default ReturnToDepotFormHeader;

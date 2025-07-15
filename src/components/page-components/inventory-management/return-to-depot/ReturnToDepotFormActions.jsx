@@ -8,22 +8,27 @@ import useConfirm from "../../../../hooks/useConfirm";
 import useSnackbar from "../../../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../../../utils/CustomFunctions";
 import moment from "moment";
-import { Cancel, SaveOutlined } from "@mui/icons-material";
+import { Cancel, Print, SaveOutlined } from "@mui/icons-material";
+import { useDispatch } from "react-redux";
+import useDisclosure from "../../../../hooks/useDisclosure";
+import PrintInventoryModal from "../../../modals/PrintInventoryModal";
 
-const OutrightFormActions = () => {
+const ReturnToDepotFormActions = () => {
   const navigate = useNavigate();
   const confirm = useConfirm();
+  const dispatch = useDispatch();
   const snackbar = useSnackbar();
 
   const {
-    formState: { isValid },
+    formState: { isValid, errors },
     handleSubmit,
+    watch,
   } = useFormContext();
 
   const [transferOut] = useTransferOutMutation();
 
   const handleCancel = () => {
-    navigate("/inventory-management/outright-return", { replace: true });
+    navigate("/inventory-management/return-to-depot", { replace: true });
   };
 
   const onSubmit = async (data) => {
@@ -34,12 +39,17 @@ const OutrightFormActions = () => {
           itemCode: item.item.itemCode,
           quantity: item.quantity,
           reason: item.reason,
+          reasonInfo: item.remarks?.id,
           bbd: moment(item.bbd).format("YYYY-MM-DD"),
           amount: item.price,
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
-        to: 25,
+        to: null,
+        referenceNo: data?.referenceNo,
+        moveOrderId: data?.moveOrder?.moveOrderId,
+        transferType: data?.type?.value,
       };
+      console.log(transformedData);
 
       await confirm({
         children: "Are you sure you want to return these items?",
@@ -52,7 +62,7 @@ const OutrightFormActions = () => {
         variant: "success",
       });
 
-      navigate("/inventory-management/outright-return", { replace: true });
+      navigate("/inventory-management/return-to-depot", { replace: true });
     } catch (error) {
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
@@ -77,4 +87,4 @@ const OutrightFormActions = () => {
   );
 };
 
-export default OutrightFormActions;
+export default ReturnToDepotFormActions;

@@ -64,9 +64,9 @@ import ViewReturn from "../pages/inventory-management/Return/ViewReturn";
 import Reports from "../pages/Reports";
 import Cheque from "../pages/cheque";
 import Attendance from "../pages/check-in";
-import Outright from "../pages/inventory-management/OutrightReturn";
-import OutrightForm from "../pages/inventory-management/OutrightReturn/OutrightForm";
-import ViewOutright from "../pages/inventory-management/OutrightReturn/ViewOutrightReturn";
+import Outright from "../pages/inventory-management/ReturnToDepot";
+import ReturnToDepotForm from "../pages/inventory-management/ReturnToDepot/ReturnToDepotForm";
+import ViewReturnToDepot from "../pages/inventory-management/ReturnToDepot/ViewReturnToDepot";
 import MiscReceipt from "../pages/inventory-management/MiscReceipt/index"
 import MiscOut from "../pages/inventory-management/MiscIssue/index"
 import MiscReceiptForm from "../pages/inventory-management/MiscReceipt/MiscReceiptForm";
@@ -75,6 +75,8 @@ import MiscIssue from "../pages/inventory-management/MiscIssue/index";
 import MiscIssueForm from "../pages/inventory-management/MiscIssue/MiscIssueForm";
 import ViewMiscIssue from "../pages/inventory-management/MiscIssue/ViewMiscIssue";
 import ReasonSetup from "../pages/inventory-management/ReasonSetup/index";
+import EndingInventory from "../pages/inventory-management/EndingInventory/index";
+
 
 export const router = createBrowserRouter([
   {
@@ -261,6 +263,20 @@ export const router = createBrowserRouter([
             element: <InventoryMRP />,
           },
           {
+            path: "ending-inventory",
+            element: <EndingInventory />,
+            children: [
+              // {
+              //   path: "ending-inventory-form",
+              //   element: <EndingInventoryForm />,
+              // },
+              // {
+              //   path: ":id",
+              //   element: <ViewEndingInventory />,
+              // },
+            ]
+          },
+          {
             path: "receiving",
             element: <Receiving />,
             children: [
@@ -275,16 +291,16 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: "outright-return",
+            path: "return-to-depot",
             element: <Outright />,
             children: [
               {
-                path: "outright-return-form",
-                element: <OutrightForm />,
+                path: "return-form",
+                element: <ReturnToDepotForm />,
               },
               {
                 path: ":id",
-                element: <ViewOutright />,
+                element: <ViewReturnToDepot />,
               },
             ],
           },
