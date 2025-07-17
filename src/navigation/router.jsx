@@ -39,6 +39,7 @@ import PageNotFound from "../pages/PageNotFound";
 import Clearing from "../pages/sales-management/Clearing";
 import OnlinePaymentPlatforms from "../pages/customer-management/OnlinePaymentPlatforms";
 import ApproverSettings from "../pages/user-management/ApproverSettings";
+// import Approver from "../pages/user-management/ApproverSettings";
 import InventoryManagement from "../pages/inventory-management";
 import InventoryMRP from "../pages/inventory-management/InventoryMRP";
 import Receiving from "../pages/inventory-management/Receiving";
@@ -76,6 +77,10 @@ import MiscIssueForm from "../pages/inventory-management/MiscIssue/MiscIssueForm
 import ViewMiscIssue from "../pages/inventory-management/MiscIssue/ViewMiscIssue";
 import ReasonSetup from "../pages/inventory-management/ReasonSetup/index";
 import EndingInventory from "../pages/inventory-management/EndingInventory/index";
+import FreebieApproval from "../pages/approval/FreebieApproval";
+import SamplingApproval from "../pages/approval/SamplingApproval";
+import ReturnFromSampling from "../pages/inventory-management/ReturnFromSampling";
+import ReturnSamplingForm from "../pages/inventory-management/ReturnFromSampling/ReturnSamplingForm";
 
 
 export const router = createBrowserRouter([
@@ -397,6 +402,16 @@ export const router = createBrowserRouter([
             ],
           },
           {
+            path:"return-sampling",
+            element: <ReturnFromSampling />,
+            children: [
+              {
+                path: "return-form",
+                element: <ReturnSamplingForm />
+              }
+            ]
+          },
+          {
             path: "return",
             element: <Return />,
             children: [
@@ -436,6 +451,14 @@ export const router = createBrowserRouter([
             path: "other-expenses-approval",
             element: <OtherExpensesApproval />,
           },
+          {
+            path: "freebie-approval",
+            element: <FreebieApproval />
+          },
+          {
+            path: "sampling-approval",
+            element: <SamplingApproval />
+          }
         ],
       },
       {

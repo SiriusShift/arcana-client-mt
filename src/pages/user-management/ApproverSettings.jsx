@@ -111,6 +111,8 @@ function Approver() {
     name: "approversWithLimitDigit",
   });
 
+  console.log(approverWithLimitDigitAppend?.length, approverWithLimitFields?.length)
+
   console.log(watch());
   console.log("errors: ", errors, isValid);
 
@@ -758,7 +760,7 @@ function Approver() {
                     approverWithLimitDigitAppend({
                       userId: null,
                       minValue: null,
-                      level: approverWithLimitDigitAppend.length + 1,
+                      level: approverWithLimitDigitFields.length + 1,
                     });
                   }
                 } else {

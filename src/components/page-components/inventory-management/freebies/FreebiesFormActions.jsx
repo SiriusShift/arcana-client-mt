@@ -38,9 +38,9 @@ const FreebiesFormActions = () => {
         transactionType: "Freebie",
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
         clientId: data.client.id,
+        moduleName: "Freebie Approval",
       };
       console.log(transformedData);
-
 
       await confirm({
         children: "Are you sure you want to request these freebie items?",

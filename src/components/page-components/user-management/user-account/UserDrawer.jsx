@@ -220,7 +220,7 @@ const UserDrawer = ({ editMode, ...props }) => {
       />
 
       {/* If role is CDO, require cluster selection */}
-      {watch("userRoleId")?.roleName === "CDO" && (
+      {(watch("userRoleId")?.roleName === "CDO" || watch("userRoleId")?.roleName === "Marketing") && (
         <ControlledAutocompleteMultiple
           name={"clusterId"}
           control={control}
@@ -240,6 +240,8 @@ const UserDrawer = ({ editMode, ...props }) => {
           )}
         />
       )}
+
+      
     </CommonDrawer>
   );
 };

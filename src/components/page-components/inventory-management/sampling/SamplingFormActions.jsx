@@ -37,8 +37,9 @@ const SamplingFormActions = () => {
         })),
         // transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
         clientId: 0,
+        moduleName: "Sampling Approval",
         description: data.description,
-        transactionType: "Sampling"
+        transactionType: "Sampling",
       };
 
       await confirm({

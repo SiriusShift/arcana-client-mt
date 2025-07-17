@@ -10,13 +10,14 @@ import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import { useGetAllSamplingsQuery } from "../../../features/inventory-management/api/samplingApi";
 import useDisclosure from "../../../hooks/useDisclosure";
 import PrintInventoryModal from "../../../components/modals/PrintInventoryModal";
+import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 
 function Sampling() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-
+  const [tabViewing, setTabViewing] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
@@ -28,16 +29,6 @@ function Sampling() {
     onOpen: onPrintOpen,
     onClose: onPrintClose,
   } = useDisclosure();
-
-  const { data, isFetching } = useGetAllSamplingsQuery({
-    Search: search,
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransactionType: "Sampling",
-    Status: "Released"
-  });
 
   const tableHeads = [
     "ID",
@@ -62,7 +53,36 @@ function Sampling() {
     nestedKeys: ["city", "province"],
   };
 
+  const tabs = [
+    {
+      case: 1,
+      name: "For Approval",
+      status: "Under review",
+    },
+    {
+      case: 3,
+      name: "Released Freebies",
+      status: "Released",
+    },
+    {
+      case: 2,
+      name: "Rejected Freebies",
+      status: "Rejected",
+    },
+  ];
+
   const dateTimeArray = ["transactionDate"];
+
+  //RTK QUERY
+  const { data, isFetching } = useGetAllSamplingsQuery({
+    Search: search,
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    TransactionType: "Sampling",
+    Status: tabs[tabViewing - 1]?.status,
+  });
 
   // Functions
   const handleView = () => {
@@ -80,9 +100,12 @@ function Sampling() {
   if (location.pathname === "/inventory-management/sampling") {
     return (
       <Box className="commonPageLayout">
-        <PageHeaderAdd
+        <PageHeaderAddTabs
           pageTitle="Sampling"
           addTitle="Add Sampling"
+          tabsList={tabs}
+          tabViewing={tabViewing}
+          setTabViewing={setTabViewing}
           onOpen={handleAdd}
           removeArchive
           removeSearch

@@ -44,18 +44,6 @@ function Freebies() {
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
-  const { data, isFetching } = useGetAllFreebieRequestsQuery({
-    Search: search,
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransactionType: "Freebie",
-    Status: tabViewing === 1 ? "For releasing" : "Released",
-  });
-
-  console.log(data);
-
   const tableHeads = [
     "ID",
     "Owner's Name",
@@ -82,15 +70,36 @@ function Freebies() {
   const tabs = [
     {
       case: 1,
+      name: "For Approval",
+      status: "Under review",
+    },
+    {
+      case: 2,
       name: "For releasing",
       status: "For releasing",
     },
     {
-      case: 2,
+      case: 3,
       name: "Released Freebies",
       status: "Released",
     },
+    {
+      case: 3,
+      name: "Rejected Freebies",
+      status: "Rejected",
+    },
   ];
+
+  //RTK QUERY
+  const { data, isFetching } = useGetAllFreebieRequestsQuery({
+    Search: search,
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    TransactionType: "Freebie",
+    Status: tabs[tabViewing - 1]?.status,
+  });
 
   // Functions
   const handleView = () => {
@@ -159,9 +168,9 @@ function Freebies() {
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
             page={page}
-            onPrintFreebies={tabViewing === 2 && onPrintOpen}
-            onReleaseFreebie={tabViewing === 1 && onFreebieReleaseOpen}
-            onCancelFreebies={tabViewing === 1 && onFreebieCancelOpen}
+            onPrintFreebies={tabViewing === 3 && onPrintOpen}
+            onReleaseFreebie={tabViewing === 2 && onFreebieReleaseOpen}
+            onCancelFreebies={tabViewing === 2 && onFreebieCancelOpen}
             setPage={setPage}
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}

@@ -310,7 +310,7 @@ export const navigationData = [
         name: "Return to Depot",
         path: "/inventory-management/return-to-depot",
         description: "Return items to depot",
-        icon: "KeyboardReturn"
+        icon: "KeyboardReturn",
       },
       {
         id: 5,
@@ -330,7 +330,8 @@ export const navigationData = [
         id: 7,
         name: "Reason Setup",
         path: "/inventory-management/reason-setup",
-        description: "Reason for miscellaneous receipt and issue and outright return",
+        description:
+          "Reason for miscellaneous receipt and issue and outright return",
         icon: "ReportProblem",
       },
       {
@@ -366,6 +367,13 @@ export const navigationData = [
         name: "Sampling",
         path: "/inventory-management/sampling",
         description: "Manage and track item sampling",
+        icon: "Restaurant",
+      },
+      {
+        id: 12,
+        name: "Return from Sampling",
+        path: "/inventory-management/return-sampling",
+        description: "Manage and track returns of sampling",
         icon: "Restaurant",
       },
       {
@@ -423,20 +431,34 @@ export const navigationData = [
         description: "Approval and rejection of sp. discount requests",
         // notifications: "pendingSpDiscount",
       },
+      {
+        id: 5,
+        name: "Freebie Approval",
+        path: "/approval/freebie-approval",
+        icon: "CardGiftcard",
+        description: "Approval and rejection of freebie",
+      },
+      {
+        id: 5,
+        name: "Sampling Approval",
+        path: "/approval/sampling-approval",
+        icon: "Restaurant",
+        description: "Approval and rejection of sampling",
+      },
     ],
   },
   {
     id: 10,
     name: "Reports",
-    path:"/reports",
+    path: "/reports",
     icon: "Description",
-    description: "Viewing and exporting of reports"
+    description: "Viewing and exporting of reports",
   },
   {
     id: 11,
     name: "Cheque",
-    path:"/cheque",
+    path: "/cheque",
     icon: "AccountBalance",
-    description: "Viewing and exporting of reports"
-  }
+    description: "Viewing and exporting of reports",
+  },
 ];
