@@ -438,6 +438,20 @@ function PaymentHistoriesBySalesInvoiceModal({ ...props }) {
                                       </Box>
                                     </>
                                   )}
+                                 {paymentTransaction.paymentMethod ===
+                                    "Others With Remarks" && (
+                                    <>
+                                      <Box className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row">
+                                        <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row__label">
+                                          Remarks:
+                                        </Typography>
+
+                                        <Typography className="paymentHistoriesBySalesInvoiceModal__body__stepContent__paymentsDetailed__item__content__row__value">
+                                          {paymentTransaction.reason}
+                                        </Typography>
+                                      </Box>
+                                    </>
+                                  )}
                                 </Box>
                               </Box>
                             )

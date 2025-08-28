@@ -8,10 +8,12 @@ import { useSelector } from "react-redux";
 import { useGetAllTransferInsQuery } from "../../../features/inventory-management/api/transferInApi";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
+import useValidate from "../../../hooks/useValidate";
 
 function TransferIn() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -19,33 +21,47 @@ function TransferIn() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
 
-  const { data, isFetching } = useGetAllTransferInsQuery({
-    Search: search,
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransferInStatus:
-      tabViewing === 1 ? "Pending" : tabViewing === 2 ? "Received" : "Rejected",
-  });
+  const { data, isFetching } = useGetAllTransferInsQuery(
+    {
+      Search: search,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+      DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+      Status:
+        tabViewing === 1
+          ? "For Receiving"
+          : tabViewing === 2
+          ? "Received"
+          : "Rejected",
+      TransferType: "In",
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const tableHeads = [
     "ID",
+    "Series ID",
     "From",
     "Cluster",
     "Total Quantity",
     "Transaction Date",
+    ...(tabViewing === 3 ? ["Reason"] : []),
   ];
 
   const customOrderKeys = [
     "id",
-    "from",
-    "cluster",
+    "seriesId",
+    "createdBy",
+    "createdByCluster",
     "totalQuantity",
     "transactionDate",
+    ...(tabViewing === 3 ? ["rejectReason"] : []), // Conditionally add "Reason"
   ];
 
   const dateTimeArray = ["transactionDate"];
@@ -70,10 +86,20 @@ function TransferIn() {
 
   // Functions
   const handleView = () => {
+    const error = validateEndingInventory();
+    if (error) return
     if (tabViewing === 1) {
-      navigate(`transfer-in-form/${selectedRowData?.id}`);
+      navigate(
+        `transfer-in-form/${selectedRowData?.id}?dateFrom=${moment(
+          dateFrom
+        ).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+      );
     } else {
-      navigate(`${selectedRowData?.id}`);
+      navigate(
+        `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
+          "YYYY-MM-DD"
+        )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+      );
     }
   };
 
@@ -89,6 +115,7 @@ function TransferIn() {
         />
 
         <SearchDateRangeMixin
+          removeSearch
           setSearch={setSearch}
           setDateFrom={setDateFrom}
           setDateTo={setDateTo}
@@ -96,13 +123,13 @@ function TransferIn() {
           dateTo={dateTo}
         />
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.transferIns}
+            mapData={data?.to}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             rowsPerPage={rowsPerPage}

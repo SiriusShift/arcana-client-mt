@@ -1,6 +1,6 @@
 import { api } from "../../api";
 
-const paymentTransactionApi = api
+export const paymentTransactionApi = api
 	.enhanceEndpoints({
 		addTagTypes: [
 			"Payment Transaction Histories",

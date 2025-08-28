@@ -18,17 +18,35 @@ import moment from "moment";
 import { useReactToPrint } from "react-to-print";
 import "../../assets/styles/print.styles.scss";
 import SecondaryButton from "../SecondaryButton";
+import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 
-function PrintFreebiesModal({ ...otherProps }) {
+function PrintFreebiesModal({ inventory, ...otherProps }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
-  const freebiesLength = selectedRowData?.freebies?.length;
-  const address = selectedRowData?.ownersAddress;
+  const freebiesLength =
+    selectedRowData?.freebies?.length ||
+    selectedRowData?.freebieOrderItem?.length;
   const { fullname } = useSelector((state) => state.login);
 
   const printRef = useRef(null);
+
+  const { data: clientData, isFetching: isClientFetching } =
+    useGetAllClientsQuery({
+      RegistrationStatus: "Approved",
+      PageSize: 2000,
+    });
+
+  console.log(clientData);
+
+  const address = selectedRowData?.ownersAddress
+    ? selectedRowData?.ownersAddress
+    : clientData?.regularClient?.find(
+        (client) => selectedRowData?.clientId === client.id
+      )?.businessAddress || {};
+
+  console.log(address);
 
   //Functions
   const handlePrint = useReactToPrint({
@@ -57,7 +75,7 @@ function PrintFreebiesModal({ ...otherProps }) {
     <>
       <CommonModal width="900px" {...otherProps} closeTopRight>
         <Box className="releaseFreebieModal" ref={printRef}>
-          {selectedRowData?.freebies?.length > 0 ? (
+          {freebiesLength > 0 ? (
             <>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Box className="releaseFreebieModal__logo">
@@ -75,7 +93,9 @@ function PrintFreebiesModal({ ...otherProps }) {
               </Box>
               <Box className="releaseFreebieModal__header">
                 <Typography className="releaseFreebieModal__header__title">
-                  Move Order Slip (Freebie)
+                  {inventory
+                    ? "Freebie Issuance Form"
+                    : "Move Order Slip (Freebie)"}
                 </Typography>
                 <Box className="releaseFreebieModal__header__customerDetails">
                   <Box>
@@ -100,12 +120,21 @@ function PrintFreebiesModal({ ...otherProps }) {
                         address?.province ? `, ${address.province}` : ""
                       }`}
                     </Typography>
+                    <Typography>
+                      <span>Series ID: </span>
+                      {(selectedRowData?.freebies ?
+                        selectedRowData?.freebies?.[freebiesLength - 1]
+                          ?.seriesId : selectedRowData?.seriesId) ||
+                        ""}{" "}
+                    </Typography>
                   </Box>
                   <Box>
                     <Typography>
                       <span>Transaction No:</span>{" "}
-                      {selectedRowData?.freebies?.[freebiesLength - 1]
-                        ?.transactionNumber || "N/A"}
+                      {selectedRowData?.freebies
+                        ? selectedRowData?.freebies?.[freebiesLength - 1]
+                            ?.transactionNumber
+                        : selectedRowData?.id || "N/A"}
                     </Typography>
                     <Typography>
                       <span>Date:</span> {moment().format("MMM D, YYYY")}
@@ -155,6 +184,17 @@ function PrintFreebiesModal({ ...otherProps }) {
                         <TableCell>{item.uom}</TableCell>
                       </TableRow>
                     ))}
+
+                    {selectedRowData?.freebieOrderItem?.map((item, i) => (
+                      <TableRow key={i}>
+                        <TableCell>{item.quantity}</TableCell>
+                        <TableCell>{item.itemCode}</TableCell>
+                        <TableCell>
+                          {item.itemDescription?.toUpperCase()}
+                        </TableCell>
+                        <TableCell>{item.uom}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -178,23 +218,26 @@ function PrintFreebiesModal({ ...otherProps }) {
                       <Box
                         sx={{
                           width: "100px",
-                          // height: "20px",
                           display: "flex",
                           justifyContent: "center",
                           position: "absolute",
+                          right: 0,
                           top: -20,
                         }}
                       >
                         <img
                           src={
                             selectedRowData?.freebies?.[freebiesLength - 1]
-                              ?.eSignature
+                              ?.eSignature || selectedRowData?.esignature
                           }
                           width="70px"
                           // onClick={onCanvasOpen}
                         />
                       </Box>
-                      <Typography>{selectedRowData?.ownersName}</Typography>
+                      <Typography>
+                        {selectedRowData?.ownersName ||
+                          selectedRowData?.clientName}
+                      </Typography>
                     </Box>
                   </Box>
                   {/* <Box className="releaseFreebieModal__footer__attachments__photo">

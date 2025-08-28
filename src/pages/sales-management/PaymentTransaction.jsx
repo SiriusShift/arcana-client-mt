@@ -47,7 +47,9 @@ function PaymentTransaction() {
   const userDetails = useSelector((state) => state.login.userDetails);
 
   const isAdmin = userDetails?.roleName === "Admin";
-  console.log(isAdmin);
+  const isCustomerApprover =
+    userDetails?.roleName === "Customer Registration Approver";
+  console.log(isCustomerApprover);
 
   console.log(selectedRowData);
 
@@ -63,7 +65,6 @@ function PaymentTransaction() {
     onOpen: onViewOpen,
     onClose: onViewClose,
   } = useDisclosure();
-
 
   //RTK Query
   // const {
@@ -222,11 +223,25 @@ function PaymentTransaction() {
     }
   };
 
+
+
   const checkIsVoidable = (date, totalAmount, balance) => {
-    const isVoidable =
-      moment(date).isAfter(moment().subtract(1, "days")) 
-      // && totalAmount - balance === 0;
-    return isVoidable;
+    const firstDay = moment().format("YYYY-MM") + "-01";
+    const cutOff = moment().format("YYYY-MM") + "-10";
+    const voidLastMonth = moment().isBetween(firstDay, cutOff, undefined, "[]");
+    // If current day is within the first day of the month upto 10th day of the month
+    if(voidLastMonth){
+      const lastMonth = moment(date).isBetween(moment().subtract(1, "months").startOf("month"), moment());
+      return lastMonth;
+    }else{
+      // If current day is from 11th day onwards
+      // First day of the month unto the current day
+      const isVoidable =  moment(date).isBetween(moment().startOf("month"), moment());
+      return isVoidable;
+    }
+    // const isVoidable = moment(date).isAfter(moment().subtract(1, "days"));
+    // && totalAmount - balance === 0;
+    // return isVoidable;
   };
 
   const onPay = () => {
@@ -295,10 +310,11 @@ function PaymentTransaction() {
               small
             />
 
-           <AddSearchMixin
+            <AddSearchMixin
               title="Pay Now"
               endIcon={<KeyboardDoubleArrowRight />}
               setSearch={setSearch}
+              disableButton={isCustomerApprover}
               onAddOpen={() => {
                 dispatch(setSelectedRow(null));
                 setPaymentMode(true);
@@ -313,9 +329,7 @@ function PaymentTransaction() {
               <CommonTableSkeleton lowerCompact mt={"-20px"} />
             ) : (
               <CommonTable
-                mapData={
-                  filteredList?.transactions
-                }
+                mapData={filteredList?.transactions}
                 customOrderKeys={customOrderKeys}
                 tableHeads={tableHeads}
                 dateTimeSplitArray={dateTimeSplitArray}
@@ -336,8 +350,9 @@ function PaymentTransaction() {
                 count={count}
                 mt={"-20px"}
                 disableActions={
-                  (transactionStatus === "Pending" || transactionStatus === "Paid") &&
-                  !isAdmin && 
+                  (transactionStatus === "Pending" ||
+                    transactionStatus === "Paid") &&
+                  !isAdmin &&
                   !checkIsVoidable(
                     selectedRowData?.createdAt,
                     selectedRowData?.totalAmountDue,
@@ -347,20 +362,26 @@ function PaymentTransaction() {
                 }
                 onVoid={
                   (transactionStatus === "Pending" ||
-                  transactionStatus === "Paid") &&
-                    // checkIsVoidable(
-                    //   selectedRowData?.createdAt,
-                    //   selectedRowData?.totalAmountDue,
-                    //   selectedRowData?.remainingBalance
-                    // ) &&
-                    onVoid
+                    transactionStatus === "Paid") &&
+                  !isCustomerApprover &&
+                  // checkIsVoidable(
+                  //   selectedRowData?.createdAt,
+                  //   selectedRowData?.totalAmountDue,
+                  //   selectedRowData?.remainingBalance
+                  // ) &&
+                  onVoid
                 }
                 onView={
                   (transactionStatus === "Paid" ||
-                  transactionStatus === "Pending" ) && onViewOpen
+                    transactionStatus === "Pending") &&
+                  onViewOpen
                 }
                 onPaymentHistories={onPaymentHistoriesOpen}
-                onPay={transactionStatus === "Pending" && onPay}
+                onPay={
+                  transactionStatus === "Pending" &&
+                  !isCustomerApprover &&
+                  onPay
+                }
                 // onCancel={transactionStatus === "Pending" || transactionStatus === "Paid" && onCancel}
               />
             )}

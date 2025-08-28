@@ -12,11 +12,13 @@ import QuestionAlert from "../../assets/images/QuestionAlert.png";
 
 function CommonDialog({
   onClose,
+  onBackdropClick,
   onYes,
   children,
   question,
   customImageSource,
   isLoading,
+  isLoadingNo,
   disableYes,
   noIcon,
   ...otherProps
@@ -27,7 +29,7 @@ function CommonDialog({
   };
 
   return (
-    <Dialog {...otherProps} onClose={onClose}>
+    <Dialog {...otherProps} onClose={onBackdropClick ? onBackdropClick : onClose}>
       <Box className="commonDialog">
         <Box className="commonDialog__roof" />
 
@@ -60,11 +62,16 @@ function CommonDialog({
 
           <DialogTitle className="commonDialog__title">{children}</DialogTitle>
           <DialogActions>
-            <DangerButton onClick={onClose} disabled={isLoading}>
-              No
+            <DangerButton onClick={onClose} disabled={isLoadingNo || isLoading}>
+              {isLoadingNo ? (
+                <CircularProgress size="20px" color="white" />
+              ) : (
+                "No"
+              )
+              }
             </DangerButton>
 
-            <SecondaryButton type="submit" disabled={isLoading || disableYes}>
+            <SecondaryButton type="submit" disabled={isLoading || disableYes || isLoadingNo}>
               {isLoading ? (
                 <CircularProgress size="20px" color="white" />
               ) : ( 

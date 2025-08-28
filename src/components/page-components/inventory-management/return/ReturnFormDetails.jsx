@@ -15,9 +15,12 @@ const ReturnFormDetailsSkeleton = () => {
     </Stack>
   );
 };
-const ReturnFormDetails = ({ details, isFetching }) => {
+
+const ReturnFormDetails = ({ currentStep, details, items, isFetching }) => {
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
+
+  console.log(currentStep)
 
   const { data: clientData, isFetching: isClientFetching } =
     useGetAllClientsQuery({
@@ -30,10 +33,10 @@ const ReturnFormDetails = ({ details, isFetching }) => {
       setValue(
         "client",
         clientData?.regularClient.find(
-          (client) => client.id === details.client.clientId
+          (client) => client.id === details.clientId
         ) || null
       );
-      setValue("transactionDate", moment(details.transactionDate));
+      setValue("transactionDate", moment(details.createdDate));
     }
   }, [details, setValue, clientData]);
 
@@ -59,7 +62,7 @@ const ReturnFormDetails = ({ details, isFetching }) => {
           }
           loading={isClientFetching}
           isOptionEqualToValue={() => true}
-          disabled={viewOnly}
+          disabled={viewOnly || currentStep !== 0}
           renderInput={(params) => (
             <TextField
               {...params}

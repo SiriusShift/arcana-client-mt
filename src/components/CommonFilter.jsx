@@ -4,6 +4,7 @@ import {
   Button,
   Divider,
   Menu,
+  Select,
   Popover,
   TextField,
 } from "@mui/material";
@@ -12,9 +13,19 @@ import SecondaryButton from "./SecondaryButton";
 import { useSelector } from "react-redux";
 import useDisclosure from "../hooks/useDisclosure";
 import { FilterList } from "@mui/icons-material";
-import { clusterOptions, paymentTypes, invoiceTypes } from "../utils/constants";
+import {
+  clusterOptions,
+  paymentTypes,
+  invoiceTypes,
+  returnToDepot,
+  transferTypes,
+  userTypes,
+} from "../utils/constants";
 import { useGetAllOtherExpensesQuery } from "../features/setup/api/otherExpensesApi";
 import { useGetAllStoreTypesQuery } from "../features/setup/api/storeTypeApi";
+import { useGetAllUsersQuery } from "../features/user-management/api/userAccountApi";
+import { useGetAllUserRolesQuery } from "../features/user-management/api/userRoleApi";
+import { useGetAllClustersQuery } from "../features/setup/api/clusterApi";
 
 function CommonFilter({
   filter,
@@ -24,6 +35,9 @@ function CommonFilter({
   paymentMethodFilter,
   // expenseTypeFilter,
   businessTypeFilter,
+  userTypeFilter,
+  typeFilter,
+  userFilter,
   // invoiceTypeFilter,
   // validityFilter,
   // uploadStatusFilter,
@@ -43,8 +57,13 @@ function CommonFilter({
     // uploadStatus: null,
     // frequence: null,
     paymentMethod: null,
+    userId: null,
+    type: null,
+    userType: null,
     // status: null,
   });
+
+  console.log(filters)
 
   //Query
   // const { data: otherExpensesOptions } = useGetAllOtherExpensesQuery();
@@ -54,34 +73,61 @@ function CommonFilter({
   const userDetails = useSelector((state) => state.login.userDetails);
   console.log(userDetails);
 
+  const { data: roleData, isFetching: isRolesFetching } =
+    useGetAllUserRolesQuery({
+      Page: 1,
+      PageSize: 1000,
+      Status: true,
+    });
+
+  const cdoRoleId = roleData?.userRoles?.find(
+    (role) =>
+      role.roleName === "CDO" ||
+      role.roleName?.toLowerCase() === "Chief Distribution Officer"
+  )?.id;
+
+  const { data, isFetching, error } = useGetAllClustersQuery(
+    {
+      Status: true,
+      PageNumber: 1,
+      PageSize: 10000,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  console.log(data);
 
   //Function
   const resetFilter = () => {
     setFilters({
-       // search: "",
-    clusterId: null,
-    // paymentType: null,
-    // expenseType: null,
-    businessType: null,
-    // invoiceType: null,
-    // validity: null,
-    // uploadStatus: null,
-    // frequence: null,
-    paymentMethod: null,
-    // status: null,
+      // search: "",
+      clusterId: null,
+      // paymentType: null,
+      // expenseType: null,
+      businessType: null,
+      // invoiceType: null,
+      // validity: null,
+      // uploadStatus: null,
+      // frequence: null,
+      paymentMethod: null,
+      type: null,
+      // status: null,
     });
     filter({
-       // search: "",
-    clusterId: null,
-    // paymentType: null,
-    // expenseType: null,
-    businessType: null,
-    // invoiceType: null,
-    // validity: null,
-    // uploadStatus: null,
-    // frequence: null,
-    paymentMethod: null,
-    // status: null,
+      // search: "",
+      clusterId: null,
+      // paymentType: null,
+      // expenseType: null,
+      businessType: null,
+      // invoiceType: null,
+      // validity: null,
+      // uploadStatus: null,
+      // frequence: null,
+      paymentMethod: null,
+      type: null,
+      // status: null,
     });
   };
 
@@ -117,9 +163,10 @@ function CommonFilter({
         <Box className="filter">
           {clusterFilter && (
             <Autocomplete
-              options={clusterOptions}
-              getOptionLabel={(option) => option?.label || option}
+              options={data?.cluster}
+              getOptionLabel={(option) => option?.cluster || option}
               onChange={(_, value) => {
+                console.log(value)
                 setFilters({ ...filters, clusterId: value });
               }}
               value={filters.clusterId}
@@ -138,8 +185,10 @@ function CommonFilter({
           {paymentMethodFilter && transactionStatus !== "Pending" && (
             <Autocomplete
               options={paymentTypes.filter((type) => {
-                return userDetails?.username !== "rsunga" && userDetails?.username !== "admin" ?
-                type?.label !== "Withholding" : type.label
+                return userDetails?.username !== "rsunga" &&
+                  userDetails?.username !== "admin"
+                  ? type?.label !== "Withholding"
+                  : type.label;
               })}
               getOptionLabel={(option) => option?.label}
               onChange={(_, value) => {
@@ -176,7 +225,6 @@ function CommonFilter({
             ></Autocomplete>
           )} */}
 
-
           {businessTypeFilter && (
             <Autocomplete
               options={storeTypeData?.storeTypes}
@@ -194,6 +242,24 @@ function CommonFilter({
                 />
               )}
             ></Autocomplete>
+          )}
+          {typeFilter && (
+            <Autocomplete
+              options={transferTypes}
+              getOptionLabel={(option) => option?.name}
+              onChange={(_, value) => {
+                setFilters({ ...filters, type: value });
+              }}
+              value={filters?.type}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  sx={{ width: "300px" }}
+                  label="Type"
+                />
+              )}
+            />
           )}
           {/* {invoiceTypeFilter && (
             <Autocomplete

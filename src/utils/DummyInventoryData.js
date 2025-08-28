@@ -10,15 +10,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 20,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 10,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 5,
+          quantity: 20,
         },
       ],
     },
@@ -31,15 +31,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 15,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 10,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 5,
+          quantity: 20,
         },
       ],
     },
@@ -52,15 +52,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 25,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 20,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 10,
+          quantity: 20,
         },
       ],
     },
@@ -73,15 +73,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 30,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 25,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 15,
+          quantity: 20,
         },
       ],
     },
@@ -94,15 +94,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 10,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 8,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 5,
+          quantity: 20,
         },
       ],
     },
@@ -115,15 +115,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 18,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 15,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 10,
+          quantity: 20,
         },
       ],
     },
@@ -136,15 +136,15 @@ export const dummyItemsWithBbdData = {
       bbds: [
         {
           bbd: "2024-04-29",
-          quantity: 12,
+          quantity: 100,
         },
         {
           bbd: "2024-05-29",
-          quantity: 10,
+          quantity: 50,
         },
         {
           bbd: "2024-06-29",
-          quantity: 8,
+          quantity: 20,
         },
       ],
     },
@@ -2048,6 +2048,53 @@ export const dummyDetailedReturnData = [
         netPrice: 162.5,
         bbd: "2024-03-25",
       },
+    ],
+  },
+];
+
+export const dummyCallsheetData = [
+  {
+    id: 1,
+    customerName: "John Kenneth Marquez",
+    businessName: "JK's Supermarket",
+    callsheetDate: "2025-01-28T16:55:30",
+    expirationDate: {
+      // red: 5,
+      // orange: 2,
+      // green: 5,
+    },
+    items: [
+      {
+        id: 1,
+        itemCode: "52319",
+        itemDescription: "RAPSARAP CHICKEN NUGGETS 200G",
+        salesIn: 3,
+        bbd: [
+          // {
+          //   id: 1,
+          //   bbd: "2025-02-15T16:55:30", // Correct date format
+          // },
+        ],
+      },
+      {
+        id: 2,
+        itemCode: "52320",
+        itemDescription: "RAPSARAP TIPID PACK CHICKEN NUGGETS 100G",
+        salesIn: 5,
+        bbd: [
+          // {
+          //   id: 2,
+          //   quantity: 2,
+          //   bbd: "2025-02-15T16:55:30", // Correct date format
+          // },
+          // {
+          //   id: 3,
+          //   quantity: 3,
+          //   bbd: "2025-02-29T08:55:30", // Correct date format
+          // },
+        ],
+      }
+      // Other items...
     ],
   },
 ];

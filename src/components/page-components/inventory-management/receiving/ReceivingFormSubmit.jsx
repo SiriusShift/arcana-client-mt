@@ -16,10 +16,39 @@ function ReceivingFormSubmit({
   handleFormData,
   handleFormValid,
 }) {
+
+  console.log(formData);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const snackbar = useSnackbar();
   const confirm = useConfirm();
+
+  formData = {
+    ...formData,
+    // wrong: formData.wrong.map((item) => ({
+    //   itemCode: item.item,
+    //   quantity: item.quantity,
+    //   reason: item.reason,
+    // })), 
+    additional: formData.items
+      .filter(item => item.quantity === 0 || item.quantity === null)  // Filter for items with 0 quantity or actualQuantity
+      .map(item => ({
+        itemCode: item.itemCode,
+        quantity: item.actualQuantity,
+        reason: item.reason,
+      })),
+    items: formData.items
+      .filter(item => item.quantity > 0)  // Filter for items with quantity > 0
+      .map(item => ({
+        itemCode: item.itemCode,
+        actualQuantity: item.actualQuantity,
+        reason: item.reason,
+        variance: item.variance
+      })),
+  };
+  
+  console.log(formData);
+  
 
   // RTK Query
   const [receiveMoveOrder] = useReceiveMoveOrderMutation();
@@ -38,6 +67,7 @@ function ReceivingFormSubmit({
 
   const handleSubmit = async () => {
     try {
+      console.log(formData);
       await confirm({
         children: "Are you sure you want to submit this receiving form?",
         question: true,

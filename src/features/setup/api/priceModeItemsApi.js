@@ -1,6 +1,6 @@
 import { api } from "../../api";
 
-const priceModeItemsApi = api
+export const priceModeItemsApi = api
   .enhanceEndpoints({ addTagTypes: ["Price Mode Items", "Products"] })
   .injectEndpoints({
     endpoints: (builder) => ({

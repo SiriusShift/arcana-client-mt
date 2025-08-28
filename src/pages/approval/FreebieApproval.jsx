@@ -1,96 +1,176 @@
-import React, { useEffect, useState } from "react";
-import PageHeaderTabs from "../../components/PageHeaderTabs";
-import { Box, Button, TextField, debounce } from "@mui/material";
-import AddSearchMixin from "../../components/mixins/AddSearchMixin";
+import { Box, TextField } from "@mui/material";
+import { useState } from "react";
 import CommonTable from "../../components/CommonTable";
-import { dummyTableData } from "../../utils/DummyData";
+import SearchDateRangeMixin from "../../components/mixins/SearchDateRangeMixin";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
+import moment from "moment";
+import PageHeaderAddTabs from "../../components/PageHeaderAddTabs";
+import { useGetAllFreebieRequestsQuery } from "../../features/inventory-management/api/freebiesApi";
+import { useGetUsersWithAdjustmentsQuery } from "../../features/inventory-management/api/endingInventoryApi";
+
 import useDisclosure from "../../hooks/useDisclosure";
-import SearchFilterMixin from "../../components/mixins/SearchFilterMixin";
+import ViewFreebieModal from "../../components/modals/ViewFreebieModal";
+import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
+
+import { debounce } from "lodash";
 
 function FreebieApproval() {
-  const [tabViewing, setTabViewing] = useState(1);
-  const [search, setSearch] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [clientStatus, setClientStatus] = useState("pending");
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  //Disclosures
+  const selectedRowData = useSelector((state) => state.selectedRow.value);
+
   const {
-    isOpen: isListingFeeOpen,
-    onOpen: onListingFeeOpen,
-    onClose: onListingFeeClose,
+    isOpen: isViewOpen,
+    onOpen: onViewOpen,
+    onClose: onViewClose,
   } = useDisclosure();
 
-  //Constants
-  const specialDiscountNavigation = [
+  const {
+    isOpen: isHistoryOpen,
+    onOpen: onHistoryOpen,
+    onClose: onHistoryClose,
+  } = useDisclosure();
+
+  const [tabViewing, setTabViewing] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState("");
+  // const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  // const [dateTo, setDateTo] = useState(moment());
+
+  const tableHeads = [
+    "ID",
+    "Owner's Name",
+    "Business Name",
+    "Total Quantity",
+    "Transaction Date",
+  ];
+
+  const customOrderKeys = [
+    "id",
+    "clientName",
+    "businessName",
+    "totalQuantity",
+    "createdDate",
+  ];
+
+  const nestedProperty = {
+    key: "businessAddress",
+    nestedKeys: ["city", "province"],
+  };
+
+  const dateTimeArray = ["transactionDate"];
+
+  const tabs = [
     {
       case: 1,
-      name: "Pending Freebie",
-      // badge: badges["forFreebies"],
+      name: "For Approval",
+      status: "Under review",
     },
     {
       case: 2,
-      name: "Approved Freebie",
-      // badge: badges["forReleasing"],
+      name: "Released Freebies",
+      status: "Released",
     },
     {
       case: 3,
-      name: "Rejected Freebie",
+      name: "Rejected Freebies",
+      status: "Rejected",
     },
   ];
 
-  const selectOptions = [
-    {
-      value: " ",
-      label: "All",
-    },
-    {
-      value: "prospecting",
-      label: "Prospect",
-    },
-    {
-      value: "direct",
-      label: "Direct",
-    },
-  ];
+  console.log(tabs[tabViewing - 1]?.status);
+
+  //RTK QUERY
+  const { data, isFetching } = useGetAllFreebieRequestsQuery({
+    Search: search,
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    TransactionType: "Freebie",
+    Status: tabs[tabViewing - 1]?.status,
+  }, {
+    refetchOnMountOrArgChange: true
+  });
+
+  // Functions
+  const handleView = () => {
+    navigate(
+      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
+  };
 
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);
   }, 200);
 
-  useEffect(() => {
-    const foundItem = specialDiscountNavigation.find(
-      (item) => item.case === tabViewing
-    );
-
-    setClientStatus(foundItem?.name);
-  }, [tabViewing]);
-
   return (
-    <>
-      <Box className="commonPageLayout">
-        <PageHeaderTabs
-          wide
-          pageTitle="Freebie Approval"
-          tabsList={specialDiscountNavigation}
-          tabViewing={tabViewing}
-          setTabViewing={setTabViewing}
+    <Box className="commonPageLayout">
+      <PageHeaderAddTabs
+        pageTitle="Freebie Approval"
+        tabsList={tabs}
+        tabViewing={tabViewing}
+        setTabViewing={setTabViewing}
+        // wide
+        removeAdd
+      />
+
+      <Box sx={{ padding: "15px", my: "-20px" }}>
+        <TextField
+          type="search"
+          size="small"
+          label="Search"
+          onChange={(e) => {
+            debouncedSetSearch(e.target.value);
+          }}
+          autoComplete="off"
         />
-
-        <Box sx={{ padding: "15px" }}>
-          <TextField
-            type="search"
-            size="small"
-            label="Search"
-            onChange={(e) => {
-              debouncedSetSearch(e.target.value);
-            }}
-            autoComplete="off"
-          />
-        </Box>
-
-        <CommonTable mapData={dummyTableData} compact />
       </Box>
-    </>
+
+      <ViewFreebieModal
+        open={isViewOpen}
+        inventory
+        status={tabs[tabViewing - 1]?.status}
+        // open={true}
+        approval
+        onClose={onViewClose}
+      />
+
+      <ApprovalHistoryModal
+        open={isHistoryOpen}
+        onClose={onHistoryClose}
+        variant="freebies"
+      />
+
+      {isFetching ? (
+        <CommonTableSkeleton lowerCompact />
+      ) : (
+        <CommonTable
+          moveNoDataUp
+          lowerCompact
+          mapData={data?.to}
+          tableHeads={tableHeads}
+          customOrderKeys={customOrderKeys}
+          nestedProperty={nestedProperty}
+          rowsPerPage={rowsPerPage}
+          setRowsPerPage={setRowsPerPage}
+          page={page}
+          // onApprove={tabViewing === 1 && onViewOpen}
+          // onPrintFreebies={tabViewing === 2 && onPrintOpen}
+          // onReleaseFreebie={tabViewing === 1 && onFreebieReleaseOpen}
+          // onCancelFreebies={tabViewing === 1 && onFreebieCancelOpen}
+          setPage={setPage}
+          count={data?.totalCount}
+          dateTimeArray={dateTimeArray}
+          onView={onViewOpen}
+          onHistory={onHistoryOpen}
+        />
+      )}
+    </Box>
   );
 }
 

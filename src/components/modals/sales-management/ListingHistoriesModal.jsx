@@ -41,7 +41,7 @@ const ListingHistoriesModal = ({ ...otherProps }) => {
           <Typography className="listingHistoriesModal__title">
             Listing Fee History
           </Typography>
-          {data?.listingHistory?.length != 0 ? (
+          {data?.value?.listingHistory?.length != 0 ? (
             <Box className="listingHistoriesModal__body">
               <Stepper
                 orientation="vertical"
@@ -52,7 +52,7 @@ const ListingHistoriesModal = ({ ...otherProps }) => {
                   },
                 }}
               >
-                {data?.listingHistory?.map((item, index) => (
+                {data?.value?.listingHistory?.map((item, index) => (
                   <Step key={index} active expanded>
                     <StepLabel
                       sx={{

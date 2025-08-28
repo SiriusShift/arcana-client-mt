@@ -3,32 +3,41 @@ import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import CommonTable from "../../../components/CommonTable";
 import GenerateMoveOrderModal from "../../../components/modals/inventory-management/GenerateMoveOrderModal";
 import useDisclosure from "../../../hooks/useDisclosure";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useGetAllReceivedOrdersQuery } from "../../../features/inventory-management/api/receivingApi";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
+import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
+import moment from "moment";
+import useValidate from "../../../hooks/useValidate";
 
 function Receiving() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
   const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
 
   // RTK Query
   const { data, isFetching } = useGetAllReceivedOrdersQuery({
     Search: search,
-    Page: page + 1,
+    PageNumber: page + 1,
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     PageSize: rowsPerPage,
   });
 
   // Common Table Props
   const tableHeads = [
     "Move Order ID",
-    "Business Name",
+    "Series ID",
+    "Customer Name",
     "Cluster",
     "Transaction Date",
     "Date Received",
@@ -36,7 +45,8 @@ function Receiving() {
 
   const customOrderKeys = [
     "moveOrderId",
-    "businessName",
+    "seriesId",
+    "customerName",
     "cluster",
     "transactionDate",
     "dateReceived",
@@ -53,7 +63,11 @@ function Receiving() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.moveOrderId}`);
+    navigate(
+      `${selectedRowData?.moveOrderId}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   if (location.pathname === "/inventory-management/receiving") {
@@ -69,21 +83,34 @@ function Receiving() {
             pageTitle="Receiving"
             addTitle="New Delivery"
             removeArchive
-            onOpen={onGenerateOpen}
+            removeSearch
+            onOpen={() => {
+              const error = validateEndingInventory();
+              if (!error) {
+                onGenerateOpen();
+              }
+            }}
             setSearch={setSearch}
           />
+          <SearchDateRangeMixin
+            setSearch={setSearch}
+            setDateFrom={setDateFrom}
+            setDateTo={setDateTo}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+          />
 
-          {isFetching ? (
-            <CommonTableSkeleton evenLesserCompact />
+          {isFetching || isNotificationFetching ? (
+            <CommonTableSkeleton lowerCompact />
           ) : (
             <CommonTable
-              evenLesserCompact
+              lowerCompact
               moveNoDataUp
-              mapData={data?.receivedOrders || []}
+              mapData={data?.value?.mo || []}
               tableHeads={tableHeads}
               customOrderKeys={customOrderKeys}
               dateTimeArray={dateTimeArray}
-              count={data?.totalCount || 0}
+              count={data?.value?.totalCount || 0}
               onView={handleView}
               rowsPerPage={rowsPerPage}
               setRowsPerPage={setRowsPerPage}

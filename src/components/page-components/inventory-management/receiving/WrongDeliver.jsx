@@ -19,6 +19,9 @@ import { useEffect } from "react";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import SecondaryButton from "../../../SecondaryButton";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
+import { NumericFormat } from "react-number-format";
+import useSnackbar from "../../../../hooks/useSnackbar";
+import { add } from "lodash";
 
 const WrongDeliverSkeleton = () => {
   return (
@@ -63,46 +66,119 @@ const WrongDeliverSkeleton = () => {
 
 function WrongDeliver({
   wrongItems = [],
+  formData = [],
   items = [],
   handleFormValid,
   handleFormData,
   isFetching,
+  viewing,
 }) {
+  console.log(wrongItems);
+  const snackbar = useSnackbar();
   const {
     control,
     setValue,
+    watch,
     formState: { errors, isValid },
   } = useForm({
     resolver: yupResolver(wrongDeliverSchema.schema),
     defaultValues: wrongDeliverSchema.defaultValues,
   });
 
+  console.log("test1", watch());
+
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "wrongDeliver",
+    name: "wrong",
   });
 
-  const wrongDeliver = useWatch({
+  const wrong = useWatch({
     control,
-    name: "wrongDeliver",
+    name: "wrong",
     defaultValue: [],
   });
+
+  // console.log(wrongDeliver);
 
   const disableFields = wrongItems.length > 0;
 
   const handleAdd = () => {
     append({
-      item: {
-        itemCode: "",
-        itemDescription: "",
-        uom: "",
-      },
+      item: "",
       itemDescription: "",
       uom: "",
       quantity: null,
       reason: "",
+      add: "manual",
     });
   };
+
+  useEffect(() => {
+    if (!viewing) {
+      formData?.items?.forEach((item) => {
+        console.log("watching!", item);
+        if (
+          item.quantity > 0 &&
+          (item.actualQuantity || item.actualQuantity !== null) &&
+          item.actualQuantity < item.quantity
+        ) {
+          console.log("check")
+          // Check if the itemCode already exists in the form
+          const existingIndex = fields.findIndex(
+            (field) => field.item === item.itemCode
+          );
+
+          if (existingIndex !== -1) {
+            // If exists, update quantity
+            if (item.actualQuantity === 0) {
+              setValue(`wrong[${existingIndex}].quantity`, item.quantity);
+            } else {
+              setValue(
+                `wrong[${existingIndex}].quantity`,
+                item.quantity - item.actualQuantity
+              );
+            }
+          } else {
+            // If not, append new entry
+
+            if (item.actualQuantity === 0) {
+              append({
+                item: item.itemCode,
+                itemDescription: item.itemDescription,
+                uom: item.uom,
+                quantity: item.quantity,
+                reason: "",
+                add: "automatic",
+              });
+            } else {
+              append({
+                item: item.itemCode,
+                itemDescription: item.itemDescription,
+                uom: item.uom,
+                quantity: item.quantity - item.actualQuantity,
+                reason: "",
+                add: "automatic",
+              });
+            }
+          }
+        }
+      });
+
+      // Remove any existing items where actualQuantity === quantity
+      fields.forEach((field, index) => {
+        const matchingItem = formData?.items?.find(
+          (item) => item.itemCode === field.item
+        );
+        if (
+          matchingItem &&
+          field?.add === "automatic" &&
+          matchingItem.actualQuantity >= matchingItem.quantity
+        ) {
+          remove(index);
+        }
+      });
+    }
+  }, [formData?.items, append, remove, fields, setValue]);
 
   useEffect(() => {
     if (wrongItems.length > 0) {
@@ -110,7 +186,7 @@ function WrongDeliver({
         item: { itemCode: item.itemCode },
         ...item,
       }));
-      setValue("wrongDeliver", transfomedItems);
+      setValue("wrong", transfomedItems);
     }
   }, [wrongItems, setValue]);
 
@@ -119,14 +195,15 @@ function WrongDeliver({
       handleFormValid((prev) => ({ ...prev, isWrongDeliverValid: isValid }));
       handleFormData((prev) => ({
         ...prev,
-        wrongDeliver: wrongDeliver.map((item) => ({
-          itemCode: item.item.itemCode,
+        wrong: wrong.map((item) => ({
+          item: item?.item || "",
           quantity: Number(item.quantity),
           reason: item.reason,
+          add: item.add,
         })),
       }));
     }
-  }, [wrongDeliver, isValid, handleFormValid, handleFormData, disableFields]);
+  }, [wrong, isValid, handleFormValid, handleFormData, disableFields]);
 
   return isFetching ? (
     <WrongDeliverSkeleton />
@@ -135,15 +212,15 @@ function WrongDeliver({
       <TableContainer
         component={Paper}
         sx={{
-          maxHeight: disableFields
-            ? "calc(100dvh - 30dvh - 360px)"
-            : "calc(100dvh - 30dvh - 400px)",
+          overflow: "auto",
+          minHeight: "calc(100dvh - 76dvh)",
+          maxHeight: "calc(100dvh - 85dvh)",
         }}
       >
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Wrong Deliver</TableCell>
+              <TableCell>Return to Depot</TableCell>
             </TableRow>
           </TableHead>
 
@@ -155,23 +232,35 @@ function WrongDeliver({
                     <Stack direction="row" spacing={1.5} key={item.id}>
                       <ControlledAutocomplete
                         control={control}
-                        name={`wrongDeliver[${index}].item`}
-                        options={items}
-                        getOptionDisabled={(option) =>
-                          fields.some(
-                            (field) => field.item?.itemCode === option.itemCode
-                          )
+                        name={`wrong[${index}].item`}
+                        options={
+                          formData?.items
+                            ?.filter(
+                              (item, idx, self) =>
+                                self.findIndex(
+                                  (i) => i.itemCode === item.itemCode
+                                ) === idx // Remove duplicate itemCodes
+                            )
+                            ?.filter(
+                              (item) =>
+                                !fields.some(
+                                  (field) => field.item === item.itemCode
+                                ) // Exclude already chosen items
+                            )
+                          // ?.filter((item) => item.quantity === null) || [] // Exclude items with no quantity
                         }
-                        getOptionLabel={(option) => option.itemCode}
-                        isOptionEqualToValue={() => true}
-                        disabled={disableFields}
+                        getOptionLabel={(option) => option?.itemCode || option}
+                        isOptionEqualToValue={(option, value) =>
+                          option?.itemCode === value?.itemCode
+                        }
+                        disabled
                         onChange={(_, value) => {
                           setValue(
-                            `wrongDeliver[${index}].itemDescription`,
+                            `wrong[${index}].itemDescription`,
                             value?.itemDescription
                           );
-                          setValue(`wrongDeliver[${index}].uom`, value?.uom);
-                          return value;
+                          setValue(`wrong[${index}].uom`, value?.uom);
+                          return value?.itemCode;
                         }}
                         renderInput={(params) => (
                           <TextField
@@ -187,7 +276,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrongDeliver[${index}].itemDescription`}
+                        name={`wrong[${index}].itemDescription`}
                         render={({ field }) => (
                           <TextField
                             label="Item Description"
@@ -204,7 +293,7 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrongDeliver[${index}].uom`}
+                        name={`wrong[${index}].uom`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -224,27 +313,58 @@ function WrongDeliver({
 
                       <Controller
                         control={control}
-                        name={`wrongDeliver[${index}].quantity`}
+                        name={`wrong[${index}].quantity`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
-                          <TextField
+                          <NumericFormat
+                            customInput={TextField}
                             label="Quantity"
                             size="small"
                             autoComplete="off"
-                            onChange={onChange}
-                            onBlur={onBlur}
                             value={value || ""}
+                            onValueChange={(values) => {
+                              const { value: newValue } = values; // Get only numeric value
+
+                              watch("wrong").forEach((item) => {
+                                formData.items.forEach((data) => {
+                                  if (item.item === data.itemCode) {
+                                    if (
+                                      parseInt(newValue, 10) >
+                                      data?.actualQuantity
+                                    ) {
+                                      snackbar({
+                                        message:
+                                          "Quantity exceeds actual quantity",
+                                        variant: "error",
+                                      });
+                                    } else if (parseInt(newValue, 10) < 0) {
+                                      snackbar({
+                                        message:
+                                          "Quantity received must not be negative",
+                                        variant: "error",
+                                      });
+                                    } else {
+                                      onChange(newValue);
+                                    }
+                                  }
+                                });
+                              });
+                            }}
+                            onBlur={onBlur}
                             inputRef={ref}
                             sx={{ maxWidth: "120px" }}
-                            disabled={disableFields}
+                            disabled
+                            allowNegative={false} // Prevents negative values
+                            thousandSeparator="," // Adds commas for readability
+                            isAllowed={(values) => /^\d*$/.test(values.value)} // Ensures whole numbers only
                           />
                         )}
                       />
 
                       <Controller
                         control={control}
-                        name={`wrongDeliver[${index}].reason`}
+                        name={`wrong[${index}].reason`}
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
@@ -256,29 +376,33 @@ function WrongDeliver({
                             onBlur={onBlur}
                             value={value || ""}
                             inputRef={ref}
-                            disabled={disableFields}
+                            disabled={disableFields || viewing}
                           />
                         )}
                       />
 
-                      {!disableFields && (
-                        <IconButton color="error" onClick={() => remove(index)}>
-                          <RemoveCircleOutline />
-                        </IconButton>
-                      )}
+                      {!disableFields ||
+                        (!viewing && (
+                          <IconButton
+                            color="error"
+                            onClick={() => remove(index)}
+                          >
+                            <RemoveCircleOutline />
+                          </IconButton>
+                        ))}
                     </Stack>
                   ))}
 
-                  {!disableFields && (
+                  {/* {!disableFields && (
                     <SecondaryButton
                       endIcon={<Add />}
                       sx={{ width: "fit-content", alignSelf: "end" }}
                       onClick={handleAdd}
-                      disabled={!isValid}
+                      disabled={!isValid || viewing}
                     >
                       Add Wrong Deliver
                     </SecondaryButton>
-                  )}
+                  )} */}
                 </Stack>
               </TableCell>
             </TableRow>

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import useDisclosure from "../../../../hooks/useDisclosure";
 import { NumericFormat } from "react-number-format";
+import useSnackbar from "../../../../hooks/useSnackbar";
+import { filter } from "lodash";
 
 function SwipeableItem({
   remove,
@@ -12,12 +14,17 @@ function SwipeableItem({
   onMinus,
   onPlus,
   onSwipeLeft,
+  totalAmount,
+  watch,
+  creditBalance,
 }) {
+  console.log(watch.items);
   const [isSwiped, setIsSwiped] = useState(false);
   const [quantity, setQuantity] = useState(orderItem.quantity);
 
   const anchorRef = useRef();
   const quantityRef = useRef();
+  const snackbar = useSnackbar();
 
   //Disclosures
   const {
@@ -151,6 +158,40 @@ function SwipeableItem({
               customInput={TextField}
               onValueChange={(e) => {
                 e.value !== "" && setQuantity(Number(e.value));
+              }}
+              isAllowed={({ floatValue }) => {
+                // console.log(watch, orderItem);
+                const findIndex = watch?.items?.findIndex(
+                  (item) =>
+                    item.itemId.itemId === orderItem.itemId.itemId &&
+                    item.itemId.currentPrice === orderItem.itemId.currentPrice
+                );
+                const filteredItems = watch?.items
+                  ?.filter((item, index) => findIndex !== index)
+                  .reduce(
+                    (acc, item) =>
+                      acc + item.quantity * item.itemId.currentPrice,
+                    0
+                  );
+                console.log(filteredItems);
+                if (floatValue > orderItem?.itemId?.availQuantity) {
+                  snackbar({
+                    message: "Quantity exceeds available quantity",
+                    variant: "error",
+                  });
+                  return false;
+                }
+                // else if (
+                //   filteredItems + orderItem.itemId?.currentPrice * floatValue >
+                //   creditBalance && watch?.clientId?.termType === "Credit Type"
+                // ) {
+                //   snackbar({
+                //     message: "Insufficient credit balance",
+                //     variant: "error",
+                //   });
+                //   return false;
+                // }
+                return true;
               }}
               value={quantity}
               thousandSeparator=","

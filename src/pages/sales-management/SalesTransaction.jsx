@@ -12,7 +12,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete.jsx";
 import SecondaryButton from "../../components/SecondaryButton.jsx";
 import {
@@ -38,6 +38,9 @@ import UnderConstruction from "../../assets/images/under-construction.svg";
 import { useGetAllClientsForPOSQuery } from "../../features/sales-management/api/salesTransactionApi.js";
 import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi.js";
 import SessionExpired from "../SessionExpired.jsx";
+import useSnackbar from "../../hooks/useSnackbar.js";
+import useValidate from "../../hooks/useValidate.js";
+import { AppContext } from "../../context/AppContext.jsx";
 
 function SalesTransaction() {
   const [search, setSearch] = useState("");
@@ -56,7 +59,11 @@ function SalesTransaction() {
   // const fullName = useSelector((state) => state.login.fullname);
 
   const dispatch = useDispatch();
+  const snackbar = useSnackbar();
+  const { notifications, isNotificationFetching } = useContext(AppContext);
+
   const filterRef = useRef();
+  const disabled = notifications?.scheduledInventoryAdjustments;
 
   //Disclosures
   const {
@@ -93,6 +100,7 @@ function SalesTransaction() {
   //Hook Form Constant Values
   const watchAllValues = watch();
   const watchClientId = watch("clientId");
+  const watchCreditBalance = watch("clientId")?.remainingCredits;
 
   //RTK Query: Autocomplete
   const {
@@ -103,13 +111,18 @@ function SalesTransaction() {
     refetchOnMountOrArgChange: true,
   });
   const { data: productData, isFetching: isProductFetching } =
-    useGetAllItemsByPriceModeIdQuery({
-      Status: true,
-      Page: 1,
-      PageSize: 1000,
-      Search: search,
-      PriceModeId: watch("clientId") ? watch("clientId").priceModeId : -1,
-    });
+    useGetAllItemsByPriceModeIdQuery(
+      {
+        Status: true,
+        Page: 1,
+        PageSize: 1000,
+        Search: search,
+        PriceModeId: watch("clientId") ? watch("clientId").priceModeId : -1,
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
 
   //Functions
   const debouncedSetSearch = debounce((value) => {
@@ -122,12 +135,42 @@ function SalesTransaction() {
     }, 0);
   }, [watchAllValues]);
 
+  console.log(watch());
+
   const handleAddItem = (item, quantity, price) => {
+    const tempTotal = totalAmount + (price || item?.currentPrice) * quantity;
+    console.log("temporary total: ", tempTotal);
+    // if (
+    //   watchCreditBalance < tempTotal &&
+    //   watch("clientId")?.termType === "Credit Type"
+    // ) {
+    //   snackbar({
+    //     message: "Insufficient credit balance",
+    //     variant: "warning",
+    //   });
+    //   console.log("Insufficient credit balance");
+    //   return;
+    // }
     const existingItemIndex = watch("items").findIndex(
       (existingItem) =>
         existingItem.itemId.priceModeItemId === item.priceModeItemId &&
         existingItem.itemId.currentPrice === price
     );
+
+    const tempQuantity =
+      quantity +
+      ((watch("items")[existingItemIndex]?.quantity &&
+        parseInt(watch("items")[existingItemIndex].quantity)) ||
+        0);
+    console.log(item);
+
+    if (tempQuantity > item.availQuantity) {
+      snackbar({
+        message: "Quantity exceeds available quantity",
+        variant: "warning",
+      });
+      return;
+    }
 
     if (existingItemIndex !== -1) {
       // Item with the same itemCode already exists, so increment the quantity
@@ -213,15 +256,17 @@ function SalesTransaction() {
                   title={
                     watch("items")?.length > 0
                       ? "Clear items first before changing client"
+                      : notifications?.scheduledInventoryAdjustments > 0
+                      ? `Pending Ending Inventory : ${notifications?.scheduledInventoryAdjustments}`
                       : ""
                   }
                 >
-                  <>
+                  <span>
                     <ControlledAutocomplete
                       name={`clientId`}
                       control={control}
                       options={clientData || []}
-                      disabled={watch("items")?.length > 0}
+                      disabled={watch("items")?.length > 0 || disabled}
                       getOptionLabel={(option) => {
                         const businessName =
                           option.businessName?.toUpperCase() || "";
@@ -235,7 +280,7 @@ function SalesTransaction() {
 
                         return `${businessName} ${city}, ${province} - ${ownersName}${clientId}`;
                       }}
-                      loading={isClientLoading}
+                      loading={isClientLoading || isNotificationFetching}
                       isOptionEqualToValue={(option, value) =>
                         option.id === value?.id
                       } // Compare by unique ID
@@ -255,7 +300,7 @@ function SalesTransaction() {
                         />
                       )}
                     />
-                  </>
+                  </span>
                 </Tooltip>
 
                 <Box className="salesTransaction__body__itemsForm__searchFilter">
@@ -270,6 +315,11 @@ function SalesTransaction() {
                     }}
                     data-tour="search"
                   />
+                  {watch("clientId")?.termType === "Credit Type" && (
+                    <Typography>
+                      Available Credit: {watch("clientId")?.remainingCredits}
+                    </Typography>
+                  )}
 
                   <Box
                     className="salesTransaction__body__itemsForm__searchFilter__right"
@@ -294,17 +344,16 @@ function SalesTransaction() {
                       </IconButton>
                     </Tooltip> */}
 
-                    <Tooltip title="Filters">
+                    {/* <Tooltip title="Filters">
                       <Box ref={filterRef}>
                         <IconButton
                           onClick={() => setViewFilters((prev) => !prev)}
                           sx={{ height: "100%" }}
                         >
-                          {/* Filters &nbsp; */}
                           <Tune />
                         </IconButton>
                       </Box>
-                    </Tooltip>
+                    </Tooltip> */}
 
                     <Popover
                       open={viewFilters}
@@ -383,7 +432,7 @@ function SalesTransaction() {
                           key={index}
                           onClick={() => {
                             if (quickAdd) {
-                              handleAddItem(item);
+                              handleAddItem(item, 1, item.currentPrice);
                             } else {
                               dispatch(setSelectedRow(item));
                               onAddItemOpen();
@@ -407,7 +456,7 @@ function SalesTransaction() {
                           <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__labels">
                             <Typography
                               fontSize="1.2rem"
-                              fontWeight="700"
+                              // fontWeight="700"
                               textTransform="none"
                             >
                               {item.itemCode}
@@ -436,11 +485,19 @@ function SalesTransaction() {
                           </Box>
 
                           <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__description">
-                            <Typography fontSize="12px">
+                            <Typography fontSize="13px" fontWeight="700">
                               {item.isClearPack === true ? "© " : ""}
                               {item.itemDescription}
                             </Typography>
+                            <Typography
+                              color="green"
+                              fontSize="13px"
+                              fontWeight="700"
+                            >
+                              Available: {item.availQuantity}
+                            </Typography>
                           </Box>
+                          <Box className="salesTransaction__body__itemsForm__itemsList__itemCard__description"></Box>
                         </Button>
                       );
                     })
@@ -498,12 +555,37 @@ function SalesTransaction() {
                             : remove(index);
                         }}
                         onPlus={() => {
+                          const tempTotal =
+                            totalAmount + orderItem?.itemId?.currentPrice;
+                          console.log(tempTotal);
+                          if (
+                            watch("items")[index]?.quantity + 1 >
+                            orderItem?.itemId?.availQuantity
+                          ) {
+                            snackbar({
+                              message: "Quantity exceeds available quantity",
+                              variant: "warning",
+                            });
+                            return;
+                          } 
+                          // else if (
+                          //   tempTotal > watchCreditBalance &&
+                          //   watch("clientId")?.termType === "Credit Type"
+                          // ) {
+                          //   snackbar({f
+                          //     message: "Insufficient credit balance",
+                          //     variant: "warning",
+                          //   });
+                          //   return;
+                          // }
                           update(index, {
                             itemId: watch("items")[index]?.itemId,
                             quantity:
                               parseInt(watch("items")[index].quantity) + 1,
                           });
                         }}
+                        watch={watchAllValues}
+                        creditBalance={watchCreditBalance}
                         onSwipeLeft={() => remove(index)}
                       />
                     ))
@@ -559,7 +641,7 @@ function SalesTransaction() {
 
       <AddItemModal
         open={isAddItemOpen}
-        onClose={onAddItemClose}
+        onClose={onAddItemClose}f
         onSubmit={handleAddItem}
       />
 

@@ -16,37 +16,57 @@ const SamplingFormDetailsSkeleton = () => {
   );
 };
 const SamplingFormDetails = ({ details, isFetching }) => {
+  console.log(details);
   const { control, setValue } = useFormContext();
   const viewOnly = !!details;
 
-  const { data: clientData, isFetching: isClientFetching } =
-    useGetAllClientsQuery({
-      RegistrationStatus: "Approved",
-      PageSize: 2000,
-    });
+  // const { data: clientData, isFetching: isClientFetching } =
+  //   useGetAllClientsQuery({
+  //     RegistrationStatus: "Approved",
+  //     PageSize: 2000,
+  //   });
 
   useEffect(() => {
     if (details) {
-      setValue(
-        "client",
-        clientData?.regularClient.find(
-          (client) => client.id === details.client.clientId
-        ) || null
-      );
+      // setValue(
+      //   "client",
+      //   clientData?.regularClient.find(
+      //     (client) => client.id === details?.clientId
+      //   ) || null
+      // );
       setValue("transactionDate", moment(details.transactionDate));
+      setValue("description", details.description);
     }
-  }, [details, setValue, clientData]);
+  }, [details, setValue
+    // ,clientData
+  ]);
 
-  if (isFetching || isClientFetching) {
+  if (isFetching 
+    // || isClientFetching
+  ) {
     return <SamplingFormDetailsSkeleton />;
   }
   return (
     <Stack direction="row" spacing={1.5}>
-      <ControlledAutocomplete
+      <Controller
+        control={control}
+        name="description"
+        render={({ field }) => (
+          <TextField
+            {...field}
+            size="small"
+            label="Description"
+            disabled={viewOnly}
+            sx={{ width: "500px" }}
+          />
+        )}
+      />
+      {/* <ControlledAutocomplete
         name="client"
         control={control}
         options={clientData?.regularClient || []}
         getOptionLabel={(option) =>
+          option.id + " - " +
           option.businessName?.toUpperCase() +
             " " +
             option.businessAddress?.city?.toUpperCase() +
@@ -66,7 +86,7 @@ const SamplingFormDetails = ({ details, isFetching }) => {
             sx={{ width: "500px" }}
           />
         )}
-      />
+      /> */}
       <Controller
         control={control}
         name="transactionDate"

@@ -30,17 +30,22 @@ import CheckInModal from "../../components/modals/CheckInModal";
 import MapModal from "../../components/modals/MapModal";
 import useSnackbar from "../../hooks/useSnackbar";
 import useConfirm from "../../hooks/useConfirm";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import PageHeaderFilterAdd from "../../components/PageHeaderFilterAdd";
+import { clusterOptions } from "../../utils/Constants";
 
 function CheckIn() {
+  const userData = useSelector((state) => state.login.userDetails);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [typeCustomer, setTypeCustomer] = useState(null);
+  const [clusterId, setClusterId] = useState(userData?.roleName === "CDO" ? " " : 1);
   const [search, setSearch] = useState("");
   const location = useGeolocation();
   const confirm = useConfirm();
   const snackbar = useSnackbar();
   const webcamRef = useRef(null);
-  const userData = useSelector((state) => state.login.userDetails);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   console.log(typeCustomer);
 
@@ -79,22 +84,6 @@ function CheckIn() {
     onClose: onMapClose,
   } = useDisclosure();
 
-  // RTK Query
-  const { data, isFetching } = useGetCheckinQuery({
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-    Search: search,
-  });
-
-  const { data: clients, isFetching: isFetchingClients } =
-    useGetAllClientsForCheckInQuery({
-      Origin: typeCustomer?.label,
-    });
-
-  const [postCheckin, { isLoading: isPosting }] = usePostCheckinMutation();
-
-  const [patchCheckin] = usePatchTimeOutMutation();
-
   const {
     handleSubmit,
     formState: { isValid, isDirty },
@@ -119,6 +108,25 @@ function CheckIn() {
   console.log(isValid);
   console.log("error", errors);
   console.log(watch());
+
+  // RTK Query
+  const { data, isFetching } = useGetCheckinQuery({
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+    Search: search,
+    ClusterId: clusterId,
+    DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD"),
+    DateTo: moment(watch("dateTo")).format("YYYY-MM-DD"),
+  });
+
+  const { data: clients, isFetching: isFetchingClients } =
+    useGetAllClientsForCheckInQuery({
+      Origin: typeCustomer?.label,
+    });
+
+  const [postCheckin, { isLoading: isPosting }] = usePostCheckinMutation();
+
+  const [patchCheckin] = usePatchTimeOutMutation();
 
   //Functions
   const onDrawerSubmit = async (data) => {
@@ -177,12 +185,12 @@ function CheckIn() {
       try {
         await confirm({
           children: "Are you sure you want to checkout?",
-/*************  ✨ Codeium Command ⭐  *************/
-        /**
-         * Callback function called if the user confirms the checkout.
-         * Proceeds to patch the check-in data for the current user.
-         */
-/******  4936aa06-9bd6-4037-b93d-7014995298de  *******/          question: true,
+          /*************  ✨ Codeium Command ⭐  *************/
+          /**
+           * Callback function called if the user confirms the checkout.
+           * Proceeds to patch the check-in data for the current user.
+           */
+          /******  4936aa06-9bd6-4037-b93d-7014995298de  *******/ question: true,
 
           callback: () => {
             patchCheckin(selectedRowData?.id).unwrap();
@@ -253,10 +261,10 @@ function CheckIn() {
     "city",
     "createdDate",
     "timeOut",
-    "duration"
+    "duration",
   ];
 
-  const disabledActions = ["checkout"]
+  const disabledActions = ["checkout"];
 
   // UseEffect
   useEffect(() => {
@@ -266,20 +274,71 @@ function CheckIn() {
   console.log("clients", clients);
 
   return (
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        onOpen={handleAddOpen}
+    <Box className="commonPageLayout" sx={{ gap: "0px" }}>
+      <PageHeaderFilterAdd
         pageTitle="Check In"
         removeArchive
+        removeAllItem
+        removeFilter={userData?.roleName.includes("CDO") ? true : false}
+        filterChoices={clusterOptions}
         setSearch={setSearch}
+        onOpen={handleAddOpen}
+        setFilter={setClusterId}
+        choiceLabel="label"
+        choiceValue="value"
       />
+
+      <Box className="mixin" sx={{ justifyContent: "end" }}>
+        <Box className="mixin__right">
+          <Controller
+            name="dateFrom"
+            control={control}
+            render={({ field }) => (
+              <LocalizationProvider dateAdapter={AdapterMoment}>
+                <DatePicker
+                  {...field}
+                  maxDate={moment()}
+                  label="Date From"
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                  sx={{ width: "200px" }}
+                />
+                <Controller
+                  name="dateTo"
+                  control={control}
+                  render={({ field }) => (
+                    <LocalizationProvider dateAdapter={AdapterMoment}>
+                      <DatePicker
+                        minDate={watch("dateFrom")}
+                        maxDate={moment()}
+                        {...field}
+                        label="Date To"
+                        slotProps={{
+                          textField: {
+                            size: "small",
+                          },
+                        }}
+                        sx={{ width: "200px" }}
+                      />
+                    </LocalizationProvider>
+                  )}
+                />
+              </LocalizationProvider>
+            )}
+          />
+        </Box>
+      </Box>
 
       {isFetching ? (
         <CommonTableSkeleton evenLesserCompact />
       ) : (
         <CommonTable
-          checkIn
+          lowerCompact
           compact
+          checkIn
           moveNoDataUp
           mapData={data?.checkIn}
           tableHeads={tableHeads}
@@ -335,9 +394,7 @@ function CheckIn() {
                   size="small"
                   label="Business Name"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -350,9 +407,7 @@ function CheckIn() {
                   size="small"
                   label="Owner's Name"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -365,9 +420,7 @@ function CheckIn() {
                   size="small"
                   label="Barangay"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -380,9 +433,7 @@ function CheckIn() {
                   size="small"
                   label="City"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -395,9 +446,7 @@ function CheckIn() {
                   size="small"
                   label="Province"
                   autoComplete="off"
-                  onChange={(e) =>
-                    field.onChange(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
               )}
             />
@@ -438,9 +487,7 @@ function CheckIn() {
               label="Remarks"
               autoComplete="off"
               multiline
-              onChange={(e) =>
-                field.onChange(e.target.value.toUpperCase())
-              }
+              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
               maxRows={4}
             />
           )}

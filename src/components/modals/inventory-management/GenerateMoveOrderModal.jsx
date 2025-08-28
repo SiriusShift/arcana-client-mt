@@ -30,19 +30,23 @@ function GenerateMoveOrderModal({ open, onClose }) {
   });
 
   // RTK Query
-  const [generate, { isFetching }] = useLazyGenerateMoveOrderQuery();
+  const [generate, { data, isFetching }] = useLazyGenerateMoveOrderQuery();
 
   const onSubmit = async (data) => {
+    const id = data.moveOrderSlipNo;
+  
     try {
-      await generate(data.moveOrderSlipNo).unwrap();
-
-      dispatch(setData({ moveOrderSlipNo: data.moveOrderSlipNo }));
+      const response = await generate(id).unwrap();
+      console.log("API Response:", response);
+      dispatch(setData({ moveOrderSlipNo: id }));
       onClose();
-      navigate(`receiving-form`);
+      navigate("receiving-form");
     } catch (error) {
-      snackbar({ variant: "error", message: error.message });
+      console.error("Error during API call:", error?.data?.error);
+      snackbar({ variant: "error", message: error?.data?.error?.message || "An error occurred" });
     }
   };
+  
 
   useEffect(() => {
     if (open) {

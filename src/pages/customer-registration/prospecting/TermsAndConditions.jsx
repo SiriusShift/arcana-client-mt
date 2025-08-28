@@ -35,6 +35,7 @@ import { base64ToBlob } from "../../../utils/CustomFunctions";
 function TermsAndConditions({ direct, editMode, storeType }) {
   const dispatch = useDispatch();
   const snackbar = useSnackbar();
+  console.log(direct);
 
   const termsAndConditions = useSelector(
     (state) => state.regularRegistration.value.termsAndConditions
@@ -43,6 +44,8 @@ function TermsAndConditions({ direct, editMode, storeType }) {
   const freebiesDirect = useSelector(
     (state) => state.regularRegistration.value.directFreebie.freebies
   );
+
+  console.log("freebiesDirect", freebiesDirect, direct);
 
   const { setPhotoProofDirect, setSignatureDirect } =
     useContext(DirectReleaseContext);
@@ -762,6 +765,22 @@ function TermsAndConditions({ direct, editMode, storeType }) {
                     onValueChange={(e) => {
                       handleCreditLimitChange(e);
                     }}
+                    isAllowed={({ floatValue }) => {
+                      if (floatValue < 0) {
+                        snackbar({
+                          message: "Credit Limit cannot be negative",
+                          variant: "error",
+                        });
+                        return false;
+                      } else if (floatValue === 0) {
+                        snackbar({
+                          message: "Credit Limit cannot be zero",
+                          variant: "warning",
+                        });
+                        return false;
+                      }
+                      return true;
+                    }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment
@@ -935,7 +954,7 @@ function TermsAndConditions({ direct, editMode, storeType }) {
           </RadioGroup>
         </Box>
 
-        {direct && !editMode && (
+        {direct && (
           <>
             <SecondaryButton
               medium
@@ -964,6 +983,7 @@ function TermsAndConditions({ direct, editMode, storeType }) {
             isFreebieFormOpen={isFreebieFormOpen}
             onFreebieFormClose={onFreebieFormClose}
             direct
+            updateFreebies
           />
         )}
 

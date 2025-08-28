@@ -2,11 +2,16 @@ import { Stack } from "@mui/material";
 import DangerButton from "../../../DangerButton";
 import SecondaryButton from "../../../SecondaryButton";
 import { useFormContext } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useConfirm from "../../../../hooks/useConfirm";
 import useSnackbar from "../../../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../../../utils/CustomFunctions";
-import { useReturnItemsMutation } from "../../../../features/inventory-management/api/returnApi";
+import {
+  useLazyGetAllReturnsQuery,
+  useReplaceItemsMutation,
+  useReturnItemsMutation,
+  useUpdateReturnMutation,
+} from "../../../../features/inventory-management/api/returnApi";
 import moment from "moment";
 import {
   Cancel,
@@ -14,66 +19,200 @@ import {
   KeyboardDoubleArrowRight,
   SaveOutlined,
 } from "@mui/icons-material";
+import useDisclosure from "../../../../hooks/useDisclosure";
+import CommonDialog from "../../../common/CommonDialog";
+import { current } from "@reduxjs/toolkit";
+import { replace } from "lodash";
+import { useEffect } from "react";
 
 const ReturnFormActions = ({
+  replace,
   StepProps: { currentStep = 0, setCurrentStep, steps = [] },
 }) => {
   const navigate = useNavigate();
   const confirm = useConfirm();
   const snackbar = useSnackbar();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
+  const dateFrom = searchParams.get("dateFrom");
+  const dateTo = searchParams.get("dateTo");
 
   const {
-    formState: { isValid },
+    isOpen: isContinueOpen,
+    onOpen: onContinueOpen,
+    onClose: onContinueClose,
+  } = useDisclosure();
+
+  const {
+    formState: { isValid, errors },
     handleSubmit,
+    watch,
   } = useFormContext();
 
-  const [returnItems] = useReturnItemsMutation();
+  console.log(watch());
+
+  const [returnItemsNo, { isLoading: returnItemsNoLoading }] =
+    useReturnItemsMutation();
+  const [returnItemsYes, { isLoading: returnItemsYesLoading }] =
+    useReturnItemsMutation();
+  const [replaceItems, { isLoading: replaceItemsLoading }] =
+    useReplaceItemsMutation();
+
+  const [updateReturn, { isLoading: updateReturnLoading }] =
+    useUpdateReturnMutation();
+
+  const [trigger, { data: returnData }] = useLazyGetAllReturnsQuery();
+
+  console.log(returnData?.to[0]?.returnId);
+  useEffect(() => {
+    if (currentStep === steps.length - 1) {
+      trigger({
+        PageSize: 1000,
+        DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+        DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+        Status: "Pending",
+      });
+    }
+  }, [dateFrom, dateTo, currentStep]);
 
   const onSubmit = async (data) => {
     try {
-      const transformedData = {
+      // Prepare the payloads
+      const replaceItemsPayload = {
+        replaceOrders: data.replaceItems.map((item) => ({
+          itemId: item.item.itemId,
+          price: item.price,
+          quantity: item.quantity,
+          bbd: moment(item.bbd).format("YYYY-MM-DD"),
+          reason: item.reason,
+        })),
+        returnOrderId: returnData?.to[0]?.returnId,
+        clientId: data.client.id,
+      };
+  
+      const returnItemsPayload = {
         returnItems: data.returnItems.map((item) => ({
           itemId: item.item.itemId,
           price: item.price,
-          netPrice: item.netPrice,
           quantity: item.quantity,
-          bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
+          bbd: moment(item.bbd).format("YYYY-MM-DD"),
+          reason: item.reason,
         })),
-        replaceItems: data.replaceItems.map((item) => ({
+        returnOrderId: returnData?.to[0]?.returnId,
+      };
+  
+      // Confirm action
+      const confirmationMessage = replace
+        ? "Are you sure you want to update return and replace these items?"
+        : "Are you sure you want to return and replace these items?";
+  
+      try {
+        await confirm({
+          children: confirmationMessage,
+          question: true,
+          callback: async () => {
+            if (replace) {
+              console.log("Replacing items with payload:", replaceItemsPayload);
+              await updateReturn({
+                id: returnData?.to[0]?.returnId,
+                returnItems: returnItemsPayload,
+              }).unwrap();
+              await replaceItems(replaceItemsPayload).unwrap();
+              console.log("Replace items successful.");
+            } else {
+              console.log("Replacing and returning items...");
+              console.log("Replace payload:", replaceItemsPayload);
+              console.log("Return payload:", returnItemsPayload);
+  
+              await replaceItems(replaceItemsPayload).unwrap();
+              console.log("Replace and return items successful.");
+            }
+          },
+        });
+  
+        // Show success message
+        snackbar({
+          message: "Operation completed successfully!",
+          variant: "success",
+        });
+  
+        // Navigate after success
+        navigate("/inventory-management/return", { replace: true });
+      } catch (confirmationError) {
+        // Handle dialog cancellation
+        if (confirmationError.isCancelled) {
+          console.log("User canceled the confirmation dialog.");
+          return; // Exit the function if canceled
+        }
+        throw confirmationError; // Re-throw any other error
+      }
+    } catch (error) {
+      console.error("Error in onSubmit:", error);
+  
+      // Display error message
+      snackbar({
+        message: handleCatchErrorMessage(error),
+        variant: "error",
+      });
+    }
+  };
+  
+  
+
+  const handleCancel = () => {
+    navigate("/inventory-management/return", { replace: true });
+  };
+
+  const handleModalClose = () => {
+    onContinueClose();
+  };
+
+  const handleClose = async () => {
+    try {
+      console.log("test");
+      const transformedData = {
+        returnOrders: watch("returnItems").map((item) => ({
           itemId: item.item.itemId,
           price: item.price,
-          netPrice: item.netPrice,
+          // netPrice: item.netPrice,
           quantity: item.quantity,
-          bbd: moment(item.bbd.bbd).format("YYYY-MM-DD"),
+          bbd: moment(item.bbd).format("YYYY-MM-DD"),
+          reason: item.reason,
         })),
-        transactionDate: moment(data.transactionDate).format("YYYY-MM-DD"),
-        clientId: data.client.id,
+        clientId: watch("client").id,
       };
-
-      await confirm({
-        children: "Are you sure you want to return these items?",
-        question: true,
-        callback: () => returnItems(transformedData).unwrap(),
-      });
-
-      snackbar({
-        message: "Return successful",
-        variant: "success",
-      });
-
+      console.log("testing!");
+      await returnItemsNo(transformedData).unwrap();
+      onContinueClose();
       navigate("/inventory-management/return", { replace: true });
     } catch (error) {
+      console.log(error);
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
       }
     }
   };
 
-  const handleCancel = () => {
-    navigate("/inventory-management/return", { replace: true });
+  const handleReplaceNext = () => {
+    setCurrentStep((prev) => prev + 1);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    const transformedData = {
+      returnOrders: watch("returnItems").map((item) => ({
+        itemId: item.item.itemId,
+        price: item.price,
+        // netPrice: item.netPrice,
+        quantity: item.quantity,
+        bbd: moment(item.bbd).format("YYYY-MM-DD"),
+        reason: item.reason,
+      })),
+      clientId: watch("client").id,
+    };
+    console.log("testing!");
+    await returnItemsYes(transformedData).unwrap();
+    onContinueClose();
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -82,48 +221,78 @@ const ReturnFormActions = ({
   };
 
   return (
-    <Stack direction="row" justifyContent="space-between" gap={1.5}>
-      <Stack>
-        {currentStep !== 0 && (
+    <>
+      <Stack
+        direction="row"
+        justifyContent={`${replace ? "space-between" : "flex-end"}`}
+        gap={1.5}
+      >
+        <Stack>
+          {currentStep !== 0 && replace && (
+            <DangerButton
+              onClick={handleBack}
+              size="small"
+              startIcon={<KeyboardDoubleArrowLeft />}
+            >
+              Back
+            </DangerButton>
+          )}
+        </Stack>
+
+        <Stack direction="row" justifyContent="flex-end" gap={1.5}>
           <DangerButton
-            onClick={handleBack}
+            onClick={handleCancel}
             size="small"
-            startIcon={<KeyboardDoubleArrowLeft />}
+            color="error"
+            endIcon={<Cancel />}
           >
-            Back
+            Cancel
           </DangerButton>
-        )}
+
+          {currentStep !== steps.length - 1 && (
+            <SecondaryButton
+              onClick={replace ? handleReplaceNext : onContinueOpen}
+              endIcon={<KeyboardDoubleArrowRight />}
+              disabled={
+                watch("client") === null ||
+                !watch("returnItems")[0].quantity ||
+                !watch("returnItems")[0].netPrice
+              }
+            >
+              Next
+            </SecondaryButton>
+          )}
+
+          {currentStep === steps.length - 1 && (
+            <SecondaryButton
+              onClick={handleSubmit(onSubmit)}
+              endIcon={<SaveOutlined />}
+              disabled={!isValid}
+              loading={replaceItemsLoading}
+            >
+              Submit
+            </SecondaryButton>
+          )}
+        </Stack>
       </Stack>
-
-      <Stack direction="row" justifyContent="flex-end" gap={1.5}>
-        <DangerButton
-          onClick={handleCancel}
-          size="small"
-          color="error"
-          endIcon={<Cancel />}
-        >
-          Cancel
-        </DangerButton>
-
-        {currentStep !== steps.length - 1 && (
-          <SecondaryButton
-            onClick={handleNext}
-            endIcon={<KeyboardDoubleArrowRight />}
-          >
-            Next
-          </SecondaryButton>
-        )}
-
-        {currentStep === steps.length - 1 && (
-          <SecondaryButton
-            onClick={handleSubmit(onSubmit)}
-            endIcon={<SaveOutlined />}
-          >
-            Submit
-          </SecondaryButton>
-        )}
-      </Stack>
-    </Stack>
+      <CommonDialog
+        open={isContinueOpen}
+        onClose={handleClose}
+        onBackdropClick={handleModalClose}
+        onYes={currentStep !== steps.length - 1 && handleNext}
+        isLoading={replaceItemsLoading || returnItemsYesLoading}
+        isLoadingNo={returnItemsNoLoading}
+        question
+      >
+        Continue adding replace items ?
+        {/* Confirm {direct ? "save" : "request"} of freebies for{" "}
+        <span style={{ textTransform: "uppercase", fontWeight: "bold" }}>
+          {selectedRowData?.businessName && !direct
+            ? selectedRowData?.businessName
+            : "client"}
+        </span> */}
+      </CommonDialog>
+    </>
   );
 };
 

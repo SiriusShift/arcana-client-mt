@@ -17,6 +17,7 @@ const FreebiesFormDetailsSkeleton = () => {
 };
 const FreebiesFormDetails = ({ details, isFetching }) => {
   const { control, setValue } = useFormContext();
+  console.log(details);
   const viewOnly = !!details;
 
   const { data: clientData, isFetching: isClientFetching } =
@@ -30,7 +31,7 @@ const FreebiesFormDetails = ({ details, isFetching }) => {
       setValue(
         "client",
         clientData?.regularClient.find(
-          (client) => client.id === details.client.clientId
+          (client) => client.id === details?.clientId
         ) || null
       );
       setValue("transactionDate", moment(details.transactionDate));
@@ -47,6 +48,7 @@ const FreebiesFormDetails = ({ details, isFetching }) => {
         control={control}
         options={clientData?.regularClient || []}
         getOptionLabel={(option) =>
+          option.id + " - " +
           option.businessName?.toUpperCase() +
             " " +
             option.businessAddress?.city?.toUpperCase() +

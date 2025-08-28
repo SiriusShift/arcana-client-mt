@@ -32,6 +32,9 @@ import {
   Update,
   Visibility,
   ZoomIn,
+  Download,
+  ContentCopy,
+  CopyAll,
 } from "@mui/icons-material";
 
 function CommonActions({
@@ -47,10 +50,12 @@ function CommonActions({
   onReleaseFreebie,
   onRegularRegister,
   onUpdateFreebies,
+  onUpdate,
   onCancelFreebies,
   onManageApprovers,
   onPrintTTA,
   onPrintFreebies,
+  onPrint,
   onAddPriceChange,
   onVoid,
   onDelete,
@@ -72,6 +77,9 @@ function CommonActions({
   onListingHistories,
   onPay,
   onInspect,
+  onDownload,
+  onReplace,
+  onNoReplace,
   disableActions,
   item,
   status,
@@ -89,7 +97,7 @@ function CommonActions({
       onTag();
     } else if (action === "map") {
       onMap();
-    }else if(action === "checkout"){
+    } else if (action === "checkout") {
       onCheckout();
     } else if (action === "requestFreebie") {
       onFreebie();
@@ -99,6 +107,8 @@ function CommonActions({
       onRegularRegister();
     } else if (action === "updateFreebies") {
       onUpdateFreebies();
+    } else if (action === "update") {
+      onUpdate();
     } else if (action === "cancelFreebies") {
       onCancelFreebies();
     } else if (action === "viewMore") {
@@ -113,6 +123,8 @@ function CommonActions({
       onPrintTTA();
     } else if (action === "printFreebies") {
       onPrintFreebies();
+    } else if (action === "print") {
+      onPrint();
     } else if (action === "addPriceChange") {
       onAddPriceChange();
     } else if (action === "delete") {
@@ -149,8 +161,14 @@ function CommonActions({
       onPay();
     } else if (action === "inspect") {
       onInspect();
-    } else if (action === "listingHistories"){
+    } else if (action === "listingHistories") {
       onListingHistories();
+    } else if (action === "download") {
+      onDownload();
+    } else if (action === "replace") {
+      onReplace();
+    } else if (action === "noReplace") {
+      onNoReplace();
     }
 
     onClose();
@@ -210,22 +228,20 @@ function CommonActions({
           </MenuItem>
         )}
 
-        {
-          onCheckout && (
-            <MenuItem
-              className="actionsMenuItem"
-              onClick={() => {
-                handleAction("checkout");
-              }}
-              disabled={
-                disableActions ? disableActions?.includes("checkout") : false
-              }
-            >
-              <Logout />
-              Checkout
-            </MenuItem>
-          )
-        }
+        {onCheckout && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("checkout");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("checkout") : false
+            }
+          >
+            <Logout />
+            Checkout
+          </MenuItem>
+        )}
 
         {onInspect && (
           <MenuItem
@@ -483,6 +499,22 @@ function CommonActions({
             Update Freebies
           </MenuItem>
         )}
+        {onUpdate && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("update");
+            }}
+            disabled={
+              disableActions
+                ? disableActions?.includes("update")
+                : false
+            }
+          >
+            <Update />
+            Update
+          </MenuItem>
+        )}
 
         {onCancelFreebies && (
           <MenuItem
@@ -595,6 +627,21 @@ function CommonActions({
           </MenuItem>
         )}
 
+        {onPrint && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("print");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("print") : false
+            }
+          >
+            <Print />
+            Print
+          </MenuItem>
+        )}
+
         {onAttach && (
           <MenuItem
             className="actionsMenuItem"
@@ -607,6 +654,21 @@ function CommonActions({
           >
             <Attachment />
             Invoice Attachment
+          </MenuItem>
+        )}
+
+        {onDownload && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("download");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("download") : false
+            }
+          >
+            <Download />
+            Download
           </MenuItem>
         )}
 
@@ -716,6 +778,36 @@ function CommonActions({
           >
             <Cancel />
             Cancel
+          </MenuItem>
+        )}
+
+        {onReplace && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("replace");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("replace") : false
+            }
+          >
+            <ContentCopy />
+            For Replacement
+          </MenuItem>
+        )}
+
+        {onNoReplace && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("noReplace");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("noReplace") : false
+            }
+          >
+            <CopyAll />
+            Sales Return
           </MenuItem>
         )}
       </Menu>

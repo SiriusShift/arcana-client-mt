@@ -8,43 +8,53 @@ import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import { useGetAllSamplingsQuery } from "../../../features/inventory-management/api/samplingApi";
+import useDisclosure from "../../../hooks/useDisclosure";
+import PrintInventoryModal from "../../../components/modals/PrintInventoryModal";
+import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
+import ApprovalHistoryModal from "../../../components/modals/ApprovalHistoryModal";
+import useValidate from "../../../hooks/useValidate";
 
 function Sampling() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-
+  const [tabViewing, setTabViewing] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
 
-  const { data, isFetching } = useGetAllSamplingsQuery({
-    Search: search,
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-  });
+  const {
+    isOpen: isPrintOpen,
+    onOpen: onPrintOpen,
+    onClose: onPrintClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isHistoryOpen,
+    onOpen: onHistoryOpen,
+    onClose: onHistoryClose,
+  } = useDisclosure();
 
   const tableHeads = [
     "ID",
-    "Owner's Name",
-    "Business Name",
-    "Business Address",
+    // "Owner's Name",
+    // "Business Name",
+    "Description",
     "Total Quantity",
     "Transaction Date",
   ];
 
   const customOrderKeys = [
     "id",
-    "ownersName",
-    "businessName",
-    "businessAddress",
+    // "clientName",
+    // "businessName",
+    "description",
     "totalQuantity",
-    "transactionDate",
+    "createdDate",
   ];
 
   const nestedProperty = {
@@ -52,23 +62,61 @@ function Sampling() {
     nestedKeys: ["city", "province"],
   };
 
+  const tabs = [
+    {
+      case: 1,
+      name: "For Approval",
+      status: "Under review",
+    },
+    {
+      case: 2,
+      name: "Released Freebies",
+      status: "Released",
+    },
+    {
+      case: 3,
+      name: "Rejected Freebies",
+      status: "Rejected",
+    },
+  ];
+
   const dateTimeArray = ["transactionDate"];
+
+  //RTK QUERY
+  const { data, isFetching } = useGetAllSamplingsQuery({
+    Search: search,
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    TransactionType: "Sampling",
+    Status: tabs[tabViewing - 1]?.status,
+  });
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}`);
+    navigate(
+      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   const handleAdd = () => {
+    const error = validateEndingInventory();
+    if (error) return;
     navigate("sampling-form");
   };
 
   if (location.pathname === "/inventory-management/sampling") {
     return (
       <Box className="commonPageLayout">
-        <PageHeaderAdd
+        <PageHeaderAddTabs
           pageTitle="Sampling"
           addTitle="Add Sampling"
+          tabsList={tabs}
+          tabViewing={tabViewing}
+          setTabViewing={setTabViewing}
           onOpen={handleAdd}
           removeArchive
           removeSearch
@@ -82,13 +130,13 @@ function Sampling() {
           dateTo={dateTo}
         />
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.samplings}
+            mapData={data?.to}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             nestedProperty={nestedProperty}
@@ -99,8 +147,23 @@ function Sampling() {
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
             onView={handleView}
+            onPrint={tabViewing === 2 && onPrintOpen}
+            onHistory={onHistoryOpen}
           />
         )}
+        <PrintInventoryModal
+          data={selectedRowData}
+          type="Sampling"
+          onClose={onPrintClose}
+          copies={0}
+          open={isPrintOpen}
+        />
+
+        <ApprovalHistoryModal
+          open={isHistoryOpen}
+          onClose={onHistoryClose}
+          variant="sampling"
+        />
       </Box>
     );
   }

@@ -28,8 +28,11 @@ import CommonDialog from "../common/CommonDialog";
 import ViewPhotoModal from "./ViewPhotoModal";
 import RegisterRegularForm from "../../pages/customer-registration/prospecting/RegisterRegularForm";
 import { DirectReleaseContext } from "../../context/DirectReleaseContext";
+import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
+import { usePutReleaseFreebieRequestMutation } from "../../features/inventory-management/api/freebiesApi";
+import useSnackbar from "../../hooks/useSnackbar";
 
-function ReleaseFreebieModal({ direct, ...otherProps }) {
+function ReleaseFreebieModal({ direct, inventory, ...otherProps }) {
   const { onClose, ...noOnCloseProps } = otherProps;
 
   const [signature, setSignature] = useState("");
@@ -37,9 +40,23 @@ function ReleaseFreebieModal({ direct, ...otherProps }) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const snackbar = useSnackbar()
+
+  const { data: clientData, isFetching: isClientFetching } =
+    useGetAllClientsQuery({
+      RegistrationStatus: "Approved",
+      PageSize: 2000,
+    });
+
+  console.log(clientData);
+
+  const address = selectedRowData?.ownersAddress
+    ? selectedRowData?.ownersAddress
+    : clientData?.regularClient?.find(
+        (client) => selectedRowData?.clientId === client.id
+      )?.businessAddress || {};
 
   const freebiesLength = selectedRowData?.freebies?.length;
-  const address = selectedRowData?.ownersAddress;
   const { fullname } = useSelector((state) => state.login);
 
   const fileUploadRef = useRef();
@@ -105,6 +122,8 @@ function ReleaseFreebieModal({ direct, ...otherProps }) {
 
   //RTK Query
   const [putReleaseProspect, { isLoading }] = usePutReleaseProspectMutation();
+  const [putReleaseFreebie, { isLoading: isReleaseLoading }] =
+    usePutReleaseFreebieRequestMutation();
 
   //Submit API Functions
   const handleReleaseSubmit = async () => {
@@ -117,18 +136,35 @@ function ReleaseFreebieModal({ direct, ...otherProps }) {
     const formData = new FormData();
     formData.append("PhotoProof", photoProof);
     formData.append("ESignature", signatureFile);
+    formData.append("FreebieRequestId", selectedRowData?.id);
+
+    console.log(selectedRowData?.id);
 
     try {
-      await putReleaseProspect({
-        id: selectedRowData?.freebies?.[freebiesLength - 1]?.freebieRequestId,
-        body: formData,
-      }).unwrap();
+      if (inventory) {
+        await putReleaseFreebie({
+          id: selectedRowData?.id,
+          body: formData,
+        }).unwrap();
+      } else {
+        await putReleaseProspect({
+          id: selectedRowData?.freebies?.[freebiesLength - 1]?.freebieRequestId,
+          body: formData,
+        }).unwrap();
+      }
+
+      setSignature("");
+      setPhotoProof(null);
 
       onClose();
 
+      snackbar({message: "Freebie released succcessfully", variant: "success"})
       setSnackbarMessage("Freebie released successfully");
-      debounce(onRedirectRegisterOpen(), 2000);
-      onSuccessOpen();
+
+      if (!inventory) {
+        debounce(onRedirectRegisterOpen(), 2000);
+        onSuccessOpen();
+      }
     } catch (error) {
       if (error?.data?.error?.message) {
         setSnackbarMessage(error?.data?.error?.message);
@@ -236,14 +272,22 @@ function ReleaseFreebieModal({ direct, ...otherProps }) {
                     address?.city ? `, ${address.city}` : ""
                   }${address?.province ? `, ${address.province}` : ""}`}
                 </Typography>
+                <Typography>
+                  <span>Series ID: </span>
+                  {selectedRowData?.freebies
+                    && selectedRowData?.freebies?.[freebiesLength - 1]
+                        ?.seriesId || selectedRowData?.seriesId}
+                </Typography>
               </Box>
               <Box>
                 <Typography>
                   <span>Transaction No:</span>{" "}
                   {direct
                     ? "Pending"
-                    : selectedRowData?.freebies?.[freebiesLength - 1]
-                        ?.transactionNumber || ""}
+                    : selectedRowData?.freebies
+                    ? selectedRowData?.freebies?.[freebiesLength - 1]
+                        ?.transactionNumber || ""
+                    : selectedRowData?.id}
                 </Typography>
                 <Typography>
                   <span>Date:</span> {moment().format("MMM D, YYYY")}
@@ -282,6 +326,17 @@ function ReleaseFreebieModal({ direct, ...otherProps }) {
                   selectedRowData?.freebies?.[
                     freebiesLength - 1
                   ]?.freebieItems?.map((item, i) => (
+                    <TableRow key={i}>
+                      <TableCell>{item.quantity}</TableCell>
+                      <TableCell>{item.itemCode}</TableCell>
+                      <TableCell>
+                        {item.itemDescription?.toUpperCase()}
+                      </TableCell>
+                      <TableCell>{item.uom}</TableCell>
+                    </TableRow>
+                  ))}
+                {inventory &&
+                  selectedRowData?.freebieOrderItem?.map((item, i) => (
                     <TableRow key={i}>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>{item.itemCode}</TableCell>
@@ -519,7 +574,7 @@ function ReleaseFreebieModal({ direct, ...otherProps }) {
         onClose={onConfirmClose}
         onYes={direct ? handleReleaseSave : handleReleaseSubmit}
         question
-        isLoading={isLoading}
+        isLoading={isLoading || isReleaseLoading}
       >
         Confirm {direct && "save"} release freebies for{" "}
         <span style={{ fontWeight: "bold" }}>

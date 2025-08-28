@@ -18,6 +18,11 @@ function ControlledAutocomplete({
           <Autocomplete
             {...autocomplete}
             value={value}
+            ListboxProps={{
+              style: {
+                maxHeight: "210px", // Adjust the height as needed
+              }
+            }}
             onChange={(e, value) => {
               if (onValueChange) return setValue(onValueChange(e, value));
 

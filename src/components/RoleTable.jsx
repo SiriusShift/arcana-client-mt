@@ -96,7 +96,7 @@ function RoleTable({
                   }}
                 >
                   {dataToMapKeys.map((keys, k) => {
-                    if (keys === "id" || keys === "permissions") {
+                    if (keys === "id" || keys === "permissions" || keys === "reports") {
                       return null;
                     }
                     return <TableCell key={k}>{item[keys]}</TableCell>;

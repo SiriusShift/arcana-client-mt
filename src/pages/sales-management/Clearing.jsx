@@ -6,13 +6,22 @@ import CommonTable from "../../components/CommonTable";
 import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 import SearchActionMixin from "../../components/mixins/SearchActionMixin";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { useFileClearingTransactionMutation, useGetAllClearingTransactionQuery, useReturnClearingTransactionMutation } from "../../features/sales-management/api/clearingApi";
+import {
+  useFileClearingTransactionMutation,
+  useGetAllClearingTransactionQuery,
+  useReturnClearingTransactionMutation,
+} from "../../features/sales-management/api/clearingApi";
 import ClearingModal from "../../components/modals/sales-management/ClearingModal";
 import useDisclosure from "../../hooks/useDisclosure";
-import { AssignmentReturnedOutlined, Autorenew } from "@mui/icons-material";
+import {
+  AssignmentReturnedOutlined,
+  Autorenew,
+  Download,
+} from "@mui/icons-material";
 import SessionExpired from "../SessionExpired";
 import useConfirm from "../../hooks/useConfirm";
 import useReasonConfirm from "../../hooks/useReasonConfirm";
+import { downloadFile } from "../../utils/DownloadFile";
 
 function Clearing() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -26,6 +35,7 @@ function Clearing() {
   const confirm = useConfirm();
   const reasonConfirm = useReasonConfirm();
 
+  console.log(clearingStatus);
 
   const [checkedArray, setCheckedArray] = useState([]);
 
@@ -46,24 +56,28 @@ function Clearing() {
         case: 1,
         name: "For Tagging",
         clearingStatus: "For Clearing",
+        status: "For_Tagging",
         badge: notifications["forClearing"],
       },
       {
         case: 2,
         name: "For Filing",
         clearingStatus: "For Filing",
+        status: "For_Filing",
         badge: notifications["forFiling"],
       },
       {
         case: 3,
         name: "Filed",
         clearingStatus: "Cleared",
+        status: "Filed",
         badge: notifications["cleared"],
       },
       {
         case: 4,
         name: "Voided",
         clearingStatus: "Voided",
+        status: "Status",
         badge: notifications["voided"],
       },
     ];
@@ -125,7 +139,6 @@ function Clearing() {
   const [fileClearingTransaction] = useFileClearingTransactionMutation();
   const [returnClearingTransaction] = useReturnClearingTransactionMutation();
 
-
   const {
     data: clearingData,
     isFetching: isClearingFetching,
@@ -144,7 +157,9 @@ function Clearing() {
     }
   );
 
-  const checkedArrayData = clearingData?.transactions.filter((_, index) => checkedArray.includes(index));
+  const checkedArrayData = clearingData?.transactions.filter((_, index) =>
+    checkedArray.includes(index)
+  );
 
   // Functions
   const onInspect = () => {
@@ -166,7 +181,9 @@ function Clearing() {
         children: "Are you sure you want to file this transaction?",
         question: true,
         callback: () =>
-          fileClearingTransaction({ paymentRecords: checkedArrayData }).unwrap(),
+          fileClearingTransaction({
+            paymentRecords: checkedArrayData,
+          }).unwrap(),
       });
       // fileClearingTransaction({ paymentRecords: checkedArrayData }).unwrap(),
 
@@ -176,7 +193,6 @@ function Clearing() {
       });
       onClose();
       setCheckedArray([]);
-
     } catch (error) {
       if (error?.isConfirmed) {
         snackbar({
@@ -215,7 +231,7 @@ function Clearing() {
   // };
 
   const onFilter = async ({ clusterId, paymentMethod }) => {
-	console.log(paymentMethod);
+    console.log(paymentMethod);
     try {
       setClusterId(clusterId);
       setPaymentMethod(paymentMethod);
@@ -266,19 +282,20 @@ function Clearing() {
           removeAction
           onFilter={onFilter}
           clusterFilter={true}
-		  paymentMethodFilter={true}
+          paymentMethodFilter={true}
         >
           {clearingStatus === "For Filing" && (
             <>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={onFile}
-              disabled={checkedArrayData.length === 0}
-            >
-              File
-            </Button>
-            {/* <Button
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={onFile}
+                disabled={checkedArrayData.length === 0}
+              >
+                File
+              </Button>
+
+              {/* <Button
               variant="contained"
               color="secondary"
               onClick={onReturn}
@@ -288,6 +305,22 @@ function Clearing() {
             </Button> */}
             </>
           )}
+          <Button
+            onClick={async () =>
+              await downloadFile(
+                `clearing-transaction/export`,
+                `?${clusterId && `clusterId=${clusterId}`}&status=${
+                  encodeURI(tabsList.find((item) => item.case === tabViewing)
+                    ?.clearingStatus)
+                }`,
+                `Remittance_${tabsList.find((item) => item.case === tabViewing)?.status}`
+              )
+            }
+            variant="contained"
+            color="secondary"
+          >
+            <Download />
+          </Button>
         </SearchActionMixin>
 
         {isClearingFetching ? (

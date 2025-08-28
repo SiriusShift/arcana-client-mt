@@ -5,20 +5,31 @@ import FreebiesFormDetails from "../../../components/page-components/inventory-m
 import FreebiesFormItems from "../../../components/page-components/inventory-management/freebies/FreebiesFormItems";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { freebiesSchema } from "../../../schema/schema";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
-import { useGetFreebieRequestByIdQuery } from "../../../features/inventory-management/api/freebiesApi";
+import { useGetAllFreebieRequestsQuery, useGetFreebieRequestByIdQuery } from "../../../features/inventory-management/api/freebiesApi";
 
 const ViewFreebies = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+
+  const dateFrom = searchParams.get("dateFrom");
+  const dateTo = searchParams.get("dateTo");
 
   const methods = useForm({
     resolver: yupResolver(freebiesSchema.schema),
     defaultValues: freebiesSchema.defaultValues,
   });
 
-  const { data, isFetching, isError } = useGetFreebieRequestByIdQuery(id);
+  const { data, isFetching, isError } = useGetAllFreebieRequestsQuery({
+    DateFrom: dateFrom,
+    DateTo: dateTo,
+    FreebieId: id,
+    TransactionType: "Freebie",
+  });
+  console.log(data);
 
   useEffect(() => {
     if (isError) {
@@ -31,9 +42,9 @@ const ViewFreebies = () => {
       <FreebiesFormHeader />
 
       <FormProvider {...methods}>
-        <FreebiesFormDetails details={data} isFetching={isFetching} />
+        <FreebiesFormDetails details={data?.to[0]} isFetching={isFetching} />
 
-        <FreebiesFormItems items={data?.items} isFetching={isFetching} />
+        <FreebiesFormItems items={data?.to[0]?.freebieOrderItem} isFetching={isFetching} />
       </FormProvider>
     </Box>
   );

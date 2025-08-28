@@ -173,6 +173,7 @@ function cheque() {
           <CommonTable
           compact
           moveNoDataUp
+          includeActions={false}
           mapData={data?.transactions}
           count={data?.totalCount || 0}
           rowsPerPage={rowsPerPage}
@@ -193,7 +194,7 @@ function cheque() {
         <Autocomplete
           name="clientId"
           control={control}
-          options={listingFeeClients?.listingFees}
+          options={listingFeeClients?.listingFees || []}
           getOptionLabel={(option) =>
             option?.businessName?.toUpperCase() +
             ", " +

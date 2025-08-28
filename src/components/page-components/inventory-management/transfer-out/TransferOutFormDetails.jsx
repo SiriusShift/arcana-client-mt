@@ -48,11 +48,12 @@ const TransferOutFormDetails = ({ details, isFetching }) => {
           Page: 1,
           PageSize: 1000,
           Status: true,
+          isMarketing: true
         },
         {
           preferCacheValue: true,
         }
-      );
+      ); 
     }
   }, [cdoRoleId, triggerCDO]);
 
@@ -60,7 +61,7 @@ const TransferOutFormDetails = ({ details, isFetching }) => {
     if (details) {
       setValue(
         "to",
-        cdoData?.users.find((user) => user.id === details.to.userId)
+        cdoData?.users.find((user) => user.fullname === details.transferTo)
       );
       setValue("transactionDate", moment(details.transactionDate));
     }
@@ -117,6 +118,7 @@ const TransferOutFormDetails = ({ details, isFetching }) => {
           </LocalizationProvider>
         )}
       />
+
     </Stack>
   );
 };

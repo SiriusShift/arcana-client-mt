@@ -80,7 +80,8 @@ const TransferInItems = ({ items = [], isFetching, forViewing }) => {
               <TableCell>Item Description</TableCell>
               <TableCell>UOM</TableCell>
               <TableCell>Quantity</TableCell>
-              <TableCell>BBD</TableCell>
+              <TableCell>Reason</TableCell>
+              {/* <TableCell>BBD</TableCell> */}
             </TableRow>
           </TableHead>
 
@@ -91,7 +92,8 @@ const TransferInItems = ({ items = [], isFetching, forViewing }) => {
                 <TableCell>{item.itemDescription}</TableCell>
                 <TableCell>{item.uom}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
-                <TableCell>{item.bbd}</TableCell>
+                <TableCell>{item.reason}</TableCell>
+                {/* <TableCell>{item.bbd}</TableCell> */}
               </TableRow>
             ))}
           </TableBody>

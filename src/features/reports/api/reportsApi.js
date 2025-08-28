@@ -2,7 +2,14 @@ import { api } from "../../api";
 
 const reportsApi = api
   .enhanceEndpoints({
-    addTagTypes: ["CDO Report", "Sales Journal Report", "AS Report", "CheckIn Report", "SOA Report"],
+    addTagTypes: [
+      "CDO Report",
+      "Sales Journal Report",
+      "AS Report",
+      "CheckIn Report",
+      "SOA Report",
+      "Return to Depot Report",
+    ],
   })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -54,7 +61,206 @@ const reportsApi = api
         }),
         providesTags: ["SOA Report"],
       }),
+      getCheckInFiloReports: builder.query({
+        query: (params) => ({
+          url: "/get-check-in-reports-filo",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["CheckIn Report"],
+      }),
+      getPaymentReports: builder.query({
+        query: (params) => ({
+          url: "/get-payment-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Payment Report"],
+      }),
+      getReturnToDepotReports: builder.query({
+        query: (params) => ({
+          url: "/GetTransferReport",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Return to Depot Report"],
+      }),
+      getTransferOutReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-transfer-out-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Transfer Out Report"],
+      }),
+      getTransferInReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-transfer-in-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Transfer In Report"],
+      }),
+      getFreebieReports: builder.query({
+        query: (params) => ({
+          url: "/get-freebie-order",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Freebie Report"],
+      }),
+      getSamplingReports: builder.query({
+        query: (params) => ({
+          url: "/get-freebie-order",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Sampling Report"],
+      }),
+      getReturnReports: builder.query({
+        query: (params) => ({
+          url: "/GetReturnedOrders",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Return Report"],
+      }),
+      getReplaceReports: builder.query({
+        query: (params) => ({
+          url: "/GetReplacedOrders",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Replace Report"],
+      }),
+      getVoidTransactionsReports: builder.query({
+        query: (params) => ({
+          url: "/get-void-transaction-reports",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Void Report"],
+      }),
+      getMrpRollbackReports: builder.query({
+        query: (params) => ({
+          url: "/mrp-rollback",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Rollback Report"],
+      }),
+      getCashReceiptReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-gl-cash-receipt",
+          method: "GET",
+          params,
+          headers: {
+            "x-api-key": import.meta.env.VITE_GL_KEY,
+          }
+        }),
+      }),
+      getInventoriablesReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-gl",
+          method: "GET",
+          params,
+          headers: {
+            "x-api-key": import.meta.env.VITE_GL_KEY,
+          }
+        }),
+      }),
+      getSalesGTReports: builder.query({
+        query: (params) => ({
+          url: "/arcana-gt-sales",
+          method: "GET",
+          params,
+          headers: {
+            "x-api-key": import.meta.env.VITE_GL_KEY,
+          }
+        }),
+      }),
+      getInventoryMovementReports: builder.query({
+        query: (params) => ({
+          url: "/InventoryMovement",
+          method: "GET",
+          params
+        })
+      }),
+      getInventoryTransactionsHistoryReports: builder.query({
+        query: (params) => ({
+          url: "/TransactionHistoricalReport",
+          method: "GET",
+          params
+        })
+      }),
+      getReturnSamplingReports: builder.query({
+        query: (params) => ({
+          url: "/GetReturnSamplingReport",
+          method: "GET",
+          params
+        })
+      }),
+      getInventoryAdjustmentReports: builder.query({
+        query: (params) => ({
+          url: "/GetInventoryAdjustmentReport",
+          method: "GET",
+          params
+        })
+      }),
+
+      getMiscReceiptReports: builder.query({
+        query: (params) => ({
+          url: "/GetReceiptReport",
+          method: "GET",
+          params
+        })
+      }),
+
+      getMiscIssueReports: builder.query({
+        query: (params) => ({
+          url: "/GetIssueReport",
+          method: "GET",
+          params
+        })
+      }),
+
+      getConsolidatedReports: builder.query({
+        query: (params) => ({
+          url: "ConsolidatedReport",
+          method: "GET",
+          params
+        })
+      })
     }),
   });
 
-export const { useCDOReportsQuery, useSJReportsQuery, useASReportsQuery, usePriceModeReportQuery, useGetCheckInReportsQuery, useCheckInReportQuery, useGetSOAReportsQuery } = reportsApi;
+export const {
+  useCDOReportsQuery,
+  useSJReportsQuery,
+  useASReportsQuery,
+  usePriceModeReportQuery,
+  useGetCheckInReportsQuery,
+  useCheckInReportQuery,
+  useGetSOAReportsQuery,
+  useGetCheckInFiloReportsQuery,
+  useGetReturnToDepotReportsQuery,
+  useGetTransferOutReportsQuery,
+  useGetTransferInReportsQuery,
+  useGetFreebieReportsQuery,
+  useGetSamplingReportsQuery,
+  useGetReturnReportsQuery,
+  useGetReplaceReportsQuery,  
+  useGetVoidTransactionsReportsQuery,
+  useGetPaymentReportsQuery,
+  useGetMrpRollbackReportsQuery,
+  useGetCashReceiptReportsQuery,
+  useGetInventoriablesReportsQuery,
+  useGetSalesGTReportsQuery,
+  useGetInventoryMovementReportsQuery,
+  useGetInventoryTransactionsHistoryReportsQuery,
+  useGetReturnSamplingReportsQuery,
+  useGetInventoryAdjustmentReportsQuery,
+  useGetMiscIssueReportsQuery,
+  useGetMiscReceiptReportsQuery,
+  useGetConsolidatedReportsQuery
+} = reportsApi

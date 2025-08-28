@@ -36,7 +36,7 @@ import CommonTableSkeleton from "../../../CommonTableSkeleton";
 import * as _ from "lodash";
 import useReasonConfirm from "../../../../hooks/useReasonConfirm";
 import useSnackbar from "../../../../hooks/useSnackbar";
-import {handleCatchErrorMessage} from "../../../../utils/CustomFunctions";
+import { handleCatchErrorMessage } from "../../../../utils/CustomFunctions";
 
 function TransactionsList({ setTransactionsMode }) {
   const [search, setSearch] = useState("");
@@ -53,6 +53,8 @@ function TransactionsList({ setTransactionsMode }) {
   const [dateToTemp, setDateToTemp] = useState(moment());
   const confirmReason = useReasonConfirm();
   const snackbar = useSnackbar();
+
+  console.log(transactionStatus)
 
   //Slices
   const userDetails = useSelector((state) => state.login.userDetails);
@@ -74,17 +76,20 @@ function TransactionsList({ setTransactionsMode }) {
   } = useDisclosure();
 
   //Constants
-  const tableHeads = [
-    "Tx Number",
-    "Date",
-    "Time",
-    "Amount",
-    "Business Name",
-    "Invoice Type",
-    "Invoice No.",
-    // "Validity",
-    "Upload Status",
-  ];
+const tableHeads = [
+  "Tx Number",
+  "Date",
+  "Time",
+  "Amount",
+  "Business Name",
+  "Invoice Type",
+  "Invoice No.",
+  // "Validity",
+  "Upload Status",
+  ...((transactionStatus === "Cancelled" || transactionStatus === "Voided") 
+    ? ["Reason"] 
+    : [])
+];
   const customOrderKeys = [
     "transactionNo",
     "createdAt",
@@ -94,7 +99,9 @@ function TransactionsList({ setTransactionsMode }) {
     "invoiceNo",
     // "status",
     "ciAttachment",
-  ];
+  ...((transactionStatus === "Cancelled" || transactionStatus === "Voided") 
+    ? ["Reason"] 
+    : [])  ];
   const pesoArray = ["totalAmountDue"];
   const dateTimeSplitArray = ["createdAt"];
   const attachKey = "ciAttachment";
@@ -104,7 +111,7 @@ function TransactionsList({ setTransactionsMode }) {
   const { data: transactionsData, isFetching: isTransactionsFetching } =
     useGetAllSalesTransactionQuery({
       ...(search ? { Search: search } : {}),
-      ClusterId: clusterId?.value || "",
+      ClusterId: clusterId?.id || "",
       InvoiceType: invoiceType?.value || "",
       TransactionStatus: transactionStatus,
       DateFrom: moment(dateFrom).format("YYYY-MM-DD"),
@@ -318,7 +325,7 @@ function TransactionsList({ setTransactionsMode }) {
               setTransactionsMode(false);
               sessionStorage.removeItem("transactionsMode");
             }}
-            // sx={{ ml: "30px", height: "100%" }}
+          // sx={{ ml: "30px", height: "100%" }}
           >
             <KeyboardDoubleArrowLeft sx={{ fontSize: "1.6rem" }} />
           </IconButton>
@@ -397,9 +404,9 @@ function TransactionsList({ setTransactionsMode }) {
               <Search />
             </SecondaryButton>
             {userDetails?.roleName === "Admin" ||
-            userDetails?.roleName === "Treasury" ||
-            userDetails?.roleName === "GAS" ||
-            userDetails?.roleName === "Finance" ? (
+              userDetails?.roleName === "Treasury" ||
+              userDetails?.roleName === "GAS" ||
+              userDetails?.roleName === "Finance" ? (
               <CommonFilter
                 filter={onFilter}
                 clusterFilter={true}
@@ -409,9 +416,9 @@ function TransactionsList({ setTransactionsMode }) {
                 invoiceTypeFilter={true}
                 validityFilter={true}
                 uploadStatusFilter={true}
-                // frequenceFilter={frequenceFilter && frequenceFilter}
-                // paymentChannelFilter={paymentChannelFilter && paymentChannelFilter}
-                // statusFilter={statusFilter && statusFilter}
+              // frequenceFilter={frequenceFilter && frequenceFilter}
+              // paymentChannelFilter={paymentChannelFilter && paymentChannelFilter}
+              // statusFilter={statusFilter && statusFilter}
               />
             ) : (
               ""

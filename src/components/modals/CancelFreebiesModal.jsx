@@ -12,22 +12,42 @@ import {
 } from "@mui/material";
 import DangerButton from "../DangerButton";
 import useDisclosure from "../../hooks/useDisclosure";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
-import { usePutRejectFreebiesMutation } from "../../features/prospect/api/prospectApi";
+import {
+  prospectApi,
+  usePutRejectFreebiesMutation,
+} from "../../features/prospect/api/prospectApi";
 import SuccessSnackbar from "../SuccessSnackbar";
 import ErrorSnackbar from "../ErrorSnackbar";
 import CommonDialog from "../common/CommonDialog";
+import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
+import { freebiesApi } from "../../features/inventory-management/api/freebiesApi";
 
-function CancelFreebiesModal({ ...otherProps }) {
+function CancelFreebiesModal({ type, reason, ...otherProps }) {
   const { onClose } = otherProps;
+  const dispatch = useDispatch();
 
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  const address = selectedRowData?.ownersAddress;
+  const freebiesLength = selectedRowData?.freebies?.length;
+
   const { fullname } = useSelector((state) => state.login);
 
+  const { data: clientData, isFetching: isClientFetching } =
+    useGetAllClientsQuery({
+      RegistrationStatus: "Approved",
+      PageSize: 2000,
+    });
+
+  console.log(clientData);
+
+  const address = selectedRowData?.ownersAddress
+    ? selectedRowData?.ownersAddress
+    : clientData?.regularClient?.find(
+        (client) => selectedRowData?.clientId === client.id
+      )?.businessAddress || {};
   const {
     isOpen: isCancelConfirmOpen,
     onOpen: onCancelConfirmOpen,
@@ -52,17 +72,22 @@ function CancelFreebiesModal({ ...otherProps }) {
   //Submit API Functions
   const handleCancelSubmit = async () => {
     const freebiesLength = selectedRowData?.freebies?.length;
+    console.log("test");
 
     try {
-      await putRejectFreebies(
-        selectedRowData?.freebies?.[freebiesLength - 1]?.freebieRequestId
+      await putRejectFreebies({
+        freebieRequestId:
+          selectedRowData?.freebies?.[freebiesLength - 1]?.freebieRequestId ||
+          selectedRowData?.id,
+        freebieType: type,
         // params: {
         //   freebieId:
         //     selectedRowData?.freebies?.[freebiesLength - 1]?.freebieRequestId,
         // },
-        // reason: reason,
-      ).unwrap();
+        reason: reason,
+      }).unwrap();
 
+      dispatch(freebiesApi.util.invalidateTags(["Freebies"]));
       onClose();
 
       setSnackbarMessage("Freebies canceled successfully");
@@ -113,11 +138,21 @@ function CancelFreebiesModal({ ...otherProps }) {
                     address?.city ? `, ${address.city}` : ""
                   }${address?.province ? `, ${address.province}` : ""}`}
                 </Typography>
+                <Typography>
+                  <span>Series ID: </span>
+                  {(selectedRowData?.freebies &&
+                    selectedRowData?.freebies?.[freebiesLength - 1]
+                      ?.seriesId || selectedRowData?.seriesId) ||
+                    ""}
+                </Typography>
               </Box>
               <Box>
                 <Typography>
                   <span>Transaction no:</span>{" "}
-                  {selectedRowData?.freebies?.[0]?.transactionNumber || ""}
+                  {selectedRowData?.freebies?.[freebiesLength - 1]
+                    ?.transactionNumber ||
+                    selectedRowData?.id ||
+                    ""}
                 </Typography>
                 <Typography>
                   <span>Date:</span> {moment().format("MMM DD, YYYY")}
@@ -141,16 +176,26 @@ function CancelFreebiesModal({ ...otherProps }) {
               </TableHead>
 
               <TableBody>
-                {selectedRowData?.freebies?.[0]?.freebieItems?.map(
-                  (item, i) => (
+                {selectedRowData?.freebies &&
+                  selectedRowData?.freebies?.[
+                    freebiesLength - 1
+                  ]?.freebieItems?.map((item, i) => (
                     <TableRow key={i}>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>{item.itemCode}</TableCell>
                       <TableCell>{item.itemDescription}</TableCell>
                       <TableCell>{item.uom}</TableCell>
                     </TableRow>
-                  )
-                )}
+                  ))}
+                {selectedRowData?.freebieOrderItem &&
+                  selectedRowData?.freebieOrderItem?.map((item, i) => (
+                    <TableRow key={i}>
+                      <TableCell>{item.quantity}</TableCell>
+                      <TableCell>{item.itemCode}</TableCell>
+                      <TableCell>{item.itemDescription}</TableCell>
+                      <TableCell>{item.uom}</TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>

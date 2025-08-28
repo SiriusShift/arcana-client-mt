@@ -193,6 +193,10 @@ function RegisterRegularForm({ open, onClose }) {
             return true;
           }
 
+          if (key === "withholdingIssuance") {
+            return true;
+          }
+
           const value = termsAndConditions[key];
           return value !== null && value !== "";
         }) && !!signatureToCheck,
@@ -411,7 +415,7 @@ function RegisterRegularForm({ open, onClose }) {
       clientId: selectedRowData?.id,
       total: totalAmount,
       listingItems: listingFees.map((listingItem) => ({
-        itemId: listingItem.itemId.id,
+        itemId: listingItem.itemId.itemId,
         sku: listingItem.sku,
         unitCost: listingItem.unitCost,
       })),
@@ -431,11 +435,15 @@ function RegisterRegularForm({ open, onClose }) {
 
   const handleDrawerClose = () => {
     onClose();
+    console.log("test");
     onCancelConfirmClose();
+    console.log("test");
     handleResetForms();
   };
 
   const handleResetForms = () => {
+    console.log("test");
+
     reset();
     clearErrors();
     setSameAsOwnersAddress(false);
@@ -461,6 +469,9 @@ function RegisterRegularForm({ open, onClose }) {
       photoIdRepresentative: null,
       authorizationLetter: null,
     });
+
+    console.log("test");
+
     setRepresentativeRequirementsIsLink({
       signature: false,
       storePhoto: false,
@@ -475,6 +486,8 @@ function RegisterRegularForm({ open, onClose }) {
     dispatch(resetListingFeeForRegistration());
     dispatch(resetExpensesForRegistration());
     setActiveTab("Personal Info");
+
+    console.log("REsetted Listing and Expenses");
   };
 
   //Misc Functions
@@ -666,6 +679,14 @@ function RegisterRegularForm({ open, onClose }) {
       );
     }
   }, [open, priceModeData, setValue]);
+
+  // Reset everytime the drawer is opened
+  useEffect(() => {
+    if (open) {
+      dispatch(resetListingFeeForRegistration());
+      dispatch(resetExpensesForRegistration());
+    }
+  }, [open]);
 
   return (
     <>

@@ -1,0 +1,281 @@
+import React, { useEffect, useRef, useState } from "react";
+import CommonModalForm from "../../../CommonModalForm";
+import { yupResolver } from "@hookform/resolvers/yup";
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+} from "react-hook-form";
+import {
+  Box,
+  Button,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  IconButton,
+} from "@mui/material";
+import { More, Visibility } from "@mui/icons-material";
+import { Skeleton } from "@mui/material"; // Import Skeleton from MUI
+
+import { useDispatch, useSelector } from "react-redux";
+import CommonTable from "../../../../components/CommonTable";
+import { NumericFormat } from "react-number-format";
+import useSnackbar from "../../../../hooks/useSnackbar";
+import useDisclosure from "../../../../hooks/useDisclosure";
+import BBDCallsheetModal from "./BBDCallsheetModal";
+import { setSelectedRow } from "../../../../features/misc/reducers/selectedRowSlice";
+import {
+  useGetAllCallsheetsQuery,
+  useUpdateItemsWithBBDMutation,
+  useUpdateRemainingInventoryMutation,
+} from "../../../../features/inventory-management/api/callsheetApi";
+import useConfirm from "../../../../hooks/useConfirm";
+import moment from "moment";
+import { clearCallsheet } from "../../../../features/inventory-management/reducers/callsheetSlice";
+import CommonActions from "../../../common/CommonActions";
+import { bbdCallsheet } from "../../../../schema/schema";
+
+function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
+  const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const callsheetItem = useSelector((state) => state.callsheet.items);
+
+  console.log(callsheetItem);
+  const [data, setData] = useState([]);
+  const dispatch = useDispatch();
+  const confirm = useConfirm();
+  const snackbar = useSnackbar();
+  const {
+    onOpen: onBbdOpen,
+    onClose: onBbdClose,
+    isOpen: isBbdOpen,
+  } = useDisclosure();
+
+  const [triggerUpdate] = useUpdateItemsWithBBDMutation();
+
+  const methods = useForm({
+    resolver: yupResolver(bbdCallsheet.schema),
+    defaultValues: bbdCallsheet.defaultValues,
+  });
+
+  const { watch } = methods;
+  console.log(watch());
+  const { data: callsheetData, isFetching } = useGetAllCallsheetsQuery({
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    PageSize: 1000,
+  });
+
+  const index = callsheetData?.to?.findIndex(
+    (item) => item?.clientId === selectedRowData?.clientId
+  );
+
+  const disabledActions = ["viewMore"];
+
+  console.log("customer", index);
+
+  const onSubmit = async () => {
+    const transformData = callsheetItem.map((item) => ({
+      itemCode: item.itemCode,
+      bbds: item?.bbds?.map((item) => ({
+        bbdDate: item?.bbdDate,
+        quantity: item?.quantity,
+      })),
+    }));
+    console.log(transformData);
+    try {
+      confirm({
+        children: "Are you sure you want to update callsheet?",
+        question: true,
+        callback: async () => {
+          try{
+            await triggerUpdate({
+              accessBy: 0,
+              clientId: selectedRowData?.clientId,
+              item: transformData,
+            }).unwrap();
+            snackbar({
+              message: "successfully updated callsheet",
+              variant: "success",
+            });
+            handleClose();
+          }catch(err){
+            console.log(err);
+          }
+        },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const handleClose = () => {
+    onClose();
+    dispatch(clearCallsheet());
+    setData(null);
+  };
+
+  const handleOpen = (index) => {
+    // Ensure selectedRowData and transactionItemsDtos exist
+    if (!selectedRowData || !Array.isArray(selectedRowData.callSheetDtos)) {
+      console.error(
+        "selectedRowData or transactionItemsDtos is undefined or not an array"
+      );
+      return;
+    }
+
+    // Ensure index is within bounds
+    if (index < 0 || index >= selectedRowData.callSheetDtos.length) {
+      console.error("Index out of bounds:", index);
+      return;
+    }
+
+    // Set the data correctly using the index
+    setData(index);
+
+    // Open the modal
+    onBbdOpen();
+  };
+
+  return (
+    <>
+      <CommonModalForm
+        title={"Call Sheet"}
+        onSubmit={onSubmit}
+        onClose={handleClose}
+        width={width}
+        {...props}
+      >
+        <Box className="callsheetModal">
+          <Box className="callsheetModal__callsheetHeader">
+            <Box className="callsheetModal__callsheetHeader__left">
+              <Typography>
+                Customer Name: {selectedRowData?.customerName}
+              </Typography>
+            </Box>
+            <Box className="callsheetModal__callsheetHeader__right">
+              <Typography>
+                Business Name: {selectedRowData?.businessName}
+              </Typography>
+            </Box>
+          </Box>
+          <TableContainer
+            component={Paper}
+            sx={{ overflow: "auto", maxHeight: "calc(100dvh - 55dvh)" }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Item Code</TableCell>
+                  <TableCell>Item Description</TableCell>
+                  <TableCell>Delivery</TableCell>
+                  <TableCell>Remaining Inv.</TableCell>
+                  <TableCell>Ending Inv.</TableCell>
+                  <TableCell>Sales-out</TableCell>
+                  <TableCell>Suggest PO</TableCell>
+                  <TableCell>Average Sales</TableCell>
+                  <TableCell>BBD</TableCell>
+                </TableRow>
+              </TableHead>
+
+              {/* {isFetching ? (
+            <ReceivingItemsTableSkeleton />
+          ) : ( */}
+
+              <TableBody>
+                {isFetching
+                  ? // Skeleton Loader (Shows while fetching data)
+                    [
+                      ...Array(
+                        callsheetData?.to[index]?.transactionItemsDtos?.length
+                      ),
+                    ].map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Skeleton variant="text" width={80} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={150} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="text" width={50} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton variant="circular" width={40} height={40} />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : // Actual Data (Shows when data is available)
+                    callsheetData?.to[index]?.callSheetDtos?.map(
+                      (item, index) => (
+                        <TableRow sx={{ height: "50px" }} key={index}>
+                          <TableCell sx={{ py: 1 }}>{item?.itemCode}</TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.itemDescription}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>{item?.salesIn}</TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.remainingInv}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.endingInv}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>{item?.salesOut}</TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.suggestedPo}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            {item?.averageSales}
+                          </TableCell>
+                          <TableCell sx={{ py: 1 }}>
+                            <CommonActions
+                              disableActions={
+                                item?.remainingInv === 0 && disabledActions
+                              }
+                              onView={() => handleOpen(index)}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )
+                    )}
+              </TableBody>
+
+              {/* )} */}
+            </Table>
+          </TableContainer>
+        </Box>
+      </CommonModalForm>
+      <FormProvider {...methods}>
+        <BBDCallsheetModal
+          data={callsheetData?.to[index]}
+          index={data}
+          width={"800px"}
+          open={isBbdOpen}
+          onClose={onBbdClose}
+        />
+      </FormProvider>
+    </>
+  );
+}
+
+export default CallsheetModal;

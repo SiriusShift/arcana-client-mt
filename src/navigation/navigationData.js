@@ -1,3 +1,5 @@
+import { reportNames } from "../utils/constants";
+
 export const navigationData = [
   {
     id: 1,
@@ -293,55 +295,98 @@ export const navigationData = [
       },
       {
         id: 2,
+        name: "Ending Inventory",
+        path: "/inventory-management/ending-inventory",
+        description: "Track and record ending inventory",
+        icon: "Inventory",
+      },
+      {
+        id: 3,
         name: "Receiving",
         path: "/inventory-management/receiving",
         description: "Receive and record incoming items",
         icon: "MoveToInbox",
       },
       {
-        id: 3,
+        id: 4,
+        name: "Return to Depot",
+        path: "/inventory-management/return-to-depot",
+        description: "Return items to depot",
+        icon: "KeyboardReturn",
+      },
+      {
+        id: 5,
+        name: "Miscellaneous Receipt",
+        path: "/inventory-management/miscellaneous-receipt",
+        description: "Track and receive miscellaneous items",
+        icon: "Archive",
+      },
+      {
+        id: 6,
+        name: "Miscellaneous Issue",
+        path: "/inventory-management/miscellaneous-issue",
+        description: "Track and receive miscellaneous items",
+        icon: "Unarchive",
+      },
+      {
+        id: 7,
+        name: "Reason Setup",
+        path: "/inventory-management/reason-setup",
+        description:
+          "Reason for miscellaneous receipt and issue and outright return",
+        icon: "ReportProblem",
+      },
+      {
+        id: 8,
         name: "Transfer In",
         path: "/inventory-management/transfer-in",
         description: "Track and receive items transferred into inventory",
         icon: "ArrowForward",
       },
       {
-        id: 4,
+        id: 9,
         name: "Transfer Out",
         path: "/inventory-management/transfer-out",
         description: "Track and transfer items out of your inventory",
         icon: "ArrowBack",
       },
+      // {
+      //   id: 5,
+      //   name: "Pull Out",
+      //   path: "/inventory-management/pull-out",
+      //   description: "Track items pulled out of inventory",
+      //   icon: "ArrowUpward",
+      // },
       {
-        id: 5,
-        name: "Pull Out",
-        path: "/inventory-management/pull-out",
-        description: "Track items pulled out of inventory",
-        icon: "ArrowUpward",
-      },
-      {
-        id: 6,
+        id: 10,
         name: "Freebies",
         path: "/inventory-management/freebies",
         description: "Manage and track freebie requests and approvals",
         icon: "CardGiftcard",
       },
       {
-        id: 7,
+        id: 11,
         name: "Sampling",
         path: "/inventory-management/sampling",
         description: "Manage and track item sampling",
         icon: "Restaurant",
       },
       {
-        id: 8,
-        name: "Return",
+        id: 12,
+        name: "Return from Sampling",
+        path: "/inventory-management/return-sampling",
+        description: "Manage and track returns of sampling",
+        icon: "Restaurant",
+      },
+      {
+        id: 12,
+        name: "Return from Customer",
         path: "/inventory-management/return",
         description: "Process and record item returns and replacements",
         icon: "AssignmentReturn",
       },
       {
-        id: 9,
+        id: 13,
         name: "Callsheet",
         path: "/inventory-management/callsheet",
         description: "Manage and track callsheet activities",
@@ -388,20 +433,37 @@ export const navigationData = [
         description: "Approval and rejection of sp. discount requests",
         // notifications: "pendingSpDiscount",
       },
+      {
+        id: 5,
+        name: "Freebie Approval",
+        path: "/approval/freebie-approval",
+        icon: "CardGiftcard",
+        description: "Approval and rejection of freebie",
+      },
+      {
+        id: 5,
+        name: "Sampling Approval",
+        path: "/approval/sampling-approval",
+        icon: "Restaurant",
+        description: "Approval and rejection of sampling",
+      },
     ],
   },
   {
     id: 10,
     name: "Reports",
-    path:"/reports",
+    path: "/reports",
     icon: "Description",
-    description: "Viewing and exporting of reports"
+    description: "Viewing and exporting of reports",
+    sub: [
+      ...reportNames
+    ],
   },
   {
     id: 11,
     name: "Cheque",
-    path:"/cheque",
+    path: "/cheque",
     icon: "AccountBalance",
-    description: "Viewing and exporting of reports"
-  }
+    description: "Viewing and exporting of reports",
+  },
 ];

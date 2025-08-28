@@ -11,21 +11,37 @@ import useItemsWithBbd from "../../../../hooks/page-hooks/useItemsWithBbd";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
 import FormItemsSkeleton from "./FormItemsSkeleton";
 import ControlledAutocomplete from "../../../ControlledAutocomplete";
-import { Controller } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import moment from "moment";
 import { NumericFormat } from "react-number-format";
 import SecondaryButton from "../../../SecondaryButton";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import { useGetAllItemsByPriceModeIdQuery } from "../../../../features/setup/api/priceModeItemsApi.js";
+import useSnackbar from "../../../../hooks/useSnackbar";
+import { useGetAllItemsInventoryQuery } from "../../../../features/inventory-management/api/inventoryMrpApi.js";
+import { useLazyGetAllReturnsQuery } from "../../../../features/inventory-management/api/returnApi.js";
+import { useEffect } from "react";
+import { useLocation, useParams } from "react-router-dom";
 const ItemsWithBBDPriceForm = ({
   items = [],
   isFetching,
   itemsFieldName = "items",
   itemsFormTitle = "Product Information",
 }) => {
-  const viewOnly = items.length > 0 || isFetching;
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const replace = searchParams.get("replace");
+
+  const viewOnly = (items?.length > 0 || isFetching) && !Boolean(replace);
+  const snackbar = useSnackbar();
 
   const [parent] = useAutoAnimate();
+  console.log(viewOnly);
+
+  const { watch } = useFormContext();
+  console.log(watch());
 
   const {
     bbdCache,
@@ -34,8 +50,9 @@ const ItemsWithBBDPriceForm = ({
     handleAddItem,
     handleRemove,
     handleRemoveAll,
+    errors,
     watchItems,
-    productData,
+    // productData,
     isItemsWithBBDFetching,
     dirtyFields,
     setValue,
@@ -55,9 +72,27 @@ const ItemsWithBBDPriceForm = ({
     // persistGlobally: true,
   });
 
+  console.log(watchItems);
+  console.log(errors);
+
+  const { data: products, isFetching: isProductFetching } =
+    useGetAllItemsInventoryQuery();
+
+  const { data: productData } = useGetAllItemsByPriceModeIdQuery(
+    {
+      Status: true,
+      Page: 1,
+      PageSize: 1000,
+      PriceModeId: 1,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
   const { invalid } = itemsFieldState;
 
-  // console.log("itemsFieldState", itemsFieldState);
+  console.log(watchItems);
 
   // Remove duplicates
   const uniqueBBDs = new Set(items.map((item) => item.bbd));
@@ -77,13 +112,28 @@ const ItemsWithBBDPriceForm = ({
           px={2}
           direction="row"
         >
-          <Typography
-            fontSize="1.2rem"
-            fontWeight="500"
-            sx={{ color: "white !important" }}
-          >
-            {itemsFormTitle}
-          </Typography>
+          <Box sx={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <Typography
+              fontSize="1.2rem"
+              fontWeight="500"
+              sx={{ color: "white !important" }}
+            >
+              {itemsFormTitle}
+            </Typography>
+            {itemsFieldName === "replaceItems" && (
+              <Typography
+                fontSize="1.2rem"
+                fontWeight="300"
+                sx={{ color: "white !important" }}
+              >
+                - Return Sum:{" "}
+                {watch("returnItems").reduce(
+                  (acc, item) => acc + item.netPrice,
+                  0
+                )}
+              </Typography>
+            )}
+          </Box>
 
           {!viewOnly && (
             <Box
@@ -94,7 +144,7 @@ const ItemsWithBBDPriceForm = ({
                 variant="outlined"
                 endIcon={<RemoveCircleOutline />}
                 onClick={handleRemoveAll}
-                disabled={fields.length === 0 || !dirtyFields[itemsFieldName]}
+                disabled={fields?.length === 0 || !dirtyFields[itemsFieldName]}
                 size="small"
               >
                 Clear All
@@ -105,13 +155,21 @@ const ItemsWithBBDPriceForm = ({
 
         <Stack
           p={2}
-          height={viewOnly ? "calc(100dvh - 322px)" : "calc(100dvh - 370px)"}
+          height={
+            viewOnly
+              ? itemsFieldName === "returnItems"
+                ? "calc(100dvh - 30dvh - 400px)"
+                : itemsFieldName === "replaceItems"
+                ? "calc(100dvh - 35dvh - 400px)"
+                : "calc(100dvh - 322px)"
+              : "calc(100dvh - 370px)"
+          }
           overflow="auto"
           boxSizing="border-box"
           gap={1}
           ref={parent}
         >
-          {isFetching ? (
+          {isFetching && isProductsFetching ? (
             <FormItemsSkeleton />
           ) : (
             <>
@@ -120,12 +178,24 @@ const ItemsWithBBDPriceForm = ({
                   <ControlledAutocomplete
                     name={`${itemsFieldName}[${index}].item`}
                     control={control}
-                    options={productData?.items || []}
+                    options={
+                      itemsFieldName === "returnItems"
+                        ? products || []
+                        : productData?.priceModeItems || []
+                    }
                     getOptionLabel={(option) => option.itemCode || ""}
                     getOptionDisabled={(option) => {
-                      // For each bbd of the item, check if all are already selected with the same item
-                      const bbdMap = bbdCache.get(option.itemCode) || new Map();
-                      return option.bbds.every((bbd) => bbdMap?.has(bbd.bbd));
+                      // Get all selected items across all rows
+                      const selectedItems = watchItems || []; // Default to an empty array if watchItems is undefined
+
+                      // Extract the itemCodes of the selected items, excluding the current row's itemCode
+                      const selectedCodes =
+                        selectedItems
+                          .filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
+                          .map((item) => item?.item?.itemCode) || []; // Ensure no errors if item or itemCode is undefined
+
+                      // Disable the option if its itemCode is already selected in other rows
+                      return selectedCodes.includes(option.itemCode);
                     }}
                     disabled={viewOnly}
                     isOptionEqualToValue={() => true}
@@ -145,7 +215,7 @@ const ItemsWithBBDPriceForm = ({
                       );
                       setValue(
                         `${itemsFieldName}[${index}].price`,
-                        value?.price
+                        value?.currentPrice
                       );
                       setValue(
                         `${itemsFieldName}[${index}].netPrice`,
@@ -183,13 +253,19 @@ const ItemsWithBBDPriceForm = ({
                         size="small"
                         autoComplete="off"
                         onValueChange={(e) => {
+                          const quantity = watchItems?.[index]?.quantity || 0;
+                          if (quantity !== null) {
+                            const net = e.floatValue * quantity || 0;
+                            setValue(`${itemsFieldName}[${index}].netPrice`, net);
+                          }
+
                           onChange(e.value === "" ? null : Number(e.value));
                         }}
                         onBlur={onBlur}
                         value={value || ""}
                         inputRef={ref}
                         sx={{ maxWidth: "140px" }}
-                        disabled
+                        disabled={viewOnly}
                         customInput={TextField}
                         thousandSeparator
                         allowLeadingZeros={false}
@@ -224,68 +300,104 @@ const ItemsWithBBDPriceForm = ({
                     )}
                   />
 
-                  <ControlledAutocomplete
-                    name={`${itemsFieldName}[${index}].bbd`}
-                    control={control}
-                    options={
-                      viewOnly
-                        ? viewOnlyBBDs
-                        : watchItems?.[index]?.item?.bbds || []
-                    }
-                    getOptionLabel={(option) =>
-                      moment(option.bbd).format("MMM DD, YYYY") || ""
-                    }
-                    getOptionDisabled={(option) => {
-                      // Check if the bbd is already selected
-                      const bbdMap = bbdCache.get(
-                        watchItems[index].item.itemCode
-                      );
-                      return bbdMap?.has(option.bbd);
-                    }}
-                    disabled={viewOnly || !watchItems?.[index]?.item}
-                    isOptionEqualToValue={() => true}
-                    loading={isItemsWithBBDFetching}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        label="BBD"
-                        sx={{ width: "200px" }}
-                      />
-                    )}
-                    onChange={(_, value) => {
-                      // Add the item code to bbds cache
+                  {/* {itemsFieldName !== "returnItems" ? (
+                    <ControlledAutocomplete
+                      name={`${itemsFieldName}[${index}].bbd`}
+                      control={control}
+                      options={
+                        viewOnly
+                          ? viewOnlyBBDs
+                          : watchItems?.[index]?.item?.bbds || []
+                      }
+                      getOptionLabel={(option) =>
+                        moment(option.bbd).format("MMM DD, YYYY")
+                      }
+                      getOptionDisabled={(option) => {
+                        // Check if the bbd is already selected
+                        const bbdMap = bbdCache.get(
+                          watchItems[index].item.itemCode
+                        );
+                        return bbdMap?.has(option.bbd);
+                      }}
+                      disabled={viewOnly || !watchItems?.[index]?.item}
+                      isOptionEqualToValue={() => true}
+                      loading={isItemsWithBBDFetching}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          label="BBD"
+                          sx={{ width: "200px" }}
+                        />
+                      )}
+                      onChange={(_, value) => {
+                        // Add the item code to bbds cache
 
-                      setBbdCache((prev) => {
-                        const newCache = new Map(prev);
+                        setBbdCache((prev) => {
+                          const newCache = new Map(prev);
 
-                        // Remove the previous bbd if it exists
-                        if (watchItems[index].bbd) {
+                          // Remove the previous bbd if it exists
+                          if (watchItems[index].bbd) {
+                            const bbdMap =
+                              newCache.get(watchItems[index].item.itemCode) ||
+                              new Map();
+                            bbdMap.delete(watchItems[index].bbd.bbd);
+                          }
+
+                          // If the item code is not in the cache, initialize empty map
                           const bbdMap =
                             newCache.get(watchItems[index].item.itemCode) ||
                             new Map();
-                          bbdMap.delete(watchItems[index].bbd.bbd);
-                        }
 
-                        // If the item code is not in the cache, initialize empty map
-                        const bbdMap =
-                          newCache.get(watchItems[index].item.itemCode) ||
-                          new Map();
+                          if (value) {
+                            // If the bbd is not in the map, add it
+                            bbdMap.set(value.bbd, true);
+                          }
 
-                        if (value) {
-                          // If the bbd is not in the map, add it
-                          bbdMap.set(value.bbd, true);
-                        }
+                          // Set the new cache
+                          newCache.set(watchItems[index].item.itemCode, bbdMap);
+                          return newCache;
+                        });
 
-                        // Set the new cache
-                        newCache.set(watchItems[index].item.itemCode, bbdMap);
-                        return newCache;
-                      });
-
-                      setValue(`${itemsFieldName}[${index}].quantity`, null);
-                      return value;
-                    }}
-                  />
+                        setValue(`${itemsFieldName}[${index}].quantity`, null);
+                        return value;
+                      }}
+                    />
+                  ) : ( */}
+                  <LocalizationProvider dateAdapter={AdapterMoment}>
+                    {" "}
+                    {/* Wrap in LocalizationProvider */}
+                    <Controller
+                      control={control}
+                      name={`${itemsFieldName}[${index}].bbd`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <DatePicker
+                          label="BBD"
+                          size="small"
+                          slotProps={{
+                            textField: {
+                              size: "small",
+                            },
+                          }}
+                          inputFormat="MM/dd/yyyy"
+                          value={value ? moment(value) : null} // Convert value to a Moment object
+                          onChange={(newValue) => onChange(newValue)} // Handle date changes
+                          inputRef={ref}
+                          sx={{ width: "200px" }}
+                          disabled={viewOnly || !watchItems?.[index]?.item}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              size="small"
+                              autoComplete="off"
+                              onBlur={onBlur} // Pass blur event
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                  {/* )} */}
 
                   <Stack gap={0.6} alignItems="center">
                     <Controller
@@ -293,29 +405,86 @@ const ItemsWithBBDPriceForm = ({
                       name={`${itemsFieldName}[${index}].quantity`}
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <NumericFormat
+                          customInput={TextField}
                           label="Quantity"
                           size="small"
                           autoComplete="off"
                           onValueChange={(e) => {
-                            onChange(e.value === "" ? null : Number(e.value));
+                            const enteredValue =
+                              e.value === "" ? null : Number(e.value);
+                            const itemPrice = watchItems?.[index]?.price || 0;
+                            const net = enteredValue * itemPrice || 0;
+
+                            // Update the value and net price
+                            onChange(enteredValue);
                             setValue(
                               `${itemsFieldName}[${index}].netPrice`,
-                              e.value * watchItems[index].price || 0
+                              net
                             );
                           }}
+                          value={value || ""}
                           isAllowed={(values) => {
                             const { floatValue } = values;
 
+                            if (!/^\d*$/.test(values.value)) return false;
+
+                            const itemPrice = watchItems?.[index]?.price || 0;
+                            const net = (floatValue || 0) * itemPrice;
+                            const availQuantity =
+                              watchItems[index]?.item?.availQuantity || 0;
+
                             if (
                               floatValue != null &&
-                              floatValue > watchItems?.[index]?.bbd?.quantity
+                              floatValue >
+                                productData?.priceModeItems.find(
+                                  (item) =>
+                                    item.itemCode ===
+                                    watchItems[index]?.item?.itemCode
+                                )?.availQuantity &&
+                              itemsFieldName === "replaceItems"
                             ) {
-                              return false;
+                              snackbar({
+                                message: `Quantity cannot exceed available stock (${availQuantity})`,
+                                variant: "error",
+                              });
+                              return; // Prevent state update
                             }
-                            return true;
+
+                            // Calculate total net prices for replaceItems
+                            const replaceItems = watch("replaceItems") || [];
+                            const totalReplacementNet = replaceItems.reduce(
+                              (sum, item, i) => {
+                                if (i === index) {
+                                  return sum + (net || 0); // Add net for the current input
+                                }
+                                return sum + (item?.netPrice || 0);
+                              },
+                              0
+                            );
+
+                            // Calculate total net prices for returnItems
+                            const returnItems = watch("returnItems") || [];
+                            const totalReturnNet = returnItems.reduce(
+                              (sum, item) => sum + (item?.netPrice || 0),
+                              0
+                            );
+
+                            // Ensure replacement net does not exceed return net
+                            if (
+                              totalReplacementNet > totalReturnNet + 40 &&
+                              itemsFieldName === "replaceItems"
+                            ) {
+                              snackbar({
+                                message:
+                                  "The total net price of replace items cannot exceed the total net price plus 40 pesos of return items",
+                                variant: "error",
+                              });
+                              return false; // Disallow input
+                            }
+
+                            return true; // Allow valid input
                           }}
                           onBlur={onBlur}
-                          value={value || ""}
                           inputRef={ref}
                           sx={{ maxWidth: "120px" }}
                           disabled={viewOnly || !watchItems?.[index]?.bbd}
@@ -327,18 +496,46 @@ const ItemsWithBBDPriceForm = ({
                       )}
                     />
 
-                    {!viewOnly && (
+                    {!viewOnly && itemsFieldName !== "returnItems" && (
                       <Typography
                         variant="caption"
-                        color="gray"
+                        color={`${
+                          watchItems[index]?.item?.availQuantity > 0
+                            ? "green"
+                            : "gray"
+                        }`}
                         lineHeight="0.5"
                       >
-                        {+watchItems?.[index]?.bbd?.quantity
-                          ? `Available: ${watchItems?.[index]?.bbd?.quantity}`
+                        {watchItems[index]?.item?.itemCode
+                          ? `Available: ${
+                              productData?.priceModeItems.find(
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.item?.itemCode
+                              )?.availQuantity
+                            }`
                           : "Select BBD first"}
                       </Typography>
                     )}
                   </Stack>
+
+                  <Controller
+                    control={control}
+                    name={`${itemsFieldName}[${index}].reason`}
+                    render={({ field: { onChange, onBlur, value, ref } }) => (
+                      <TextField
+                        label="Remarks (optional)"
+                        size="small"
+                        autoComplete="off"
+                        onChange={onChange}
+                        onBlur={onBlur}
+                        value={value}
+                        ref={ref}
+                        sx={{ maxWidth: "200px" }}
+                        disabled={viewOnly}
+                      />
+                    )}
+                  />
 
                   {!viewOnly && (
                     <IconButton
@@ -356,7 +553,7 @@ const ItemsWithBBDPriceForm = ({
                   endIcon={<Add />}
                   sx={{ width: "fit-content", alignSelf: "end" }}
                   onClick={handleAddItem}
-                  disabled={invalid && fields.length > 0}
+                  disabled={invalid && fields?.length > 0}
                 >
                   Add Item
                 </SecondaryButton>

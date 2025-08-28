@@ -20,10 +20,11 @@ const DataSkeleton = () => {
 };
 
 function TransferInFormHeader({
-  data: { from = "", cluster = "" } = {},
+  data: { createdBy = "", createdByCluster = "" } = {},
   isFetching,
 }) {
   const navigate = useNavigate();
+  console.log(createdBy);
 
   const handleBack = () => {
     navigate("/inventory-management/transfer-in", { replace: true });
@@ -57,10 +58,10 @@ function TransferInFormHeader({
           ) : (
             <Stack>
               <Typography variant="subtitle1" fontWeight="500">
-                From: {from}
+                From: {createdBy}
               </Typography>
               <Typography variant="subtitle1" fontWeight="500">
-                Cluster: {cluster}
+                Cluster: {createdByCluster}
               </Typography>
               <Typography variant="subtitle1" fontWeight="500">
                 Transaction Type: TRANSFER

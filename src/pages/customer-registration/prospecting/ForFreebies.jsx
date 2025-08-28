@@ -33,6 +33,7 @@ import TertiaryButton from "../../../components/TertiaryButton";
 import { PatternFormat } from "react-number-format";
 import DangerButton from "../../../components/DangerButton";
 import SecondaryButton from "../../../components/SecondaryButton";
+import useValidate from "../../../hooks/useValidate";
 
 function ForFreebies() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -48,6 +49,8 @@ function ForFreebies() {
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useDispatch();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
+
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const selectedStoreType = useSelector(
     (state) => state.selectedStoreType.value
@@ -153,7 +156,7 @@ function ForFreebies() {
     usePatchProspectStatusMutation();
 
   const { data: storeTypeData } = useGetAllStoreTypesQuery({ Status: true });
-  console.log("storeType",storeTypeData);
+  console.log("storeType", storeTypeData);
 
   // const { data: provinceData, isFetching: isProvinceFetching } =
   //   useGetAllProvincesQuery();
@@ -230,7 +233,7 @@ function ForFreebies() {
   };
 
   const onFilter = async ({ clusterId, businessType }) => {
-    console.log(businessType)
+    console.log(businessType);
     try {
       setClusterId(clusterId);
       setBusinessType(businessType);
@@ -319,7 +322,7 @@ function ForFreebies() {
           onFilter={onFilter}
           businessTypeFilter={true}
         />
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
@@ -328,7 +331,11 @@ function ForFreebies() {
             customOrderKeys={customOrderKeys}
             onView={handleEditOpen}
             onArchive={handleArchiveOpen}
-            onFreebie={onFreebieFormOpen}
+            onFreebie={() => {
+              const error = validateEndingInventory();
+              if (error) return;
+              onFreebieFormOpen();
+            }}
             page={page}
             setPage={setPage}
             rowsPerPage={rowsPerPage}

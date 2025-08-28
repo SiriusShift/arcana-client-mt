@@ -24,6 +24,7 @@ import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import useSnackbar from "../../hooks/useSnackbar";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi";
 
 function ListingFeeDrawer({
   editMode,
@@ -109,7 +110,7 @@ function ListingFeeDrawer({
   const { data: clientData, isLoading: isClientLoading, error } = useGetAllClientsQuery(
     {
       RegistrationStatus: "Approved",
-      ClusterId: clusterId?.value || "",  
+      ClusterId: clusterId?.id || "",  
       PageNumber: 1,
       PageSize: 1000,
     },
@@ -118,8 +119,15 @@ function ListingFeeDrawer({
     }
   );
 
-  const { data: productData, isLoading: isProductLoading } =
-    useGetAllProductsQuery({ Status: true, page: 1, pageSize: 1000 });
+  const { data: productData, isFetching: isProductLoading } =
+    useGetAllItemsByPriceModeIdQuery(
+      {
+        Status: true,
+        Page: 1,
+        PageSize: 1000,
+        PriceModeId: 1,
+      },
+    );
 
   const [postListingFee, { isLoading: isAddLoading }] =
     usePostListingFeeMutation();
@@ -149,7 +157,7 @@ function ListingFeeDrawer({
           params: { listingFeeId: selectedRowData?.listingFeeId },
           total: totalAmount,
           listingItems: data.listingItems?.map((listingItem) => ({
-            itemId: listingItem.itemId.id,
+            itemId: listingItem.itemId.itemId,
             sku: listingItem.sku,
             unitCost: listingItem.unitCost,
           })),
@@ -161,7 +169,7 @@ function ListingFeeDrawer({
           clientId: data.clientId.id,
           total: totalAmount,
           listingItems: data.listingItems?.map((listingItem) => ({
-            itemId: listingItem.itemId.id,
+            itemId: listingItem.itemId.itemId,
             sku: listingItem.sku,
             unitCost: listingItem.unitCost,
           })),
@@ -431,7 +439,7 @@ function ListingFeeDrawer({
                   <ControlledAutocomplete
                     name={`listingItems[${index}].itemId`}
                     control={control}
-                    options={productData?.items || []}
+                    options={productData?.priceModeItems || []}
                     getOptionLabel={(option) => option.itemCode || ""}
                     getOptionDisabled={(option) => {
                       const listingFees = watch("listingItems");

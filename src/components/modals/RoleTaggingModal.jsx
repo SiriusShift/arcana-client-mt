@@ -5,19 +5,66 @@ import SecondaryButton from "../SecondaryButton";
 import DangerButton from "../DangerButton";
 import { navigationData } from "../../navigation/navigationData";
 import { useSelector } from "react-redux";
+import { reportNames } from "../../utils/constants";
 
 function RoleTaggingModal({
   checkedModules,
   setCheckedModules,
+  setCheckedReports,
+  checkedReports,
   onSubmit,
   isLoading,
   ...props
 }) {
   const { onClose } = props;
+  console.log(checkedModules)
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  console.log(selectedRowData)
 
   const handleCheckboxChange = (itemName, subItemName) => {
+    console.log(subItemName)
+    // if (itemName === "Reports") {
+    //   const subItemValue = subItemName;
+    //   if (checkedReports.includes(subItemValue)) {
+    //     setCheckedReports((prevCheckedReports) => {
+    //       const newCheckedModules = prevCheckedReports.filter(
+    //         (item) => item !== subItemValue
+    //       );
+    //       console.log(newCheckedModules)
+
+    //       const noItemChecked = !navigationData
+    //         .find((item) => item.label === itemName)
+    //         ?.sub?.some((subItem) => newCheckedModules.includes(subItem.name));
+
+    //       if (noItemChecked) {
+    //         return newCheckedModules.filter(
+    //           (mainItem) => mainItem !== itemName
+    //         );
+    //       }
+
+    //       return newCheckedModules;
+    //     })
+
+    //     // setCheckedModules(
+    //     //   checkedModules.filter((item) => item !== subItemValue)
+    //     // );
+    //   } else {
+    //     setCheckedReports((prevCheckedReports) => {
+    //       const newCheckedReports = [...prevCheckedReports, subItemValue];
+    //       console.log(newCheckedReports)
+
+    //       const aSubItemChecked = reportNames.some((subItem) => newCheckedReports.includes(subItem));
+
+    //       if (aSubItemChecked) {
+    //         return [...newCheckedReports, itemName];
+    //       }
+
+    //       return newCheckedReports;
+    //     });
+
+    //   }
+    // } else {
     if (!subItemName) {
       // If it's an item.name checkbox, toggle its state
       if (checkedModules.includes(itemName)) {
@@ -59,9 +106,11 @@ function RoleTaggingModal({
           const aSubItemChecked = navigationData
             .find((item) => item.name === itemName)
             ?.sub?.some((subItem) => newCheckedModules.includes(subItem.name));
-
           if (aSubItemChecked) {
-            return [...newCheckedModules, itemName];
+            const findParent = newCheckedModules.find((item) => item === itemName);
+            if (!findParent) {
+              return [...newCheckedModules, itemName];
+            }
           }
 
           return newCheckedModules;
@@ -77,6 +126,7 @@ function RoleTaggingModal({
         //   setCheckedModules([...checkedModules, itemName]);
         // }
       }
+      // }
     }
   };
 
@@ -128,8 +178,8 @@ function RoleTaggingModal({
                 <Checkbox
                   checked={checkedModules?.includes(item.name)}
                   onChange={() => handleCheckboxChange(item.name)}
-                  disabled={item.name !== "Dashboard" && item.name !== "Reports" && item.name !== "Cheque" && item.name !== "Check In"}
-                  // disabled
+                  disabled={item.name !== "Dashboard" && item.name !== "Cheque" && item.name !== "Check In"}
+                // disabled
                 />
                 <Typography
                   sx={{
@@ -141,7 +191,6 @@ function RoleTaggingModal({
                   {item.name}
                 </Typography>
               </Box>
-
               <Box
                 sx={{ marginLeft: "20px" }}
                 className="roleTaggingModal__content__parentModule__children"

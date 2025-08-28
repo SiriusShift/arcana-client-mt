@@ -1,5 +1,12 @@
-import { Box } from "@mui/material";
-import { useState } from "react";
+import {
+  Box,
+  Button,
+  IconButton,
+  Input,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useMemo, useState } from "react";
 import CommonTable from "../../../components/CommonTable";
 import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -7,46 +14,90 @@ import { useSelector } from "react-redux";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
-import { useGetAllReturnsQuery } from "../../../features/inventory-management/api/returnApi";
+import {
+  useGetAllReturnsQuery,
+  useNoReplaceItemsMutation,
+} from "../../../features/inventory-management/api/returnApi";
+import { Add, Remove, Settings } from "@mui/icons-material";
+import useDisclosure from "../../../hooks/useDisclosure";
+import CommonModal from "../../../components/CommonModal";
+import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
+import CommonDialog from "../../../components/common/CommonDialog";
+import useValidate from "../../../hooks/useValidate";
 
 function Return() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
 
+  const [tabViewing, setTabViewing] = useState(1);
+  console.log(tabViewing);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  console.log(selectedRowData?.returnId);
+
+  const {
+    isOpen: isSettingsOpen,
+    onOpen: onSettingsOpen,
+    onClose: onSettingsClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isVoidOpen,
+    onOpen: onVoidOpen,
+    onClose: onVoidClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isCancelOpen,
+    onOpen: onCancelOpen,
+    onClose: onCancelClose,
+  } = useDisclosure();
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [margin, setMargin] = useState(50);
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
 
-  const { data, isFetching } = useGetAllReturnsQuery({
-    Search: search,
-    Page: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-  });
+  const [noReplace, { isLoading }] = useNoReplaceItemsMutation();
+
+  console.log(isLoading);
+
+  const paymentNavigation = useMemo(
+    () => [
+      {
+        case: 1,
+        name: "Pending",
+        transactionStatus: "Pending",
+        // badge: notifications["receivableTransaction"],
+      },
+      {
+        case: 2,
+        name: "Received",
+        transactionStatus: "Received",
+        // badge: notifications["paidTransaction"],
+      },
+    ]
+    // [notifications]
+  );
 
   const tableHeads = [
     "ID",
     "Owner's Name",
     "Business Name",
-    "Business Address",
-    "Return Price",
-    "Replace Price",
+    "Total Return Price",
+    "Total Exchange Price",
     "Transaction Date",
   ];
 
   const customOrderKeys = [
-    "id",
-    "ownersName",
+    "returnId",
+    "clientName",
     "businessName",
-    "businessAddress",
     "totalReturnPrice",
-    "totalReplacePrice",
-    "transactionDate",
+    "totalExchangePrice",
+    "createdDate",
   ];
 
   const nestedProperty = {
@@ -56,27 +107,95 @@ function Return() {
 
   const dateTimeArray = ["transactionDate"];
 
-  const pesoArray = ["totalReturnPrice", "totalReplacePrice"];
+  const disableActions = ["replace"];
+
+  const pesoArray = ["totalReturnPrice", "totalExchangePrice"];
+
+  const { data, isFetching } = useGetAllReturnsQuery({
+    Search: search,
+    Page: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+    Status: paymentNavigation.find((item) => item.case === tabViewing)?.name,
+  });
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}`);
+    navigate(
+      `${selectedRowData?.returnId}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
+  };
+
+  const handleReplace = () => {
+    navigate(
+      `return-form?${selectedRowData?.returnId}&replace=true&dateFrom=${moment(
+        dateFrom
+      ).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
+  };
+
+  const handleNoReplace = () => {
+    const error = validateEndingInventory();
+    if (error) return;
+    onCancelOpen();
+  };
+
+  const handleClose = () => {
+    onCancelClose();
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await noReplace({
+        returnOrderID: selectedRowData?.returnId,
+        accessBy: 0,
+        amount: selectedRowData?.totalReturnPrice,
+      }).unwrap();
+      onCancelClose();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleVoid = async () => {
+    const error = validateEndingInventory();
+    if (error) return;
+    onVoidOpen();
   };
 
   const handleAdd = () => {
-    navigate("return-form");
+    navigate(
+      `return-form?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   if (location.pathname === "/inventory-management/return") {
     return (
       <Box className="commonPageLayout">
-        <PageHeaderAdd
+        <PageHeaderAddTabs
           pageTitle="Return"
           addTitle="Add Return"
-          onOpen={handleAdd}
+          onOpen={() => {
+            const error = validateEndingInventory();
+            if (error) return;
+            handleAdd();
+          }}
+          tabsList={paymentNavigation}
+          setTabViewing={setTabViewing}
+          tabViewing={tabViewing}
+          small
           removeArchive
           removeSearch
-        />
+        >
+          {/* <IconButton onClick={onSettingsOpen} size="small">
+            <Settings />
+          </IconButton> */}
+        </PageHeaderAddTabs>
 
         <SearchDateRangeMixin
           setSearch={setSearch}
@@ -86,13 +205,13 @@ function Return() {
           dateTo={dateTo}
         />
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.returns}
+            mapData={data?.to}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             nestedProperty={nestedProperty}
@@ -103,14 +222,81 @@ function Return() {
             setPage={setPage}
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
+            onReplace={tabViewing === 1 && handleReplace}
+            onNoReplace={tabViewing === 1 && handleNoReplace}
+            // onVoid={tabViewing === 2 && handleVoid}
+            disabledActions={tabViewing !== 1 ? disableActions : []}
             onView={handleView}
           />
         )}
+        <CommonModal
+          open={isSettingsOpen}
+          onClose={onSettingsClose}
+          title="Settings"
+          closeTopRight
+          closeOnBackdropClick
+          width={"400px"}
+        >
+          <Typography fontSize="1.2rem" fontWeight="600">
+            Return Settings
+          </Typography>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              marginTop: "20px",
+            }}
+          >
+            <TextField
+              type="number"
+              onChange={(e) => setMargin(e.target.value)}
+              size="small"
+              label="Margin"
+              fullWidth={true}
+              value={margin}
+            />
+            <div
+              style={{ display: "flex", justifyContent: "end", gap: "10px" }}
+            >
+              <Button onClick={onSettingsClose} variant="outlined">
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setMargin(0);
+                  onSettingsClose();
+                }}
+                variant="contained"
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </CommonModal>
+        <CommonDialog
+          open={isCancelOpen}
+          onClose={handleClose}
+          onYes={handleSubmit}
+          isLoading={isLoading}
+          question
+        >
+          Are you sure you want to cancel replacement?
+        </CommonDialog>
+        <CommonDialog
+          open={isVoidOpen}
+          onClose={onVoidClose}
+          // onYes={handleSubmit}
+          isLoading={isLoading}
+          question
+        >
+          Are you sure you want to void this transaction?
+        </CommonDialog>
       </Box>
     );
   }
 
   return <Outlet />;
-}
+} 
 
 export default Return;

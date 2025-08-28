@@ -33,6 +33,8 @@ const useUserForm = ({
     defaultValues: userAccountSchema.defaultValues,
   });
 
+  console.log(watch("clusterId"));
+
   const watchUserRole = watch("userRoleId");
 
   // RTK Query: User Operations
@@ -76,40 +78,46 @@ const useUserForm = ({
       snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
     }
   };
-
   useEffect(() => {
-    if (editMode) {
-      setValue("id", selectedRowData?.id);
-      setValue("fullIdNo", selectedRowData?.fullIdNo);
-      setValue("fullname", selectedRowData?.fullname);
-      setValue("username", selectedRowData?.username);
+    if (
+      editMode &&
+      selectedRowData &&
+      clusterData?.cluster &&
+      userRoleData?.userRoles && open
+    ) {
+      setValue("id", selectedRowData.id);
+      setValue("fullIdNo", selectedRowData.fullIdNo);
+      setValue("fullname", selectedRowData.fullname);
+      setValue("username", selectedRowData.username);
+
       setValue(
         "userRoleId",
-        userRoleData?.userRoles?.find(
-          (item) => item.roleName === selectedRowData?.roleName
+        userRoleData.userRoles.find(
+          (item) => item.roleName === selectedRowData.roleName
         )
       );
-      setValue(
-        "clusterId",
-        clusterData?.cluster?.find(
-          (item) => item.cluster === selectedRowData?.cluster
-        )
+
+      const selectedCluster = clusterData.cluster.find(
+        (item) => item.id === selectedRowData.clusterId
       );
-      setValue("mobileNumber", selectedRowData?.mobileNumber);
+      console.log(selectedCluster);
+      setValue("clusterId", selectedCluster);
+
+      setValue("mobileNumber", selectedRowData.mobileNumber);
     }
-  }, [editMode, selectedRowData, setValue, userRoleData, clusterData]);
+  }, [editMode, selectedRowData, userRoleData, clusterData, setValue, open]);
 
   useEffect(() => {
-    if (watchUserRole?.roleName !== "CDO") {
+    if (watchUserRole?.roleName !== "CDO" && watchUserRole?.roleName !== "Marketing" ) {
       setValue("clusterId", null);
     }
   }, [watchUserRole, setValue]);
 
-  useEffect(() => {
-    if (!open) {
-      reset();
-    }
-  }, [open, reset]);
+  // useEffect(() => {
+  //   if (!open) {
+  //     reset();
+  //   }
+  // }, [open, reset]);
 
   return {
     handleSubmit,

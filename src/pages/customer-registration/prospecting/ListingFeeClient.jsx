@@ -13,9 +13,12 @@ import {
   setIsListingFeeValid,
   setListingFeeForRegistration,
 } from "../../../features/registration/reducers/regularRegistrationSlice";
+import { useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
 
 function ListingFeeClient() {
   const [totalAmount, setTotalAmount] = useState(0);
+
+  console.log("test")
 
   //Hooks
   const dispatch = useDispatch();
@@ -27,12 +30,14 @@ function ListingFeeClient() {
     (state) => state.regularRegistration.value.toggleFees
   );
 
+  console.log(listingFeesForRegistration, listingFeesForRegistration)
+
   //React Hook Form
   const {
     handleSubmit,
     formState: { errors, isValid },
     setValue,
-    // reset,
+    reset,
     control,
     watch,
   } = useForm({
@@ -48,9 +53,18 @@ function ListingFeeClient() {
     name: "listingItems",
   });
 
+  
+
   //RTK Query
-  const { data: productData, isLoading: isProductLoading } =
-    useGetAllProductsQuery({ Status: true, page: 1, pageSize: 1000 });
+  const { data: productData, isFetching: isProductLoading } =
+    useGetAllItemsByPriceModeIdQuery(
+      {
+        Status: true,
+        Page: 1,
+        PageSize: 1000,
+        PriceModeId: 1,
+      },
+    );
 
   //Functions
   const handleRecalculateTotalAmount = useCallback(() => {
@@ -134,7 +148,7 @@ function ListingFeeClient() {
             <ControlledAutocomplete
               name={`listingItems[${index}].itemId`}
               control={control}
-              options={productData?.items || []}
+              options={productData?.priceModeItems || []}
               getOptionLabel={(option) => option.itemCode || ""}
               getOptionDisabled={(option) => {
                 const listingFees = watch("listingItems");

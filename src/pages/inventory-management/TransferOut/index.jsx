@@ -8,10 +8,15 @@ import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import { useGetAllTransferOutsQuery } from "../../../features/inventory-management/api/transferOutApi";
 import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
+import { pdf } from "@react-pdf/renderer";
+import TransferOutSlip from "../../../components/page-components/inventory-management/transfer-out/TransferOutSlip";
+import { useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
+import useValidate from "../../../hooks/useValidate";
 
 function TransferOut() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -19,8 +24,10 @@ function TransferOut() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(null);
-  const [dateTo, setDateTo] = useState(null);
+  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  const [dateTo, setDateTo] = useState(moment());
+
+  console.log(dateFrom, dateTo);
 
   const { data, isFetching } = useGetAllTransferOutsQuery({
     Search: search,
@@ -28,24 +35,56 @@ function TransferOut() {
     PageSize: rowsPerPage,
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    TransferOutStatus:
-      tabViewing === 1 ? "Pending" : tabViewing === 2 ? "Received" : "Rejected",
+    Status:
+      tabViewing === 1
+        ? "For Receiving"
+        : tabViewing === 2
+        ? "Received"
+        : "Rejected",
+    TransferType: "Out",
   });
+
+  const { data: productData, isFetching: isProductFetching } =
+    useGetAllItemsByPriceModeIdQuery(
+      {
+        Status: true,
+        Page: 1,
+        PageSize: 1000,
+        PriceModeId: 1,
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
+
+  const dataWithPrice = data?.value?.to?.map((itemData) => ({
+    ...itemData,
+    transferItems: itemData.transferItems.map((item, index) => ({
+      ...item,
+      currentPrice: productData?.priceModeItems[index]?.currentPrice,
+    })),
+  }));
+
+  console.log(data);
 
   const tableHeads = [
     "ID",
+    "Series ID",
     "To",
     "Cluster",
     "Total Quantity",
     "Transaction Date",
+    ...(tabViewing === 3 ? ["Reason"] : []),
   ];
 
   const customOrderKeys = [
     "id",
-    "to",
-    "cluster",
+    "seriesId",
+    "transferTo",
+    "transferToCluster",
     "totalQuantity",
     "transactionDate",
+    ...(tabViewing === 3 ? ["rejectReason"] : []),
   ];
 
   const dateTimeArray = ["transactionDate"];
@@ -70,11 +109,33 @@ function TransferOut() {
 
   // Functions
   const handleView = () => {
-    navigate(`${selectedRowData?.id}`);
+    navigate(
+      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
+        "YYYY-MM-DD"
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   const handleAdd = () => {
     navigate("transfer-out-form");
+  };
+
+  const handleDownload = async () => {
+    const blob = await pdf(<TransferOutSlip data={selectedRowData} />).toBlob();
+    const link = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `Internal_Transfer_${moment(selectedRowData?.transactionDate).format(
+        "YYYYMMDD"
+      )}.pdf`
+    );
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up and revoke the object URL
+    link.parentNode.removeChild(link);
   };
 
   if (location.pathname === "/inventory-management/transfer-out") {
@@ -87,10 +148,16 @@ function TransferOut() {
           setTabViewing={setTabViewing}
           wide
           addTitle="Add Transfer Out"
-          onOpen={handleAdd}
+          onOpen={() => {
+            const error = validateEndingInventory();
+            if (!error) {
+              handleAdd();
+            }
+          }}
         />
 
         <SearchDateRangeMixin
+          removeSearch={true}
           setSearch={setSearch}
           setDateFrom={setDateFrom}
           setDateTo={setDateTo}
@@ -98,20 +165,21 @@ function TransferOut() {
           dateTo={dateTo}
         />
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
             moveNoDataUp
             lowerCompact
-            mapData={data?.transferOuts}
+            mapData={dataWithPrice}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
             page={page}
             setPage={setPage}
-            count={data?.totalCount}
+            onDownload={handleDownload}
+            count={data?.value?.totalCount}
             dateTimeArray={dateTimeArray}
             onView={handleView}
           />

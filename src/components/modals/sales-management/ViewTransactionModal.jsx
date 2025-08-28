@@ -223,13 +223,15 @@ function ViewTransactionModal({ transactionId, ...props}) {
 									</TableCell>
 								</TableRow>
 
-								<TableRow>
+								{/* <TableRow>
 									<TableCell></TableCell>
 									<TableCell></TableCell>
 									<TableCell></TableCell>
-									<TableCell></TableCell>
-									<TableCell></TableCell>
-								</TableRow>
+									<TableCell>
+										<span className="label">REBATE</span>
+									</TableCell>
+									<TableCell>{formatPesoAmount(data?.rebateAmount)}</TableCell>
+								</TableRow> */}
 
 								<TableRow>
 									<TableCell></TableCell>

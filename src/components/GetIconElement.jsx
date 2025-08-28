@@ -56,7 +56,11 @@ import {
   Restaurant,
   MoreHoriz,
   Description,
-  Today
+  Today,
+  Archive,
+  Unarchive,
+  KeyboardReturn,
+  ReportProblem
 } from "@mui/icons-material";
 
 export const getIconElement = (iconName, color, fontSize) => {
@@ -515,6 +519,39 @@ export const getIconElement = (iconName, color, fontSize) => {
     ),
     Today: (
       <Today
+        sx={{
+          color: color && `${color} !important`,
+          fontSize: fontSize && `${fontSize} !important`,
+        }}
+      />
+    ),
+    Archive: (
+      <Archive
+        sx={{
+          color: color && `${color} !important`,
+          fontSize: fontSize && `${fontSize} !important`,
+        }}
+      />
+    ),
+    Unarchive: (
+      <Unarchive
+        sx={{
+          color: color && `${color} !important`,
+          fontSize: fontSize && `${fontSize} !important`,
+        }}
+      />
+    ),
+    KeyboardReturn: (
+      <KeyboardReturn
+        sx={{
+          color: color && `${color} !important`,
+          fontSize: fontSize && `${fontSize} !important`,
+        }}
+      />
+    ),
+
+    ReportProblem: (
+      <ReportProblem
         sx={{
           color: color && `${color} !important`,
           fontSize: fontSize && `${fontSize} !important`,

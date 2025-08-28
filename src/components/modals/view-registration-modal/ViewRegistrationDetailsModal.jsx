@@ -29,6 +29,8 @@ import OtherExpensesTab from "./OtherExpensesTab";
 import { useSendMessageMutation } from "../../../features/misc/api/rdfSmsApi";
 import { handleCatchErrorMessage } from "../../../utils/CustomFunctions";
 import SecondaryButton from "../../SecondaryButton";
+import useValidate from "../../../hooks/useValidate";
+import { useGetUsersWithAdjustmentsQuery } from "../../../features/inventory-management/api/endingInventoryApi";
 
 function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
   const { onClose, open } = props;
@@ -114,6 +116,12 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
   const [triggerExpenses, { data: otherExpensesData }] =
     useLazyGetOtherExpensesByClientIdQuery();
 
+  const { data: usersWithAdjustments, isFetching: adjustmentFetching } =
+    useGetUsersWithAdjustmentsQuery();
+
+  const filteredUsers = usersWithAdjustments?.filter(
+    (item) => item?.pendingAdjustments === 0
+  );
   //Handler Functions
   const handleClose = () => {
     onClose();
@@ -390,14 +398,44 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
                     >
                       <DangerButton
                         contained
-                        onClick={onRejectConfirmOpen}
+                        onClick={() => {
+                          if (filteredUsers?.length > 0) {
+                            const error = filteredUsers?.find(
+                              (users) =>
+                                users?.name === selectedRowData?.requestor
+                            );
+                            if (error) {
+                              snackbar({
+                                message: `Pending Ending Inventory : ${notifications?.scheduledInventoryAdjustments}`,
+                                variant: "warning",
+                              });
+                              return;
+                            }
+                          }
+                          onRejectConfirmOpen();
+                        }}
                         data-testid="reject-registration"
                       >
                         Reject
                       </DangerButton>
 
                       <SecondaryButton
-                        onClick={onApproveConfirmOpen}
+                        onClick={() => {
+                          if (filteredUsers?.length > 0) {
+                            const error = filteredUsers?.find(
+                              (users) =>
+                                users?.name === selectedRowData?.requestor
+                            );
+                            if (error) {
+                              snackbar({
+                                message: `Pending Ending Inventory : ${notifications?.scheduledInventoryAdjustments}`,
+                                variant: "warning",
+                              });
+                              return;
+                            }
+                          }
+                          onApproveConfirmOpen();
+                        }}
                         data-testid="approve-registration"
                       >
                         Approve

@@ -16,6 +16,7 @@ import {
   dummySamplingData,
   dummyTransferInData,
   dummyTransferOutData,
+  dummyCallsheetData,
 } from "./DummyInventoryData";
 
 // Inventory (Common)
@@ -387,6 +388,22 @@ export const dummyGetFreebieRequestById = async (id) => {
     return { error: { message: error.message } };
   }
 };
+
+export const dummyGetAllCallsheet = async () => {
+  console.log("dummyGetAllCallsheet called");
+  try {
+    const response = await dummyPromise({
+      type: "success",
+      dummyData: dummyCallsheetData,
+    });
+
+    return { data: response }; // Correct structure for RTK Query
+  } catch (error) {
+    console.error("dummyGetAllCallsheet error:", error);
+    return { error: { message: error.message } }; // Correct error structure
+  }
+};
+
 
 // Sampling
 export const dummyAddSampling = async (body) => {
