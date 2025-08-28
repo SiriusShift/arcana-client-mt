@@ -4,6 +4,7 @@ import {
   Button,
   Divider,
   Menu,
+  Select,
   Popover,
   TextField,
 } from "@mui/material";
@@ -12,9 +13,19 @@ import SecondaryButton from "./SecondaryButton";
 import { useSelector } from "react-redux";
 import useDisclosure from "../hooks/useDisclosure";
 import { FilterList } from "@mui/icons-material";
-import { clusterOptions, paymentTypes, invoiceTypes, returnToDepot, transferTypes } from "../utils/constants";
+import {
+  clusterOptions,
+  paymentTypes,
+  invoiceTypes,
+  returnToDepot,
+  transferTypes,
+  userTypes,
+} from "../utils/constants";
 import { useGetAllOtherExpensesQuery } from "../features/setup/api/otherExpensesApi";
 import { useGetAllStoreTypesQuery } from "../features/setup/api/storeTypeApi";
+import { useGetAllUsersQuery } from "../features/user-management/api/userAccountApi";
+import { useGetAllUserRolesQuery } from "../features/user-management/api/userRoleApi";
+import { useGetAllClustersQuery } from "../features/setup/api/clusterApi";
 
 function CommonFilter({
   filter,
@@ -24,7 +35,9 @@ function CommonFilter({
   paymentMethodFilter,
   // expenseTypeFilter,
   businessTypeFilter,
+  userTypeFilter,
   typeFilter,
+  userFilter,
   // invoiceTypeFilter,
   // validityFilter,
   // uploadStatusFilter,
@@ -44,9 +57,13 @@ function CommonFilter({
     // uploadStatus: null,
     // frequence: null,
     paymentMethod: null,
+    userId: null,
     type: null,
+    userType: null,
     // status: null,
   });
+
+  console.log(filters)
 
   //Query
   // const { data: otherExpensesOptions } = useGetAllOtherExpensesQuery();
@@ -55,6 +72,32 @@ function CommonFilter({
   //slice
   const userDetails = useSelector((state) => state.login.userDetails);
   console.log(userDetails);
+
+  const { data: roleData, isFetching: isRolesFetching } =
+    useGetAllUserRolesQuery({
+      Page: 1,
+      PageSize: 1000,
+      Status: true,
+    });
+
+  const cdoRoleId = roleData?.userRoles?.find(
+    (role) =>
+      role.roleName === "CDO" ||
+      role.roleName?.toLowerCase() === "Chief Distribution Officer"
+  )?.id;
+
+  const { data, isFetching, error } = useGetAllClustersQuery(
+    {
+      Status: true,
+      PageNumber: 1,
+      PageSize: 10000,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  console.log(data);
 
   //Function
   const resetFilter = () => {
@@ -120,9 +163,10 @@ function CommonFilter({
         <Box className="filter">
           {clusterFilter && (
             <Autocomplete
-              options={clusterOptions}
-              getOptionLabel={(option) => option?.label || option}
+              options={data?.cluster}
+              getOptionLabel={(option) => option?.cluster || option}
               onChange={(_, value) => {
+                console.log(value)
                 setFilters({ ...filters, clusterId: value });
               }}
               value={filters.clusterId}
@@ -161,8 +205,6 @@ function CommonFilter({
               )}
             />
           )}
-
-          {}
 
           {/* {expenseTypeFilter && (
             <Autocomplete
@@ -217,7 +259,7 @@ function CommonFilter({
                   label="Type"
                 />
               )}
-            ></Autocomplete>
+            />
           )}
           {/* {invoiceTypeFilter && (
             <Autocomplete

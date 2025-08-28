@@ -16,7 +16,7 @@ function SwipeableItem({
   onSwipeLeft,
   totalAmount,
   watch,
-  creditBalance
+  creditBalance,
 }) {
   console.log(watch.items);
   const [isSwiped, setIsSwiped] = useState(false);
@@ -162,14 +162,17 @@ function SwipeableItem({
               isAllowed={({ floatValue }) => {
                 // console.log(watch, orderItem);
                 const findIndex = watch?.items?.findIndex(
-                  (item) => 
+                  (item) =>
                     item.itemId.itemId === orderItem.itemId.itemId &&
                     item.itemId.currentPrice === orderItem.itemId.currentPrice
                 );
-                const filteredItems = watch?.items?.filter((item, index) => findIndex !== index).reduce(
-                  (acc, item) => acc + item.quantity * item.itemId.currentPrice,
-                  0
-                );
+                const filteredItems = watch?.items
+                  ?.filter((item, index) => findIndex !== index)
+                  .reduce(
+                    (acc, item) =>
+                      acc + item.quantity * item.itemId.currentPrice,
+                    0
+                  );
                 console.log(filteredItems);
                 if (floatValue > orderItem?.itemId?.availQuantity) {
                   snackbar({
@@ -177,17 +180,17 @@ function SwipeableItem({
                     variant: "error",
                   });
                   return false;
-                } 
-                else if (
-                  filteredItems + orderItem.itemId?.currentPrice * floatValue >
-                  creditBalance && watch?.clientId?.termType === "Credit Type"
-                ) {
-                  snackbar({
-                    message: "Insufficient credit balance",
-                    variant: "error",
-                  });
-                  return false;
                 }
+                // else if (
+                //   filteredItems + orderItem.itemId?.currentPrice * floatValue >
+                //   creditBalance && watch?.clientId?.termType === "Credit Type"
+                // ) {
+                //   snackbar({
+                //     message: "Insufficient credit balance",
+                //     variant: "error",
+                //   });
+                //   return false;
+                // }
                 return true;
               }}
               value={quantity}

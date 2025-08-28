@@ -3,17 +3,19 @@ import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import CommonTable from "../../../components/CommonTable";
 import GenerateMoveOrderModal from "../../../components/modals/inventory-management/GenerateMoveOrderModal";
 import useDisclosure from "../../../hooks/useDisclosure";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useGetAllReceivedOrdersQuery } from "../../../features/inventory-management/api/receivingApi";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import SearchDateRangeMixin from "../../../components/mixins/SearchDateRangeMixin";
 import moment from "moment";
+import useValidate from "../../../hooks/useValidate";
 
 function Receiving() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
   const [search, setSearch] = useState("");
@@ -34,6 +36,7 @@ function Receiving() {
   // Common Table Props
   const tableHeads = [
     "Move Order ID",
+    "Series ID",
     "Customer Name",
     "Cluster",
     "Transaction Date",
@@ -42,6 +45,7 @@ function Receiving() {
 
   const customOrderKeys = [
     "moveOrderId",
+    "seriesId",
     "customerName",
     "cluster",
     "transactionDate",
@@ -80,7 +84,12 @@ function Receiving() {
             addTitle="New Delivery"
             removeArchive
             removeSearch
-            onOpen={onGenerateOpen}
+            onOpen={() => {
+              const error = validateEndingInventory();
+              if (!error) {
+                onGenerateOpen();
+              }
+            }}
             setSearch={setSearch}
           />
           <SearchDateRangeMixin
@@ -91,7 +100,7 @@ function Receiving() {
             dateTo={dateTo}
           />
 
-          {isFetching ? (
+          {isFetching || isNotificationFetching ? (
             <CommonTableSkeleton lowerCompact />
           ) : (
             <CommonTable

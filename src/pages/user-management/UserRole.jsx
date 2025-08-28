@@ -35,6 +35,7 @@ function UserRole() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [count, setCount] = useState(null);
   const [checkedModules, setCheckedModules] = useState(["Dashboard"]);
+  const [checkedReports, setCheckedReports] = useState([])
   // const [checkedModules, setCheckedModules] = useState([]);
 
   // Drawer Disclosures
@@ -145,6 +146,7 @@ function UserRole() {
       await putTagUserRole({
         id: selectedRowData?.id,
         permissions: checkedModules,
+        reports: checkedReports
       }).unwrap();
       onTaggingClose();
 
@@ -244,6 +246,8 @@ function UserRole() {
         open={isTaggingOpen}
         onClose={onTaggingClose}
         isLoading={isTagLoading}
+        checkedReports={checkedReports}
+        setCheckedReports={setCheckedReports}
       />
     </Box>
     </>

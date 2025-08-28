@@ -26,4 +26,4 @@ export const inventoryMrpApi = api
     }),
   });
 
-export const { useGetInventoryMrpQuery, useGetAllItemsInventoryQuery } = inventoryMrpApi;
+export const { useGetInventoryMrpQuery, useLazyGetAllItemsInventoryQuery, useGetAllItemsInventoryQuery } = inventoryMrpApi;

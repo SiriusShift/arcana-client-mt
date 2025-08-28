@@ -14,16 +14,22 @@ import { useSelector } from "react-redux";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
-import { useGetAllReturnsQuery, useNoReplaceItemsMutation } from "../../../features/inventory-management/api/returnApi";
+import {
+  useGetAllReturnsQuery,
+  useNoReplaceItemsMutation,
+} from "../../../features/inventory-management/api/returnApi";
 import { Add, Remove, Settings } from "@mui/icons-material";
 import useDisclosure from "../../../hooks/useDisclosure";
 import CommonModal from "../../../components/CommonModal";
 import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 import CommonDialog from "../../../components/common/CommonDialog";
+import useValidate from "../../../hooks/useValidate";
 
 function Return() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
+
   const [tabViewing, setTabViewing] = useState(1);
   console.log(tabViewing);
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -33,6 +39,12 @@ function Return() {
     isOpen: isSettingsOpen,
     onOpen: onSettingsOpen,
     onClose: onSettingsClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isVoidOpen,
+    onOpen: onVoidOpen,
+    onClose: onVoidClose,
   } = useDisclosure();
 
   const {
@@ -48,9 +60,9 @@ function Return() {
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
-  const [noReplace, {isLoading}] = useNoReplaceItemsMutation();
+  const [noReplace, { isLoading }] = useNoReplaceItemsMutation();
 
-  console.log(isLoading)
+  console.log(isLoading);
 
   const paymentNavigation = useMemo(
     () => [
@@ -97,7 +109,6 @@ function Return() {
 
   const disableActions = ["replace"];
 
-
   const pesoArray = ["totalReturnPrice", "totalExchangePrice"];
 
   const { data, isFetching } = useGetAllReturnsQuery({
@@ -120,33 +131,47 @@ function Return() {
 
   const handleReplace = () => {
     navigate(
-      `return-form?${selectedRowData?.returnId}&replace=true&dateFrom=${moment(dateFrom).format(
-        "YYYY-MM-DD"
-      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+      `return-form?${selectedRowData?.returnId}&replace=true&dateFrom=${moment(
+        dateFrom
+      ).format("YYYY-MM-DD")}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
     );
-  }
+  };
 
   const handleNoReplace = () => {
-    onCancelOpen()
-  }
+    const error = validateEndingInventory();
+    if (error) return;
+    onCancelOpen();
+  };
 
   const handleClose = () => {
     onCancelClose();
-  }
+  };
 
   const handleSubmit = async () => {
-    try{
-      await noReplace({returnOrderID: selectedRowData?.returnId, accessBy: 0, amount: selectedRowData?.totalReturnPrice}).unwrap();
+    try {
+      await noReplace({
+        returnOrderID: selectedRowData?.returnId,
+        accessBy: 0,
+        amount: selectedRowData?.totalReturnPrice,
+      }).unwrap();
       onCancelClose();
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
-  }
+  };
+
+  const handleVoid = async () => {
+    const error = validateEndingInventory();
+    if (error) return;
+    onVoidOpen();
+  };
 
   const handleAdd = () => {
-    navigate(`return-form?dateFrom=${moment(dateFrom).format(
+    navigate(
+      `return-form?dateFrom=${moment(dateFrom).format(
         "YYYY-MM-DD"
-      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
+      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
+    );
   };
 
   if (location.pathname === "/inventory-management/return") {
@@ -155,7 +180,11 @@ function Return() {
         <PageHeaderAddTabs
           pageTitle="Return"
           addTitle="Add Return"
-          onOpen={handleAdd}
+          onOpen={() => {
+            const error = validateEndingInventory();
+            if (error) return;
+            handleAdd();
+          }}
           tabsList={paymentNavigation}
           setTabViewing={setTabViewing}
           tabViewing={tabViewing}
@@ -176,7 +205,7 @@ function Return() {
           dateTo={dateTo}
         />
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
@@ -195,6 +224,7 @@ function Return() {
             dateTimeArray={dateTimeArray}
             onReplace={tabViewing === 1 && handleReplace}
             onNoReplace={tabViewing === 1 && handleNoReplace}
+            // onVoid={tabViewing === 2 && handleVoid}
             disabledActions={tabViewing !== 1 ? disableActions : []}
             onView={handleView}
           />
@@ -244,19 +274,29 @@ function Return() {
             </div>
           </div>
         </CommonModal>
-        <CommonDialog         
-        open={isCancelOpen}
-        onClose={handleClose}
-        onYes={handleSubmit}
-        isLoading={isLoading}
-        question>
+        <CommonDialog
+          open={isCancelOpen}
+          onClose={handleClose}
+          onYes={handleSubmit}
+          isLoading={isLoading}
+          question
+        >
           Are you sure you want to cancel replacement?
+        </CommonDialog>
+        <CommonDialog
+          open={isVoidOpen}
+          onClose={onVoidClose}
+          // onYes={handleSubmit}
+          isLoading={isLoading}
+          question
+        >
+          Are you sure you want to void this transaction?
         </CommonDialog>
       </Box>
     );
   }
 
   return <Outlet />;
-}
+} 
 
 export default Return;

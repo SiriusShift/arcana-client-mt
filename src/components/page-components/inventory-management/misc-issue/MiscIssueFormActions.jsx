@@ -47,13 +47,13 @@ const MiscIssueFormActions = () => {
       console.log(transformedData)
 
       await confirm({
-        children: "Are you sure you want to transfer these items?",
+        children: "Are you sure you want to remove these items?",
         question: true,
         callback: () => trigger(transformedData).unwrap(),
       });
 
       snackbar({
-        message: "Transfer out successful",
+        message: "Miscellaneous Issue successful",
         variant: "success",
       });
 

@@ -47,14 +47,14 @@ const MiscReceiptFormActions = () => {
       console.log("test")
 
       await confirm({
-        children: "Are you sure you want to transfer these items?",
+        children: "Are you sure you want to add these items?",
         question: true,
         callback: () => trigger(transformedData).unwrap(),
       });
 
 
       snackbar({
-        message: "Miscellaneous In successful",
+        message: "Miscellaneous Receipt successful",
         variant: "success",
       });
 

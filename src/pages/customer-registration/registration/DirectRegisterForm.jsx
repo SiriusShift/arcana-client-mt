@@ -470,11 +470,6 @@ function DirectRegisterForm({
       onClose();
       handleResetForms();
     } catch (error) {
-      //Reset Direct Freebies
-      setPhotoProofDirect(null);
-      setSignatureDirect(null);
-      dispatch(resetFreebies());
-
       if (error.function !== "sendMessage") {
         snackbar({
           message: handleCatchErrorMessage(error),
@@ -487,6 +482,10 @@ function DirectRegisterForm({
           variant: "warning",
         });
         onClose();
+        //Reset Direct Freebies
+        setPhotoProofDirect(null);
+        setSignatureDirect(null);
+        dispatch(resetFreebies());
         handleResetForms();
       }
     }

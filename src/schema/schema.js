@@ -50,7 +50,7 @@ export const userAccountSchema = {
     userRoleId: yup.object().required("Role is required"),
     // clusterId: yup.object().nullable(),
     clusterId: yup.object().when("userRoleId", {
-      is: (userRoleId) => userRoleId && userRoleId.roleName === "CDO",
+      is: (userRoleId) => userRoleId && userRoleId?.roleName === "CDO" || userRoleId?.roleName === "Marketing",
       then: (schema) => schema.required("Cluster is required"),
       otherwise: (schema) => schema.nullable(),
     }),
@@ -166,6 +166,7 @@ export const uomSchema = {
     uomDescription: "",
   },
 };
+
 
 export const priceModeSetupSchema = {
   schema: yup.object({
@@ -725,9 +726,11 @@ export const approverSettingsSchema = {
 export const clusterSchema = {
   schema: yup.object({
     cluster: yup.string().required("Cluster is required"),
+    type: yup.string().required("Type is required")
   }),
   defaultValues: {
     cluster: "",
+    type: ""
   },
 };
 
@@ -1107,6 +1110,35 @@ export const receivingItemsSchema = {
   },
 };
 
+export const endingInventorySchema = {
+  schema: yup.object({
+    items: yup.array().of(
+      yup.object({
+        item: yup.array().required("Item Code is required"),
+        soh: yup.number(),
+        uom: yup.string().required("UOM is required"),
+        itemDescription: yup.string().required("Item Description is required"),
+        actualQuantity: yup.number().required("Quantity Received is required"),
+        variance: yup.number(),
+        reason: yup.string().nullable(),
+      })
+    ),
+  }),
+  defaultValues: {
+    items: [
+      {
+        itemCode: "",
+        soh: null,
+        productionDate: "",
+        uom: "",
+        itemDescription: "",
+        actualQuantity: null,
+        reason: "",
+      },
+    ],
+  },
+};
+
 export const transferOutSchema = {
   schema: yup.object({
     to: yup.object().required("To is required"),
@@ -1391,6 +1423,42 @@ export const outrightReturnSchema = {
   },
 };
 
+export const returnSamplingSchema = {
+  schema: yup.object({
+    // transactionType: yup.object().required("Transaction Type is required"),
+    freebieOrderId: yup.object().required("Sampling id is required"),
+    transactionDate: yup.date().required("Transaction Date is required"),
+    type: yup.string(),
+    items: yup
+      .array()
+      .of(
+        yup.object({
+          item: yup.object().required("Item Code is required"),
+          released: yup.number(),
+          quantity: yup.number().required("Quantity is required").min(1),
+          remarks: yup.object().required("Remarks is required"),
+          reason: yup.string().nullable(),
+        })
+      )
+      .min(1, "At least one product is required"),
+  }),
+  defaultValues: {
+    transactionDate: moment(),
+    freebieOrderId: null,
+    type: "Return Sampling",
+    items: [
+      {
+        item: null,
+        bbd: null,
+        received: null,
+        quantity: null,
+        remarks: null,
+        reason: "",
+      },
+    ],
+  },
+};
+
 export const miscInSchema = {
   schema: yup.object({
     // transactionType: yup.object().required("Transaction Type is required"),
@@ -1463,5 +1531,18 @@ export const reasonSchema = {
   }),
   defaultValues: {
     reason: "",
+  },
+};
+
+export const endingScheduleSchema = {
+  schema: yup.object({
+    days: yup
+      .array()
+      .of(yup.number().min(1).max(31)) // ensures all items are numbers between 1–31
+      .min(1, "At least one day is required") // require at least one item
+      .required("Days is required"),
+  }),
+  defaultValues: {
+    days: [],
   },
 };

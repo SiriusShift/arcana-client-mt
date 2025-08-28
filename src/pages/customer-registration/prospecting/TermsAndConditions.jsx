@@ -983,6 +983,7 @@ function TermsAndConditions({ direct, editMode, storeType }) {
             isFreebieFormOpen={isFreebieFormOpen}
             onFreebieFormClose={onFreebieFormClose}
             direct
+            updateFreebies
           />
         )}
 

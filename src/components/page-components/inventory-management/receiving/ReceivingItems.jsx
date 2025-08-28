@@ -111,13 +111,14 @@ function ReceivingItems({
       items: items?.map((item) => {
         console.log(item.actualQuantity)
         return {
-        itemCode: item?.itemCode || "",
-        itemDescription: item?.itemDescription || "",
-        uom: item?.uom || "",
-        quantity: item?.quantity || null,
-        actualQuantity: item?.actualQuantity ?? null,
-        variance: (item?.actualQuantity && item?.quantity) ? item?.quantity - item?.actualQuantity : null,
-        reason: item?.reason || ""}
+          itemCode: item?.itemCode || "",
+          itemDescription: item?.itemDescription || "",
+          uom: item?.uom || "",
+          quantity: item?.quantity || null,
+          actualQuantity: item?.actualQuantity ?? null,
+          variance: (item?.actualQuantity && item?.quantity) ? item?.actualQuantity - item?.quantity : 0,
+          reason: item?.reason || ""
+        }
       }),
     });
   }, [items, reset]);
@@ -194,7 +195,7 @@ function ReceivingItems({
                         items?.some(
                           (item, itemIndex) =>
                             item.itemCode ===
-                              watch(`items[${index}].itemCode`) &&
+                            watch(`items[${index}].itemCode`) &&
                             itemIndex === index // Disable rows with the same itemCode except the current row
                         )
                       }
@@ -322,8 +323,8 @@ function ReceivingItems({
                               //   });
                               // } else {
                               onChange(newValue);
-                              if(watch("items")?.[index]?.quantity === null) return
-                              setValue(`items[${index}].variance`, newValue -  watch("items")?.[index]?.quantity );
+                              if (watch("items")?.[index]?.quantity === null) return
+                              setValue(`items[${index}].variance`, newValue - watch("items")?.[index]?.quantity);
                               // }
                             }}
                             onBlur={onBlur}
@@ -360,29 +361,28 @@ function ReceivingItems({
                             !watchItems[index]?.itemCode
                               ? "gray"
                               : data?.mo?.find(
-                                  (item) =>
-                                    item.itemCode ===
-                                    watchItems[index]?.itemCode
-                                )?.reserve
-                              ? data?.mo?.find(
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.itemCode
+                              )?.reserve
+                                ? data?.mo?.find(
                                   (item) =>
                                     item.itemCode ===
                                     watchItems[index]?.itemCode
                                 )?.reserve < 5
-                                ? "orange"
-                                : "green"
-                              : "red"
+                                  ? "orange"
+                                  : "green"
+                                : "red"
                           }
                           lineHeight="0.5"
                         >
                           {watchItems[index]?.itemCode
-                            ? `Available: ${
-                                data?.mo?.find(
-                                  (item) =>
-                                    item.itemCode ===
-                                    watchItems[index]?.itemCode
-                                )?.soh ?? "NONE"
-                              }`
+                            ? `Available: ${data?.mo?.find(
+                              (item) =>
+                                item.itemCode ===
+                                watchItems[index]?.itemCode
+                            )?.soh ?? "NONE"
+                            }`
                             : "Select Item first"}
                         </Typography>
                       )}
@@ -419,15 +419,15 @@ function ReceivingItems({
                           value={value || ""}
                           inputRef={ref}
                           disabled={disableFields}
-                          // disabled={
-                          //   disableFields ||
-                          //   items?.some(
-                          //     (item, itemIndex) =>
-                          //       item.itemCode ===
-                          //         watch(`items[${index}].itemCode`) &&
-                          //       itemIndex === index // Disable rows with the same itemCode except the current row
-                          //   )
-                          // }
+                        // disabled={
+                        //   disableFields ||
+                        //   items?.some(
+                        //     (item, itemIndex) =>
+                        //       item.itemCode ===
+                        //         watch(`items[${index}].itemCode`) &&
+                        //       itemIndex === index // Disable rows with the same itemCode except the current row
+                        //   )
+                        // }
                         />
                       )}
                     />
@@ -439,7 +439,7 @@ function ReceivingItems({
                           items?.some(
                             (item, itemIndex) =>
                               item.itemCode ===
-                                watch(`items[${index}].itemCode`) &&
+                              watch(`items[${index}].itemCode`) &&
                               itemIndex === index // Disable rows with the same itemCode except the current row
                           )
                         }

@@ -32,6 +32,11 @@ import {
   useGetReturnToDepotReportsQuery,
   useGetInventoryMovementReportsQuery,
   useGetInventoryTransactionsHistoryReportsQuery,
+  useGetReturnSamplingReportsQuery,
+  useGetInventoryAdjustmentReportsQuery,
+  useGetMiscReceiptReportsQuery,
+  useGetMiscIssueReportsQuery,
+  useGetConsolidatedReportsQuery,
 } from "../../features/reports/api/reportsApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { useSelector } from "react-redux";
@@ -62,6 +67,9 @@ function Reports() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [activeArray, setActiveArray] = useState();
   const [clusterId, setClusterId] = useState();
+  const [userId, setUserId] = useState();
+  const [userType, setUserType] = useState();
+  console.log("Test", clusterId);
   const [isActive, setIsActive] = useState({
     cdo: true,
     sj: true,
@@ -105,6 +113,16 @@ function Reports() {
     im: true,
     // Inventory Transaction History
     ith: true,
+    //RETURN SAMPLING
+    rs: true,
+    //INVENTORY ADJUSTMENT
+    ia: true,
+    //Misc Receipt
+    mr: true,
+    //Misc Issue
+    mi: true,
+    //Consolidated Report
+    cr: true
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
@@ -116,9 +134,9 @@ function Reports() {
 
   console.log(type, "active array");
   const isGlReport =
-    activeReport?.label === "GL Cash Receipt" ||
-    activeReport?.label === "GL Inventoriables" ||
-    activeReport?.label === "GL Sales GT";
+    activeReport?.name === "GL Cash Receipt" ||
+    activeReport?.name === "GL Inventoriables" ||
+    activeReport?.name === "GL Sales GT";
   // const selectedRowData = useSelector((state) => state.selectedRow.value);
   // const dispatch = useDispatch();
 
@@ -129,6 +147,7 @@ function Reports() {
     "transactionDate",
     "dateReceived",
     "receivedDate",
+    "transactDate"
   ];
 
   const {
@@ -170,9 +189,9 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
     },
-    { skip: isActive.cdo }
+    { refetchOnMountOrArgChange: true, skip: isActive.cdo }
   );
 
   const { data: sjReportData, isFetching: sjFetching } = useSJReportsQuery(
@@ -181,9 +200,9 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
     },
-    { skip: isActive.sj }
+    { refetchOnMountOrArgChange: true, skip: isActive.sj }
   );
 
   const { data: asReportData, isFetching: asFetching } = useASReportsQuery(
@@ -192,9 +211,9 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
     },
-    { skip: isActive.as }
+    { refetchOnMountOrArgChange: true, skip: isActive.as }
   );
 
   // const { data: priceModeReportData, isFetching: priceModeFetching } =
@@ -210,9 +229,9 @@ function Reports() {
         PageSize: rowsPerPage,
         DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
         DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-        clusterId: clusterId?.value || "",
+        clusterId: clusterId?.id || "",
       },
-      { skip: isActive.ci }
+      { refetchOnMountOrArgChange: true, skip: isActive.ci }
     );
 
   const { data: soaReportData, isFetching: soaFetching } =
@@ -222,6 +241,7 @@ function Reports() {
         DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.soa,
       }
     );
@@ -232,6 +252,7 @@ function Reports() {
         ClientId: watch("clientId")?.id || watch("clientId")?.clientId,
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.lf,
       }
     );
@@ -241,11 +262,12 @@ function Reports() {
       {
         PageNumber: page + 1,
         PageSize: rowsPerPage,
-        ClusterId: clusterId?.value || "",
+        ClusterId: clusterId?.id || "",
         DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
         DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.cf,
       }
     );
@@ -257,7 +279,7 @@ function Reports() {
     {
       PageNumber: page + 1,
       PageSize: rowsPerPage,
-      ClusterId: clusterId?.value || "",
+      ClusterId: clusterId?.id || "",
       DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
       DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
     },
@@ -274,9 +296,11 @@ function Reports() {
         DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
         DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
         PageSize: rowsPerPage,
-        clusterId: clusterId?.value || "",
+        clusterId: clusterId?.id || "",
+        ...(userType && { Role: userType }),
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.rr,
       }
     );
@@ -284,14 +308,16 @@ function Reports() {
   const { data: returnToDepotReportData, isFetching: returnToDepotFetching } =
     useGetReturnToDepotReportsQuery(
       {
-        ClusterId: clusterId?.value || "",
+        ClusterId: clusterId?.id || "",
         DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD") || "",
         DateTo: moment(watch("dateTo")).format("YYYY-MM-DD") || "",
         TransferType: type?.value,
         PageNumber: page + 1,
         PageSize: rowsPerPage,
+        ...(userType && { Role: userType }),
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.rtd,
       }
     );
@@ -303,9 +329,10 @@ function Reports() {
         PageSize: rowsPerPage,
         DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
         DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-        clusterId: clusterId?.value || "",
+        clusterId: clusterId?.id || "",
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.pr,
       }
     );
@@ -317,9 +344,12 @@ function Reports() {
         PageSize: rowsPerPage,
         DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
         DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-        clusterId: clusterId?.value || "",
+        clusterId: clusterId?.id || "",
+        ...(userType && { Role: userType }),
+        ...(userId && { UserId: userId }),
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.mrr,
       }
     );
@@ -329,6 +359,7 @@ function Reports() {
         adjustment_month: moment(watch("dateTo")).format("YYYY-MM"),
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.glcr,
       }
     );
@@ -341,6 +372,7 @@ function Reports() {
       adjustment_month: moment(watch("dateTo")).format("YYYY-MM"),
     },
     {
+      refetchOnMountOrArgChange: true,
       skip: isActive.gli,
     }
   );
@@ -351,6 +383,7 @@ function Reports() {
         adjustment_month: moment(watch("dateTo")).format("YYYY-MM"),
       },
       {
+        refetchOnMountOrArgChange: true,
         skip: isActive.glgt,
       }
     );
@@ -364,9 +397,12 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
+      ...(userType && { Role: userType }),
+      ...(userId && { UserId: userId }),
     },
     {
+      refetchOnMountOrArgChange: true,
       skip: isActive.im,
     }
   );
@@ -380,11 +416,10 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
+      ...(userType && { Role: userType }),
     },
-    {
-      skip: isActive.ith,
-    }
+    { refetchOnMountOrArgChange: true, skip: isActive.ith }
   );
 
   const {
@@ -396,12 +431,10 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
       TransactionType: "Freebie",
     },
-    {
-      skip: isActive.freebie,
-    }
+    { refetchOnMountOrArgChange: true, skip: isActive.freebie }
   );
 
   const {
@@ -413,10 +446,12 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
       TransactionType: "Sampling",
     },
     {
+      refetchOnMountOrArgChange: true,
+
       skip: isActive.sampling,
     }
   );
@@ -430,10 +465,11 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
       // TransactionType: "Return",
     },
     {
+      refetchOnMountOrArgChange: true,
       skip: isActive.return,
     }
   );
@@ -447,18 +483,94 @@ function Reports() {
       PageSize: rowsPerPage,
       DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
       DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
-      clusterId: clusterId?.value || "",
+      clusterId: clusterId?.id || "",
       // TransactionType: "Return",
     },
     {
+      refetchOnMountOrArgChange: true,
       skip: isActive.replace,
     }
   );
 
-  console.log(
-    inventoryTransactionHistoryReportData,
-    "inventoryTransactionHistoryReportData"
+  const { data: returnSamplingReportData, isFetching: returnSamplingFetching } =
+    useGetReturnSamplingReportsQuery(
+      {
+        PageNumber: page + 1,
+        PageSize: rowsPerPage,
+        DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+        DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+        clusterId: clusterId?.id || "",
+        // TransactionType: "Return",
+      },
+      {
+        refetchOnMountOrArgChange: true,
+        skip: isActive.rs,
+      }
+    );
+
+  const {
+    data: inventoryAdjustmentReportData,
+    isFetching: inventoryAdjustmentFetching,
+  } = useGetInventoryAdjustmentReportsQuery(
+    {
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+      DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+      clusterId: clusterId?.id || "",
+      // TransactionType: "Return",
+    },
+    {
+      refetchOnMountOrArgChange: true,
+      skip: isActive.ia,
+    }
   );
+
+  const { data: miscReceiptReportData, isFetching: miscReceiptFetching } =
+    useGetMiscReceiptReportsQuery(
+      {
+        PageNumber: page + 1,
+        PageSize: rowsPerPage,
+        DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+        DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+        clusterId: clusterId?.id || "",
+        // TransactionType: "Return",
+      },
+      {
+        refetchOnMountOrArgChange: true,
+        skip: isActive.mr,
+      }
+    );
+
+  const { data: miscIssueReportData, isFetching: miscIssueFetching } =
+    useGetMiscIssueReportsQuery(
+      {
+        PageNumber: page + 1,
+        PageSize: rowsPerPage,
+        DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+        DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+        clusterId: clusterId?.id || "",
+        // TransactionType: "Return",
+      },
+      {
+        refetchOnMountOrArgChange: true,
+        skip: isActive.mi,
+      }
+    );
+
+  const { data: consolidatedReportData, isFetching: consolidatedFetching } = useGetConsolidatedReportsQuery({
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+    DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.id || "",
+    // TransactionType: "Return",
+  },
+    {
+      refetchOnMountOrArgChange: true,
+      skip: isActive.cr,
+    })
+
 
   const parentIsFetching =
     cdoFetching ||
@@ -482,16 +594,24 @@ function Reports() {
     receivingFetching ||
     inventoryReplaceFetching ||
     inventorySamplingFetching ||
-    inventoryFreebiesFetching;
+    miscIssueFetching ||
+    returnSamplingFetching ||
+    inventoryAdjustmentFetching ||
+    inventoryFreebiesFetching ||
+    miscReceiptFetching || 
+    consolidatedFetching;
 
   //functions
   const handleSubmitDate = () => {
     useDownloadExcel();
   };
 
-  const onFilter = async ({ clusterId, type }) => {
+  const onFilter = async ({ clusterId, type, userType, userId }) => {
+    console.log("Test", clusterId);
     try {
       setClusterId(clusterId);
+      setUserType(userType);
+      setUserId(userId?.id);
       setType(type);
     } catch (error) {
       console.log(error);
@@ -503,22 +623,25 @@ function Reports() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASEURL}${
-          activeReport?.value
+        `${import.meta.env.VITE_BASEURL}${activeReport?.value
         }?DateFrom=${moment(watch("dateFrom")).format(
           "MM-DD-YYYY"
-        )}&DateTo=${moment(watch("dateTo")).format("MM-DD-YYYY")}${
-          clusterId ? `&clusterId=${clusterId?.value}` : ""
-        }${
-          watch("clientId")?.id || watch("clientId")?.clientId
-            ? `&clientId=${
-                watch("clientId")?.id || watch("clientId")?.clientId
-              }`
-            : ""
-        }${
-          activeReport?.value === "GetTransferReportExport"
-            ? `&TransferType=${type?.value || ""}`
-            : ""
+        )}&DateTo=${moment(watch("dateTo")).format("MM-DD-YYYY")}${clusterId ? `&clusterId=${clusterId?.id}` : ""
+        }${watch("clientId")?.id || watch("clientId")?.clientId
+          ? `&clientId=${watch("clientId")?.id || watch("clientId")?.clientId
+          }`
+          : ""
+        }${activeReport?.value === "GetTransferReportExport" && type
+          ? `&TransferType=${type?.value || ""}`
+          : ""
+        }${(activeReport?.value === "arcana-mo-reports" ||
+          activeReport?.value === "GetTransferReportExport" ||
+          activeReport?.value === "MRPRollbackExport" ||
+          activeReport?.value === "InventoryMovementExport" ||
+          activeReport?.value === "TransactionHistoricalExport") &&
+          userType
+          ? `&Role=${userType}`
+          : ""
         }`,
         {
           method: "GET",
@@ -535,21 +658,17 @@ function Reports() {
         throw new Error("Failed to download Excel file.");
       }
 
+      console.log(response.headers.get("content-disposition").split('filename=')[1].split(';')[0].split('"')[1])
+
+      const filename = response.headers.get("content-disposition").split('filename=')[1].split(';')[0].split('"')[1]
+
       const blob = await response.blob();
       const link = document.createElement("a");
       const url = window.URL.createObjectURL(blob);
       link.href = url;
       link.setAttribute(
         "download",
-        `${activeReport.value}_${
-          activeReport?.value === "GetTransferReportExport"
-            ? type?.value
-              ? type?.value
-              : ""
-            : ""
-        }${moment(watch("dateFrom")).format("YYYYMMDD")}_${moment(
-          watch("dateTo")
-        ).format("YYYYMMDD")}.xlsx`
+        `${filename}`
       );
       document.body.appendChild(link);
       link.click();
@@ -567,7 +686,7 @@ function Reports() {
   };
 
   const handleGlReport = async (data) => {
-    ExportExcel(data, activeReport.label);
+    ExportExcel(data, activeReport.name);
   };
 
   //useEffect()
@@ -608,6 +727,11 @@ function Reports() {
       inventorySamplingReportData,
       inventoryReturnReportData,
       inventoryReplaceReportData,
+      returnSamplingReportData,
+      inventoryAdjustmentReportData,
+      miscReceiptReportData,
+      miscIssueReportData,
+      consolidatedReportData,
 
       glCashReceiptReportData,
       glInventoriableReportData,
@@ -634,6 +758,11 @@ function Reports() {
       "sampling",
       "return",
       "replace",
+      "rs",
+      "ia",
+      "mr",
+      "mi",
+      "cr",
 
       "glcr",
       "gli",
@@ -682,6 +811,11 @@ function Reports() {
     inventorySamplingReportData,
     inventoryReturnReportData,
     inventoryReplaceReportData,
+    inventoryAdjustmentReportData,
+    miscReceiptReportData,
+    miscIssueReportData,
+    consolidatedReportData,
+
     glInventoriableReportData,
     glSalesGTReportData,
     // priceModeReportData,
@@ -920,7 +1054,7 @@ function Reports() {
       "Item ID",
       "Item Code",
       "Item Description",
-      "From Depot",
+      "Expected Delivery",
       "Receiving",
       "Transfer In",
       "Transfer Out",
@@ -966,13 +1100,7 @@ function Reports() {
       "Total Quantity",
       "Created Date",
     ],
-    [
-      "ID",
-      "Description",
-      "Transaction Type",
-      "Total Quantity",
-      "Created Date",
-    ],
+    ["ID", "Description", "Transaction Type", "Total Quantity", "Created Date"],
     // [
     //   "Move Order ID",
     //   "Date Received",
@@ -986,16 +1114,15 @@ function Reports() {
       <PageHeaderAdd pageTitle="Reports" removeArchive removeAdd removeSearch />
       <Box className="mixin">
         <Autocomplete
-          options={reportNames}
-          getOptionLabel={(option) => option?.label}
+          options={reportNames.filter((item) => userDetails?.permission?.some((reports) => reports === item.name))}
+          getOptionLabel={(option) => option?.name}
           onChange={(_, value) => {
+            console.log(value)
             setActiveReport(value);
             setActiveArray([]);
             setValue("clientId", null);
             if (value?.value === "SOA-reports") {
               setValue("dateFrom", null);
-            } else {
-              setValue("dateFrom", moment());
             }
           }}
           value={activeReport}
@@ -1019,12 +1146,24 @@ function Reports() {
             activeReport?.value !== "listing-fee-reports" && (
               <CommonFilter
                 filter={onFilter}
+                userTypeFilter={
+                  activeReport?.value === "arcana-mo-reports" ||
+                  (userDetails?.roleName !== "CDO" &&
+                    activeReport?.value === "GetTransferReportExport") ||
+                  activeReport?.value === "MRPRollbackExport" ||
+                  activeReport?.value === "InventoryMovementExport" ||
+                  activeReport?.value === "TransactionHistoricalExport"
+                }
                 typeFilter={activeReport?.value === "GetTransferReportExport"}
                 clusterFilter={userDetails?.roleName !== "CDO" ? true : null}
+                userFilter={
+                  activeReport?.value === "InventoryMovementExport" ||
+                  activeReport?.value === "MRPRollbackExport"
+                }
               />
             )}
           {activeReport?.value === "SOA-reports" ||
-          activeReport?.value === "listing-fee-reports" ? (
+            activeReport?.value === "listing-fee-reports" ? (
             <ControlledAutocomplete
               name="clientId"
               control={control}
@@ -1169,10 +1308,10 @@ function Reports() {
                 activeArray?.data?.length < 1 ||
                 parentIsFetching
               }
-              // disabled={
-              //   // isExportLoading ||
-              //   _.isEqual(dateFrom, dateFromTemp) && _.isEqual(dateTo, dateToTemp)
-              // }
+            // disabled={
+            //   // isExportLoading ||
+            //   _.isEqual(dateFrom, dateFromTemp) && _.isEqual(dateTo, dateToTemp)
+            // }
             >
               <GetApp />
             </SecondaryButton>

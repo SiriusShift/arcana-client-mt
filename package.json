@@ -1,7 +1,7 @@
 {
 	"name": "arcana-client",
 	"private": true,
-	"version": "0.0.0",
+	"version": "1.2.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite --port 5111",
@@ -56,6 +56,7 @@
 		"eslint-plugin-react": "^7.32.2",
 		"eslint-plugin-react-hooks": "^4.6.0",
 		"eslint-plugin-react-refresh": "^0.4.3",
+		"rollup-plugin-visualizer": "^6.0.3",
 		"vite": "^4.4.5"
 	}
 }

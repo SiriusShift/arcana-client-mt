@@ -1,3 +1,5 @@
+import { reportNames } from "../utils/constants";
+
 export const navigationData = [
   {
     id: 1,
@@ -453,6 +455,9 @@ export const navigationData = [
     path: "/reports",
     icon: "Description",
     description: "Viewing and exporting of reports",
+    sub: [
+      ...reportNames
+    ],
   },
   {
     id: 11,

@@ -11,6 +11,8 @@ import useDisclosure from "../../hooks/useDisclosure";
 import PrintInventoryModal from "../../components/modals/PrintInventoryModal";
 import PageHeaderAddTabs from "../../components/PageHeaderAddTabs";
 import { debounce } from "lodash";
+import ViewSamplingModal from "../../components/modals/ViewSamplingModal";
+import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
 
 function SamplingApproval() {
   const navigate = useNavigate();
@@ -21,18 +23,22 @@ function SamplingApproval() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
-  const [dateTo, setDateTo] = useState(moment());
 
   const {
-    isOpen: isPrintOpen,
-    onOpen: onPrintOpen,
-    onClose: onPrintClose,
+    isOpen: isViewOpen,
+    onOpen: onViewOpen,
+    onClose: onViewClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isHistoryOpen,
+    onOpen: onHistoryOpen,
+    onClose: onHistoryClose,
   } = useDisclosure();
 
   const tableHeads = [
     "ID",
-    // "Owner's Name",
+    "Requested by",
     // "Business Name",
     "Description",
     "Total Quantity",
@@ -41,7 +47,7 @@ function SamplingApproval() {
 
   const customOrderKeys = [
     "id",
-    // "clientName",
+    "clientName",
     // "businessName",
     "description",
     "totalQuantity",
@@ -60,16 +66,18 @@ function SamplingApproval() {
       status: "Under review",
     },
     {
-      case: 3,
+      case: 2,
       name: "Released Freebies",
       status: "Released",
     },
     {
-      case: 2,
+      case: 3,
       name: "Rejected Freebies",
       status: "Rejected",
     },
   ];
+
+  console.log(tabs[tabViewing - 1]?.status, tabViewing);
 
   const dateTimeArray = ["transactionDate"];
 
@@ -78,20 +86,9 @@ function SamplingApproval() {
     Search: search,
     Page: page + 1,
     PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     TransactionType: "Sampling",
     Status: tabs[tabViewing - 1]?.status,
   });
-
-  // Functions
-  const handleView = () => {
-    navigate(
-      `${selectedRowData?.id}?dateFrom=${moment(dateFrom).format(
-        "YYYY-MM-DD"
-      )}&dateTo=${moment(dateTo).format("YYYY-MM-DD")}`
-    );
-  };
 
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);
@@ -120,6 +117,21 @@ function SamplingApproval() {
         />
       </Box>
 
+      <ViewSamplingModal
+        open={isViewOpen}
+        inventory
+        status={tabs[tabViewing - 1]?.status}
+        // open={true}
+        approval
+        onClose={onViewClose}
+      />
+
+      <ApprovalHistoryModal
+        open={isHistoryOpen}
+        onClose={onHistoryClose}
+        variant="sampling"
+      />
+
       {isFetching ? (
         <CommonTableSkeleton lowerCompact />
       ) : (
@@ -136,17 +148,10 @@ function SamplingApproval() {
           setPage={setPage}
           count={data?.totalCount}
           dateTimeArray={dateTimeArray}
-          onView={handleView}
-          onPrint={onPrintOpen}
+          onView={tabViewing === 1 && onViewOpen}
+          onHistory={onHistoryOpen}
         />
       )}
-      <PrintInventoryModal
-        data={selectedRowData}
-        type="Sampling"
-        onClose={onPrintClose}
-        copies={0}
-        open={isPrintOpen}
-      />
     </Box>
   );
 }

@@ -52,9 +52,13 @@ const PermittedRoutes = () => {
     permittedSubPath?.includes("/inventory-management/transfer-out") ||
     permittedParentPath?.includes("/inventory-management/return-to-depot") ||
     permittedSubPath?.includes("/inventory-management/return-to-depot") ||
-    permittedParentPath?.includes("/inventory-management/miscellaneous-receipt") ||
+    permittedParentPath?.includes(
+      "/inventory-management/miscellaneous-receipt"
+    ) ||
     permittedSubPath?.includes("/inventory-management/miscellaneous-receipt") ||
-    permittedParentPath?.includes("/inventory-management/miscellaneous-issue") ||
+    permittedParentPath?.includes(
+      "/inventory-management/miscellaneous-issue"
+    ) ||
     permittedSubPath?.includes("/inventory-management/miscellaneous-issue") ||
     permittedParentPath?.includes("/inventory-management/freebies") ||
     permittedSubPath?.includes("/inventory-management/freebies") ||
@@ -63,9 +67,11 @@ const PermittedRoutes = () => {
     permittedParentPath?.includes("/inventory-management/return") ||
     permittedSubPath?.includes("/inventory-management/return") ||
     permittedParentPath?.includes("/inventory-management/callsheet") ||
-    permittedSubPath?.includes("/inventory-management/callsheet") || 
+    permittedSubPath?.includes("/inventory-management/callsheet") ||
     permittedParentPath?.includes("/inventory-management/reason-setup") ||
-    permittedSubPath?.includes("/inventory-management/reason-setup"); 
+    permittedSubPath?.includes("/inventory-management/reason-setup") ||
+    permittedParentPath?.includes("/inventory-management/ending-inventory") ||
+    permittedSubPath?.includes("/inventory-management/ending-inventory");
 
   if (hasParamsPermission) {
     return <MainLayout />;

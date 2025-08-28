@@ -192,6 +192,44 @@ const reportsApi = api
           method: "GET",
           params
         })
+      }),
+      getReturnSamplingReports: builder.query({
+        query: (params) => ({
+          url: "/GetReturnSamplingReport",
+          method: "GET",
+          params
+        })
+      }),
+      getInventoryAdjustmentReports: builder.query({
+        query: (params) => ({
+          url: "/GetInventoryAdjustmentReport",
+          method: "GET",
+          params
+        })
+      }),
+
+      getMiscReceiptReports: builder.query({
+        query: (params) => ({
+          url: "/GetReceiptReport",
+          method: "GET",
+          params
+        })
+      }),
+
+      getMiscIssueReports: builder.query({
+        query: (params) => ({
+          url: "/GetIssueReport",
+          method: "GET",
+          params
+        })
+      }),
+
+      getConsolidatedReports: builder.query({
+        query: (params) => ({
+          url: "ConsolidatedReport",
+          method: "GET",
+          params
+        })
       })
     }),
   });
@@ -219,5 +257,10 @@ export const {
   useGetInventoriablesReportsQuery,
   useGetSalesGTReportsQuery,
   useGetInventoryMovementReportsQuery,
-  useGetInventoryTransactionsHistoryReportsQuery
+  useGetInventoryTransactionsHistoryReportsQuery,
+  useGetReturnSamplingReportsQuery,
+  useGetInventoryAdjustmentReportsQuery,
+  useGetMiscIssueReportsQuery,
+  useGetMiscReceiptReportsQuery,
+  useGetConsolidatedReportsQuery
 } = reportsApi

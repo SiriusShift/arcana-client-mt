@@ -7,7 +7,7 @@ import {
 
 const samplingsApi = api
   .enhanceEndpoints({
-    addTagTypes: ["Sampling", "Samplings", "Items With BBD"],
+    addTagTypes: ["Sampling", "Samplings", "Items With BBD", "SamplingReturn"],
   })
   .injectEndpoints({
     endpoints: (builder) => ({
@@ -54,6 +54,39 @@ const samplingsApi = api
         // Remove this when the backend is ready
         queryFn: dummyGetSamplingById,
       }),
+      patchApproveFreebiesById: builder.mutation({
+        query: ({ moduleName, id }) => ({
+          url: `/ApproveFreebieOrders/${id}`,
+          method: "PATCH",
+          params: moduleName,
+        }),
+        invalidatesTags: ["Samplings"],
+      }),
+      getSamplingReturns: builder.query({
+        query: (params) => ({
+          url: "/GetSamplingReturns",
+          method: "GET",
+          params: params,
+        }),
+        transformResponse: (response) => response.value,
+        providesTags: ["SamplingReturn"],
+      }),
+      postAddReturnFromSampling: builder.mutation({
+        query: (body) => ({
+          url: "/AddReturnFromSampling",
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["SamplingReturn"],
+      }),
+      patchApproveSamplingById: builder.mutation({
+        query: ({ moduleName, id }) => ({
+          url: `/ApproveFreebieOrders/${id}`,
+          method: "PATCH",
+          params: moduleName,
+        }),
+        invalidatesTags: ["Samplings"],
+      }),
     }),
   });
 
@@ -61,4 +94,7 @@ export const {
   useAddSamplingMutation,
   useGetAllSamplingsQuery,
   useGetSamplingByIdQuery,
+  usePatchApproveSamplingByIdMutation,
+  useGetSamplingReturnsQuery,
+  usePostAddReturnFromSamplingMutation,
 } = samplingsApi;

@@ -81,7 +81,9 @@ import FreebieApproval from "../pages/approval/FreebieApproval";
 import SamplingApproval from "../pages/approval/SamplingApproval";
 import ReturnFromSampling from "../pages/inventory-management/ReturnFromSampling";
 import ReturnSamplingForm from "../pages/inventory-management/ReturnFromSampling/ReturnSamplingForm";
-
+import ViewReturnSamplingForm from "../pages/inventory-management/ReturnFromSampling/ViewReturnSamplingForm";
+import EndingInventoryForm from "../pages/inventory-management/EndingInventory/EndingInventoryForm";
+import ViewEndingInventoryForm from "../pages/inventory-management/EndingInventory/ViewEndingInventoryForm";
 
 export const router = createBrowserRouter([
   {
@@ -271,14 +273,14 @@ export const router = createBrowserRouter([
             path: "ending-inventory",
             element: <EndingInventory />,
             children: [
-              // {
-              //   path: "ending-inventory-form",
-              //   element: <EndingInventoryForm />,
-              // },
-              // {
-              //   path: ":id",
-              //   element: <ViewEndingInventory />,
-              // },
+              {
+                path: "ending-inventory-form/:id",
+                element: <EndingInventoryForm />,
+              },
+              {
+                path: ":id",
+                element: <ViewEndingInventoryForm />,
+              }
             ]
           },
           {
@@ -408,6 +410,10 @@ export const router = createBrowserRouter([
               {
                 path: "return-form",
                 element: <ReturnSamplingForm />
+              },
+              {
+                path: ":id",
+                element: <ViewReturnSamplingForm />
               }
             ]
           },

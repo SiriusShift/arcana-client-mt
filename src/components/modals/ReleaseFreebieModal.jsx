@@ -30,6 +30,7 @@ import RegisterRegularForm from "../../pages/customer-registration/prospecting/R
 import { DirectReleaseContext } from "../../context/DirectReleaseContext";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { usePutReleaseFreebieRequestMutation } from "../../features/inventory-management/api/freebiesApi";
+import useSnackbar from "../../hooks/useSnackbar";
 
 function ReleaseFreebieModal({ direct, inventory, ...otherProps }) {
   const { onClose, ...noOnCloseProps } = otherProps;
@@ -39,6 +40,7 @@ function ReleaseFreebieModal({ direct, inventory, ...otherProps }) {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const snackbar = useSnackbar()
 
   const { data: clientData, isFetching: isClientFetching } =
     useGetAllClientsQuery({
@@ -156,6 +158,7 @@ function ReleaseFreebieModal({ direct, inventory, ...otherProps }) {
 
       onClose();
 
+      snackbar({message: "Freebie released succcessfully", variant: "success"})
       setSnackbarMessage("Freebie released successfully");
 
       if (!inventory) {
@@ -268,6 +271,12 @@ function ReleaseFreebieModal({ direct, inventory, ...otherProps }) {
                   }${address?.barangayName ? `${address.barangayName}` : ""}${
                     address?.city ? `, ${address.city}` : ""
                   }${address?.province ? `, ${address.province}` : ""}`}
+                </Typography>
+                <Typography>
+                  <span>Series ID: </span>
+                  {selectedRowData?.freebies
+                    && selectedRowData?.freebies?.[freebiesLength - 1]
+                        ?.seriesId || selectedRowData?.seriesId}
                 </Typography>
               </Box>
               <Box>

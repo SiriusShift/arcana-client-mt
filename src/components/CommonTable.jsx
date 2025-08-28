@@ -1,6 +1,8 @@
 import {
   Box,
+  Button,
   Checkbox,
+  Chip,
   IconButton,
   Paper,
   Table,
@@ -10,6 +12,7 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  TableSortLabel,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -22,7 +25,11 @@ import { setSelectedRow } from "../features/misc/reducers/selectedRowSlice";
 import {
   Attachment,
   Cancel,
+  Check,
   CheckCircle,
+  Filter,
+  FilterAlt,
+  MoreHoriz,
   PriorityHigh,
   Visibility,
 } from "@mui/icons-material";
@@ -46,6 +53,7 @@ function CommonTable({
   onReleaseFreebie,
   onRegularRegister,
   onUpdateFreebies,
+  onUpdate,
   onCancelFreebies,
   onManageApprovers,
   onAddPriceChange,
@@ -114,8 +122,29 @@ function CommonTable({
   valueDisplayOptions = [],
   flexNone,
   nestedProperty = {},
-  border
+  border,
+  sortColumn
 }) {
+  const [order, setOrder] = React.useState("asc"); // 'asc' | 'desc'
+  const [orderBy, setOrderBy] = React.useState(""); // which column is being sorted
+
+  const handleSort = (property) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const sortedData = [...mapData || []].sort((a, b) => {
+    if (orderBy) {
+      const aValue = a[orderBy] ?? "";
+      const bValue = b[orderBy] ?? "";
+      if (aValue < bValue) return order === "asc" ? -1 : 1;
+      if (aValue > bValue) return order === "asc" ? 1 : -1;
+      return 0;
+    }
+    return 0;
+  });
+
   console.log("map", mapData);
 
   const dispatch = useDispatch();
@@ -129,21 +158,21 @@ function CommonTable({
           height: expanded
             ? "calc(100dvh - 220px)"
             : evenLesserCompact
-            ? "calc(100dvh - 262px)"
-            : lesserCompact
-            ? "calc(100dvh - 282px)"
-            : lessCompact
-            ? "calc(100dvh - 290px)"
-            : lowerCompact
-            ? "calc(100dvh - 310px)"
-            : compact
-            ? "calc(100dvh - 330px)"
-            : moreCompact
-            ? "calc(100dvh - 400px)"
-            : mostCompact
-            ? "calc(100dvh - 700px)" // : moreCompact
-            : // ? "calc(100dvh - 354px)"
-              null,
+              ? "calc(100dvh - 262px)"
+              : lesserCompact
+                ? "calc(100dvh - 282px)"
+                : lessCompact
+                  ? "calc(100dvh - 290px)"
+                  : lowerCompact
+                    ? "calc(100dvh - 310px)"
+                    : compact
+                      ? "calc(100dvh - 330px)"
+                      : moreCompact
+                        ? "calc(100dvh - 400px)"
+                        : mostCompact
+                          ? "calc(100dvh - 700px)" // : moreCompact
+                          : // ? "calc(100dvh - 354px)"
+                          null,
         }}
       >
         <img
@@ -163,6 +192,10 @@ function CommonTable({
   var tableHeadsList;
 
   const dataToMapKeys = Object.keys(dataToMap[0]);
+
+  if (sortColumn) {
+    dataToMap = sortedData
+  }
 
   if (tableHeads) {
     tableHeadsList = tableHeads;
@@ -220,21 +253,21 @@ function CommonTable({
           height: expanded
             ? "calc(100dvh - 220px)"
             : evenLesserCompact
-            ? "calc(100dvh - 262px)"
-            : lesserCompact
-            ? "calc(100dvh - 282px)"
-            : lessCompact
-            ? "calc(100dvh - 290px)"
-            : lowerCompact
-            ? "calc(100dvh - 310px)"
-            : compact
-            ? "calc(100dvh - 330px)"
-            : moreCompact
-            ? "calc(100dvh - 400px)"
-            : mostCompact
-            ? "calc(100dvh - 700px)" // : moreCompact
-            : // ? "calc(100dvh - 354px)"
-              null,
+              ? "calc(100dvh - 262px)"
+              : lesserCompact
+                ? "calc(100dvh - 282px)"
+                : lessCompact
+                  ? "calc(100dvh - 290px)"
+                  : lowerCompact
+                    ? "calc(100dvh - 310px)"
+                    : compact
+                      ? "calc(100dvh - 330px)"
+                      : moreCompact
+                        ? "calc(100dvh - 400px)"
+                        : mostCompact
+                          ? "calc(100dvh - 700px)" // : moreCompact
+                          : // ? "calc(100dvh - 354px)"
+                          null,
         }}
       >
         <Table>
@@ -265,20 +298,72 @@ function CommonTable({
                 </TableCell>
               )}
 
-              {tableHeadsList.map((item, i) => (
-                <TableCell
-                  sx={{
-                    position:
-                      (item === "Actions" || item === "SOH") && "sticky",
-                    right: (item === "Actions" || item === "SOH") && 0,
-                    bgcolor:
-                      (item === "Actions" || item === "SOH") && "primary.main",
-                  }}
-                  key={i}
-                >
-                  {item}
-                </TableCell>
-              ))}
+              {tableHeadsList.map((item, i) => {
+                {
+                  const sortCol = sortColumn?.find(col => item === col?.header);
+
+                  console.log(sortCol)
+
+                  if (sortCol) {
+                    return <TableCell
+                      sx={{
+                        position: sortCol?.sticky && "sticky",
+                        right: 0,
+                        bgcolor: "primary.main",
+                        zIndex: 3,
+                      }}
+                      key={i}
+                      sortDirection={orderBy === sortCol?.key ? order : false}
+                    >
+                      <TableSortLabel
+                        active={orderBy === sortCol?.key}
+                        direction={orderBy === sortCol?.key ? order : "asc"}
+                        onClick={() => handleSort(sortCol?.key)}
+                      >
+                        {item}
+                      </TableSortLabel>
+                    </TableCell>
+                  } else {
+                    return <TableCell
+                      sx={{
+                        position:
+                          (item === "Actions") && "sticky",
+                        right: (item === "Actions") && 0,
+                        bgcolor:
+                          (item === "Actions") &&
+                          "primary.main",
+                      }}
+                      key={i}
+                    >
+                      {item}
+                    </TableCell>
+                  }
+
+                }
+                // if (item === "SOH") {
+                //   return (
+                //     <TableCell
+                //       sx={{
+                //         position: "sticky",
+                //         right: 0,
+                //         bgcolor: "primary.main",
+                //         zIndex: 3,
+                //       }}
+                //       key={i}
+                //       sortDirection={orderBy === "soh" ? order : false}
+                //     >
+                //       <TableSortLabel
+                //         active={orderBy === "soh"}
+                //         direction={orderBy === "soh" ? order : "asc"}
+                //         onClick={() => handleSort("soh")}
+                //       >
+                //         {item}
+                //       </TableSortLabel>
+                //     </TableCell>
+                //   );
+                // }
+
+              })}
             </TableRow>
           </TableHead>
 
@@ -416,10 +501,10 @@ function CommonTable({
                       if (keys === "expirationDate") {
                         const nestedValues = item[nestedProperty.key]
                           ? Object.entries(item[nestedProperty.key])
-                              .filter(([key]) =>
-                                nestedProperty.nestedKeys.includes(key)
-                              )
-                              .map(([key, value]) => ({ key, value })) // Store both key (color) and value
+                            .filter(([key]) =>
+                              nestedProperty.nestedKeys.includes(key)
+                            )
+                            .map(([key, value]) => ({ key, value })) // Store both key (color) and value
                           : [];
                         console.log(nestedValues);
 
@@ -487,10 +572,10 @@ function CommonTable({
                       } else {
                         const nestedValues = item[nestedProperty.key]
                           ? Object.entries(item[nestedProperty.key])
-                              .filter(([key]) =>
-                                nestedProperty.nestedKeys.includes(key)
-                              )
-                              .map(([_, value]) => value)
+                            .filter(([key]) =>
+                              nestedProperty.nestedKeys.includes(key)
+                            )
+                            .map(([_, value]) => value)
                           : null;
 
                         return (
@@ -624,6 +709,25 @@ function CommonTable({
                       );
                     }
 
+                    // if (keys === "status") {
+                    //   return (
+                    //     <TableCell key={k}>
+                    //       {item[keys] &&
+                    //         (item[keys] === "Completed" ? (
+                    //           <Chip
+                    //             color="success"
+                    //             icon={<Check />}
+                    //             label={item[keys]}
+                    //           />
+                    //         ) : item[keys] === "Pending" ? (
+                    //           <Chip icon={<MoreHoriz />} label={item[keys]} />
+                    //         ) : (
+                    //           item[keys]
+                    //         ))}
+                    //     </TableCell>
+                    //   );
+                    // }
+
                     if (
                       keys === "createdAt" ||
                       keys === "updatedAt" ||
@@ -670,17 +774,17 @@ function CommonTable({
 
                             {percentageArray && percentageArray.includes(keys)
                               ? (item[keys] * 100)?.toLocaleString(undefined, {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionsDigits: 2,
-                                })
+                                minimumFractionDigits: 2,
+                                maximumFractionsDigits: 2,
+                              })
                               : pesoArray && pesoArray.includes(keys)
-                              ? item[keys]?.toLocaleString(undefined, {
+                                ? item[keys]?.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })
-                              : !item[keys]
-                              ? "N/A"
-                              : item[keys]}
+                                : !item[keys]
+                                  ? "N/A"
+                                  : item[keys]}
 
                             {percentageArray &&
                               percentageArray.includes(keys) &&
@@ -702,25 +806,28 @@ function CommonTable({
                     }
 
                     return (
-                      <TableCell key={k} sx={border &&  { borderRight: "1px solid #BDBDBD77"}}>
+                      <TableCell
+                        key={k}
+                        sx={border && { borderRight: "1px solid #BDBDBD77" }}
+                      >
                         {pesoArray && pesoArray.includes(keys) && "₱"}
                         {/* {keys === "phoneNumber" && "+63"} */}
 
                         {percentageArray && percentageArray.includes(keys)
                           ? (item[keys] * 100)?.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionsDigits: 2,
-                            })
+                            minimumFractionDigits: 2,
+                            maximumFractionsDigits: 2,
+                          })
                           : pesoArray && pesoArray.includes(keys)
-                          ? item[keys]?.toLocaleString(undefined, {
+                            ? item[keys]?.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })
-                          : !item[keys]
-                          ? item[keys] === null
-                            ? "N/A"
-                            : item[keys]
-                          : item[keys]}
+                            : !item[keys]
+                              ? item[keys] === null
+                                ? "N/A"
+                                : item[keys]
+                              : item[keys]}
 
                         {percentageArray &&
                           percentageArray.includes(keys) &&
@@ -750,6 +857,7 @@ function CommonTable({
                           onRegularRegister && onRegularRegister
                         }
                         onUpdateFreebies={onUpdateFreebies && onUpdateFreebies}
+                        onUpdate={onUpdate && onUpdate}
                         onCancelFreebies={onCancelFreebies && onCancelFreebies}
                         onMap={onMap && onMap}
                         onView={onView && onView}

@@ -11,10 +11,12 @@ import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 import { pdf } from "@react-pdf/renderer";
 import TransferOutSlip from "../../../components/page-components/inventory-management/transfer-out/TransferOutSlip";
 import { useGetAllItemsByPriceModeIdQuery } from "../../../features/setup/api/priceModeItemsApi";
+import useValidate from "../../../hooks/useValidate";
 
 function TransferOut() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -60,13 +62,14 @@ function TransferOut() {
     transferItems: itemData.transferItems.map((item, index) => ({
       ...item,
       currentPrice: productData?.priceModeItems[index]?.currentPrice,
-    }))
+    })),
   }));
 
   console.log(data);
 
   const tableHeads = [
     "ID",
+    "Series ID",
     "To",
     "Cluster",
     "Total Quantity",
@@ -76,12 +79,12 @@ function TransferOut() {
 
   const customOrderKeys = [
     "id",
+    "seriesId",
     "transferTo",
     "transferToCluster",
     "totalQuantity",
     "transactionDate",
     ...(tabViewing === 3 ? ["rejectReason"] : []),
-
   ];
 
   const dateTimeArray = ["transactionDate"];
@@ -145,7 +148,12 @@ function TransferOut() {
           setTabViewing={setTabViewing}
           wide
           addTitle="Add Transfer Out"
-          onOpen={handleAdd}
+          onOpen={() => {
+            const error = validateEndingInventory();
+            if (!error) {
+              handleAdd();
+            }
+          }}
         />
 
         <SearchDateRangeMixin
@@ -157,7 +165,7 @@ function TransferOut() {
           dateTo={dateTo}
         />
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable

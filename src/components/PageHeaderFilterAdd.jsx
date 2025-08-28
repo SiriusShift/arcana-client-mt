@@ -11,6 +11,8 @@ import "../assets/styles/common.styles.scss";
 import SecondaryButton from "./SecondaryButton";
 import { debounce } from "../utils/CustomFunctions";
 import { Add } from "@mui/icons-material";
+import { useGetAllUsersQuery } from "../features/user-management/api/userAccountApi";
+import { useGetAllUserRolesQuery } from "../features/user-management/api/userRoleApi";
 
 function PageHeaderFilterAdd({
   onOpen,
@@ -25,10 +27,34 @@ function PageHeaderFilterAdd({
   choiceLabel,
   choiceValue,
   setFilter,
+  setUser,
 }) {
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);
   }, 200);
+
+  const { data: roleData, isFetching: isRolesFetching } =
+    useGetAllUserRolesQuery({
+      Page: 1,
+      PageSize: 1000,
+      Status: true,
+    });
+
+  const cdoRoleId = roleData?.userRoles?.find(
+    (role) =>
+      role.roleName === "CDO" ||
+      role.roleName?.toLowerCase() === "Chief Distribution Officer"
+  )?.id;
+
+  const { data: userData, isFetching: userDataFetching } = useGetAllUsersQuery({
+    UserRoleId: cdoRoleId,
+    Page: 1,
+    PageSize: 1000,
+    Status: true,
+    isMarketing: true,
+  });
+
+  console.log(userData);
 
   return (
     <Box sx={{ padding: "1px" }}>
@@ -66,7 +92,7 @@ function PageHeaderFilterAdd({
               ))}
             </Select>
           )}
-
+          
           {!removeArchive && (
             <>
               <Checkbox

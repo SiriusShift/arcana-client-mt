@@ -1,4 +1,4 @@
-import { Box, TextField } from "@mui/material";
+import { Autocomplete, Box, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import CommonTable from "../../components/CommonTable";
@@ -72,14 +72,17 @@ function Cluster() {
 
   //RTK Query
   const [postCluster, { isLoading: isAddLoading }] = usePostClusterMutation();
-  const { data, isFetching, error } = useGetAllClustersQuery({
-    Search: search,
-    Status: status,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-  }, {
-    refetchOnMountOrArgChange: true,
-  });
+  const { data, isFetching, error } = useGetAllClustersQuery(
+    {
+      Search: search,
+      Status: status,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
   const [putCluster, { isLoading: isUpdateLoading }] = usePutClusterMutation();
   const [patchClusterStatus] = usePatchClusterStatusMutation();
 
@@ -163,7 +166,7 @@ function Cluster() {
 
   return (
     <>
-      {error && <SessionExpired/>}
+      {error && <SessionExpired />}
       <Box className="commonPageLayout">
         <PageHeaderAdd
           pageTitle={
@@ -210,6 +213,18 @@ function Cluster() {
             size="small"
             autoComplete="off"
             {...register("cluster")}
+            helperText={errors?.cluster?.message}
+            error={errors?.cluster}
+          />
+          <Autocomplete
+            label="Type"
+            size="small"
+            options={["Marketing", "CDO"]}
+            autoComplete="off"
+            {...register("type")}
+            renderInput={(params) => (
+              <TextField {...params} size="small" label="Type" />
+            )}
             helperText={errors?.cluster?.message}
             error={errors?.cluster}
           />

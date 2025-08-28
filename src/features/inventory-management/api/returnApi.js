@@ -7,7 +7,7 @@ import {
 import { update } from "lodash";
 
 const returnApi = api
-  .enhanceEndpoints({ addTagTypes: ["Return", "Returns", "Items With BBD"] })
+  .enhanceEndpoints({ addTagTypes: ["Returns", "Items With BBD"] })
   .injectEndpoints({
     endpoints: (builder) => ({
       returnItems: builder.mutation({
@@ -16,7 +16,7 @@ const returnApi = api
           method: "POST",
           body,
         }),
-        invalidatesTags: ["Return", "Returns", "Items With BBD"],
+        invalidatesTags: ["Returns", "Items With BBD"],
 
         // This is a dummy implementation of the request
         // Remove this when the backend is ready
@@ -28,7 +28,7 @@ const returnApi = api
           method: "POST",
           body,
         }),
-        invalidatesTags: ["Return", "Returns", "Items With BBD"],
+        invalidatesTags: ["Returns", "Items With BBD"],
       }),
 
       noReplaceItems: builder.mutation({
@@ -37,7 +37,7 @@ const returnApi = api
           method: "POST",
           body,
         }),
-        invalidatesTags: ["Return", "Returns", "Items With BBD"],
+        invalidatesTags: ["Returns", "Items With BBD"],
       }),
 
       getAllReturns: builder.query({
@@ -62,7 +62,7 @@ const returnApi = api
           method: "PUT",
           body: returnItems, // Pass only `returnItems` as the request body
         }),
-        invalidatesTags: ["Return", "Returns", "Items With BBD"],
+        invalidatesTags: ["Returns", "Items With BBD"],
       }),
 
       getReturnById: builder.query({

@@ -76,7 +76,7 @@ function ListingFee() {
     Status: true,
     ListingFeeStatus: listingFeeStatus,
     PageNumber: page + 1,
-    ClusterId: clusterId?.value || "",
+    ClusterId: clusterId?.id || "",
     PageSize: rowsPerPage,
   }, {
     refetchOnMountOrArgChange: true

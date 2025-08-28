@@ -13,10 +13,13 @@ import moment from "moment";
 import { useGetAllTransferOutsQuery } from "../../../features/inventory-management/api/transferOutApi";
 import { useGetReturnToDepotQuery } from "../../../features/inventory-management/api/transferOutApi";
 import PrintInventoryModal from "../../../components/modals/PrintInventoryModal";
+import useValidate from "../../../hooks/useValidate";
 
 function Outright() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
+
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
   const [search, setSearch] = useState("");
@@ -47,6 +50,7 @@ function Outright() {
   // Common Table Props
   const tableHeads = [
     "ID",
+    "Series ID",
     "CDO",
     "Transaction Date",
     "Transfer Type",
@@ -56,6 +60,7 @@ function Outright() {
 
   const customOrderKeys = [
     "id",
+    "seriesId",
     "createdBy",
     "transactionDate",
     "transferType",
@@ -92,7 +97,14 @@ function Outright() {
             addTitle="Return"
             removeArchive
             removeSearch
-            onOpen={handleAdd}
+            onOpen={() => {
+              const error = validateEndingInventory();
+              console.log(error)
+              if (!error) {
+                console.log("test")
+                handleAdd();
+              }
+            }}
             setSearch={setSearch}
           />
           <SearchDateRangeMixin
@@ -103,7 +115,7 @@ function Outright() {
             dateTo={dateTo}
           />
 
-          {isFetching ? (
+          {isFetching || isNotificationFetching ? (
             <CommonTableSkeleton lowerCompact />
           ) : (
             <CommonTable
@@ -124,7 +136,13 @@ function Outright() {
             />
           )}
         </Box>
-        <PrintInventoryModal type={selectedRowData?.transferType} open={isPrintOpen} onClose={onPrintClose} data={selectedRowData} copies={3}/>
+        <PrintInventoryModal
+          type={selectedRowData?.transferType}
+          open={isPrintOpen}
+          onClose={onPrintClose}
+          data={selectedRowData}
+          copies={3}
+        />
       </>
     );
   }

@@ -18,8 +18,10 @@ import { useLazyGetListingFeeApprovalHistoriesByIdQuery } from "../../features/l
 import { useLazyGetExpensesApprovalHistoryByIdQuery } from "../../features/otherExpenses/api/otherExpensesRegApi";
 import ApprovalHistorySkeleton from "../skeletons/ApprovalHistorySkeleton";
 import { useLazyGetSpecialDiscountApprovalHistoryByIdQuery } from "../../features/special-discount/api/specialDiscountApi";
+import { useLazyGetApprovalFreebieHistoryQuery } from "../../features/inventory-management/api/freebiesApi";
 
 function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
+  console.log(variant);
   const { onClose, open } = otherProps;
   // const [steps, setSteps] = useState([
   //   { label: "REQUESTED", icon: <EventNote /> },
@@ -56,6 +58,17 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
     },
   ] = useLazyGetSpecialDiscountApprovalHistoryByIdQuery();
 
+  const [
+    triggerFreebie,
+    { data: freebieApprovalData, isFetching: isFreebieApprovalFetching },
+  ] = useLazyGetApprovalFreebieHistoryQuery();
+
+  const [
+    triggerSampling,
+    { data: samplingApprovalData, isFetching: isSamplingApprovalFetching },
+  ] = useLazyGetApprovalFreebieHistoryQuery();
+  console.log(freebieApprovalData);
+
   //Combining approval and update histories
   const combinedClientHistories = [
     ...(clientApprovalData?.approvalHistories || []),
@@ -76,6 +89,18 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
     ...(specialDiscountApprovalData?.approvalHistories || []),
     ...(specialDiscountApprovalData?.updateHistories || []),
   ];
+
+  const combinedFreebieHistories = [
+    ...(freebieApprovalData?.approvalHistories || []),
+    ...(freebieApprovalData?.updateHistories || []),
+  ];
+
+  const combinedSamplingHistories = [
+    ...(samplingApprovalData?.approvalHistories || []),
+    ...(samplingApprovalData?.updateHistories || []),
+  ];
+
+  console.log(combinedFreebieHistories);
 
   //Sorting
   combinedClientHistories.sort(
@@ -102,11 +127,27 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
       new Date(a.createdAt || a.updatedAt)
   );
 
+  combinedFreebieHistories.sort(
+    (a, b) =>
+      new Date(b.createdAt || b.updatedAt) -
+      new Date(a.createdAt || a.updatedAt)
+  );
+
+  combinedSamplingHistories.sort(
+    (a, b) =>
+      new Date(b.createdAt || b.updatedAt) -
+      new Date(a.createdAt || a.updatedAt)
+  );
+
+  console.log(combinedFreebieHistories);
+
   //Functions
   const handleActiveStep = (recentData) => {
     const level = recentData?.level || 1;
+    console.log("level", level);
     const status = recentData?.status;
     const updatedAtExists = !!recentData?.updatedAt;
+    console.log(updatedAtExists);
     const approverCount = selectedRowData?.approvers?.length || 0;
 
     if (!recentData) {
@@ -142,6 +183,23 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
           { id: selectedRowData?.id },
           { preferCacheValue: true }
         );
+      } else if (variant === "freebies") {
+        console.log("test");
+        triggerFreebie(
+          {
+            id: selectedRowData?.id,
+            moduleName: { ModuleName: "Freebie Approval" },
+          },
+          { preferCacheValue: true }
+        );
+      } else if (variant === "sampling") {
+        triggerSampling(
+          {
+            id: selectedRowData?.id,
+            moduleName: { ModuleName: "Sampling Approval" },
+          },
+          { preferCacheValue: true }
+        );
       }
     } else if (!open) {
       setIsLoading(true);
@@ -153,6 +211,8 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
     triggerListingFee,
     triggerOtherExpenses,
     triggerSpecialDiscount,
+    triggerFreebie,
+    triggerSampling,
     variant,
   ]);
 
@@ -189,7 +249,9 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
         isClientApprovalFetching ||
         isListingFeeApprovalFetching ||
         isOtherExpensesApprovalFetching ||
-        isSpecialDiscountApprovalFetching ? (
+        isSpecialDiscountApprovalFetching ||
+        isFreebieApprovalFetching ||
+        isSamplingApprovalFetching ? (
           <ApprovalHistorySkeleton />
         ) : (
           <Box className="approvalHistoryModal__content">
@@ -205,6 +267,10 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
                     ? handleActiveStep(combinedOtherExpensesHistories?.[0])
                     : variant === "specialDiscount"
                     ? handleActiveStep(combinedSpecialDiscountHistories?.[0])
+                    : variant === "freebies"
+                    ? handleActiveStep(combinedFreebieHistories?.[0])
+                    : variant === "sampling"
+                    ? handleActiveStep(combinedSamplingHistories?.[0])
                     : -1
                 }
               >
@@ -218,26 +284,33 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
                   ? otherExpensesApprovalData
                   : variant === "specialDiscount"
                   ? specialDiscountApprovalData
+                  : variant === "freebies"
+                  ? freebieApprovalData
+                  : variant === "sampling"
+                  ? samplingApprovalData
                   : clientApprovalData
-                )?.approvers?.map((item, index) => (
-                  <Step key={index}>
-                    <StepLabel
-                    // StepIconComponent={() => (
-                    //   <Cancel
-                    //     sx={{
-                    //       color: "error.main",
-                    //       // width: "1.7rem",
-                    //       // height: "1.7rem",
-                    //     }}
-                    //   />
-                    // )}
-                    // StepIconComponent={() => item.icon}
-                    >
-                      {item.name}
-                      {/* {formatOrdinalPrefix(item.level)} Approval */}
-                    </StepLabel>
-                  </Step>
-                ))}
+                )?.approvers?.map((item, index) => {
+                  console.log(item);
+                  return (
+                    <Step key={index}>
+                      <StepLabel
+                      // StepIconComponent={() => (
+                      //   <Cancel
+                      //     sx={{
+                      //       color: "error.main",
+                      //       // width: "1.7rem",
+                      //       // height: "1.7rem",
+                      //     }}
+                      //   />
+                      // )}
+                      // StepIconComponent={() => item.icon}
+                      >
+                        {item.name}
+                        {/* {formatOrdinalPrefix(item.level)} Approval */}
+                      </StepLabel>
+                    </Step>
+                  );
+                })}
               </Stepper>
             </Box>
 
@@ -594,6 +667,174 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
                     </Step>
                   ))}
 
+                {variant === "freebies" &&
+                  combinedFreebieHistories.map((history, index) => (
+                    <Step key={index} active expanded>
+                      <StepLabel
+                        StepIconComponent={() =>
+                          history?.status === "Rejected" ? (
+                            <Cancel sx={{ color: "error.main" }} />
+                          ) : history?.status === "Approved" ? (
+                            <CheckCircle sx={{ color: "success.main" }} />
+                          ) : (
+                            // <Circle sx={{ color: "gray" }} />
+                            <Circle sx={{ color: "primary.main" }} />
+                          )
+                        }
+                        sx={{ position: "relative" }}
+                      >
+                        <Box
+                          style={{
+                            position: "absolute",
+                            left: "-170px",
+                          }}
+                        >
+                          <span
+                            style={{ fontWeight: "600", marginRight: "5px" }}
+                          >
+                            {console.log(moment(
+                              history?.createdAt || history?.updatedAt
+                            ).format("MMMM D H:mm a"))}
+                            {moment(
+                              history?.createdAt || history?.updatedAt
+                            ).format("MMMM D")}
+                          </span>
+
+                          <span>
+                            {moment(
+                              history?.createdAt || history?.updatedAt
+                            ).format("H:mm a")}
+                          </span>
+                        </Box>
+
+                        <span
+                          style={{
+                            fontWeight: "700",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {!history?.status
+                            ? "REQUESTED"
+                            : `${history?.status} - ${formatOrdinalPrefix(
+                                history?.level
+                              )} Approval`}
+                        </span>
+                      </StepLabel>
+
+                      {!history?.status && (
+                        <StepContent>
+                          <Typography fontSize="14px">
+                            Name:{" "}
+                            <span style={{ fontWeight: "500" }}>
+                              {selectedRowData?.requestor}
+                            </span>
+                          </Typography>
+                        </StepContent>
+                      )}
+
+                      {!!history?.createdAt && (
+                        <StepContent>
+                          <Typography fontSize="14px">
+                            Name:{" "}
+                            <span style={{ fontWeight: "500" }}>
+                              {history?.approver}
+                            </span>
+                          </Typography>
+                          {history?.reason && (
+                            <Typography fontSize="14px">
+                              Remarks:{" "}
+                              <span style={{ fontWeight: "500" }}>
+                                {history?.reason}
+                              </span>
+                            </Typography>
+                          )}
+                        </StepContent>
+                      )}
+                    </Step>
+                  ))}
+                {variant === "sampling" &&
+                  combinedSamplingHistories.map((history, index) => (
+                    <Step key={index} active expanded>
+                      <StepLabel
+                        StepIconComponent={() =>
+                          history?.status === "Rejected" ? (
+                            <Cancel sx={{ color: "error.main" }} />
+                          ) : history?.status === "Approved" ? (
+                            <CheckCircle sx={{ color: "success.main" }} />
+                          ) : (
+                            // <Circle sx={{ color: "gray" }} />
+                            <Circle sx={{ color: "primary.main" }} />
+                          )
+                        }
+                        sx={{ position: "relative" }}
+                      >
+                        <Box
+                          style={{
+                            position: "absolute",
+                            left: "-170px",
+                          }}
+                        >
+                          <span
+                            style={{ fontWeight: "600", marginRight: "5px" }}
+                          >
+                            {moment(
+                              history?.createdAt || history?.updatedAt
+                            ).format("MMMM D")}
+                          </span>
+
+                          <span>
+                            {moment(
+                              history?.createdAt || history?.updatedAt
+                            ).format("H:mm a")}
+                          </span>
+                        </Box>
+
+                        <span
+                          style={{
+                            fontWeight: "700",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {!history?.status
+                            ? "REQUESTED"
+                            : `${history?.status} - ${formatOrdinalPrefix(
+                                history?.level
+                              )} Approval`}
+                        </span>
+                      </StepLabel>
+
+                      {!history?.status && (
+                        <StepContent>
+                          <Typography fontSize="14px">
+                            Name:{" "}
+                            <span style={{ fontWeight: "500" }}>
+                              {selectedRowData?.requestor}
+                            </span>
+                          </Typography>
+                        </StepContent>
+                      )}
+
+                      {!!history?.createdAt && (
+                        <StepContent>
+                          <Typography fontSize="14px">
+                            Name:{" "}
+                            <span style={{ fontWeight: "500" }}>
+                              {history?.approver}
+                            </span>
+                          </Typography>
+                          {history?.reason && (
+                            <Typography fontSize="14px">
+                              Remarks:{" "}
+                              <span style={{ fontWeight: "500" }}>
+                                {history?.reason}
+                              </span>
+                            </Typography>
+                          )}
+                        </StepContent>
+                      )}
+                    </Step>
+                  ))}
+
                 <Step active expanded>
                   <StepLabel
                     StepIconComponent={() => (
@@ -608,11 +849,11 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
                       }}
                     >
                       <span style={{ fontWeight: "600", marginRight: "5px" }}>
-                        {moment(selectedRowData?.createdAt).format("MMMM D")}
+                        {moment(selectedRowData?.createdAt || selectedRowData?.createdDate).format("MMMM D")}
                       </span>
 
                       <span>
-                        {moment(selectedRowData?.createdAt).format("H:mm a")}
+                        {moment(selectedRowData?.createdAt || selectedRowData?.createdDate).format("H:mm a")}
                       </span>
                     </Box>
 

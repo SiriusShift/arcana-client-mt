@@ -11,10 +11,13 @@ import { useGetAllSamplingsQuery } from "../../../features/inventory-management/
 import useDisclosure from "../../../hooks/useDisclosure";
 import PrintInventoryModal from "../../../components/modals/PrintInventoryModal";
 import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
+import ApprovalHistoryModal from "../../../components/modals/ApprovalHistoryModal";
+import useValidate from "../../../hooks/useValidate";
 
 function Sampling() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const [tabViewing, setTabViewing] = useState(1);
@@ -28,6 +31,12 @@ function Sampling() {
     isOpen: isPrintOpen,
     onOpen: onPrintOpen,
     onClose: onPrintClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isHistoryOpen,
+    onOpen: onHistoryOpen,
+    onClose: onHistoryClose,
   } = useDisclosure();
 
   const tableHeads = [
@@ -60,12 +69,12 @@ function Sampling() {
       status: "Under review",
     },
     {
-      case: 3,
+      case: 2,
       name: "Released Freebies",
       status: "Released",
     },
     {
-      case: 2,
+      case: 3,
       name: "Rejected Freebies",
       status: "Rejected",
     },
@@ -94,6 +103,8 @@ function Sampling() {
   };
 
   const handleAdd = () => {
+    const error = validateEndingInventory();
+    if (error) return;
     navigate("sampling-form");
   };
 
@@ -119,7 +130,7 @@ function Sampling() {
           dateTo={dateTo}
         />
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
@@ -136,7 +147,8 @@ function Sampling() {
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
             onView={handleView}
-            onPrint={onPrintOpen}
+            onPrint={tabViewing === 2 && onPrintOpen}
+            onHistory={onHistoryOpen}
           />
         )}
         <PrintInventoryModal
@@ -145,6 +157,12 @@ function Sampling() {
           onClose={onPrintClose}
           copies={0}
           open={isPrintOpen}
+        />
+
+        <ApprovalHistoryModal
+          open={isHistoryOpen}
+          onClose={onHistoryClose}
+          variant="sampling"
         />
       </Box>
     );

@@ -86,6 +86,13 @@ const clearingApi = api
         providesTags: ["Overview"],
         transformResponse: (response) => response.value,
       }),
+      // exportRemittance: builder.mutation({
+      //   query: (params) => ({
+      //     url: "/clearing-transaction/export",
+      //     method: "GET",
+      //     params
+      //   })
+      // })
     }),
   });
 
@@ -96,4 +103,5 @@ export const {
   useReturnClearingTransactionMutation,
   useGetAllClearingTransactionQuery,
   useLazyGetPaymentOverviewQuery,
+  // useExportRemittanceMutation
 } = clearingApi;

@@ -1,6 +1,6 @@
 import { api } from "../../api";
 
-const notificationApi = api
+export const notificationApi = api
   .enhanceEndpoints({ addTagTypes: ["Notification"] })
   .injectEndpoints({
     endpoints: (builder) => ({

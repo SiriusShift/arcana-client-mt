@@ -7,14 +7,16 @@ import { useGetInventoryMrpQuery } from "../../features/inventory-management/api
 import PageHeaderFilterAdd from "../../components/PageHeaderFilterAdd";
 import { clusterOptions } from "../../utils/constants";
 import { useSelector } from "react-redux";
+import { useGetAllUsersQuery } from "../../features/user-management/api/userAccountApi";
+import { useGetAllUserRolesQuery } from "../../features/user-management/api/userRoleApi";
+import { useGetAllClustersQuery } from "../../features/setup/api/clusterApi";
 
 function InventoryMRP() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
   const userDetails = useSelector((state) => state.login.userDetails);
-  const [clusterId, setClusterId] = useState((userDetails?.roleName === "CDO" || userDetails?.roleName === "Marketing") ? " " : 1);
-
+  const [clusterId, setClusterId] = useState();
 
   // RTK Query
   const { data, isFetching } = useGetInventoryMrpQuery(
@@ -22,12 +24,30 @@ function InventoryMRP() {
       PageNumber: page + 1,
       PageSize: rowsPerPage,
       Search: search,
+      // UserId: user,
       ClusterId: clusterId,
     },
     { refetchOnMountOrArgChange: true }
   );
 
-  console.log(data);
+  const { data: clusterData, isFetching: clusterFetching, error } = useGetAllClustersQuery(
+    {
+      Status: true,
+      PageNumber: 1,
+      PageSize: 10000,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  let sortedData
+
+  const sortSOH = () => {
+    sortedData = data?.sort((a, b) => a.soh - b.soh)
+  }
+
+  console.log(sortedData);
 
   const tableHeads = [
     "Item Code",
@@ -36,7 +56,8 @@ function InventoryMRP() {
     "Receiving (+)",
     "Transfer In (+)",
     "Transfer Out (-)",
-    "Return To Depot (-)",
+    "Return to Depot (-)",
+    "Return from Sampling (+)",
     "Freebies (-)",
     "Sampling (-)",
     "Replaced (-)",
@@ -50,6 +71,18 @@ function InventoryMRP() {
     "SOH",
   ];
 
+  const sortColumn = [
+    {
+      header: "SOH",
+      key: "soh",
+      sticky: true
+    },
+    {
+      header: "Item Code",
+      key: "itemCode"
+    }
+  ]
+
   const customOrderKeys = [
     "itemCode",
     "itemDescription",
@@ -58,6 +91,7 @@ function InventoryMRP() {
     "transferIn",
     "transferOut",
     "returnToDepot",
+    "returnSampling",
     "freebie",
     "sampling",
     "replace",
@@ -82,13 +116,19 @@ function InventoryMRP() {
         pageTitle="Inventory MRP"
         removeArchive
         removeAdd
-        removeAllItem
-        removeFilter={userDetails?.roleName.includes("CDO") || userDetails?.roleName.includes("Marketing") || userDetails?.roleName.includes("Depot") ? true : false}
-        filterChoices={clusterOptions}
+        removeFilter={
+          userDetails?.roleName.includes("CDO") ||
+            userDetails?.roleName.includes("Marketing") ||
+            userDetails?.roleName.includes("Depot")
+            ? true
+            : false
+        }
+        filterChoices={clusterData?.cluster}
         setSearch={setSearch}
         setFilter={setClusterId}
-        choiceLabel="label"
-        choiceValue="value"
+        // removeUser
+        choiceLabel="cluster"
+        choiceValue="id"
       />
 
       {isFetching ? (
@@ -106,6 +146,7 @@ function InventoryMRP() {
           rowsPerPage={rowsPerPage}
           setRowsPerPage={setRowsPerPage}
           page={page}
+          sortColumn={sortColumn}
           setPage={setPage}
         />
       )}

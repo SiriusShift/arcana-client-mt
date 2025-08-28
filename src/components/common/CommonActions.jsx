@@ -50,6 +50,7 @@ function CommonActions({
   onReleaseFreebie,
   onRegularRegister,
   onUpdateFreebies,
+  onUpdate,
   onCancelFreebies,
   onManageApprovers,
   onPrintTTA,
@@ -96,7 +97,7 @@ function CommonActions({
       onTag();
     } else if (action === "map") {
       onMap();
-    }else if(action === "checkout"){
+    } else if (action === "checkout") {
       onCheckout();
     } else if (action === "requestFreebie") {
       onFreebie();
@@ -106,6 +107,8 @@ function CommonActions({
       onRegularRegister();
     } else if (action === "updateFreebies") {
       onUpdateFreebies();
+    } else if (action === "update") {
+      onUpdate();
     } else if (action === "cancelFreebies") {
       onCancelFreebies();
     } else if (action === "viewMore") {
@@ -120,9 +123,9 @@ function CommonActions({
       onPrintTTA();
     } else if (action === "printFreebies") {
       onPrintFreebies();
-    } else if (action === "print"){
-      onPrint(); 
-    }else if (action === "addPriceChange") {
+    } else if (action === "print") {
+      onPrint();
+    } else if (action === "addPriceChange") {
       onAddPriceChange();
     } else if (action === "delete") {
       onDelete();
@@ -158,13 +161,13 @@ function CommonActions({
       onPay();
     } else if (action === "inspect") {
       onInspect();
-    } else if (action === "listingHistories"){
+    } else if (action === "listingHistories") {
       onListingHistories();
-    } else if (action === "download"){
+    } else if (action === "download") {
       onDownload();
-    } else if (action === "replace"){
+    } else if (action === "replace") {
       onReplace();
-    } else if(action === "noReplace"){
+    } else if (action === "noReplace") {
       onNoReplace();
     }
 
@@ -225,22 +228,20 @@ function CommonActions({
           </MenuItem>
         )}
 
-        {
-          onCheckout && (
-            <MenuItem
-              className="actionsMenuItem"
-              onClick={() => {
-                handleAction("checkout");
-              }}
-              disabled={
-                disableActions ? disableActions?.includes("checkout") : false
-              }
-            >
-              <Logout />
-              Checkout
-            </MenuItem>
-          )
-        }
+        {onCheckout && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("checkout");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("checkout") : false
+            }
+          >
+            <Logout />
+            Checkout
+          </MenuItem>
+        )}
 
         {onInspect && (
           <MenuItem
@@ -498,6 +499,22 @@ function CommonActions({
             Update Freebies
           </MenuItem>
         )}
+        {onUpdate && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("update");
+            }}
+            disabled={
+              disableActions
+                ? disableActions?.includes("update")
+                : false
+            }
+          >
+            <Update />
+            Update
+          </MenuItem>
+        )}
 
         {onCancelFreebies && (
           <MenuItem
@@ -616,13 +633,14 @@ function CommonActions({
             onClick={() => {
               handleAction("print");
             }}
-            disabled={disableActions ? disableActions?.includes("print") : false}
+            disabled={
+              disableActions ? disableActions?.includes("print") : false
+            }
           >
             <Print />
             Print
           </MenuItem>
         )}
-        
 
         {onAttach && (
           <MenuItem

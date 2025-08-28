@@ -169,7 +169,7 @@ const useItemsWithBbd = ({
           item: item,
           itemDescription: item.itemDescription,
           uom: item.uom,
-          price: item.amount,
+          // price: item.amount,
           received: watch("moveOrder")?.moveItems.find(
             (moveItem) => moveItem.itemCode === item.itemCode).actualQuantity,
           quantity: item.quantity,
@@ -179,7 +179,24 @@ const useItemsWithBbd = ({
         }));
 
         setValue("items", newItems);
+      } else if (watch("type") === "Return Sampling") {
+        console.log("data outright", data, items);
+        const newItems = items.map((item) => ({
+          item: item,
+          itemDescription: item.itemDescription,
+          uom: item.uom,
+          // price: item.amount,
+          released: watch("freebieOrderId")?.freebieOrderItem.find(
+            (moveItem) => moveItem.itemCode === item.itemCode).quantity,
+          quantity: item.quantity,
+          // bbd: item.bbd,
+          reason: item.reason,
+          remarks: data?.find((reason) => reason.id === item.reasonId),
+        }));
+
+        setValue("items", newItems);
       } else {
+        console.log("test!")
         const newItems = items.map((item) => ({
           item: item,
           itemDescription: item.itemDescription,
@@ -194,7 +211,7 @@ const useItemsWithBbd = ({
         setValue("items", newItems);
       }
     }
-  }, [items, productData, setValue, dirtyFields, itemsFieldName]);
+  }, [JSON.stringify(items), productData, setValue, dirtyFields, itemsFieldName]);
 
   return {
     bbdCache,

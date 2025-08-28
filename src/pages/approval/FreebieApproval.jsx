@@ -8,8 +8,12 @@ import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import moment from "moment";
 import PageHeaderAddTabs from "../../components/PageHeaderAddTabs";
 import { useGetAllFreebieRequestsQuery } from "../../features/inventory-management/api/freebiesApi";
+import { useGetUsersWithAdjustmentsQuery } from "../../features/inventory-management/api/endingInventoryApi";
+
 import useDisclosure from "../../hooks/useDisclosure";
 import ViewFreebieModal from "../../components/modals/ViewFreebieModal";
+import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
+
 import { debounce } from "lodash";
 
 function FreebieApproval() {
@@ -25,23 +29,17 @@ function FreebieApproval() {
   } = useDisclosure();
 
   const {
-    isOpen: isFreebieReleaseOpen,
-    onOpen: onFreebieReleaseOpen,
-    onClose: onFreebieReleaseClose,
-  } = useDisclosure();
-
-  const {
-    isOpen: isFreebieCancelOpen,
-    onOpen: onFreebieCancelOpen,
-    onClose: onFreebieCancelClose,
+    isOpen: isHistoryOpen,
+    onOpen: onHistoryOpen,
+    onClose: onHistoryClose,
   } = useDisclosure();
 
   const [tabViewing, setTabViewing] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState("");
-  const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
-  const [dateTo, setDateTo] = useState(moment());
+  // const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
+  // const [dateTo, setDateTo] = useState(moment());
 
   const tableHeads = [
     "ID",
@@ -91,10 +89,10 @@ function FreebieApproval() {
     Search: search,
     Page: page + 1,
     PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     TransactionType: "Freebie",
     Status: tabs[tabViewing - 1]?.status,
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   // Functions
@@ -142,6 +140,12 @@ function FreebieApproval() {
         onClose={onViewClose}
       />
 
+      <ApprovalHistoryModal
+        open={isHistoryOpen}
+        onClose={onHistoryClose}
+        variant="freebies"
+      />
+
       {isFetching ? (
         <CommonTableSkeleton lowerCompact />
       ) : (
@@ -162,7 +166,8 @@ function FreebieApproval() {
           setPage={setPage}
           count={data?.totalCount}
           dateTimeArray={dateTimeArray}
-          onView={tabViewing === 1 && onViewOpen}
+          onView={onViewOpen}
+          onHistory={onHistoryOpen}
         />
       )}
     </Box>

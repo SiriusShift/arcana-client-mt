@@ -12,10 +12,13 @@ import useDisclosure from "../../../hooks/useDisclosure";
 import PrintFreebiesModal from "../../../components/modals/PrintFreebiesModal";
 import ReleaseFreebieModal from "../../../components/modals/ReleaseFreebieModal";
 import CancelFreebiesModal from "../../../components/modals/CancelFreebiesModal";
+import ApprovalHistoryModal from "../../../components/modals/ApprovalHistoryModal";
+import useValidate from "../../../hooks/useValidate";
 
 function Freebies() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -37,6 +40,12 @@ function Freebies() {
     onClose: onFreebieCancelClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isHistoryOpen,
+    onOpen: onHistoryOpen,
+    onClose: onHistoryClose,
+  } = useDisclosure();
+
   const [tabViewing, setTabViewing] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
@@ -50,6 +59,8 @@ function Freebies() {
     "Business Name",
     "Total Quantity",
     "Transaction Date",
+        ...(tabViewing === 4 ? ["Reason"] : []),
+
   ];
 
   const customOrderKeys = [
@@ -58,6 +69,8 @@ function Freebies() {
     "businessName",
     "totalQuantity",
     "createdDate",
+    ...(tabViewing === 4 ? ["cancellationReason"] : []),
+
   ];
 
   const nestedProperty = {
@@ -84,7 +97,7 @@ function Freebies() {
       status: "Released",
     },
     {
-      case: 3,
+      case: 4,
       name: "Rejected Freebies",
       status: "Rejected",
     },
@@ -99,6 +112,8 @@ function Freebies() {
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
     TransactionType: "Freebie",
     Status: tabs[tabViewing - 1]?.status,
+  }, {
+    refetchOnMountOrArgChange: true
   });
 
   // Functions
@@ -111,6 +126,8 @@ function Freebies() {
   };
 
   const handleAdd = () => {
+    // const error = validateEndingInventory();
+    // if (error) return;
     navigate("freebies-form");
   };
 
@@ -124,7 +141,11 @@ function Freebies() {
           setTabViewing={setTabViewing}
           // wide
           addTitle="Add Freebie Request"
-          onOpen={handleAdd}
+          onOpen={() => {
+            const error = validateEndingInventory();
+            if(error) return
+            handleAdd();
+          }}
         />
 
         <SearchDateRangeMixin
@@ -152,10 +173,17 @@ function Freebies() {
         <CancelFreebiesModal
           open={isFreebieCancelOpen}
           onClose={onFreebieCancelClose}
+          reason={"Cancelled"}
           type="Freebie"
         />
 
-        {isFetching ? (
+        <ApprovalHistoryModal
+          open={isHistoryOpen}
+          onClose={onHistoryClose}
+          variant="freebies"
+        />
+
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
@@ -175,6 +203,7 @@ function Freebies() {
             count={data?.totalCount}
             dateTimeArray={dateTimeArray}
             onView={handleView}
+            onHistory={onHistoryOpen}
           />
         )}
       </Box>

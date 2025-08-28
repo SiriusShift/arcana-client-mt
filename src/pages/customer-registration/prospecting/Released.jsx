@@ -13,6 +13,7 @@ import PrintFreebiesModal from "../../../components/modals/PrintFreebiesModal";
 import CommonDialog from "../../../components/common/CommonDialog";
 import useSnackbar from "../../../hooks/useSnackbar";
 import SearchVoidMixin from "../../../components/mixins/SearchVoidMixin";
+import useValidate from "../../../hooks/useValidate";
 
 function Released() {
   const [search, setSearch] = useState("");
@@ -26,6 +27,8 @@ function Released() {
   const [voidConfirmBox, setVoidConfirmBox] = useState("");
 
   const dispatch = useDispatch();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
+
   const badges = useSelector((state) => state.badge.value);
   const selectedStoreType = useSelector(
     (state) => state.selectedStoreType.value
@@ -92,7 +95,7 @@ function Released() {
   //Misc Functions
 
   const onFilter = async ({ clusterId, businessType }) => {
-    console.log(businessType)
+    console.log(businessType);
     try {
       setClusterId(clusterId);
       setBusinessType(businessType);
@@ -143,7 +146,7 @@ function Released() {
           sx={{ mb: "15px", mt: "-5px" }}
         /> */}
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
@@ -156,7 +159,13 @@ function Released() {
             onRegularRegister={
               registrationStatus !== "Voided" && onRegisterOpen
             }
-            onVoid={registrationStatus !== "Voided" && onVoidOpen}
+            onVoid={() => {
+              if (registrationStatus !== "Voided") {
+                const error = validateEndingInventory();
+                if(error) return
+                onVoidOpen();
+              }
+            }}
             setRowsPerPage={setRowsPerPage}
             count={count}
             lowerCompact

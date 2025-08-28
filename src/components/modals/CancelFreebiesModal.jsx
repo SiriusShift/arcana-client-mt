@@ -14,16 +14,19 @@ import DangerButton from "../DangerButton";
 import useDisclosure from "../../hooks/useDisclosure";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
-import { prospectApi, usePutRejectFreebiesMutation } from "../../features/prospect/api/prospectApi";
+import {
+  prospectApi,
+  usePutRejectFreebiesMutation,
+} from "../../features/prospect/api/prospectApi";
 import SuccessSnackbar from "../SuccessSnackbar";
 import ErrorSnackbar from "../ErrorSnackbar";
 import CommonDialog from "../common/CommonDialog";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import { freebiesApi } from "../../features/inventory-management/api/freebiesApi";
 
-function CancelFreebiesModal({ type, ...otherProps }) {
+function CancelFreebiesModal({ type, reason, ...otherProps }) {
   const { onClose } = otherProps;
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -69,17 +72,19 @@ function CancelFreebiesModal({ type, ...otherProps }) {
   //Submit API Functions
   const handleCancelSubmit = async () => {
     const freebiesLength = selectedRowData?.freebies?.length;
-    console.log("test")
+    console.log("test");
 
     try {
       await putRejectFreebies({
-        freebieRequestId: selectedRowData?.freebies?.[freebiesLength - 1]?.freebieRequestId || selectedRowData?.id,
+        freebieRequestId:
+          selectedRowData?.freebies?.[freebiesLength - 1]?.freebieRequestId ||
+          selectedRowData?.id,
         freebieType: type,
         // params: {
         //   freebieId:
         //     selectedRowData?.freebies?.[freebiesLength - 1]?.freebieRequestId,
         // },
-        // reason: reason,
+        reason: reason,
       }).unwrap();
 
       dispatch(freebiesApi.util.invalidateTags(["Freebies"]));
@@ -133,12 +138,21 @@ function CancelFreebiesModal({ type, ...otherProps }) {
                     address?.city ? `, ${address.city}` : ""
                   }${address?.province ? `, ${address.province}` : ""}`}
                 </Typography>
+                <Typography>
+                  <span>Series ID: </span>
+                  {(selectedRowData?.freebies &&
+                    selectedRowData?.freebies?.[freebiesLength - 1]
+                      ?.seriesId || selectedRowData?.seriesId) ||
+                    ""}
+                </Typography>
               </Box>
               <Box>
                 <Typography>
                   <span>Transaction no:</span>{" "}
                   {selectedRowData?.freebies?.[freebiesLength - 1]
-                    ?.transactionNumber || ""}
+                    ?.transactionNumber ||
+                    selectedRowData?.id ||
+                    ""}
                 </Typography>
                 <Typography>
                   <span>Date:</span> {moment().format("MMM DD, YYYY")}

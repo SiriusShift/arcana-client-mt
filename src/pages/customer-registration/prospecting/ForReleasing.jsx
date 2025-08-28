@@ -34,6 +34,7 @@ import { PatternFormat } from "react-number-format";
 import { setSelectedRow } from "../../../features/misc/reducers/selectedRowSlice";
 import DangerButton from "../../../components/DangerButton";
 import SecondaryButton from "../../../components/SecondaryButton";
+import useValidate from "../../../hooks/useValidate";
 
 function ForReleasing() {
   const [drawerMode, setDrawerMode] = useState("");
@@ -48,6 +49,8 @@ function ForReleasing() {
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useDispatch();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
+
   const selectedStoreType = useSelector(
     (state) => state.selectedStoreType.value
   );
@@ -273,7 +276,7 @@ function ForReleasing() {
           setStatus={setStatus}
           setSearch={setSearch}
         /> */}
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable
@@ -281,9 +284,21 @@ function ForReleasing() {
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             onView={handleEditOpen}
-            onCancelFreebies={onFreebieCancelOpen}
-            onUpdateFreebies={onFreebieFormOpen}
-            onReleaseFreebie={onFreebieReleaseOpen}
+            onCancelFreebies={() => {
+              const error = validateEndingInventory();
+              if (error) return;
+              onFreebieCancelOpen();
+            }}
+            onUpdateFreebies={() => {
+              const error = validateEndingInventory();
+              if (error) return;
+              onFreebieFormOpen();
+            }}
+            onReleaseFreebie={() => {
+              const error = validateEndingInventory();
+              if (error) return;
+              onFreebieReleaseOpen();
+            }}
             page={page}
             setPage={setPage}
             rowsPerPage={rowsPerPage}

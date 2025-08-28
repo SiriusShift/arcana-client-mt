@@ -9,6 +9,7 @@ import ControlledAutocomplete from "../../../ControlledAutocomplete";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
+import { useGetUsersWithAdjustmentsQuery } from "../../../../features/inventory-management/api/endingInventoryApi";
 
 const MiscIssueFormDetailsSkeleton = () => {
   return (
@@ -38,6 +39,13 @@ const MiscIssueFormDetails = ({ details, isFetching }) => {
       PageSize: 1000,
       Status: true,
     });
+
+  const { data: usersWithAdjustments, isFetching: adjustmentFetching } =
+    useGetUsersWithAdjustmentsQuery();
+
+  const filteredUsers = usersWithAdjustments?.filter(
+    (item) => item?.pendingAdjustments === 0
+  );
 
   const cdoRoleId = roleData?.userRoles?.find(
     (role) =>
@@ -70,7 +78,7 @@ const MiscIssueFormDetails = ({ details, isFetching }) => {
           Page: 1,
           PageSize: 1000,
           Status: true,
-          // isDepot: true,
+          isMarketing: true,
         },
         {
           preferCacheValue: true,
@@ -93,6 +101,15 @@ const MiscIssueFormDetails = ({ details, isFetching }) => {
     }
   }, [details, setValue, cdoData, data]);
 
+  console.log(
+    cdoData?.users?.filter((item) =>
+      usersWithAdjustments?.find(
+        (user) =>
+          user?.pendingAdjustments === 0 && item?.fullname === user?.name
+      )
+    )
+  );
+
   if (isFetching || isCdoFetching || isRolesFetching) {
     return <MiscIssueFormDetailsSkeleton />;
   }
@@ -108,7 +125,13 @@ const MiscIssueFormDetails = ({ details, isFetching }) => {
         <ControlledAutocomplete
           name="to"
           control={control}
-          options={cdoData?.users || []}
+          options={
+            filteredUsers?.length > 0
+              ? cdoData?.users?.filter((item) =>
+                  filteredUsers?.some((user) => user.name === item.fullname)
+                )
+              : cdoData?.users
+          }
           getOptionLabel={(option) => option?.fullname || ""}
           filterOptions={(options) => {
             const filtered = options.filter(

@@ -38,13 +38,13 @@ function PrintFreebiesModal({ inventory, ...otherProps }) {
       PageSize: 2000,
     });
 
-  console.log(clientData)
+  console.log(clientData);
 
   const address = selectedRowData?.ownersAddress
     ? selectedRowData?.ownersAddress
     : clientData?.regularClient?.find(
-      (client) => selectedRowData?.clientId === client.id
-    )?.businessAddress || {};
+        (client) => selectedRowData?.clientId === client.id
+      )?.businessAddress || {};
 
   console.log(address);
 
@@ -93,7 +93,9 @@ function PrintFreebiesModal({ inventory, ...otherProps }) {
               </Box>
               <Box className="releaseFreebieModal__header">
                 <Typography className="releaseFreebieModal__header__title">
-                  {inventory ? "Freebie Issuance Form" :"Move Order Slip"} (Freebie)
+                  {inventory
+                    ? "Freebie Issuance Form"
+                    : "Move Order Slip (Freebie)"}
                 </Typography>
                 <Box className="releaseFreebieModal__header__customerDetails">
                   <Box>
@@ -118,12 +120,21 @@ function PrintFreebiesModal({ inventory, ...otherProps }) {
                         address?.province ? `, ${address.province}` : ""
                       }`}
                     </Typography>
+                    <Typography>
+                      <span>Series ID: </span>
+                      {(selectedRowData?.freebies ?
+                        selectedRowData?.freebies?.[freebiesLength - 1]
+                          ?.seriesId : selectedRowData?.seriesId) ||
+                        ""}{" "}
+                    </Typography>
                   </Box>
                   <Box>
                     <Typography>
                       <span>Transaction No:</span>{" "}
-                      {selectedRowData?.freebies ? selectedRowData?.freebies?.[freebiesLength - 1]
-                        ?.transactionNumber : selectedRowData?.id || "N/A"}
+                      {selectedRowData?.freebies
+                        ? selectedRowData?.freebies?.[freebiesLength - 1]
+                            ?.transactionNumber
+                        : selectedRowData?.id || "N/A"}
                     </Typography>
                     <Typography>
                       <span>Date:</span> {moment().format("MMM D, YYYY")}
@@ -223,7 +234,10 @@ function PrintFreebiesModal({ inventory, ...otherProps }) {
                           // onClick={onCanvasOpen}
                         />
                       </Box>
-                      <Typography>{selectedRowData?.ownersName || selectedRowData?.clientName}</Typography>
+                      <Typography>
+                        {selectedRowData?.ownersName ||
+                          selectedRowData?.clientName}
+                      </Typography>
                     </Box>
                   </Box>
                   {/* <Box className="releaseFreebieModal__footer__attachments__photo">

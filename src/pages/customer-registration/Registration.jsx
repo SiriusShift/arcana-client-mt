@@ -28,6 +28,7 @@ import SecondaryButton from "../../components/SecondaryButton";
 // import { useLazyGetConsolidateApprovedClientsExportQuery } from "../../features/registration/api/registrationApi";
 import * as _ from "lodash";
 import { decryptString } from "../../utils/CustomFunctions";
+import useValidate from "../../hooks/useValidate";
 
 function DirectRegistration() {
   const [search, setSearch] = useState("");
@@ -48,6 +49,8 @@ function DirectRegistration() {
   const [voidConfirmBox, setVoidConfirmBox] = useState("");
 
   const snackbar = useSnackbar();
+  const { validateEndingInventory } = useValidate();
+
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const userDetails = useSelector((state) => state.login.userDetails);
 
@@ -214,6 +217,8 @@ function DirectRegistration() {
   const disableActions = ["printFreebies"];
 
   const handleEditOpen = () => {
+    const error = validateEndingInventory();
+    if(error) return
     setEditMode(true);
     onRegisterOpen();
   };
@@ -329,7 +334,11 @@ function DirectRegistration() {
           tabsList={registrationNavigation}
           tabViewing={tabViewing}
           setTabViewing={setTabViewing}
-          onOpen={onRegisterOpen}
+          onOpen={() => {
+            const error = validateEndingInventory();
+            if(error) return
+            onRegisterOpen();
+          }}
           addTitle="Register Direct"
           isNotificationFetching={isNotificationFetching}
           removeAdd={isApprovedOnly}
@@ -395,7 +404,7 @@ function DirectRegistration() {
           </Box>
         </SearchVoidFilterMixin>
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable

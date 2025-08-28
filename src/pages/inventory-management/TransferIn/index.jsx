@@ -8,10 +8,12 @@ import { useSelector } from "react-redux";
 import { useGetAllTransferInsQuery } from "../../../features/inventory-management/api/transferInApi";
 import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
 import moment from "moment";
+import useValidate from "../../../hooks/useValidate";
 
 function TransferIn() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { validateEndingInventory, isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -22,25 +24,29 @@ function TransferIn() {
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
 
-  const { data, isFetching } = useGetAllTransferInsQuery({
-    Search: search,
-    PageNumber: page + 1,
-    PageSize: rowsPerPage,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    Status:
-      tabViewing === 1
-        ? "For Receiving"
-        : tabViewing === 2
-        ? "Received"
-        : "Rejected",
-    TransferType: "In",
-  }, {
-    refetchOnMountOrArgChange: true
-  });
+  const { data, isFetching } = useGetAllTransferInsQuery(
+    {
+      Search: search,
+      PageNumber: page + 1,
+      PageSize: rowsPerPage,
+      DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+      DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+      Status:
+        tabViewing === 1
+          ? "For Receiving"
+          : tabViewing === 2
+          ? "Received"
+          : "Rejected",
+      TransferType: "In",
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const tableHeads = [
     "ID",
+    "Series ID",
     "From",
     "Cluster",
     "Total Quantity",
@@ -50,6 +56,7 @@ function TransferIn() {
 
   const customOrderKeys = [
     "id",
+    "seriesId",
     "createdBy",
     "createdByCluster",
     "totalQuantity",
@@ -79,6 +86,8 @@ function TransferIn() {
 
   // Functions
   const handleView = () => {
+    const error = validateEndingInventory();
+    if (error) return
     if (tabViewing === 1) {
       navigate(
         `transfer-in-form/${selectedRowData?.id}?dateFrom=${moment(
@@ -114,7 +123,7 @@ function TransferIn() {
           dateTo={dateTo}
         />
 
-        {isFetching ? (
+        {isFetching || isNotificationFetching? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable

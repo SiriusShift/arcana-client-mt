@@ -9,6 +9,7 @@ const OutrightItems = ({ items = [],  isFetching }) => {
       withReason
       withBbd
       isTransferOut
+      ourite
       items={items}
       isFetching={isFetching}
     />

@@ -9,6 +9,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
 import { useGetReasonsQuery } from "../../../../features/inventory-management/api/reasonApi";
+import { useGetUsersWithAdjustmentsQuery } from "../../../../features/inventory-management/api/endingInventoryApi";
 
 const MiscReceiptFormDetailsSkeleton = () => {
   return (
@@ -31,7 +32,7 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
   const { control, setValue, watch } = useFormContext();
   const viewOnly = !!details;
 
-  console.log(watch())
+  console.log(watch());
   //Get reasons
   const {
     data,
@@ -46,7 +47,7 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
     }
   );
 
-  console.log(data)
+  console.log(data);
 
   // Get role CDO ID
   const { data: roleData, isFetching: isRolesFetching } =
@@ -55,6 +56,17 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
       PageSize: 1000,
       Status: true,
     });
+
+  const { data: usersWithAdjustments, isFetching: adjustmentFetching } =
+    useGetUsersWithAdjustmentsQuery();
+
+  console.log(usersWithAdjustments)
+
+  const filteredUsers = usersWithAdjustments?.filter(
+    (item) => item?.pendingAdjustments === 0
+  );
+
+  console.log(filteredUsers?.length)
 
   const cdoRoleId = roleData?.userRoles?.find(
     (role) =>
@@ -73,6 +85,7 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
           Page: 1,
           PageSize: 1000,
           Status: true,
+          isMarketing: true,
           // isDepot: true,
         },
         {
@@ -103,7 +116,12 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
   return (
     <Stack
       direction="row"
-      style={{ display: "flex", justifyContent: "space-between", paddingTop: 5, overflow: "auto" }}
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        paddingTop: 5,
+        overflow: "auto",
+      }}
       spacing={1.5}
     >
       <div style={{ display: "flex", gap: 10 }}>
@@ -111,7 +129,11 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
         <ControlledAutocomplete
           name="to"
           control={control}
-          options={cdoData?.users || []}
+          options={
+            filteredUsers?.length > 0 ? cdoData?.users?.filter((item) =>
+              filteredUsers?.some((user) => user.name === item.fullname)
+            ) : cdoData?.users
+          }
           getOptionLabel={(option) => option?.fullname || ""}
           filterOptions={(options) => {
             const filtered = options.filter(
@@ -172,7 +194,6 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
         )}
         disabled={viewOnly}
       />
-  
     </Stack>
   );
 };

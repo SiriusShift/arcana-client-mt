@@ -56,6 +56,8 @@ const UserDrawer = ({ editMode, ...props }) => {
     limit: 50,
   });
 
+  console.log(watch())
+
   return (
     <CommonDrawer
       {...props}

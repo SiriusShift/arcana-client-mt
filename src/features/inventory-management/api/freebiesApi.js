@@ -39,12 +39,12 @@ export const freebiesApi = api
       }),
 
       putReleaseFreebieRequest: builder.mutation({
-        query: ({id, body}) => ({
+        query: ({ id, body }) => ({
           url: `/ReleaseFreebieOrders/${id}`,
           method: "PUT",
           body: body,
         }),
-        invalidatesTags: ["Freebies"]
+        invalidatesTags: ["Freebies"],
       }),
 
       getFreebieRequestById: builder.query({
@@ -61,6 +61,22 @@ export const freebiesApi = api
         // Remove this when the backend is ready
         queryFn: dummyGetFreebieRequestById,
       }),
+      patchApproveById: builder.mutation({
+        query: ({moduleName, id}) => ({
+          url: `/ApproveFreebieOrders/${id}`,
+          method: "PATCH",
+          params: moduleName
+        }),
+        invalidatesTags: ["Freebies"],
+      }),
+      getApprovalFreebieHistory: builder.query({
+        query: ({moduleName, id}) => ({
+          url: `/ApprovalFreebieHistory/${id}`,
+          method: "GET",
+          params: moduleName
+        }),
+        transformResponse: (response) => response.value
+      })
     }),
   });
 
@@ -68,5 +84,7 @@ export const {
   useRequestFreebiesMutation,
   useGetAllFreebieRequestsQuery,
   useGetFreebieRequestByIdQuery,
-  usePutReleaseFreebieRequestMutation
+  usePutReleaseFreebieRequestMutation,
+  usePatchApproveByIdMutation,
+  useLazyGetApprovalFreebieHistoryQuery
 } = freebiesApi;

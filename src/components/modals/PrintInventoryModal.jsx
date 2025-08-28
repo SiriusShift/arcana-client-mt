@@ -27,7 +27,7 @@ import React from "react";
 const PrintingComponent = ({ type, data, fullname, style }) => {
   return (
     <Box className="releaseInventoryModal">
-      <Box sx={{ display: "flex", justifyContent: "space-between", ...style }} >
+      <Box sx={{ display: "flex", justifyContent: "space-between", ...style }}>
         <Box className="releaseInventoryModal__logo">
           <img src={rdfLogo} alt="RDF Logo" />
           <Typography>
@@ -41,23 +41,33 @@ const PrintingComponent = ({ type, data, fullname, style }) => {
               </IconButton>
             </Box> */}
       </Box>
-      <Box className="releaseInventoryModal__header"> 
+      <Box className="releaseInventoryModal__header">
         <Typography className="releaseInventoryModal__header__title">
-          {type === "Sampling" ? "Sampling Insuance Form" : `Move Order Slip (${type})`}
+          {type === "Sampling"
+            ? "Sampling Insuance Form"
+            : `Move Order Slip (${type})`}
         </Typography>
         {type === "Sampling" ? (
-          <Box className="releaseInventoryModal__header__customerDetails">
-            <Box>
-              <Typography>
-                <span>Description:</span> {data?.description}
-              </Typography>
+          <>
+            <Box className="releaseInventoryModal__header__customerDetails">
+              <Box>
+                <Typography>
+                  <span>Description:</span> {data?.description}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography>
+                  <span>Date:</span> {moment().format("MMM D, YYYY")}
+                </Typography>
+              </Box>
             </Box>
             <Box>
               <Typography>
-                <span>Date:</span> {moment().format("MMM D, YYYY")}
+                <span>Series ID:</span>{" "}
+                {data?.seriesId}
               </Typography>
             </Box>
-          </Box>
+          </>
         ) : (
           <Box className="releaseInventoryModal__header__customerDetails">
             <Box>
@@ -251,11 +261,7 @@ function PrintInventoryModal({ data, type, copies = 1, ...otherProps }) {
             ))}
           </Box>
         </div>
-        <PrintingComponent
-          type={type}
-          data={data}
-          fullname={fullname}
-        />
+        <PrintingComponent type={type} data={data} fullname={fullname} />
 
         <Box className="releaseInventoryModal__actionsEnd">
           {/* <DangerButton onClick={onCancelConfirmOpen}>Close</DangerButton> */}

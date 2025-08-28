@@ -117,8 +117,21 @@ const ReturnToDepotFormDetails = ({ details, isFetching, moveOrder }) => {
       <ControlledAutocomplete
         name="type"
         control={control}
-        options={returnToDepot.filter((item, index) => userDetails?.roleName === "CDO" ? item.value !== "ReturnSampling" : userDetails?.roleName === "Marketing" ? item.value === "ReturnSampling" : item) || []}
+        options={returnToDepot || []}
         getOptionLabel={(option) => option?.name || ""}
+        onChange={(_, value) => {
+          setValue("items", [
+            {
+              item: null,
+              bbd: null,
+              received: null,
+              quantity: null,
+              remarks: null,
+              reason: "",
+            },
+          ]);
+          return value
+        }}
         isOptionEqualToValue={(option, value) => option.id === value.id}
         renderInput={(params) => (
           <TextField

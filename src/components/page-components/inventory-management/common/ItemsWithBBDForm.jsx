@@ -25,7 +25,7 @@ import {
   useGetInventoryMrpQuery,
 } from "../../../../features/inventory-management/api/inventoryMrpApi";
 import { useGetReasonsQuery } from "../../../../features/inventory-management/api/reasonApi";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 const ItemsWithBBDForm = ({
   items = [],
@@ -64,12 +64,12 @@ const ItemsWithBBDForm = ({
     errors,
   } = useItemsWithBbd({ items });
 
-  console.log(errors);
+  console.log(watch());
 
   console.log(watchItems);
 
   useEffect(() => {
-    if (!items) {
+    if (!items && watch("type")?.value === "Outright") {
       setValue("items", [
         {
           item: null,
@@ -77,6 +77,17 @@ const ItemsWithBBDForm = ({
           uom: "",
           quantity: null,
           bbd: null,
+          reason: "",
+          remarks: null,
+        },
+      ]);
+    } else if (!items && watch("type")?.value === "Return Sampling") {
+      setValue("items", [
+        {
+          item: null,
+          itemDescription: "",
+          uom: "",
+          quantity: null,
           reason: "",
           remarks: null,
         },
@@ -91,7 +102,7 @@ const ItemsWithBBDForm = ({
         Page: 1,
         PageSize: 1000,
         PriceModeId: 1,
-        ...(watch("to")?.id && miscIssue && { UserId: watch("to")?.id }),
+        ...(watch("to")?.id && miscIssue && { ClusterId: watch("to")?.clusterId }),
       },
       {
         refetchOnMountOrArgChange: true,
@@ -192,10 +203,12 @@ const ItemsWithBBDForm = ({
                       misc
                         ? products
                         : watch("type")?.value === "Outright"
-                        ? watch("moveOrder")?.moveItems.filter(
+                          ? watch("moveOrder")?.moveItems.filter(
                             (item) => item?.actualQuantity > 0
                           ) || []
-                        : productData?.priceModeItems || []
+                          : watch("type") === "Return Sampling"
+                            ? watch("freebieOrderId")?.freebieOrderItem || []
+                            : productData?.priceModeItems || []
                     }
                     getOptionLabel={(option) => option?.itemCode || ""}
                     getOptionDisabled={(option) => {
@@ -203,9 +216,12 @@ const ItemsWithBBDForm = ({
                       const selectedItems = watchItems || []; // Watch all items
 
                       // Extract the itemCodes of the selected items, excluding the current row's itemCode
-                      const selectedCodes = selectedItems
-                        ?.filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
-                        ?.map((item) => item?.item?.itemCode);
+                      const selectedCodes =
+                        !ourite
+                          ? selectedItems
+                            ?.filter((_, idx) => idx !== index) // Exclude the current row to allow reselecting the same option
+                            ?.map((item) => item?.item?.itemCode)
+                          : selectedItems;
 
                       // Disable the option if its itemCode is already selected in other rows
                       return selectedCodes?.includes(option?.itemCode);
@@ -253,6 +269,10 @@ const ItemsWithBBDForm = ({
                             (item) => item?.itemCode === value?.itemCode
                           )?.currentPrice
                         );
+                      }
+                      {
+                        watch("type") === "Return Sampling" &&
+                          setValue(`items[${index}].released`, value?.quantity);
                       }
                       setValue(`items[${index}].uom`, value?.uom);
                       setValue(`items[${index}].bbd`, null);
@@ -412,7 +432,7 @@ const ItemsWithBBDForm = ({
                             inputRef={ref}
                             sx={{ width: "200px" }}
                             disabled={
-                              viewOnly || !watchItems?.[index]?.item || ourite
+                              viewOnly || !watchItems?.[index]?.item
                             }
                             renderInput={(params) => (
                               <TextField
@@ -456,6 +476,30 @@ const ItemsWithBBDForm = ({
                     />
                   )}
 
+                  {watch("type") === "Return Sampling" && (
+                    <Controller
+                      control={control}
+                      name={`items[${index}].released`}
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
+                        <NumericFormat
+                          label="Released"
+                          size="small"
+                          onBlur={onBlur}
+                          value={value ?? ""}
+                          inputRef={ref}
+                          sx={{ maxWidth: "120px" }}
+                          disabled
+                          customInput={TextField}
+                          thousandSeparator
+                          helperText={errors?.items?.[index]?.released?.message}
+                          error={!!errors?.items?.[index]?.released}
+                          allowLeadingZeros={false}
+                          allowNegative={false}
+                        />
+                      )}
+                    />
+                  )}
+
                   <Stack gap={0.6} alignItems="center">
                     <Controller
                       control={control}
@@ -485,22 +529,36 @@ const ItemsWithBBDForm = ({
 
                             const selectedItem = miscIssue
                               ? productData?.priceModeItems?.find(
-                                  (item) =>
-                                    item.itemCode ===
-                                    watchItems[index]?.item?.itemCode
-                                )
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.item?.itemCode
+                              )
                               : mrp?.mo?.find(
-                                  (item) =>
-                                    item.itemCode ===
-                                    watchItems[index]?.item?.itemCode
-                                );
-                            console.log(selectedItem);
+                                (item) =>
+                                  item.itemCode ===
+                                  watchItems[index]?.item?.itemCode
+                              );
 
-                            console.log(selectedItem);
+                            console.log(index)
+                            const totalQuantity =
+                              watchItems
+                                .filter(
+                                  (item, i) => {
+                                    console.log(i, index)
+                                    return (item?.item?.itemCode ===
+                                      selectedItem?.itemCode) && (i !== index)
+                                  }
+                                )
+                                .reduce((acc, curr) => acc + curr?.quantity, 0)
+
+                            console.log(totalQuantity)
+                            const tempQuantity = Number(totalQuantity) + floatValue;
+
 
                             const availableQty = miscIssue
                               ? selectedItem?.availQuantity
                               : selectedItem?.reserve;
+                            console.log(tempQuantity > availableQty, tempQuantity, availableQty);
 
                             if (
                               floatValue != null &&
@@ -514,13 +572,31 @@ const ItemsWithBBDForm = ({
                               });
                               return false;
                             } else if (
+                              ourite &&
+                              tempQuantity > availableQty
+                            ) {
+                              snackbar({
+                                message: `Quantity should not exceed available quantity (${availableQty})`,
+                                variant: "warning",
+                              });
+                              return false
+                            } else if (
                               watch("type")?.value === "Outright" &&
                               floatValue > watch("items")[index]?.received
                             ) {
                               snackbar({
-                                message: `Quantity should not exceed received quantity (${
-                                  watch("items")[index]?.received
-                                })`,
+                                message: `Quantity should not exceed received quantity (${watch("items")[index]?.received
+                                  })`,
+                                variant: "warning",
+                              });
+                              return false;
+                            } else if (
+                              watch("type") === "Return Sampling" &&
+                              floatValue > watch("items")[index]?.released
+                            ) {
+                              snackbar({
+                                message: `Quantity should not exceed released quantity (${watch("items")[index]?.released
+                                  })`,
                                 variant: "warning",
                               });
                               return false;
@@ -536,41 +612,39 @@ const ItemsWithBBDForm = ({
                     {!viewOnly && !misc && (
                       <Typography
                         variant="caption"
-                        color={`${
-                          !watchItems[index]?.item?.itemCode
-                            ? "grey"
-                            : miscIssue
+                        color={`${!watchItems[index]?.item?.itemCode
+                          ? "grey"
+                          : miscIssue
                             ? productData?.priceModeItems?.find(
-                                (item) =>
-                                  item.itemCode ===
-                                  watchItems[index]?.item?.itemCode
-                              )?.availQuantity > 5
+                              (item) =>
+                                item.itemCode ===
+                                watchItems[index]?.item?.itemCode
+                            )?.availQuantity > 5
                               ? "success.main"
                               : "error.main"
                             : mrp?.mo?.find(
-                                (item) =>
-                                  item.itemCode ===
-                                  watchItems[index]?.item?.itemCode
-                              )?.reserve > 5
-                            ? "success.main"
-                            : "error.main"
-                        }`}
+                              (item) =>
+                                item.itemCode ===
+                                watchItems[index]?.item?.itemCode
+                            )?.reserve > 5
+                              ? "success.main"
+                              : "error.main"
+                          }`}
                         lineHeight="0.5"
                       >
                         {watchItems[index]?.item?.itemCode
-                          ? `Available: ${
-                              miscIssue
-                                ? productData?.priceModeItems?.find(
-                                    (item) =>
-                                      item.itemCode ===
-                                      watchItems[index]?.item?.itemCode
-                                  )?.availQuantity
-                                : mrp?.mo?.find(
-                                    (item) =>
-                                      item.itemCode ===
-                                      watchItems[index]?.item?.itemCode
-                                  )?.reserve ?? "NONE"
-                            }`
+                          ? `Available: ${miscIssue
+                            ? productData?.priceModeItems?.find(
+                              (item) =>
+                                item.itemCode ===
+                                watchItems[index]?.item?.itemCode
+                            )?.availQuantity
+                            : mrp?.mo?.find(
+                              (item) =>
+                                item.itemCode ===
+                                watchItems[index]?.item?.itemCode
+                            )?.reserve ?? "NONE"
+                          }`
                           : "Select BBD first"}
                       </Typography>
                     )}
@@ -616,7 +690,7 @@ const ItemsWithBBDForm = ({
                     <IconButton
                       color="error"
                       onClick={() => handleRemove(index)}
-                      disabled={watch("type")?.value === "Outright"}
+                    // disabled={watch("type")?.value === "Outright"}
                     >
                       <RemoveCircleOutline />
                     </IconButton>
@@ -626,9 +700,9 @@ const ItemsWithBBDForm = ({
 
               {!viewOnly &&
                 watchItems?.length !==
-                  (misc
-                    ? products?.length
-                    : productData?.priceModeItems?.length) && (
+                (misc
+                  ? products?.length
+                  : watch("type") === "Return Sampling" ? watch("freebieOrderId")?.freebieOrderItem : productData?.priceModeItems?.length) && (
                   <SecondaryButton
                     endIcon={<Add />}
                     sx={{ width: "fit-content", alignSelf: "end" }}

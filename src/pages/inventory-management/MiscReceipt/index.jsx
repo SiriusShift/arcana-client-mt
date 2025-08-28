@@ -15,7 +15,6 @@ function MiscReceipt() {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState(moment().startOf("month"));
   const [dateTo, setDateTo] = useState(moment());
@@ -23,20 +22,23 @@ function MiscReceipt() {
   const [page, setPage] = useState(0);
 
   // RTK Query
-  const { data, isFetching } = useGetAllReceivedOrdersQuery({
-    Search: search,
-    PageNumber: page + 1,
-    IsMiscellaneousIn: true,
-    DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
-    DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
-    PageSize: rowsPerPage,
-  }, {refetchOnMountOrArgChange: true});
+  const { data, isFetching } = useGetAllReceivedOrdersQuery(
+    {
+      Search: search,
+      PageNumber: page + 1,
+      IsMiscellaneousIn: true,
+      DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
+      DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
+      PageSize: rowsPerPage,
+    },
+    { refetchOnMountOrArgChange: true }
+  );
 
   // Common Table Props
   const tableHeads = [
     "ID",
     // "CDO",
-    // "Cluster",
+    "Cluster",
     // "CDO Name",
     "Date Received",
   ];
@@ -44,7 +46,7 @@ function MiscReceipt() {
   const customOrderKeys = [
     "misInId",
     // "cdoName",
-    // "cluster",
+    "cluster",
     "dateReceived",
   ];
 

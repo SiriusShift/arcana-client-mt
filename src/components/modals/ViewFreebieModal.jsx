@@ -17,7 +17,7 @@ import { Close } from "@mui/icons-material";
 import DangerButton from "../DangerButton";
 import CommonDialog from "../common/CommonDialog";
 import useDisclosure from "../../hooks/useDisclosure";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   usePutApproveListingFeeMutation,
   usePutRejectListingFeeMutation,
@@ -26,6 +26,12 @@ import useSnackbar from "../../hooks/useSnackbar";
 import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import SecondaryButton from "../SecondaryButton";
+import {
+  freebiesApi,
+  usePatchApproveByIdMutation,
+} from "../../features/inventory-management/api/freebiesApi";
+import { usePutRejectFreebiesMutation } from "../../features/prospect/api/prospectApi";
+import { useGetUsersWithAdjustmentsQuery } from "../../features/inventory-management/api/endingInventoryApi";
 
 function ViewFreebieModal({
   // setEditMode,
@@ -41,6 +47,7 @@ function ViewFreebieModal({
   const [totalAmount, setTotalAmount] = useState(0);
 
   const snackbar = useSnackbar();
+  const dispatch = useDispatch()
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -56,9 +63,9 @@ function ViewFreebieModal({
   const messageReceiverNameRejected = selectedRowData?.requestor;
 
   const messageReceiverMessageApproved = selectedRowData?.nextApprover
-    ? "You have a new listing fee approval."
-    : `${selectedRowData?.businessName}'s listing fee request has been approved.`;
-  const messageReceiverMessageRejected = `${selectedRowData?.businessName}'s listing fee request has been rejected.`;
+    ? "You have a new freebies approval."
+    : `${selectedRowData?.businessName}'s freebies request has been approved.`;
+  const messageReceiverMessageRejected = `${selectedRowData?.businessName}'s freebies request has been rejected.`;
 
   //Disclosures
   const {
@@ -74,21 +81,30 @@ function ViewFreebieModal({
   } = useDisclosure();
 
   //RTK Query
-  const [putApproveListingFee, { isLoading: isApproveLoading }] =
-    usePutApproveListingFeeMutation();
+  const [patchApproveSampling, { isLoading: isApproveLoading }] =
+    usePatchApproveByIdMutation();
 
-  const [putRejectListingFee, { isLoading: isRejectLoading }] =
-    usePutRejectListingFeeMutation();
+  const [putRejectFreebie, { isLoading: isRejectLoading }] =
+    usePutRejectFreebiesMutation();
 
   const [sendMessage, { isLoading: isSendMessageLoading }] =
     useSendMessageMutation();
+
+  const { data: usersWithAdjustments, isFetching: adjustmentFetching } =
+    useGetUsersWithAdjustmentsQuery();
+
+  const data = usersWithAdjustments?.find(
+    (item) => item?.name === selectedRowData?.requestor
+  );
+
+  console.log(data);
 
   const customRibbonContent = (
     // <Box sx={{ display: "flex", flex: 1, gap: "10px" }}>
     <>
       <Box className="viewListingFeeModal__headers">
         <Typography className="viewListingFeeModal__headers__title">
-          Listing Fee
+          Freebies
         </Typography>
 
         <IconButton
@@ -110,10 +126,13 @@ function ViewFreebieModal({
   //Functions
   const handleApprove = async () => {
     try {
-      await putApproveListingFee({
+      await patchApproveSampling({
         // id: selectedRowData?.listingFeeId,
         // id: selectedRowData?.approvalId,
-        id: selectedRowData?.requestId,
+        moduleName: {
+          moduleName: "Freebie Approval",
+        },
+        id: selectedRowData?.id,
       }).unwrap();
 
       await sendMessage({
@@ -122,7 +141,7 @@ function ViewFreebieModal({
       }).unwrap();
 
       snackbar({
-        message: "Listing Fee approved successfully",
+        message: "Freebie request approved successfully",
         variant: "success",
       });
 
@@ -138,7 +157,7 @@ function ViewFreebieModal({
 
       snackbar({
         message:
-          "Listing fee approved successfully but failed to send message.",
+          "Freebie request approved successfully but failed to send message.",
         variant: "warning",
       });
       onApproveConfirmClose();
@@ -148,19 +167,22 @@ function ViewFreebieModal({
 
   const handleReject = async () => {
     try {
-      await putRejectListingFee({
+      await putRejectFreebie({
         // id: selectedRowData?.approvalId,
-        id: selectedRowData?.requestId,
+        freebieRequestId: selectedRowData?.id,
+        freebieType: "Sampling",
         reason: reason,
       }).unwrap();
 
+      dispatch(freebiesApi.util.invalidateTags(["Freebies"]));
+
       await sendMessage({
-        message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
+        message: `Fresh morning! ${messageReceiverMessageRejected}`,
         mobile_number: `+63${messageReceiverNumberRejected}`,
       }).unwrap();
 
       snackbar({
-        message: "Listing Fee rejected successfully",
+        message: "Freebies rejected successfully",
         variant: "success",
       });
       handleRejectConfirmClose();
@@ -347,11 +369,46 @@ function ViewFreebieModal({
               right: "40px",
             }}
           >
-            <DangerButton contained onClick={onRejectConfirmOpen}>
+            <DangerButton
+              contained
+              onClick={() => {
+                if (selectedRowData?.pendingAdjustments > 0) {
+                  snackbar({
+                    message: `Pending Ending Inventory : ${selectedRowData?.pendingAdjustments}`,
+                    variant: "warning",
+                  });
+                }
+                if (data?.pendingAdjustments > 0) {
+                  snackbar({
+                    message: `Pending Ending Inventory : ${data?.pendingAdjustments}`,
+                    variant: "warning",
+                  });
+                  return;
+                }
+                onRejectConfirmOpen();
+              }}
+            >
               Reject
             </DangerButton>
 
-            <SecondaryButton onClick={onApproveConfirmOpen}>
+            <SecondaryButton
+              onClick={() => {
+                if (selectedRowData?.pendingAdjustments > 0) {
+                  snackbar({
+                    message: `Pending Ending Inventory : ${selectedRowData?.pendingAdjustments}`,
+                    variant: "warning",
+                  });
+                }
+                if (data?.pendingAdjustments > 0) {
+                  snackbar({
+                    message: `Pending Ending Inventory : ${data?.pendingAdjustments}`,
+                    variant: "warning",
+                  });
+                  return;
+                }
+                onApproveConfirmOpen();
+              }}
+            >
               Approve
             </SecondaryButton>
           </Box>
@@ -389,7 +446,7 @@ function ViewFreebieModal({
             isLoading={isApproveLoading || isSendMessageLoading}
             question
           >
-            Are you sure you want to approve listing fee for{" "}
+            Are you sure you want to approve freebie request for{" "}
             <span style={{ fontWeight: "bold", textTransform: "uppercase" }}>
               {selectedRowData?.businessName || "client"}
             </span>
@@ -405,7 +462,7 @@ function ViewFreebieModal({
           >
             <Box sx={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               <Box>
-                Are you sure you want to reject listing fee for{" "}
+                Are you sure you want to reject freebie request for{" "}
                 <span
                   style={{ fontWeight: "bold", textTransform: "uppercase" }}
                 >
