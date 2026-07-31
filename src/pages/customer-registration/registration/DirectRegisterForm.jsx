@@ -196,6 +196,8 @@ function DirectRegisterForm({
     defaultValues: directRegisterPersonalSchema.defaultValues,
   });
 
+  console.log(watch())
+
 
 
   // const { watch: watchItems, formState: { isValid: itemsValid }, reset: resetPriceMode, setValue: setValueItems } = itemsMethod
@@ -1063,7 +1065,7 @@ function DirectRegisterForm({
             item.name === selectedRowData?.distriType
         )
       );
-      setValue("deliveryAddress", selectedRowData?.businessAddress);
+      setValue("deliveryAddress", selectedRowData?.deliveryAddress);
       dispatch(setPriceModeId(selectedRowData?.priceModeId));
       dispatch(setPriceModeItems(selectedRowData?.clientItems?.map((item) => ({
         itemCode: productData?.items?.find((data) => data.itemCode === item.itemCode),
@@ -1096,7 +1098,7 @@ function DirectRegisterForm({
       if (
         shallowEqual(
           selectedRowData?.businessAddress,
-          selectedRowData?.businessAddress
+          selectedRowData?.deliveryAddress
         )
       ) {
         setSameAsOwnersAddress(true);
@@ -1321,7 +1323,7 @@ function DirectRegisterForm({
     dispatch,
     editMode,
     priceModeData,
-    selectedRowData,
+  selectedRowData?.id,   
     setOwnersRequirements,
     setOwnersRequirementsIsLink,
     setRepresentativeRequirements,
@@ -1390,29 +1392,23 @@ function DirectRegisterForm({
   //   }
   // }, [open, priceModeData, editMode, setValue]);
 
-  useEffect(() => {
-    if (editMode) {
-      //Triggers
-      triggerTerms({ id: selectedRowData?.id }, { preferCacheValue: true });
-      triggerAttachments(
-        { id: selectedRowData?.id },
-        { preferCacheValue: true }
-      );
-      triggerListingFee(
-        { id: selectedRowData?.id },
-        { preferCacheValue: true }
-      );
-      triggerExpenses({ id: selectedRowData?.id }, { preferCacheValue: true });
-    }
-  }, [
-    open,
-    editMode,
-    selectedRowData,
-    triggerAttachments,
-    triggerTerms,
-    triggerListingFee,
-    triggerExpenses,
-  ]);
+// trigger effect
+useEffect(() => {
+  if (editMode) {
+    triggerTerms({ id: selectedRowData?.id }, { preferCacheValue: true });
+    triggerAttachments({ id: selectedRowData?.id }, { preferCacheValue: true });
+    triggerListingFee({ id: selectedRowData?.id }, { preferCacheValue: true });
+    triggerExpenses({ id: selectedRowData?.id }, { preferCacheValue: true });
+  }
+}, [
+  open,
+  editMode,
+  selectedRowData?.id, 
+  triggerAttachments,
+  triggerTerms,
+  triggerListingFee,
+  triggerExpenses,
+]);
 
   useEffect(() => {
     if (open && !editMode) {
