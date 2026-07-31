@@ -523,92 +523,92 @@ const ItemsWithBBDForm = ({
                           onValueChange={({ floatValue, value: rawValue }) => {
                             onChange(rawValue === "" ? null : floatValue);
                           }}
-                          isAllowed={({ floatValue, value: rawValue }) => {
-                            // Disallow non-numeric input
-                            if (!/^\d*$/.test(rawValue)) return false;
+                          // isAllowed={({ floatValue, value: rawValue }) => {
+                          //   // Disallow non-numeric input
+                          //   if (!/^\d*$/.test(rawValue)) return false;
 
-                            const selectedItem = miscIssue
-                              ? productData?.priceModeItems?.find(
-                                (item) =>
-                                  item.itemCode ===
-                                  watchItems[index]?.item?.itemCode
-                              )
-                              : mrp?.mo?.find(
-                                (item) =>
-                                  item.itemCode ===
-                                  watchItems[index]?.item?.itemCode
-                              );
+                          //   const selectedItem = miscIssue
+                          //     ? productData?.priceModeItems?.find(
+                          //       (item) =>
+                          //         item.itemCode ===
+                          //         watchItems[index]?.item?.itemCode
+                          //     )
+                          //     : mrp?.mo?.find(
+                          //       (item) =>
+                          //         item.itemCode ===
+                          //         watchItems[index]?.item?.itemCode
+                          //     );
 
-                            console.log(index)
-                            const totalQuantity =
-                              watchItems
-                                .filter(
-                                  (item, i) => {
-                                    console.log(i, index)
-                                    return (item?.item?.itemCode ===
-                                      selectedItem?.itemCode) && (i !== index)
-                                  }
-                                )
-                                .reduce((acc, curr) => acc + curr?.quantity, 0)
+                          //   console.log(index)
+                          //   const totalQuantity =
+                          //     watchItems
+                          //       .filter(
+                          //         (item, i) => {
+                          //           console.log(i, index)
+                          //           return (item?.item?.itemCode ===
+                          //             selectedItem?.itemCode) && (i !== index)
+                          //         }
+                          //       )
+                          //       .reduce((acc, curr) => acc + curr?.quantity, 0)
 
-                            console.log(totalQuantity)
-                            const tempQuantity = Number(totalQuantity) + floatValue;
+                          //   console.log(totalQuantity)
+                          //   const tempQuantity = Number(totalQuantity) + floatValue;
 
 
-                            const availableQty = miscIssue
-                              ? selectedItem?.availQuantity
-                              : selectedItem?.reserve;
-                            console.log(tempQuantity > availableQty, tempQuantity, availableQty);
+                          //   const availableQty = miscIssue
+                          //     ? selectedItem?.availQuantity
+                          //     : selectedItem?.reserve;
+                          //   console.log(tempQuantity > availableQty, tempQuantity, availableQty);
 
-                            if (
-                              floatValue != null &&
-                              !misc &&
-                              availableQty != null &&
-                              floatValue > availableQty
-                            ) {
-                              snackbar({
-                                message: `Quantity should not exceed available quantity (${availableQty})`,
-                                variant: "warning",
-                              });
-                              return false;
-                            } else if (
-                              ourite &&
-                              tempQuantity > availableQty
-                            ) {
-                              snackbar({
-                                message: `Quantity should not exceed available quantity (${availableQty})`,
-                                variant: "warning",
-                              });
-                              return false
-                            } else if (
-                              watch("type")?.value === "Outright" &&
-                              floatValue > watch("items")[index]?.received
-                            ) {
-                              snackbar({
-                                message: `Quantity should not exceed received quantity (${watch("items")[index]?.received
-                                  })`,
-                                variant: "warning",
-                              });
-                              return false;
-                            } else if (
-                              watch("type") === "Return Sampling" &&
-                              floatValue > watch("items")[index]?.released
-                            ) {
-                              snackbar({
-                                message: `Quantity should not exceed released quantity (${watch("items")[index]?.released
-                                  })`,
-                                variant: "warning",
-                              });
-                              return false;
-                            }
+                          //   if (
+                          //     floatValue != null &&
+                          //     !misc &&
+                          //     availableQty != null &&
+                          //     floatValue > availableQty
+                          //   ) {
+                          //     snackbar({
+                          //       message: `Quantity should not exceed available quantity (${availableQty})`,
+                          //       variant: "warning",
+                          //     });
+                          //     return false;
+                          //   } else if (
+                          //     ourite &&
+                          //     tempQuantity > availableQty
+                          //   ) {
+                          //     snackbar({
+                          //       message: `Quantity should not exceed available quantity (${availableQty})`,
+                          //       variant: "warning",
+                          //     });
+                          //     return false
+                          //   } else if (
+                          //     watch("type")?.value === "Outright" &&
+                          //     floatValue > watch("items")[index]?.received
+                          //   ) {
+                          //     snackbar({
+                          //       message: `Quantity should not exceed received quantity (${watch("items")[index]?.received
+                          //         })`,
+                          //       variant: "warning",
+                          //     });
+                          //     return false;
+                          //   } else if (
+                          //     watch("type") === "Return Sampling" &&
+                          //     floatValue > watch("items")[index]?.released
+                          //   ) {
+                          //     snackbar({
+                          //       message: `Quantity should not exceed released quantity (${watch("items")[index]?.released
+                          //         })`,
+                          //       variant: "warning",
+                          //     });
+                          //     return false;
+                          //   }
 
-                            return true;
-                          }}
+                          //   return true;
+                          // }}
                           onBlur={onBlur}
                         />
                       )}
                     />
-
+{/* 
                     {!viewOnly && !misc && (
                       <Typography
                         variant="caption"
@@ -647,7 +647,7 @@ const ItemsWithBBDForm = ({
                           }`
                           : "Select BBD first"}
                       </Typography>
-                    )}
+                    )} */}
                   </Stack>
 
                   {withReason && (

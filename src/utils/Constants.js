@@ -301,24 +301,24 @@ export const paymentTypes = [
     uppercase: "WITHHOLDING",
     icon: "AccountBalance",
   },
-  {
-    label: "Sales Return",
-    value: "Sales Return",
-    uppercase: "SALES RETURN",
-    icon: "AccountBalance",
-  },
+  // {
+  //   label: "Sales Return",
+  //   value: "Sales Return",
+  //   uppercase: "SALES RETURN",
+  //   icon: "AccountBalance",
+  // },
   {
     label: "Other Expenses",
     value: "Others",
     uppercase: "OTHER EXPENSES",
     icon: "ReceiptLong",
   },
-  {
-    label: "Others",
-    value: "Others With Remarks",
-    uppercase: "OTHERS",
-    icon: "MoreHoriz",
-  },
+  // {
+  //   label: "Others",
+  //   value: "Others With Remarks",
+  //   uppercase: "OTHERS",
+  //   icon: "MoreHoriz",
+  // },
   {
     label: "Rebate",
     value: "Rebate",
@@ -353,6 +353,22 @@ export const transferOutTypes = [
   },
 ];
 
+
+export const creditType = [
+  {
+    label: "Regular",
+    value: 1,
+  },
+  {
+    label: "Credit - Days",
+    value: 2,
+  },
+  {
+    label: "Credit - Amount",
+    value: 3,
+  },
+];
+
 export const invoiceTypes = [
   {
     label: "Sales",
@@ -364,4 +380,4 @@ export const invoiceTypes = [
   },
 ];
 
-export const userTypes = ["CDO", "Marketing"];
+export const userTypes = ["TDO", "Marketing"];

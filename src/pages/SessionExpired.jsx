@@ -8,6 +8,7 @@ import {
   setPermissisonsEmpty
 } from "../features/authentication/reducers/loginSlice";
 import { useDispatch } from "react-redux";
+import { api } from "../features/api";
 
 function SessionExpired() {
   const navigate = useNavigate();

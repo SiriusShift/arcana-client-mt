@@ -46,7 +46,6 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const callsheetItem = useSelector((state) => state.callsheet.items);
 
-  console.log(callsheetItem);
   const [data, setData] = useState([]);
   const dispatch = useDispatch();
   const confirm = useConfirm();
@@ -65,7 +64,6 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
   });
 
   const { watch } = methods;
-  console.log(watch());
   const { data: callsheetData, isFetching } = useGetAllCallsheetsQuery({
     DateFrom: dateFrom ? moment(dateFrom).format("YYYY-MM-DD") : "",
     DateTo: dateTo ? moment(dateTo).format("YYYY-MM-DD") : "",
@@ -78,7 +76,6 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
 
   const disabledActions = ["viewMore"];
 
-  console.log("customer", index);
 
   const onSubmit = async () => {
     const transformData = callsheetItem.map((item) => ({
@@ -88,7 +85,6 @@ function CallsheetModal({ width, dateFrom, dateTo, onClose, ...props }) {
         quantity: item?.quantity,
       })),
     }));
-    console.log(transformData);
     try {
       confirm({
         children: "Are you sure you want to update callsheet?",

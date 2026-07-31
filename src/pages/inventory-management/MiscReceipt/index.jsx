@@ -1,7 +1,6 @@
 import { Box } from "@mui/material";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import CommonTable from "../../../components/CommonTable";
-import GenerateMoveOrderModal from "../../../components/modals/inventory-management/GenerateMoveOrderModal";
 import useDisclosure from "../../../hooks/useDisclosure";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -37,7 +36,7 @@ function MiscReceipt() {
   // Common Table Props
   const tableHeads = [
     "ID",
-    // "CDO",
+    // "TDO",
     "Cluster",
     // "CDO Name",
     "Date Received",

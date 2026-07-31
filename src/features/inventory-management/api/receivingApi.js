@@ -10,20 +10,6 @@ export const receivingApi = api
   .enhanceEndpoints({ addTagTypes: ["Orders", "Order", "Generate"] })
   .injectEndpoints({
     endpoints: (builder) => ({
-      receiveMoveOrder: builder.mutation({
-        // Uncomment this when the backend is ready
-        query: (body) => ({
-          url: `/add-move-order-receivings`,
-          method: "POST",
-          body
-        }),
-        invalidatesTags: ["Orders", "Order", "Generate"],
-
-        // This is a dummy implementation of the request
-        // Remove this when the backend is ready
-        // queryFn: dummyReceiveMoveOrder,
-      }),
-
       getWrongItems: builder.query({
         query : (params) => ({
           params,

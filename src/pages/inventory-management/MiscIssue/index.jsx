@@ -1,7 +1,6 @@
 import { Box } from "@mui/material";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import CommonTable from "../../../components/CommonTable";
-import GenerateMoveOrderModal from "../../../components/modals/inventory-management/GenerateMoveOrderModal";
 import useDisclosure from "../../../hooks/useDisclosure";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -36,7 +35,7 @@ function MiscIssue() {
   const tableHeads = [
     "ID",
     "Cluster",
-    "CDO",
+    "TDO",
     "Date Received",
   ];
 

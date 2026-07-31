@@ -70,11 +70,11 @@ function ReturnFromSampling() {
     navigate("return-form");
   };
 
-  if (location.pathname === "/inventory-management/return-sampling") {
+  if (location.pathname === "/sales-management/return-sampling") {
     return (
       <Box className="commonPageLayout">
         <PageHeaderAddTabs
-          pageTitle="Return from Sampling"
+          pageTitle="Return"
           addTitle="Add Return"
           onOpen={handleAdd}
           removeArchive

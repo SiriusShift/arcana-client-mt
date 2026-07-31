@@ -94,10 +94,10 @@ const registrationApi = api
       }),
 
       putAddAttachmentsForDirect: builder.mutation({
-        query: ({ id, ...body }) => ({
+        query: ({ id, formData }) => ({
           url: `/RegularRegistration/AddAttachmentsForDirectClient/${id}`,
           method: "PUT",
-          body: body?.formData,
+          body: formData,
         }),
         invalidatesTags: ["Registration"],
       }),
@@ -250,6 +250,42 @@ const registrationApi = api
         transformErrorResponse: (response) => response.value,
       }),
 
+      getEditClientRequest: builder.query({
+        query: (params) => ({
+          url: "/EditClientRequest",
+          method: "GET",
+          params: params,
+        }),        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
+        providesTags: ["Registration"]
+      }),
+
+      postEditClientRequest: builder.mutation({
+        query: (body) => ({
+          url: "/EditClientRequest",
+          method: "POST",
+          body,
+        }), invalidatesTags: ["Registration"]
+
+      }),
+
+      patchApproveEditClientRequest: builder.mutation({
+        query: (id) => ({
+          url: `/EditClientRequest/approve/${id}`,
+          method: "PATCH",
+        }),
+        invalidatesTags: ["Registration"]
+
+      }),
+
+      patchRejectEditClientRequest: builder.mutation({
+        query: (id) => ({
+          url: `/EditClientRequest/reject/${id}`,
+          method: "PATCH",
+        }), invalidatesTags: ["Registration"]
+
+      })
+
       // getConsolidateApprovedClientsExport: builder.query({
       //   query: (params) => ({
       //     url: `/approved-clients-export`,
@@ -269,7 +305,7 @@ export const {
   usePutAddAttachmentsMutation,
   usePutAddTermsAndCondtionsMutation,
   usePostDirectRegistrationMutation,
-  
+
   // usePutApproveRegistrationMutation,
   // usePutRejectRegistrationMutation,
   usePutRejectClientMutation,
@@ -295,6 +331,12 @@ export const {
 
   //Approval History
   useLazyGetClientApprovalHistoryByIdQuery,
+
+  //Edit Client Request
+  useGetEditClientRequestQuery,
+  usePostEditClientRequestMutation,
+  usePatchApproveEditClientRequestMutation,
+  usePatchRejectEditClientRequestMutation
 
   //Exporting File
   // useGetConsolidateApprovedClientsExportQuery,

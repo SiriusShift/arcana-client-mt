@@ -49,7 +49,7 @@ function ForFreebies() {
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useDispatch();
-  const { validateEndingInventory, isNotificationFetching } = useValidate();
+  const { isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const selectedStoreType = useSelector(
@@ -332,8 +332,6 @@ function ForFreebies() {
             onView={handleEditOpen}
             onArchive={handleArchiveOpen}
             onFreebie={() => {
-              const error = validateEndingInventory();
-              if (error) return;
               onFreebieFormOpen();
             }}
             page={page}

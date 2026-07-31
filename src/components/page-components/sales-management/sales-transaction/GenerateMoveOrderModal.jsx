@@ -1,14 +1,14 @@
 import { TextField } from "@mui/material";
-import CommonModalForm from "../../CommonModalForm";
+import CommonModalForm from "../../../CommonModalForm";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { generateMoveOrderSchema } from "../../../schema/schema";
+import { generateMoveOrderSchema } from "../../../../schema/schema";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import useSnackbar from "../../../hooks/useSnackbar";
-import { useLazyGenerateMoveOrderQuery } from "../../../features/inventory-management/api/receivingApi";
+import useSnackbar from "../../../../hooks/useSnackbar";
+import { useLazyGenerateMoveOrderQuery, useReceiveMoveOrderMutation } from "../../../../features/inventory-management/api/receivingApi";
 import { useDispatch } from "react-redux";
-import { setData } from "../../../features/inventory-management/reducers/generateReceivingSlice";
+import { setData } from "../../../../features/inventory-management/reducers/generateReceivingSlice";
 
 function GenerateMoveOrderModal({ open, onClose }) {
   const navigate = useNavigate();
@@ -30,17 +30,17 @@ function GenerateMoveOrderModal({ open, onClose }) {
   });
 
   // RTK Query
-  const [generate, { data, isFetching }] = useLazyGenerateMoveOrderQuery();
+  const [receiveMoveOrder, {isLoading}] = useReceiveMoveOrderMutation();
 
   const onSubmit = async (data) => {
     const id = data.moveOrderSlipNo;
   
     try {
-      const response = await generate(id).unwrap();
+      const response = await receiveMoveOrder({moveOrderId: id}).unwrap();
       console.log("API Response:", response);
-      dispatch(setData({ moveOrderSlipNo: id }));
+      // dispatch(setData({ moveOrderSlipNo: id }));
       onClose();
-      navigate("receiving-form");
+      // navigate("receiving-form");
     } catch (error) {
       console.error("Error during API call:", error?.data?.error);
       snackbar({ variant: "error", message: error?.data?.error?.message || "An error occurred" });
@@ -66,8 +66,8 @@ function GenerateMoveOrderModal({ open, onClose }) {
       title="Move Order"
       submitText="Generate"
       onSubmit={handleSubmit(onSubmit)}
-      isLoading={isFetching}
-      disableSubmit={isFetching}
+      isLoading={isLoading}
+      disableSubmit={isLoading}
     >
       <TextField
         size="small"

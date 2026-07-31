@@ -1,54 +1,49 @@
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Add,
   EditOutlined,
   KeyboardDoubleArrowLeft,
   Payment,
   Receipt,
-  RemoveCircleOutline,
-  Visibility,
+  RemoveCircleOutline
 } from "@mui/icons-material";
 import {
   Autocomplete,
   Box,
-  InputAdornment,
   Button,
   Checkbox,
   Divider,
   IconButton,
   TextField,
-  Input,
   Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
-import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import moment from "moment";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import SecondaryButton from "../../components/SecondaryButton";
-import useDisclosure from "../../hooks/useDisclosure";
-import PaymentModalForm from "../../components/modals/sales-management/PaymentModalForm";
-import { useFieldArray, useForm, Controller } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { paymentTransactionSchema } from "../../schema/schema";
-import useConfirm from "../../hooks/useConfirm";
-import useSnackbar from "../../hooks/useSnackbar";
-import {
-  formatPesoAmount,
-  handleCatchErrorMessage,
-} from "../../utils/CustomFunctions";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 import { getIconElement } from "../../components/GetIconElement";
+import PaymentHistoriesModal from "../../components/modals/sales-management/PaymentHistoriesModal";
+import PaymentModalForm from "../../components/modals/sales-management/PaymentModalForm";
+import ViewPhotoModal from "../../components/modals/ViewPhotoModal";
+import SecondaryButton from "../../components/SecondaryButton";
+import PaymentListSkeleton from "../../components/skeletons/PaymentListSkeleton";
 import {
   paymentTransactionApi,
   useCreatePaymentTransactionMutation,
 } from "../../features/sales-management/api/paymentTransactionApi";
-import PaymentListSkeleton from "../../components/skeletons/PaymentListSkeleton";
-import PaymentHistoriesModal from "../../components/modals/sales-management/PaymentHistoriesModal";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { useLazyGetAllSalesTransactionQuery } from "../../features/sales-management/api/salesTransactionApi";
-import moment from "moment";
-import ReceiptInput from "../../components/modals/sales-management/ReceiptInput";
-import ViewPhotoModal from "../../components/modals/ViewPhotoModal";
-import { useDispatch } from "react-redux";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import { useGetAllClientsForPOSQuery, useLazyGetAllSalesTransactionQuery } from "../../features/sales-management/api/salesTransactionApi";
+import useConfirm from "../../hooks/useConfirm";
+import useDisclosure from "../../hooks/useDisclosure";
+import useSnackbar from "../../hooks/useSnackbar";
+import { paymentTransactionSchema } from "../../schema/schema";
+import {
+  formatPesoAmount,
+  handleCatchErrorMessage,
+} from "../../utils/CustomFunctions";
 
 function PaymentPage({
   setPaymentMode,
@@ -56,11 +51,12 @@ function PaymentPage({
   invoiceId,
   invoiceNo,
 }) {
-  console.log(invoiceId, invoiceNo);
+  console.log(invoiceId, clientFromInvoicePage);
   const [client, setClient] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState({});
 
+  console.log(client)
   //Hooks
   const confirm = useConfirm();
   const snackbar = useSnackbar();
@@ -91,17 +87,19 @@ function PaymentPage({
   //React Hook Form
   const {
     handleSubmit,
-    formState: { isValid, isDirty },
+    formState: { isValid, isDirty, errors },
     setValue,
     reset,
     control,
-    errors,
     watch,
   } = useForm({
     resolver: yupResolver(paymentTransactionSchema.schema),
     mode: "onChange",
     defaultValues: paymentTransactionSchema.defaultValues,
   });
+
+  console.log(errors)
+
 
   const {
     fields: paymentFields,
@@ -127,7 +125,7 @@ function PaymentPage({
   ] = useLazyGetAllSalesTransactionQuery();
 
   const { data: clientData, isFetching: isClientFetching } =
-    useGetAllClientsQuery({
+    useGetAllClientsForPOSQuery({
       RegistrationStatus: "Approved",
       PageNumber: 1,
       PageSize: 2000,
@@ -138,7 +136,7 @@ function PaymentPage({
   //Functions
   const onSubmit = async (data) => {
     const formData = new FormData();
-
+    console.log(data)
     data.transactionId.map((id, index) => formData.append(`transactionId`, id));
     formData.append(`receiptNo`, data.receiptNo);
     formData.append(`paymentDate`, data?.paymentDate.toISOString());
@@ -183,11 +181,11 @@ function PaymentPage({
       payment.referenceNo &&
         formData.append(`Payments[${index}].referenceNo`, payment.referenceNo);
       // IF PAYMENT METHOD IS WITHHOLDING
-      payment.attachment &&
-        formData.append(
-          `Payments[${index}].withholdingAttachment`,
-          payment.attachment
-        );
+      // payment.attachment &&
+      //   formData.append(
+      //     `Payments[${index}].withholdingAttachment`,
+      //     payment.attachment
+      //   );
       // IF PAYMENT IS OTHERS
       payment.otherExpense &&
         formData.append(
@@ -205,8 +203,9 @@ function PaymentPage({
         );
     });
 
-    console.log(formData)
-
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
     try {
       await confirm({
         children: "Are you sure you want to submit payment transaction?",
@@ -282,8 +281,6 @@ function PaymentPage({
   };
 
   const handleTransactionClick = (transactionId, invoiceNo, ciAttachment) => {
-    // Check if ciAttachment exists; if not, do nothing
-    if (!ciAttachment) return;
 
     const currentTransactionIds = watch("transactionId") || [];
     const currentInvoiceNos = watch("invoiceNo") || [];
@@ -367,9 +364,10 @@ function PaymentPage({
 
   //UseEffect
   useEffect(() => {
+    console.log(client)
     if (client) {
       triggerTransactions({
-        clientId: client?.id,
+        clientId: client?.clientId,
         transactionStatus: "Pending",
       });
       handleReset();
@@ -378,8 +376,8 @@ function PaymentPage({
 
   useEffect(() => {
     if (clientFromInvoicePage) {
-      const foundClient = clientData?.regularClient.find(
-        (client) => client.id === clientFromInvoicePage
+      const foundClient = clientData?.find(
+        (client) => client.clientId === clientFromInvoicePage
       );
 
       setClient(foundClient);
@@ -432,17 +430,13 @@ function PaymentPage({
             }
           >
             <Autocomplete
-              options={clientData?.regularClient || []}
+              options={clientData || []}
               getOptionLabel={(option) =>
                 option.businessName?.toUpperCase() +
-                  " " +
-                  option.businessAddress?.city?.toUpperCase() +
-                  ", " +
-                  option.businessAddress?.province?.toUpperCase() +
-                  " - " +
-                  option.ownersName?.toUpperCase() +
-                  " - " +
-                  option.id || ""
+                ", " +
+                option.ownersName?.toUpperCase() +
+                " - " +
+                option.clientId || ""
               }
               disabled={watch("payments").length > 0}
               loading={isClientFetching}
@@ -451,7 +445,7 @@ function PaymentPage({
                 <TextField
                   {...params}
                   size="small"
-                  label="Business Name - Owner's Name"
+                  label="Business Name - Branch Name"
                 />
               )}
               value={client}
@@ -477,9 +471,8 @@ function PaymentPage({
 
         <Box className="paymentPage__body">
           <Box
-            className={`paymentPage__body__transactions ${
-              watch("payments")?.length > 0 ? " paymentTransactionOverlay" : ""
-            }`}
+            className={`paymentPage__body__transactions ${watch("payments")?.length > 0 ? " paymentTransactionOverlay" : ""
+              }`}
           >
             {!client ? (
               <Typography className="paymentPage__body__transactions__selectClientFirst">
@@ -539,118 +532,104 @@ function PaymentPage({
 
                 <Box className="paymentPage__body__transactions__transactionsList">
                   {transactionsData?.transactions?.map((item) => (
-                    <Tooltip
-                      title={
-                        !item.ciAttachment
-                          ? "This transaction is disabled due to missing attachment"
-                          : ""
+                    <Box
+                      key={item.transactionNo}
+                      className="paymentPage__body__transactions__transactionsList__item"
+                      onClick={() =>
+                        handleTransactionClick(
+                          item.transactionNo,
+                          item.invoiceNo,
+                          item.ciAttachment
+                        )
                       }
-                      placement="top"
-                      arrow
-                    >
-                      <Box
-                        key={item.transactionNo}
-                        className="paymentPage__body__transactions__transactionsList__item"
-                        onClick={() =>
-                          handleTransactionClick(
-                            item.transactionNo,
-                            item.invoiceNo,
-                            item.ciAttachment
-                          )
-                        }
-                        sx={{
+                      sx={{
+                        bgcolor: watch("transactionId")?.includes(
+                          item.transactionNo
+                        )
+                          ? "primary.lightActive"
+                          : "inherit",
+                        ":hover": {
                           bgcolor: watch("transactionId")?.includes(
                             item.transactionNo
                           )
                             ? "primary.lightActive"
-                            : "inherit",
-                          ":hover": {
-                            bgcolor: watch("transactionId")?.includes(
-                              item.transactionNo
-                            )
-                              ? "primary.lightActive"
-                              : "primary.light",
-                          },
-                          borderColor: item?.voidReason ? "yellow" : "",
-                          borderWidth: item?.voidReason ? "1px" : "",
-                          opacity: item?.ciAttachment ? 1 : 0.5,
-                        }}
+                            : "primary.light",
+                        },
+                        borderColor: item?.voidReason ? "yellow" : "",
+                        borderWidth: item?.voidReason ? "1px" : "",
+                      }}
+                    >
+                      <Box
                       >
-                        <Box
-                          sx={{
-                            pointerEvents: item?.ciAttachment ? "all" : "none", // Apply only to the inner content
-                          }}
-                        >
-                          <Typography className="paymentPage__body__transactions__transactionsList__item__date">
-                            {moment(item.createdAt).format("MMM-DD-YYYY")}
-                          </Typography>
+                        <Typography className="paymentPage__body__transactions__transactionsList__item__date">
+                          {moment(item.createdAt).format("MMM-DD-YYYY")}
+                        </Typography>
 
-                          <Box className="paymentPage__body__transactions__transactionsList__item__identifiers">
-                            <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__transactionNumber">
-                              <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__transactionNumber__label">
-                                Transaction Number:
-                              </Box>
-
-                              <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__transactionNumber__value">
-                                {item.transactionNo}
-                              </Box>
+                        <Box className="paymentPage__body__transactions__transactionsList__item__identifiers">
+                          <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__transactionNumber">
+                            <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__transactionNumber__label">
+                              Transaction Number:
                             </Box>
 
-                            <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceNumber">
-                              <Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceNumber__label">
-                                Invoice Number:
-                              </Typography>
-
-                              <Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceNumber__value">
-                                {item.invoiceNo}
-                              </Typography>
+                            <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__transactionNumber__value">
+                              {item.transactionNo}
                             </Box>
-
-                            <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
-                              <Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
-                                Invoice Type:
-                              </Typography>
-
-                              <Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
-                                {item.invoiceType}
-                              </Typography>
-                            </Box>
-                            {item?.voidReason && (
-                              <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__voidReason">
-                                <Typography sx={{ marginRight: "20px" }}>
-                                  Payment Void:
-                                </Typography>
-                                <Typography sx={{ wordBreak: "break-word" }}>
-                                  {item?.voidReason || "N/A"}
-                                </Typography>
-                              </Box>
-                            )}
                           </Box>
 
-                          <Divider />
+                          <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceNumber">
+                            <Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceNumber__label">
+                              Invoice Number:
+                            </Typography>
 
-                          <Box className="paymentPage__body__transactions__transactionsList__item__numbers">
-                            <Box className="paymentPage__body__transactions__transactionsList__item__numbers__discount">
-                              <Typography className="paymentPage__body__transactions__transactionsList__item__numbers__discount__label">
-                                Amount Due:
+                            <Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceNumber__value">
+                              {item.invoiceNo}
+                            </Typography>
+                          </Box>
+
+                          <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
+                            <Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
+                              Invoice Type:
+                            </Typography>
+
+                            <Typography className="paymentPage__body__transactions__transactionsList__item__identifiers__invoiceType">
+                              {item.invoiceType}
+                            </Typography>
+                          </Box>
+                          {item?.voidReason && (
+                            <Box className="paymentPage__body__transactions__transactionsList__item__identifiers__voidReason">
+                              <Typography sx={{ marginRight: "20px" }}>
+                                Payment Void:
                               </Typography>
-                              <Typography className="paymentPage__body__transactions__transactionsList__item__numbers__discount__value">
-                                {formatPesoAmount(item.totalAmountDue)}
+                              <Typography sx={{ wordBreak: "break-word" }}>
+                                {item?.voidReason || "N/A"}
                               </Typography>
                             </Box>
+                          )}
+                        </Box>
 
-                            <Box className="paymentPage__body__transactions__transactionsList__item__numbers__amount">
-                              <Typography className="paymentPage__body__transactions__transactionsList__item__numbers__amount__label">
-                                Balance:
-                              </Typography>
-                              <Typography className="paymentPage__body__transactions__transactionsList__item__numbers__amount__value">
-                                {formatPesoAmount(item.remainingBalance)}
-                              </Typography>
-                            </Box>
+                        <Divider />
+
+                        <Box className="paymentPage__body__transactions__transactionsList__item__numbers">
+                          <Box className="paymentPage__body__transactions__transactionsList__item__numbers__discount">
+                            <Typography className="paymentPage__body__transactions__transactionsList__item__numbers__discount__label">
+                              Amount Due:
+                            </Typography>
+                            <Typography className="paymentPage__body__transactions__transactionsList__item__numbers__discount__value">
+                              {formatPesoAmount(item.totalAmountDue)}
+                            </Typography>
+                          </Box>
+
+                          <Box className="paymentPage__body__transactions__transactionsList__item__numbers__amount">
+                            <Typography className="paymentPage__body__transactions__transactionsList__item__numbers__amount__label">
+                              Balance:
+                            </Typography>
+                            <Typography className="paymentPage__body__transactions__transactionsList__item__numbers__amount__value">
+                              {formatPesoAmount(item.remainingBalance)}
+                            </Typography>
                           </Box>
                         </Box>
                       </Box>
-                    </Tooltip>
+                    </Box>
                   ))}
                 </Box>
               </>
@@ -726,7 +705,7 @@ function PaymentPage({
 
             <Divider sx={{ borderStyle: "dashed" }} />
             <Box className="paymentPage__body__payments__receipt">
-              <Controller
+              {/* <Controller
                 name="receiptAttachment"
                 control={control}
                 render={({ field: { value, onChange, ...field } }) => {
@@ -759,7 +738,7 @@ function PaymentPage({
                     />
                   );
                 }}
-              />
+              /> */}
               {/* <button onClick={() => {receiptUploadRef.current.value = null}}></button> */}
               {/* <Controller
                 name="receiptAttachment"
@@ -807,8 +786,6 @@ function PaymentPage({
                   />
                 )}
               />
-            </Box>
-            <Box className="paymentPage__body__payments__date">
               <Controller
                 name="paymentDate"
                 control={control}
@@ -858,8 +835,8 @@ function PaymentPage({
                       (handleRemainingBalance < 0
                         ? "Advance"
                         : handleRemainingBalance === 0
-                        ? "Zero"
-                        : "Balance")
+                          ? "Zero"
+                          : "Balance")
                     }
                   >
                     ₱
@@ -916,7 +893,7 @@ function PaymentPage({
       <PaymentHistoriesModal
         open={isPaymentHistoriesOpen}
         onClose={onPaymentHistoriesClose}
-        clientId={client?.id}
+        clientId={client?.clientId}
       />
     </>
   );

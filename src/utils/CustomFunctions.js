@@ -11,6 +11,13 @@ export const transformKey = (key) => {
   return transformedKey;
 };
 
+export const generateCode = (length) => {
+  const array = new Uint8Array(length); // 5 random bytes
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+
 export const formatDate = (month, day, year) => {
   const months = [
     "January",
@@ -178,7 +185,8 @@ export const dashFormat = (inputValue) => {
 };
 
 export const formatPhoneNumber = (inputNumber) => {
-  let numberString = inputNumber.toString();
+  if (!inputNumber) return
+  let numberString = inputNumber?.toString();
 
   if (numberString.length >= 10) {
     let formattedNumber =
@@ -197,11 +205,13 @@ export const formatPhoneNumber = (inputNumber) => {
 //Error Handling
 export const handleCatchErrorMessage = (error) => {
   console.log(error);
-  if (error?.data?.error?.message) {
+  if (error?.message) {
+    return error?.message;
+  } else if (error?.data?.error?.message) {
     return error?.data?.error?.message;
   } else if (error?.error?.message) {
     return error?.error?.message;
-  }else if (error?.status === 400) {
+  } else if (error?.status === 400) {
     return "Something went wrong with your request.";
   } else if (error?.status === 401) {
     return "Authentication required.";

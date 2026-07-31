@@ -23,7 +23,7 @@ const FreebiesFormActions = () => {
   const [requestFreebies] = useRequestFreebiesMutation();
 
   const handleCancel = () => {
-    navigate("/inventory-management/freebies", { replace: true });
+    navigate("/sales-management/freebies", { replace: true });
   };
 
   const onSubmit = async (data) => {
@@ -53,7 +53,7 @@ const FreebiesFormActions = () => {
         variant: "success",
       });
 
-      navigate("/inventory-management/freebies", { replace: true });
+      navigate("/sales-management/freebies", { replace: true });
     } catch (error) {
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });

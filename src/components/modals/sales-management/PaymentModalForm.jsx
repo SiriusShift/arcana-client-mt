@@ -1,37 +1,33 @@
-import { useEffect, useState } from "react";
-import CommonModalForm from "../../CommonModalForm";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { paymentSchema } from "../../../schema/schema";
-import { Controller, useForm } from "react-hook-form";
-import ControlledAutocomplete from "../../ControlledAutocomplete";
+import { InfoOutlined, ReceiptLong } from "@mui/icons-material";
 import {
   Box,
-  IconButton,
-  InputAdornment,
+  Chip,
   TextField,
   Tooltip,
-  Typography,
-  Chip,
+  Typography
 } from "@mui/material";
-import { paymentTypes } from "../../../utils/Constants";
-import { NumericFormat } from "react-number-format";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import useSnackbar from "../../../hooks/useSnackbar";
-import { handleCatchErrorMessage } from "../../../utils/CustomFunctions";
-import useConfirm from "../../../hooks/useConfirm";
 import moment from "moment";
-import { useLazyGetAdvancePaymentBalanceQuery } from "../../../features/sales-management/api/advancePaymentApi";
-import { InfoOutlined, Visibility, ReceiptLong } from "@mui/icons-material";
-import ViewPhotoModal from "../ViewPhotoModal";
-import useDisclosure from "../../../hooks/useDisclosure";
-import { useLazyGetListingFeeBalanceByIdQuery } from "../../../features/listing-fee/api/listingFeeApi";
-import { useLazyGetOtherExpensesByClientIdQuery } from "../../../features/registration/api/registrationApi";
-import { useGetOtherExpensesBalanceByClientIdQuery } from "../../../features/otherExpenses/api/otherExpensesRegApi";
-import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
-import { dummyOnlinePaymentPlatformsData } from "../../../utils/DummyData";
-import { useGetAllOnlinePlatformsQuery } from "../../../features/setup/api/onlinePaymentPlatformsApi";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { NumericFormat } from "react-number-format";
 import { useLazyGetReturnByIdQuery } from "../../../features/inventory-management/api/returnApi";
+import { useLazyGetListingFeeBalanceByIdQuery } from "../../../features/listing-fee/api/listingFeeApi";
+import { useGetOtherExpensesBalanceByClientIdQuery } from "../../../features/otherExpenses/api/otherExpensesRegApi";
+import { useLazyGetAdvancePaymentBalanceQuery } from "../../../features/sales-management/api/advancePaymentApi";
+import { useGetAllOnlinePlatformsQuery } from "../../../features/setup/api/onlinePaymentPlatformsApi";
+import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
+import useConfirm from "../../../hooks/useConfirm";
+import useDisclosure from "../../../hooks/useDisclosure";
+import useSnackbar from "../../../hooks/useSnackbar";
+import { paymentSchema } from "../../../schema/schema";
+import { paymentTypes } from "../../../utils/Constants";
+import { handleCatchErrorMessage } from "../../../utils/CustomFunctions";
+import CommonModalForm from "../../CommonModalForm";
+import ControlledAutocomplete from "../../ControlledAutocomplete";
+import ViewPhotoModal from "../ViewPhotoModal";
 
 function PaymentModalForm({
   editMode,
@@ -96,8 +92,8 @@ function PaymentModalForm({
 
   const { data: otherExpensesBalanceData, error: otherExpensesBalanceError } =
     useGetOtherExpensesBalanceByClientIdQuery(
-      { clientId: client?.id },
-      { skip: !client?.id } // Skip query if clientId is undefined
+      { clientId: client?.clientId },
+      { skip: !client?.clientId } // Skip query if clientId is undefined
     );
 
   console.log(otherExpensesBalanceData);
@@ -192,7 +188,7 @@ function PaymentModalForm({
           const paymentIndex = paymentFields.findIndex(
             (field) =>
               field.paymentMethod.value ===
-                transformedData.paymentMethod.value &&
+              transformedData.paymentMethod.value &&
               (transformedData.paymentMethod.value === "Advance Payment" ||
                 transformedData.paymentMethod.value === "Listing Fee")
           );
@@ -258,9 +254,9 @@ function PaymentModalForm({
 
   useEffect(() => {
     if (open) {
-      triggerAdvancePaymentBalance({ id: client.id });
-      triggerListingFeeBalance({ id: client.id });
-      triggerReturnData(client?.id);
+      triggerAdvancePaymentBalance({ id: client.clientId });
+      triggerListingFeeBalance({ id: client.clientId });
+      triggerReturnData(client?.clientId);
     }
   }, [open, triggerAdvancePaymentBalance, triggerListingFeeBalance, client]);
 
@@ -297,7 +293,7 @@ function PaymentModalForm({
         // height change when in advance payment and listing fee to accomodate the payment balance for them
         height={
           watch("paymentMethod")?.value === "Listing Fee" ||
-          watch("paymentMethod")?.value === "Advance Payment"
+            watch("paymentMethod")?.value === "Advance Payment"
             ? "350px"
             : "auto"
         }
@@ -444,9 +440,8 @@ function PaymentModalForm({
                         watch("paymentMethod")?.value !== "Cheque"
                       ) {
                         snackbar({
-                          message: `${
-                            watch("paymentMethod")?.value
-                          } cannot be over the remaining balance`,
+                          message: `${watch("paymentMethod")?.value
+                            } cannot be over the remaining balance`,
                           variant: "error",
                         });
                         return false;
@@ -457,7 +452,7 @@ function PaymentModalForm({
                         ((floatValue >
                           parseFloat(advancePaymentData?.remainingBalance) &&
                           watch("paymentMethod")?.value ===
-                            "Advance Payment") ||
+                          "Advance Payment") ||
                           (floatValue >
                             parseFloat(listingFeeBalanceData?.totalBalance) &&
                             watch("paymentMethod")?.value === "Listing Fee") ||
@@ -465,11 +460,10 @@ function PaymentModalForm({
                             watch("paymentMethod")?.value === "Others"))
                       ) {
                         snackbar({
-                          message: `Not enough ${
-                            watch("paymentMethod")?.value === "Others"
-                              ? watch("otherExpense")?.expenseType
-                              : watch("paymentMethod")?.value
-                          } balance`,
+                          message: `Not enough ${watch("paymentMethod")?.value === "Others"
+                            ? watch("otherExpense")?.expenseType
+                            : watch("paymentMethod")?.value
+                            } balance`,
                           variant: "error",
                         });
                         return false;
@@ -674,7 +668,7 @@ function PaymentModalForm({
                 />
               </>
             )}
-
+            {/* 
             {watch("paymentMethod")?.label === "Withholding" && (
               <>
                 <Controller
@@ -711,7 +705,7 @@ function PaymentModalForm({
                   }}
                 />
               </>
-            )}
+            )} */}
 
             {watch("paymentMethod")?.value === "Listing Fee" && (
               <Box className="paymentTransactionModal__footer">

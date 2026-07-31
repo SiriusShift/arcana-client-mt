@@ -22,9 +22,19 @@ const userAccountApi = api
         transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
       }),
+      getPendingUsers: builder.query({
+        query: (params) => ({
+          params: params,
+          url: "/PendingAccount",
+          method: "GET",
+        }),
+        providesTags: ["User"],
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
+      }),
       putUser: builder.mutation({
         query: ({ id, password, ...body }) => ({
-          url: `/User/UpdateUser/${id}`,
+          url: `/UpdateUser/${id}`,
           method: "PUT",
           body: body,
         }),
@@ -65,4 +75,5 @@ export const {
   usePatchUserStatusMutation,
   usePatchChangePasswordMutation,
   usePatchResetPasswordMutation,
+  useGetPendingUsersQuery
 } = userAccountApi;

@@ -197,7 +197,7 @@ function LoginPage() {
                 fullWidth
               >
                 {isLoading ? (
-                  <CircularProgress size="20px" color="white" />
+                  <CircularProgress size="15px" color="white" />
                 ) : (
                   "Sign In"
                 )}

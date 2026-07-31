@@ -99,12 +99,12 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      grid-column: span 2;
+      grid-column: span 3;
 
       &__row {
         // display: flex;
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 10px;
         flex: 1;
 
@@ -179,21 +179,137 @@
     // }
   }
 }
+.priceMode {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; // safety net so this component never pushes the page wider
+  border-radius: 16px;
+  background: var(--background);
+  border: 1px solid var(--divider);
+  gap: 16px;
+  padding: 16px;
 
-.priceModeSetup{
+  &__row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    align-items: start;
+    min-width: 0; // let the grid itself shrink
+  }
+
+  &__mode,
+  &__products {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--card);
+    border: 1px solid var(--divider);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    min-width: 0; // ← key fix: grid/flex children default to min-width:auto,
+    //   which lets their content force the track wider than
+    //   the parent. This lets them actually shrink.
+    box-sizing: border-box;
+    height: 80%;
+
+    &__toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+  }
+
+  &__mode {
+    min-width: 0;
+
+    &__title {
+      font-size: 1.1rem !important;
+      font-weight: 700 !important;
+      color: var(--foreground);
+      margin-bottom: 4px;
+    }
+
+    &__choices {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-wrap: wrap; // ← lets the row-mode RadioGroup (Discount box) wrap
+      //    instead of overflowing when the % input doesn't fit
+      min-width: 0;
+
+      .MuiFormControlLabel-root {
+        margin: 0;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--divider);
+        background: var(--background);
+        transition: all 0.2s ease;
+        min-width: 0;
+
+        &:hover {
+          border-color: var(--primary);
+          background: rgba(25, 118, 210, 0.05);
+        }
+
+        .MuiTypography-root {
+          font-size: 0.95rem;
+          font-weight: 500;
+        }
+      }
+
+      .termsAndConditionsFixedDiscount {
+        min-width: 0;
+        flex-shrink: 0; // keep the input readable, but allow the row above it to wrap around it
+      }
+    }
+  }
+
+  &__products {
+    overflow-x: auto; // if a row genuinely can't fit (very narrow viewport),
+    // scroll *within this card* instead of the whole page
+
+    .MuiStack-root {
+      flex-wrap: wrap; // let item rows wrap onto multiple lines on narrow screens
+    }
+  }
+
+  @media (max-width: 900px) {
+    &__row {
+      grid-template-columns: 1fr;
+    }
+
+    &__products .MuiStack-root {
+      flex-direction: column;
+      align-items: stretch;
+
+      // fixed-width fields shouldn't stay pinned to px widths once stacked vertically
+      > * {
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+    }
+  }
+}
+
+.priceModeSetup {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  &__row{
+  &__row {
     display: flex;
     gap: 20px;
   }
-  &__column{
+  &__column {
     display: flex;
     flex-direction: column;
     gap: 20px;
   }
-  & &__title{
+  & &__title {
     margin-top: 10px;
     font-weight: bold;
     font-size: 1.2rem;
@@ -205,7 +321,7 @@
   // justify-content: center;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin: auto;
+  // margin: auto;
   // gap: 150px;
   gap: 80px;
   flex: 1;
@@ -293,11 +409,12 @@
         // grid-template-columns: 1fr 1fr;
 
         @media (max-width: 999px) {
-          flex-direction: column;
+          flex-direction: row;
           gap: 10px;
+          flex-wrap: wrap;
 
           align-items: start;
-          margin-left: 20px;
+          margin-left: 10px;
         }
 
         & p {
@@ -315,10 +432,10 @@
         display: flex;
         align-items: center;
         position: relative;
-        
+
         @media (max-width: 999px) {
           gap: 10px;
-          align-items: start;
+          align-items: center;
         }
         &__annual {
           margin-left: 28px;
@@ -329,10 +446,29 @@
         }
 
         &__creditLimit {
-          margin-left: 28px;
-
           @media (max-width: 999px) {
             margin-left: 0;
+          }
+        }
+      }
+
+      & &__flex {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        &__option {
+          display: flex;
+        }
+        &__selection {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          width: 250px;
+          &__row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
           }
         }
       }
@@ -346,7 +482,7 @@
 
 .attachments {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
 
   @media (max-width: 850px) {
@@ -411,6 +547,8 @@
       flex-direction: column;
       gap: 10px;
       flex: 1;
+      width: 100%;
+      align-items: center;
 
       & button {
         border: 2px solid $secondary;
@@ -429,6 +567,7 @@
 
       &__item {
         display: flex;
+        width: 80%;
         gap: 30px;
         justify-content: space-between;
         align-items: center;
@@ -563,18 +702,20 @@
 
 .termsAndConditionsFirstSelect {
   position: absolute !important;
-  right: -65px !important;
+  right: 50px !important;
   top: 10px !important;
 
   @media (max-width: 999px) {
     position: relative !important;
+    margin-top: 10px;
     inset: 0 !important;
+    right: 50px;
   }
 }
 
 .termsAndConditionsSecondSelect {
   position: absolute !important;
-  right: -80px !important;
+  right: 60px !important;
   top: 6px !important;
 
   @media (max-width: 999px) {
@@ -584,8 +725,8 @@
 }
 
 .termsAndConditionsCreditLimit {
-  position: absolute !important;
-  right: 30px !important;
+  // position: absolute !important;
+  // right: 50p !important;
 
   @media (max-width: 999px) {
     position: relative !important;
@@ -597,8 +738,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  position: absolute;
-  right: -35px;
+  margin-top: 5px;
 
   @media (max-width: 999px) {
     position: relative;

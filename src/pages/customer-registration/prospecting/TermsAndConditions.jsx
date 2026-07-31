@@ -4,38 +4,31 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
-  IconButton,
   InputAdornment,
   Radio,
   RadioGroup,
   TextField,
-  Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
-import CreateIcon from "@mui/icons-material/Create";
 import { useContext, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  resetFreebies,
-  setTermsAndConditions,
-} from "../../../features/registration/reducers/regularRegistrationSlice";
-import { useGetAllTermDaysQuery } from "../../../features/setup/api/termDaysApi";
-import useSnackbar from "../../../hooks/useSnackbar";
-import SecondaryButton from "../../../components/SecondaryButton";
-import useDisclosure from "../../../hooks/useDisclosure";
-import FreebieForm from "./FreebieForm";
-import { Cancel, Edit, Watch } from "@mui/icons-material";
-import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
 import { NumericFormat } from "react-number-format";
+import { useDispatch, useSelector } from "react-redux";
 import FreezerAssetTagModal from "../../../components/modals/registration/FreezerAssetTagModal";
 import SignatureCanvasModal from "../../../components/modals/SignatureCanvasModal";
 import { AttachmentsContext } from "../../../context/AttachmentsContext";
+import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
+import {
+  setTermsAndConditions
+} from "../../../features/registration/reducers/regularRegistrationSlice";
+import { useGetAllTermDaysQuery } from "../../../features/setup/api/termDaysApi";
+import useDisclosure from "../../../hooks/useDisclosure";
+import useSnackbar from "../../../hooks/useSnackbar";
+import { creditType } from "../../../utils/Constants";
 import { base64ToBlob } from "../../../utils/CustomFunctions";
 
 function TermsAndConditions({ direct, editMode, storeType }) {
   const dispatch = useDispatch();
   const snackbar = useSnackbar();
-  console.log(direct);
 
   const termsAndConditions = useSelector(
     (state) => state.regularRegistration.value.termsAndConditions
@@ -45,7 +38,6 @@ function TermsAndConditions({ direct, editMode, storeType }) {
     (state) => state.regularRegistration.value.directFreebie.freebies
   );
 
-  console.log("freebiesDirect", freebiesDirect, direct);
 
   const { setPhotoProofDirect, setSignatureDirect } =
     useContext(DirectReleaseContext);
@@ -60,9 +52,6 @@ function TermsAndConditions({ direct, editMode, storeType }) {
     // ownersRequirementsIsLink,
   } = useContext(AttachmentsContext);
 
-  // console.log(requirementsMode);
-  // console.log(ownersRequirements);
-  // console.log(representativeRequirements);
 
   const requirementsModeToSelect =
     requirementsMode === "owner"
@@ -147,37 +136,49 @@ function TermsAndConditions({ direct, editMode, storeType }) {
       dispatch(setTermsAndConditions({ property: "creditLimit", value: null }));
     }
 
+    if (termsAndConditions["creditTypeId"]?.value === 2) {
+      dispatch(setTermsAndConditions({ property: "creditLimit", value: null }))
+    }
+
+    if (termsAndConditions["creditTypeId"]?.value === 3) {
+      dispatch(setTermsAndConditions({ property: "termDaysId", value: 2 }))
+    }
+
+
     if (
       termsAndConditions["terms"] !== 2 &&
       termsAndConditions["terms"] !== 3
     ) {
       dispatch(setTermsAndConditions({ property: "termDaysId", value: null }));
+      dispatch(setTermsAndConditions({ property: "creditTypeId", value: null }));
+
     }
 
-    if (termsAndConditions["variableDiscount"] === true) {
-      dispatch(
-        setTermsAndConditions({
-          property: "fixedDiscount",
-          value: { discountPercentage: null },
-        })
-      );
-    }
+    // if (termsAndConditions["variableDiscount"] === true) {
+    //   dispatch(
+    //     setTermsAndConditions({
+    //       property: "fixedDiscount",
+    //       value: { discountPercentage: null },
+    //     })
+    //   );
+    // }
   }, [
     termsAndConditions["terms"],
     termsAndConditions["variableDiscount"],
+    termsAndConditions["creditTypeId"],
     dispatch,
   ]);
 
-  useEffect(() => {
-    if (storeType) {
-      dispatch(
-        setTermsAndConditions({
-          property: "typeOfCustomer",
-          value: storeType === "Dealer" ? "Dealer" : "Retailer",
-        })
-      );
-    }
-  }, [dispatch, storeType]);
+  // useEffect(() => {
+  //   if (storeType) {
+  //     dispatch(
+  //       setTermsAndConditions({
+  //         property: "typeOfCustomer",
+  //         value: storeType === "Dealer" ? "Dealer" : "Retailer",
+  //       })
+  //     );
+  //   }
+  // }, [dispatch, storeType]);
 
   const handleCheckboxChange = (modeOfPaymentId) => {
     // Check if the modeOfPaymentId is already in the array
@@ -191,33 +192,33 @@ function TermsAndConditions({ direct, editMode, storeType }) {
         property: "modeOfPayments",
         value: isSelected
           ? termsAndConditions.modeOfPayments.filter(
-              (item) => item.modeOfPaymentId !== modeOfPaymentId
-            )
+            (item) => item.modeOfPaymentId !== modeOfPaymentId
+          )
           : [...termsAndConditions.modeOfPayments, { modeOfPaymentId }],
       })
     );
   };
 
-  useEffect(() => {
-    if (termsAndConditions["terms"] === 1) {
-      dispatch(
-        setTermsAndConditions({
-          property: "modeOfPayments",
-          value: termsAndConditions.modeOfPayments.filter(
-            (item) => item.modeOfPaymentId !== 2
-          ),
-        })
-      );
-    }
-  }, [termsAndConditions["terms"]]);
+  // useEffect(() => {
+  //   if (termsAndConditions["terms"] === 1) {
+  //     dispatch(
+  //       setTermsAndConditions({
+  //         property: "modeOfPayments",
+  //         value: termsAndConditions.modeOfPayments.filter(
+  //           (item) => item.modeOfPaymentId !== 1
+  //         ),
+  //       })
+  //     );
+  //   }
+  // }, [termsAndConditions["terms"]]);
 
-  useEffect(() => {
-    if (!termsAndConditions["freezer"]) {
-      dispatch(
-        setTermsAndConditions({ property: "freezerAssetTag", value: "" })
-      );
-    }
-  }, [termsAndConditions["freezer"], dispatch]);
+  // useEffect(() => {
+  //   if (!termsAndConditions["freezer"]) {
+  //     dispatch(
+  //       setTermsAndConditions({ property: "freezerAssetTag", value: "" })
+  //     );
+  //   }
+  // }, [termsAndConditions["freezer"], dispatch]);
 
   // useEffect(() => {
   //   if (termsAndConditions["freezer"]) {
@@ -256,7 +257,7 @@ function TermsAndConditions({ direct, editMode, storeType }) {
       signature = representativeRequirements["signature"];
     }
 
-    return signature.startsWith("data:")
+    return signature?.startsWith("data:")
       ? URL.createObjectURL(base64ToBlob(signature))
       : signature;
   };
@@ -264,584 +265,6 @@ function TermsAndConditions({ direct, editMode, storeType }) {
   return (
     <Box className="terms">
       <Box className="terms__column">
-        <Box className="terms__column__item">
-          <Box className="terms__column__item__title">
-            <Typography>Freezer</Typography>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              position: "relative",
-            }}
-          >
-            <RadioGroup
-              row
-              className="terms__column__item__choices"
-              value={termsAndConditions["freezer"]}
-              onChange={(e) => {
-                dispatch(
-                  setTermsAndConditions({
-                    property: "freezer",
-                    value: e.target.value === "true" ? true : false,
-                  })
-                );
-              }}
-            >
-              <FormControlLabel
-                value={true}
-                control={
-                  <Radio
-                    onClick={() => {
-                      // if (termsAndConditions["freezer"]) {
-                      onAssetTagOpen();
-                      // }
-                    }}
-                    data-testid="freezer-yes"
-                  />
-                }
-                label="Yes"
-              />
-              <FormControlLabel
-                value={false}
-                control={<Radio data-testid="freezer-no" />}
-                label="No"
-              />
-            </RadioGroup>
-          </Box>
-
-          {/* {termsAndConditions["freezer"] && (
-            <TextField
-              label="Asset Tag"
-              type="number"
-              onChange={(e) =>
-                dispatch(
-                  setTermsAndConditions({
-                    property: "freezerAssetTag",
-                    value: e.target.value,
-                  })
-                )
-              }
-              value={termsAndConditions["freezerAssetTag"]}
-              required
-              sx={{
-                right: "6px",
-                margin: "auto",
-                width: "200px",
-                "& .MuiInputBase-root": {
-                  height: "30px",
-                },
-                "& .MuiInputLabel-outlined ": {
-                  padding: ".3rem !important",
-                  transform: "translate(6px, -1px)  !important",
-                },
-                "& .MuiInputLabel-shrink ": {
-                  padding: ".3rem !important",
-                  transform: "translate(9px, -14px) scale(0.8) !important",
-                },
-              }}
-            />
-          )} */}
-        </Box>
-        <Box className="terms__column__item">
-          <Box className="terms__column__item__title">
-            <Typography>Type of Customer</Typography>
-          </Box>
-          <RadioGroup
-            row
-            className="terms__column__item__choices"
-            value={termsAndConditions["typeOfCustomer"]}
-            onChange={(e) => {
-              dispatch(
-                setTermsAndConditions({
-                  property: "typeOfCustomer",
-                  value: e.target.value,
-                })
-              );
-            }}
-          >
-            <FormControlLabel
-              value="Dealer"
-              disabled
-              control={<Radio />}
-              label="Dealer"
-            />
-            <FormControlLabel
-              value="Retailer"
-              disabled
-              control={<Radio />}
-              label="Retailer"
-            />
-          </RadioGroup>
-        </Box>
-
-        <Box className="terms__column__item">
-          <Box className="terms__column__item__title">
-            <Typography>Direct Delivery</Typography>
-          </Box>
-          <RadioGroup
-            row
-            className="terms__column__item__choices"
-            value={termsAndConditions["directDelivery"]}
-            onChange={(e) => {
-              dispatch(
-                setTermsAndConditions({
-                  property: "directDelivery",
-                  value: e.target.value === "true" ? true : false,
-                })
-              );
-            }}
-          >
-            <FormControlLabel
-              value={true}
-              control={<Radio data-testid="direct-delivery-yes" />}
-              label="Yes"
-            />
-            <FormControlLabel
-              value={false}
-              control={<Radio data-testid="direct-delivery-no" />}
-              label="No"
-            />
-          </RadioGroup>
-        </Box>
-
-        <Box className="terms__column__item">
-          <Box className="terms__column__item__title">
-            <Typography>Booking Coverage</Typography>
-          </Box>
-          <RadioGroup
-            row
-            className="terms__column__item__choices"
-            value={termsAndConditions["bookingCoverageId"]}
-            onChange={(e) => {
-              dispatch(
-                setTermsAndConditions({
-                  property: "bookingCoverageId",
-                  value: parseInt(e.target.value),
-                })
-              );
-            }}
-          >
-            <FormControlLabel
-              value={1}
-              control={<Radio data-testid="radio-f1" />}
-              label="F1"
-            />
-            <FormControlLabel
-              value={2}
-              control={<Radio data-testid="radio-f2" />}
-              label="F2"
-            />
-            <FormControlLabel
-              value={3}
-              control={<Radio data-testid="radio-f3" />}
-              label="F3"
-            />
-            <FormControlLabel
-              value={4}
-              control={<Radio data-testid="radio-f4" />}
-              label="F4"
-            />
-          </RadioGroup>
-        </Box>
-
-        <Box className="terms__column__item">
-          <Box className="terms__column__item__title">
-            <Typography>Withholding Options</Typography>
-          </Box>
-          <RadioGroup
-            row
-            className="terms__column__item__choices"
-            value={termsAndConditions["withholdingIssuance"]}
-            defaultValue={"Strictly"}
-            onChange={(e) => {
-              dispatch(
-                setTermsAndConditions({
-                  property: "withholdingIssuance",
-                  value: e.target.value || "Strictly",
-                })
-              );
-            }}
-          >
-            <Box>
-              <FormControlLabel
-                value={"Monthly"}
-                control={<Radio />}
-                label="Monthly"
-              />
-              <FormControlLabel
-                value={"Semi-Annual"}
-                control={<Radio />}
-                label="1/2-Annual"
-              />
-
-              <Box className="terms__column__item__choicesNoSpace">
-                <FormControlLabel
-                  value={"Quarterly"}
-                  control={<Radio />}
-                  label="Quarterly"
-                />
-                <FormControlLabel
-                  value={"Annual"}
-                  control={<Radio />}
-                  label="Annual"
-                />
-              </Box>
-            </Box>
-          </RadioGroup>
-        </Box>
-
-        {/* <Box className="terms__column__item">
-          <Box className="terms__column__item__title">
-            <Typography>Terms</Typography>
-          </Box>
-          <RadioGroup
-            value={termsAndConditions["terms"]}
-            onChange={(e) => {
-              dispatch(
-                setTermsAndConditions({
-                  property: "terms",
-                  value: parseInt(e.target.value),
-                })
-              );
-            }}
-          >
-            <Box className="terms__column__item__choices">
-              <FormControlLabel
-                value={1}
-                control={<Radio data-testid="radio-cod" />}
-                label="COD"
-              />
-              <FormControlLabel
-                value={2}
-                control={<Radio />}
-                label="1 up 1 down"
-              />
-
-              {termsAndConditions["terms"] === 2 && (
-                // && termDaysData
-                <Autocomplete
-                  selectOnFocus
-                  clearOnBlur
-                  handleHomeEndKeys
-                  options={termDaysData?.termDays ?? []}
-                  loading={isTermDaysLoading}
-                  getOptionLabel={(option) => option.days?.toString() ?? ""}
-                  isOptionEqualToValue={() => true}
-                  disableClearable
-                  value={termsAndConditions["termDaysId"] ?? ""}
-                  defaultValue={termsAndConditions["termDaysId"] ?? ""}
-                  className="termsAndConditionsFirstSelect"
-                  sx={{
-                    width: "100px",
-                    // position: "absolute",
-                    // right: "-65px",
-                    // top: "10px",
-                    "& .MuiInputBase-root": {
-                      height: "30px",
-                    },
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      className="terms__select"
-                      label="Term Days"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        "& input": {
-                          height: 0,
-                        },
-                      }}
-                    />
-                  )}
-                  onChange={(_, value) => {
-                    dispatch(
-                      setTermsAndConditions({
-                        property: "termDaysId",
-                        value,
-                      })
-                    );
-                  }}
-                />
-              )}
-            </Box>
-
-            <Box className="terms__column__item__choicesNoSpace">
-              <FormControlLabel
-                className="terms__column__item__choicesNoSpace__creditLimit"
-                // sx={{ ml: "28px" }}
-                value={3}
-                control={<Radio />}
-                label="Credit Limit"
-              />
-
-              {termsAndConditions["terms"] === 3 && (
-                <>
-                  <NumericFormat
-                    className="termsAndConditionsCreditLimit"
-                    customInput={TextField}
-                    sx={{
-                      width: "120px",
-                      "& .MuiInputBase-root": {
-                        height: "30px",
-                      },
-                    }}
-                    type="text"
-                    value={
-                      termsAndConditions["creditLimit"] != null
-                        ? termsAndConditions["creditLimit"].toString()
-                        : ""
-                    }
-                    onValueChange={(e) => {
-                      handleCreditLimitChange(e);
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment
-                          position="start"
-                          style={{ marginLeft: -3 }}
-                        >
-                          ₱
-                        </InputAdornment>
-                      ),
-                    }}
-                    thousandSeparator=","
-                  />
-
-                  <Autocomplete
-                    selectOnFocus
-                    clearOnBlur
-                    handleHomeEndKeys
-                    options={termDaysData?.termDays ?? []}
-                    isOptionEqualToValue={() => true}
-                    loading={isTermDaysLoading}
-                    getOptionLabel={(option) => option.days?.toString() ?? ""}
-                    disableClearable
-                    value={termsAndConditions["termDaysId"] ?? ""}
-                    defaultValue={termsAndConditions["termDaysId"] ?? ""}
-                    className="termsAndConditionsSecondSelect"
-                    sx={{
-                      width: "100px",
-                      position: "absolute",
-                      right: "-80px",
-                      top: "6px",
-                      "& .MuiInputBase-root": {
-                        height: "30px",
-                      },
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        className="terms__select"
-                        label="Term Days"
-                        InputLabelProps={{ shrink: true }}
-                        sx={{
-                          "& input": {
-                            height: 0,
-                          },
-                        }}
-                      />
-                    )}
-                    onChange={(_, value) => {
-                      dispatch(
-                        setTermsAndConditions({
-                          property: "termDaysId",
-                          value,
-                        })
-                      );
-                    }}
-                  />
-                </>
-              )}
-            </Box>
-          </RadioGroup>
-        </Box> */}
-      </Box>
-
-      <Box className="terms__column">
-        <Box className="terms__column__item">
-          <Box className="terms__column__item__title">
-            <Typography>Terms</Typography>
-          </Box>
-          <RadioGroup
-            value={termsAndConditions["terms"]}
-            onChange={(e) => {
-              dispatch(
-                setTermsAndConditions({
-                  property: "terms",
-                  value: parseInt(e.target.value),
-                })
-              );
-            }}
-          >
-            <Box className="terms__column__item__choices">
-              <FormControlLabel
-                value={1}
-                control={<Radio data-testid="radio-cod" />}
-                label="COD"
-              />
-              <FormControlLabel
-                value={2}
-                control={<Radio />}
-                label="1 up 1 down"
-              />
-
-              {termsAndConditions["terms"] === 2 && (
-                // && termDaysData
-                <Autocomplete
-                  selectOnFocus
-                  clearOnBlur
-                  handleHomeEndKeys
-                  options={termDaysData?.termDays ?? []}
-                  loading={isTermDaysLoading}
-                  getOptionLabel={(option) => option.days?.toString() ?? ""}
-                  isOptionEqualToValue={() => true}
-                  disableClearable
-                  value={termsAndConditions["termDaysId"] ?? ""}
-                  defaultValue={termsAndConditions["termDaysId"] ?? ""}
-                  className="termsAndConditionsFirstSelect"
-                  sx={{
-                    width: "100px",
-                    // position: "absolute",
-                    // right: "-65px",
-                    // top: "10px",
-                    "& .MuiInputBase-root": {
-                      height: "30px",
-                    },
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      className="terms__select"
-                      label="Term Days"
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        "& input": {
-                          height: 0,
-                        },
-                      }}
-                    />
-                  )}
-                  onChange={(_, value) => {
-                    dispatch(
-                      setTermsAndConditions({
-                        property: "termDaysId",
-                        value,
-                      })
-                    );
-                  }}
-                />
-              )}
-            </Box>
-
-            <Box className="terms__column__item__choicesNoSpace">
-              <FormControlLabel
-                className="terms__column__item__choicesNoSpace__creditLimit"
-                // sx={{ ml: "28px" }}
-                value={3}
-                control={<Radio />}
-                label="Credit Limit"
-              />
-
-              {termsAndConditions["terms"] === 3 && (
-                <>
-                  <NumericFormat
-                    className="termsAndConditionsCreditLimit"
-                    customInput={TextField}
-                    sx={{
-                      width: "120px",
-                      "& .MuiInputBase-root": {
-                        height: "30px",
-                      },
-                    }}
-                    type="text"
-                    value={
-                      termsAndConditions["creditLimit"] != null
-                        ? termsAndConditions["creditLimit"].toString()
-                        : ""
-                    }
-                    onValueChange={(e) => {
-                      handleCreditLimitChange(e);
-                    }}
-                    isAllowed={({ floatValue }) => {
-                      if (floatValue < 0) {
-                        snackbar({
-                          message: "Credit Limit cannot be negative",
-                          variant: "error",
-                        });
-                        return false;
-                      } else if (floatValue === 0) {
-                        snackbar({
-                          message: "Credit Limit cannot be zero",
-                          variant: "warning",
-                        });
-                        return false;
-                      }
-                      return true;
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment
-                          position="start"
-                          style={{ marginLeft: -3 }}
-                        >
-                          ₱
-                        </InputAdornment>
-                      ),
-                    }}
-                    thousandSeparator=","
-                  />
-
-                  <Autocomplete
-                    selectOnFocus
-                    clearOnBlur
-                    handleHomeEndKeys
-                    options={termDaysData?.termDays ?? []}
-                    isOptionEqualToValue={() => true}
-                    loading={isTermDaysLoading}
-                    getOptionLabel={(option) => option.days?.toString() ?? ""}
-                    disableClearable
-                    value={termsAndConditions["termDaysId"] ?? ""}
-                    defaultValue={termsAndConditions["termDaysId"] ?? ""}
-                    className="termsAndConditionsSecondSelect"
-                    sx={{
-                      width: "100px",
-                      position: "absolute",
-                      right: "-80px",
-                      top: "6px",
-                      "& .MuiInputBase-root": {
-                        height: "30px",
-                      },
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        className="terms__select"
-                        label="Term Days"
-                        InputLabelProps={{ shrink: true }}
-                        sx={{
-                          "& input": {
-                            height: 0,
-                          },
-                        }}
-                      />
-                    )}
-                    onChange={(_, value) => {
-                      dispatch(
-                        setTermsAndConditions({
-                          property: "termDaysId",
-                          value,
-                        })
-                      );
-                    }}
-                  />
-                </>
-              )}
-            </Box>
-          </RadioGroup>
-        </Box>
 
         <Box className="terms__column__item">
           <Box className="terms__column__item__title">
@@ -853,7 +276,7 @@ function TermsAndConditions({ direct, editMode, storeType }) {
             className="terms__column__item__choices"
             sx={{ marginY: "10px" }}
           >
-            <FormControlLabel
+            {/* <FormControlLabel
               control={
                 <Checkbox
                   sx={{ marginRight: "10px" }}
@@ -868,19 +291,19 @@ function TermsAndConditions({ direct, editMode, storeType }) {
               onChange={() => {
                 handleCheckboxChange(1);
               }}
-            />
+            /> */}
 
             <FormControlLabel
               value={2}
               control={<Checkbox sx={{ marginRight: "10px" }} />}
               label="Cheque"
               checked={termsAndConditions["modeOfPayments"]?.some(
-                (item) => item.modeOfPaymentId === 2
+                (item) => item.modeOfPaymentId === 1
               )}
               onChange={() => {
-                handleCheckboxChange(2);
+                handleCheckboxChange(1);
               }}
-              disabled={termsAndConditions["terms"] === 1}
+            // disabled={termsAndConditions["terms"] === 1}
             />
 
             <FormControlLabel
@@ -888,16 +311,15 @@ function TermsAndConditions({ direct, editMode, storeType }) {
               value={3}
               label="Online"
               checked={termsAndConditions["modeOfPayments"]?.some(
-                (item) => item.modeOfPaymentId === 3
+                (item) => item.modeOfPaymentId === 2
               )}
               onChange={() => {
-                handleCheckboxChange(3);
+                handleCheckboxChange(2);
               }}
             />
           </FormGroup>
         </Box>
-
-        <Box className="terms__column__item">
+        {/* <Box className="terms__column__item">
           <Box className="terms__column__item__title">
             <Typography>Discount</Typography>
           </Box>
@@ -935,10 +357,10 @@ function TermsAndConditions({ direct, editMode, storeType }) {
                   type="number"
                   value={
                     termsAndConditions["fixedDiscount"].discountPercentage !=
-                    null
+                      null
                       ? termsAndConditions[
-                          "fixedDiscount"
-                        ].discountPercentage.toString()
+                        "fixedDiscount"
+                      ].discountPercentage.toString()
                       : ""
                   }
                   onChange={(e) => {
@@ -952,46 +374,240 @@ function TermsAndConditions({ direct, editMode, storeType }) {
               </Box>
             )}
           </RadioGroup>
+        </Box> */}
+      </Box>
+
+      <Box className="terms__column" >
+
+        <Box className="terms__column__item">
+          <Box className="terms__column__item__title">
+            <Typography>Terms</Typography>
+          </Box>
+          <RadioGroup
+            value={termsAndConditions["terms"]}
+            onChange={(e) => {
+              dispatch(
+                setTermsAndConditions({
+                  property: "terms",
+                  value: parseInt(e.target.value),
+                })
+              );
+            }}
+          >
+            <Box className="terms__column__item__choices">
+              <FormControlLabel
+                value={1}
+                control={<Radio data-testid="radio-cod" />}
+                label="COD"
+              />
+              {/* <FormControlLabel
+                value={2}
+                control={<Radio />}
+                label="1 up 1 down"
+              /> */}
+
+              {termsAndConditions["terms"] === 2 && (
+                // && termDaysData
+                <Autocomplete
+                  selectOnFocus
+                  clearOnBlur
+                  handleHomeEndKeys
+                  options={termDaysData?.termDays ?? []}
+                  loading={isTermDaysLoading}
+                  getOptionLabel={(option) => option.days?.toString() ?? ""}
+                  isOptionEqualToValue={() => true}
+                  disableClearable
+                  value={termsAndConditions["termDaysId"] ?? ""}
+                  defaultValue={termsAndConditions["termDaysId"] ?? ""}
+                  className="termsAndConditionsFirstSelect"
+                  sx={{
+                    width: "100px",
+                    // position: "absolute",
+                    // right: "-65px",
+                    // top: "10px",
+                    "& .MuiInputBase-root": {
+                      height: "30px",
+                    },
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      className="terms__select"
+                      label="Term Days"
+                      InputLabelProps={{ shrink: true }}
+                      sx={{
+                        "& input": {
+                          height: 0,
+                        },
+                      }}
+                    />
+                  )}
+                  onChange={(_, value) => {
+                    dispatch(
+                      setTermsAndConditions({
+                        property: "termDaysId",
+                        value,
+                      })
+                    );
+                  }}
+                />
+              )}
+            </Box>
+
+            <Box className="terms__column__item__flex">
+              <FormControlLabel
+                className="terms__column__item__flex__option"
+                // sx={{ ml: "28px" }}
+                value={3}
+                control={<Radio />}
+                label="Credit Limit"
+              />
+
+              {termsAndConditions["terms"] === 3 && (
+                <div className="terms__column__item__flex__selection">
+                  <Autocomplete
+                    selectOnFocus
+                    clearOnBlur
+                    handleHomeEndKeys
+                    options={creditType ?? []}
+                    isOptionEqualToValue={() => true}
+                    getOptionLabel={(option) => option.label ?? ""}
+                    disableClearable
+                    value={termsAndConditions["creditTypeId"] ?? ""}
+                    defaultValue={termsAndConditions["creditTypeId"] ?? ""}
+                    className="termsAndConditionsCreditLimit"
+                    sx={{
+                      width: "100%",
+                      "& .MuiInputBase-root": {
+                        height: "30px",
+                      },
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        className="terms__select"
+                        label="Credit Type"
+                        InputLabelProps={{ shrink: true }}
+                        sx={{
+                          "& input": {
+                            height: 0,
+                          },
+                        }}
+                      />
+                    )}
+                    onChange={(_, value) => {
+                      dispatch(
+                        setTermsAndConditions({
+                          property: "creditTypeId",
+                          value,
+                        })
+                      );
+                    }}
+                  />
+                  <div className="terms__column__item__flex__selection__row">
+                    {termsAndConditions["creditTypeId"]?.value !== 2 && <NumericFormat
+                      customInput={TextField}
+                      sx={{
+                        flexBasis: "100%", "& .MuiInputBase-root": {
+                          height: "30px",
+                        },
+                      }}
+                      type="text"
+                      value={
+                        termsAndConditions["creditLimit"] != null
+                          ? termsAndConditions["creditLimit"].toString()
+                          : ""
+                      }
+                      label="Amount"
+                      onValueChange={(e) => {
+                        handleCreditLimitChange(e);
+                      }}
+                      isAllowed={({ floatValue }) => {
+                        if (floatValue < 0) {
+                          snackbar({
+                            message: "Credit Limit cannot be negative",
+                            variant: "error",
+                          });
+                          return false;
+                        } else if (floatValue === 0) {
+                          snackbar({
+                            message: "Credit Limit cannot be zero",
+                            variant: "warning",
+                          });
+                          return false;
+                        }
+                        return true;
+                      }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment
+                            position="start"
+                            style={{ marginLeft: -3 }}
+                          >
+                            ₱
+                          </InputAdornment>
+                        ),
+                      }}
+                      thousandSeparator=","
+                    />}
+
+                    {termsAndConditions["creditTypeId"]?.value !== 3 && <Autocomplete
+                      selectOnFocus
+                      clearOnBlur
+                      handleHomeEndKeys
+                      options={termDaysData?.termDays.filter((item) => item?.days !== -1) ?? []}
+                      isOptionEqualToValue={() => true}
+                      loading={isTermDaysLoading}
+                      getOptionLabel={(option) => option.days?.toString() ?? ""}
+                      disableClearable
+                      value={termsAndConditions["termDaysId"] ?? ""}
+                      defaultValue={termsAndConditions["termDaysId"] ?? ""}
+                      sx={{
+                        flexBasis: "100%",
+                        maxWidth: "100%", "& .MuiInputBase-root": {
+                          height: "30px",
+                        },
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          className="terms__select"
+                          label="Term Days"
+                          InputLabelProps={{ shrink: true }}
+                          sx={{
+                            "& input": {
+                              height: 0,
+                            },
+                          }}
+                        />
+                      )}
+                      onChange={(_, value) => {
+                        dispatch(
+                          setTermsAndConditions({
+                            property: "termDaysId",
+                            value,
+                          })
+                        );
+                      }}
+                    />}
+
+
+                  </div>
+
+                </div>
+              )}
+            </Box>
+          </RadioGroup>
         </Box>
 
-        {direct && (
-          <>
-            <SecondaryButton
-              medium
-              onClick={onFreebieFormOpen}
-              variant="outlined"
-            >
-              Request Freebie
-            </SecondaryButton>{" "}
-            {freebiesDirect?.length > 0 && (
-              <IconButton
-                className="termsAndConditionsCancelFreebies"
-                onClick={() => {
-                  dispatch(resetFreebies());
-                  setSignatureDirect(null);
-                  setPhotoProofDirect(null);
-                }}
-              >
-                <Cancel sx={{ fontSize: "30px" }} />
-              </IconButton>
-            )}
-          </>
-        )}
 
-        {direct && (
-          <FreebieForm
-            isFreebieFormOpen={isFreebieFormOpen}
-            onFreebieFormClose={onFreebieFormClose}
-            direct
-            updateFreebies
-          />
-        )}
 
-        <Box className="terms__row__item__title">
+
+        {/* <Box className="terms__row__item__title">
           <Typography>Signature</Typography>
           <Tooltip title="Edit" placement="right" arrow>
             {ownersRequirements["signature"] ||
-            representativeRequirements["signature"] ? (
+              representativeRequirements["signature"] ? (
               <IconButton
                 sx={{ position: "absolute", right: "10px" }}
                 onClick={onCanvasOpen}
@@ -1007,7 +623,7 @@ function TermsAndConditions({ direct, editMode, storeType }) {
         <Box
           className={
             ownersRequirements["signature"] ||
-            representativeRequirements["signature"]
+              representativeRequirements["signature"]
               ? "terms__row__item__signature"
               : ""
           }
@@ -1052,7 +668,7 @@ function TermsAndConditions({ direct, editMode, storeType }) {
               </SecondaryButton>
             )}
           </Box>
-        </Box>
+        </Box> */}
 
         <FreezerAssetTagModal open={isAssetTagOpen} onClose={onAssetTagClose} />
 

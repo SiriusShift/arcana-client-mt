@@ -152,8 +152,8 @@ function RegisterRegularForm({ open, onClose }) {
       label: "Personal Info",
       isValid: includeAuthorizedRepresentative
         ? watch("authorizedRepresentative") &&
-          watch("authorizedRepresentativePosition") &&
-          isValid
+        watch("authorizedRepresentativePosition") &&
+        isValid
         : isValid,
       icon: <Person />,
       disabled: false,
@@ -209,13 +209,13 @@ function RegisterRegularForm({ open, onClose }) {
       isValid:
         requirementsMode === "owner"
           ? !Object.values(ownersRequirements).some(
-              (value) => value === null || value === undefined
-            )
+            (value) => value === null || value === undefined
+          )
           : requirementsMode === "representative"
-          ? !Object.values(representativeRequirements).some(
+            ? !Object.values(representativeRequirements).some(
               (value) => value === null || value === undefined
             )
-          : false,
+            : false,
       icon: <Attachment />,
       disabled: false,
     },
@@ -287,12 +287,12 @@ function RegisterRegularForm({ open, onClose }) {
 
       setIsAllApiLoading(false);
 
-      await sendMessage({
-        message: `Fresh morning ${
-          registerResponse?.currentApprover || "approver"
-        }! You have a new customer approval.`,
-        mobile_number: `+63${registerResponse?.currentApproverPhoneNumber}`,
-      }).unwrap();
+      // await sendMessage({
+      //   message: `Fresh morning ${
+      //     registerResponse?.currentApprover || "approver"
+      //   }! You have a new customer approval.`,
+      //   mobile_number: `+63${registerResponse?.currentApproverPhoneNumber}`,
+      // }).unwrap();
 
       onClose();
       handleResetForms();
@@ -324,11 +324,11 @@ function RegisterRegularForm({ open, onClose }) {
   };
 
   const addTermsAndConditions = async () => {
-    const { freezer, freezerAssetTag, ...otherTerms } = termsAndConditions;
+    const { ...otherTerms } = termsAndConditions;
 
     let updatedTermsAndConditions = {
       ...otherTerms,
-      freezer: freezer ? freezerAssetTag : null,
+      // freezer: freezer ? freezerAssetTag : null,
     };
 
     if (updatedTermsAndConditions.termDaysId) {
@@ -1267,8 +1267,8 @@ function RegisterRegularForm({ open, onClose }) {
                 disabled={
                   termsAndConditions["terms"] === 1
                     ? navigators.some(
-                        (obj) => obj.isValid === false && obj.label !== ""
-                      )
+                      (obj) => obj.isValid === false && obj.label !== ""
+                    )
                     : navigators.some((obj) => obj.isValid === false)
                 }
               >

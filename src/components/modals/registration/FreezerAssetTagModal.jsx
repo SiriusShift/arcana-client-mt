@@ -22,12 +22,12 @@ function FreezerAssetTagModal({ ...props }) {
   const onSubmit = (e) => {
     e.preventDefault();
 
-    dispatch(
-      setTermsAndConditions({
-        property: "freezerAssetTag",
-        value: tagNumber,
-      })
-    );
+    // dispatch(
+    //   setTermsAndConditions({
+    //     property: "freezerAssetTag",
+    //     value: tagNumber,
+    //   })
+    // );
 
     // handleClose();
     onClose();

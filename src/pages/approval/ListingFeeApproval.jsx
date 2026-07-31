@@ -1,13 +1,13 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import PageHeaderTabs from "../../components/PageHeaderTabs";
 import { Box, TextField, debounce } from "@mui/material";
+import { useContext, useEffect, useMemo, useState } from "react";
 import CommonTable from "../../components/CommonTable";
-import useDisclosure from "../../hooks/useDisclosure";
-import ViewListingFeeModal from "../../components/modals/ViewListingFeeModal";
-import { useGetAllListingFeeQuery } from "../../features/listing-fee/api/listingFeeApi";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
+import ViewListingFeeModal from "../../components/modals/ViewListingFeeModal";
+import PageHeaderTabs from "../../components/PageHeaderTabs";
 import { AppContext } from "../../context/AppContext";
+import { useGetAllListingFeeQuery } from "../../features/listing-fee/api/listingFeeApi";
+import useDisclosure from "../../hooks/useDisclosure";
 import SessionExpired from "../SessionExpired";
 
 function ListingFeeApproval() {
@@ -92,7 +92,7 @@ function ListingFeeApproval() {
   const tableHeads = [
     "Business Name",
     "Business Address",
-    "Owner's Name",
+    "Branch Name",
     "Tx Number",
     "Total Amount",
     "Requested By",

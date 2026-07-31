@@ -56,11 +56,9 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
   const [trigger, { data, isFetching }] = useLazyGetPaymentOverviewQuery();
 
   const transaction = data?.[0];
-  console.log(transaction?.receiptAttachment);
   const paymentTransactionIds = transaction?.transactions?.map(
     (t) => t.paymentTransactionId
   );
-  console.log(paymentTransactionIds);
   const totalAmountDue = transaction?.transactions?.reduce(
     (acc, t) =>
       acc +
@@ -411,7 +409,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
             </>
           )}
 
-          {mode === "Clearing" && (
+          {/* {mode === "Clearing" && (
             <TextField
               label="Tag"
               fullWidth
@@ -421,9 +419,9 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
               value={aTag}
               onChange={(e) => setATag(e.target.value)}
             />
-          )}
+          )} */}
 
-          <Stack direction="row" gap={1} alignSelf="flex-end">
+          {/* <Stack direction="row" gap={1} alignSelf="flex-end">
             {(mode === "Clearing" ||
               (mode === "Filing" &&
                 selectedRowData?.paymentMethod === "Withholding")) && (
@@ -444,7 +442,7 @@ const ClearingModal = ({ mode = "Viewing", open, onClose, ...props }) => {
             {mode === "Filing" && (
               <SecondaryButton type="submit">File</SecondaryButton>
             )}
-          </Stack>
+          </Stack> */}
         </Stack>
       </CommonModal>
       <ViewPhotoModal

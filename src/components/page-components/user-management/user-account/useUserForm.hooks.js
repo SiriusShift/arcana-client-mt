@@ -1,19 +1,23 @@
-import { useEffect } from "react";
-import { handleCatchErrorMessage } from "../../../../utils/CustomFunctions";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { userAccountSchema } from "../../../../schema/schema";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   usePostUserMutation,
   usePutUserMutation,
 } from "../../../../features/user-management/api/userAccountApi";
 import useSnackbar from "../../../../hooks/useSnackbar";
+import { userAccountSchema } from "../../../../schema/schema";
+import { handleCatchErrorMessage } from "../../../../utils/CustomFunctions";
 
 const useUserForm = ({
   editMode,
+  approveMode,
   selectedRowData,
   userRoleData,
+  setSelectedEmployee,
   clusterData,
+  chargingData,
+  sedarData,
   onClose,
   open,
 }) => {
@@ -33,8 +37,7 @@ const useUserForm = ({
     defaultValues: userAccountSchema.defaultValues,
   });
 
-  console.log(watch("clusterId"));
-
+  console.log(watch())
   const watchUserRole = watch("userRoleId");
 
   // RTK Query: User Operations
@@ -44,16 +47,22 @@ const useUserForm = ({
   const onSubmit = async (data) => {
     const {
       userRoleId: { id },
-      clusterId,
+      territoryId,
+      charging,
       ...restData
     } = data;
+
+    console.log(charging)
 
     try {
       if (!editMode) {
         await postUser({
           ...restData,
           userRoleId: id,
-          clusterId: clusterId?.id,
+          territoryId: territoryId?.id,
+          charingCode: charging?.code,
+          chargingName: charging?.name
+
         }).unwrap();
 
         snackbar({
@@ -64,7 +73,9 @@ const useUserForm = ({
         await putUser({
           ...restData,
           userRoleId: id,
-          clusterId: clusterId?.id,
+          territoryId: territoryId?.id,
+          chargingCode: charging?.code,
+          charingName: charging?.name
         }).unwrap();
         snackbar({
           message: "User Account updated successfully",
@@ -79,11 +90,16 @@ const useUserForm = ({
     }
   };
   useEffect(() => {
+    if (!open) {
+      reset();
+      setSelectedEmployee(null);
+    }
     if (
       editMode &&
       selectedRowData &&
-      clusterData?.cluster &&
-      userRoleData?.userRoles && open
+      clusterData?.territories &&
+      userRoleData?.userRoles &&
+      open
     ) {
       setValue("id", selectedRowData.id);
       setValue("fullIdNo", selectedRowData.fullIdNo);
@@ -93,23 +109,85 @@ const useUserForm = ({
       setValue(
         "userRoleId",
         userRoleData.userRoles.find(
-          (item) => item.roleName === selectedRowData.roleName
-        )
+          (item) => item.roleName === selectedRowData.roleName,
+        ),
       );
 
-      const selectedCluster = clusterData.cluster.find(
-        (item) => item.id === selectedRowData.clusterId
+      console.log(selectedRowData.roleName)
+      const territoryId = selectedRowData.roleName === "TDO" || selectedRowData.roleName === "Head" ? selectedRowData.territoryId : selectedRowData.territoryIdX
+
+      const selectedCluster = clusterData.territories.find(
+        (item) => item.id === territoryId,
       );
-      console.log(selectedCluster);
-      setValue("clusterId", selectedCluster);
+
+      setValue("territoryId", selectedCluster);
 
       setValue("mobileNumber", selectedRowData.mobileNumber);
-    }
-  }, [editMode, selectedRowData, userRoleData, clusterData, setValue, open]);
+      const selectedCharging = chargingData.find((item) => item.code === selectedRowData.chargingCode);
+      setValue("charging", selectedCharging)
+    } else if (
+      approveMode &&
+      selectedRowData &&
+      sedarData?.length &&
+      clusterData?.territories &&
+      userRoleData?.userRoles &&
+      open
+    ) {
+      console.log("test");
+      const generateUsername = (firstName, lastName) => {
+        var part1 = firstName
+          .split(" ")
+          .map((i) => i.charAt(0))
+          .join("")
+          .toLowerCase();
+        var part2 = lastName.replace(/\s/g, "").toLowerCase();
+        return part1 + part2;
+      };
+      const user = sedarData?.find(
+        (item) =>
+          item.general_info.full_id_number === selectedRowData?.fullIdNo,
+      );
+      console.log(user, "user!");
 
+      setSelectedEmployee(user);
+
+      setValue("fullIdNo", user?.general_info?.full_id_number);
+      setValue("fullname", user?.general_info?.full_name);
+      setValue("location", user?.unit_info?.location_name);
+      setValue("department", user?.unit_info?.department_name);
+      setValue("company", user?.unit_info?.company_name);
+      setValue(
+        "username",
+        generateUsername(
+          user?.general_info?.first_name,
+          user?.general_info?.last_name,
+        ),
+      );
+
+      //Initial password is same as the username
+      setValue(
+        "password",
+        generateUsername(
+          user?.general_info?.first_name,
+          user?.general_info?.last_name,
+        ),
+      );
+    }
+  }, [
+    editMode,
+    selectedRowData,
+    userRoleData,
+    clusterData,
+    JSON.stringify(sedarData),
+    open,
+  ]);
   useEffect(() => {
-    if (watchUserRole?.roleName !== "CDO" && watchUserRole?.roleName !== "Marketing" ) {
-      setValue("clusterId", null);
+    if (
+      watchUserRole?.roleName !== "TDO" &&
+      watchUserRole?.roleName !== "Head"
+    ) {
+      setValue("territoryId", null);
+      setValue("charging", null);
     }
   }, [watchUserRole, setValue]);
 

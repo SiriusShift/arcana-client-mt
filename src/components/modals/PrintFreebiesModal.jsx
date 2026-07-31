@@ -38,7 +38,6 @@ function PrintFreebiesModal({ inventory, ...otherProps }) {
       PageSize: 2000,
     });
 
-  console.log(clientData);
 
   const address = selectedRowData?.ownersAddress
     ? selectedRowData?.ownersAddress
@@ -46,7 +45,6 @@ function PrintFreebiesModal({ inventory, ...otherProps }) {
         (client) => selectedRowData?.clientId === client.id
       )?.businessAddress || {};
 
-  console.log(address);
 
   //Functions
   const handlePrint = useReactToPrint({

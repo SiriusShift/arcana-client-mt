@@ -23,7 +23,7 @@ const SamplingFormActions = () => {
   const [addSampling] = useAddSamplingMutation();
 
   const handleCancel = () => {
-    navigate("/inventory-management/sampling", { replace: true });
+    navigate("/sales-management/sampling", { replace: true });
   };
 
   const onSubmit = async (data) => {
@@ -53,7 +53,7 @@ const SamplingFormActions = () => {
         variant: "success",
       });
 
-      navigate("/inventory-management/sampling", { replace: true });
+      navigate("/sales-management/sampling", { replace: true });
     } catch (error) {
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });

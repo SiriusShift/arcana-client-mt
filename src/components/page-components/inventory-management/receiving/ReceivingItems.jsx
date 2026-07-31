@@ -106,42 +106,42 @@ function ReceivingItems({
 
   const disableFields = items.some((item) => item.actualQuantity);
 
-  useEffect(() => {
-    reset({
-      items: items?.map((item) => {
-        console.log(item.actualQuantity)
-        return {
-          itemCode: item?.itemCode || "",
-          itemDescription: item?.itemDescription || "",
-          uom: item?.uom || "",
-          quantity: item?.quantity || null,
-          actualQuantity: item?.actualQuantity ?? null,
-          variance: (item?.actualQuantity && item?.quantity) ? item?.actualQuantity - item?.quantity : 0,
-          reason: item?.reason || ""
-        }
-      }),
-    });
-  }, [items, reset]);
+  // useEffect(() => {
+  //   reset({
+  //     items: items?.map((item) => {
+  //       console.log(item.actualQuantity)
+  //       return {
+  //         itemCode: item?.itemCode || "",
+  //         itemDescription: item?.itemDescription || "",
+  //         uom: item?.uom || "",
+  //         quantity: item?.quantity || null,
+  //         actualQuantity: item?.actualQuantity ?? null,
+  //         variance: (item?.actualQuantity && item?.quantity) ? item?.actualQuantity - item?.quantity : 0,
+  //         reason: item?.reason || ""
+  //       }
+  //     }),
+  //   });
+  // }, [items, reset]);
 
   console.log(watch());
 
-  useEffect(() => {
-    if (handleFormValid && handleFormData) {
-      handleFormValid((prev) => ({ ...prev, isItemsValid: isValid }));
-      handleFormData((prev) => ({
-        ...prev,
-        items: watchItems.map((item) => ({
-          itemCode: item?.itemCode,
-          quantity: Number(item?.quantity),
-          actualQuantity: Number(item?.actualQuantity),
-          itemDescription: item?.itemDescription,
-          uom: item?.uom,
-          reason: item?.reason,
-          variance: item?.variance,
-        })),
-      }));
-    }
-  }, [watchItems, isValid, handleFormValid, handleFormData, disableFields]);
+  // useEffect(() => {
+  //   if (handleFormValid && handleFormData) {
+  //     handleFormValid((prev) => ({ ...prev, isItemsValid: isValid }));
+  //     handleFormData((prev) => ({
+  //       ...prev,
+  //       items: watchItems.map((item) => ({
+  //         itemCode: item?.itemCode,
+  //         quantity: Number(item?.quantity),
+  //         actualQuantity: Number(item?.actualQuantity),
+  //         itemDescription: item?.itemDescription,
+  //         uom: item?.uom,
+  //         reason: item?.reason,
+  //         variance: item?.variance,
+  //       })),
+  //     }));
+  //   }
+  // }, [watchItems, isValid, handleFormValid, handleFormData, disableFields]);
 
   const handleAdd = () => {
     append({

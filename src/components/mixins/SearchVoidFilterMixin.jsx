@@ -17,7 +17,7 @@ function SearchVoidFilterMixin({
   clusterFilter,
   paymentMethodFilter,
   expenseTypeFilter,
-  businessTypeFilter,
+  distriTypeFilter,
   invoiceTypeFilter,
   validityFilter,
   uploadStatusFilter,
@@ -68,7 +68,7 @@ function SearchVoidFilterMixin({
           clusterFilter={clusterFilter && clusterFilter}
           paymentMethodFilter={paymentMethodFilter && paymentMethodFilter}
           expenseTypeFilter={expenseTypeFilter && expenseTypeFilter}
-          businessTypeFilter={businessTypeFilter && businessTypeFilter}
+          distriTypeFilter={distriTypeFilter && distriTypeFilter}
           invoiceTypeFilter={invoiceTypeFilter && invoiceTypeFilter}
           validityFilter={validityFilter && validityFilter}
           uploadStatusFilter={uploadStatusFilter && uploadStatusFilter}

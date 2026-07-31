@@ -1,7 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
-import CommonModalForm from "../../CommonModalForm";
-import { Controller, useForm } from "react-hook-form";
-import { cashoutSchema } from "../../../schema/schema";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Box,
   Divider,
@@ -9,33 +6,38 @@ import {
   Radio,
   RadioGroup,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
-import { yupResolver } from "@hookform/resolvers/yup";
-import useSnackbar from "../../../hooks/useSnackbar";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import moment from "moment";
+import { useEffect, useMemo, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { NumericFormat } from "react-number-format";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { callsheetApi } from "../../../features/inventory-management/api/callsheetApi";
+import { useGetAllClientsQuery } from "../../../features/registration/api/registrationApi";
+import { useCreateSalesTransactionMutation, useGetAllClientsForPOSQuery } from "../../../features/sales-management/api/salesTransactionApi";
+import { useGetAllDiscountTypesQuery } from "../../../features/setup/api/discountTypeApi";
+import { priceModeItemsApi } from "../../../features/setup/api/priceModeItemsApi";
 import useReasonConfirm from "../../../hooks/useReasonConfirm";
-import { useCreateSalesTransactionMutation } from "../../../features/sales-management/api/salesTransactionApi";
+import useSnackbar from "../../../hooks/useSnackbar";
+import { cashoutSchema } from "../../../schema/schema";
 import {
   formatPesoAmount,
   handleCatchErrorMessage,
 } from "../../../utils/CustomFunctions";
-import { NumericFormat } from "react-number-format";
-import { useGetAllDiscountTypesQuery } from "../../../features/setup/api/discountTypeApi";
-import { priceModeItemsApi } from "../../../features/setup/api/priceModeItemsApi";
-import { useDispatch } from "react-redux";
-import { callsheetApi } from "../../../features/inventory-management/api/callsheetApi";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-
-function CashoutModal({ total, resetTransaction, orderData, ...props }) {
+import CommonModalForm from "../../CommonModalForm";
+function CashoutModal({ total, resetTransaction, orderData, data: salesData, ...props }) {
   const { onClose, open } = props;
-
   //Hooks
   const reasonConfirm = useReasonConfirm();
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
   const chargeInvoiceRef = useRef();
   const discountRef = useRef();
+  const navigate = useNavigate()
 
   //React Hook Form
   const {
@@ -51,33 +53,31 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
     defaultValues: cashoutSchema.defaultValues,
   });
 
-  //Watch Constants
-  const watchDiscount = watch("discount");
-  const watchSpecialDiscount = watch("specialDiscount");
-  // const watchRebate = watch("rebateAmount");
 
   console.log(watch())
 
+
+  //Watch Constants
+  const watchDiscount = watch("discount");
+  const watchSpecialDiscount = watch("specialDiscount");
   //Calculations
+
   const specialDiscountAmount = useMemo(
-    () => (total * watchSpecialDiscount) / 100,
+    () => ((Number(total)) * watchSpecialDiscount) / 100,
     [watchSpecialDiscount, total]
   );
 
   const discountAmount = useMemo(
-    () => (total * watchDiscount) / 100,
+    () => (((Number(total))) * watchDiscount) / 100,
     [watchDiscount, total]
   );
 
 
   const netSales = useMemo(
-    () => total - discountAmount - specialDiscountAmount,
+    () => (Number(total)) - (discountAmount ? discountAmount : 0) - (specialDiscountAmount ? specialDiscountAmount : 0),
     [total, discountAmount, specialDiscountAmount]
   );
 
-  //Constants
-  const client = orderData?.clientId;
-  const items = orderData?.items;
 
   //RTK Query
   const [createSalesTransaction] = useCreateSalesTransactionMutation();
@@ -86,11 +86,27 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
     Page: 1,
     PageSize: 1000,
   });
+  const { data, isLoading } =
+    useGetAllClientsQuery({
+      RegistrationStatus: "Approved",
+      PageSize: 2000,
+    });
+  const {
+    data: clientData,
+    isLoading: isClientLoading,
+    error,
+  } = useGetAllClientsForPOSQuery({
+    refetchOnMountOrArgChange: true,
+  });
+
+
+  //Constants
+  const client = clientData?.find((item) => item.clientId === salesData?.customerCode);
+  const items = orderData?.items;
 
   const discountRange = useMemo(() => {
     let discountRange = null;
     variableDiscountData?.discount?.forEach((discount) => {
-      console.log("discount", discount);
       if (total >= discount.minimumAmount && total <= discount.maximumAmount) {
         discountRange = {
           minimumPercentage: discount.minimumPercentage,
@@ -106,17 +122,17 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
     const transformedOrderData = {
       clientId: client?.clientId,
       items: items?.map((item) => ({
-        itemId: item?.itemId?.itemId,
+        itemId: item?.itemId,
         quantity: item?.quantity,
-        unitPrice: item?.itemId?.currentPrice,
+        unitPrice: item?.price,
       })),
     };
-
-    console.log("Data", data);
 
     const combinedData = {
       ...transformedOrderData,
       ...data,
+      moveOrderId: orderData?.id,
+      clientId: transformedOrderData?.clientId,
       discount: data.discount || 0,
       rebateAmount: data.rebateAmount || 0,
       specialDiscount: data.specialDiscount || 0,
@@ -124,7 +140,8 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
       isOneTimeSp: data.isOneTimeSp || null,
     };
 
-    console.log(combinedData);
+    console.log(combinedData)
+
 
     try {
       await reasonConfirm({
@@ -146,7 +163,10 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
             );
             dispatch(callsheetApi.util.invalidateTags(["Callsheet"]));
 
+            onClose();
+            navigate("/sales-management/sales-transaction")
             return response; // Return the response so it can be handled as necessary
+
           } catch (error) {
             // Handle errors appropriately
             throw error; // You can throw the error or handle it differently
@@ -160,7 +180,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
         message: "Transaction successfully added!",
         variant: "success",
       });
-      // navigate(0);
+      navigate(0);
     } catch (error) {
       if (error?.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
@@ -193,10 +213,11 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
   useEffect(() => {
     if (open) {
       !client?.variableDiscount &&
-        setValue("discount", client?.discountPercentage * 100);
-      setValue("specialDiscount", client?.specialDiscount * 100);
+        setValue("discount", Number(salesData?.regDiscount) * 100);
+      setValue("specialDiscount", Number(salesData?.specialDiscount) * 100);
       setValue("specialDiscountId", client?.specialDiscountId);
       setValue("isOneTimeSp", client?.isOnetimeSp);
+      setValue("invoiceType", "Charge")
     }
   }, [open, setValue, client]);
 
@@ -211,22 +232,23 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
       onClose={handleClose}
     >
       <Box className="cashoutModal">
+
         <Box className="cashoutModal__businessInfo">
           <Box className="cashoutModal__businessInfo__business">
             <Typography fontWeight="500" fontSize="1.05rem">
-              Business Name
+              Branch Name
             </Typography>
 
-            <Typography fontSize="1.05rem">{client?.businessName}</Typography>
+            <Typography fontSize="1.05rem">{salesData?.customerName}</Typography>
           </Box>
 
-          <Box className="cashoutModal__businessInfo__owner">
+          {/* <Box className="cashoutModal__businessInfo__owner">
             <Typography fontWeight="500" fontSize="1.05rem">
-              Owner&apos;s Name
+              Branch Name
             </Typography>
 
-            <Typography fontSize="1.05rem">{client?.ownersName}</Typography>
-          </Box>
+            <Typography fontSize="1.05rem">{watch("clientId")?.branchName}</Typography>
+          </Box> */}
 
           {/* {`${client?.businessName} - ${client?.ownersName}`} */}
         </Box>
@@ -243,13 +265,10 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
               </Typography>
 
               <Typography className="cashoutModal__transactionInfo__costBreakdown__item__value">
-                ₱
-                {total?.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionsDigits: 2,
-                })}
+                {formatPesoAmount(Number(total))}
               </Typography>
             </Box>
+
 
             <Box className="cashoutModal__transactionInfo__costBreakdown__item">
               <Box className="cashoutModal__transactionInfo__costBreakdown__item__labelDiscount">
@@ -258,7 +277,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
                 </Typography>
 
                 <Typography className="cashoutModal__transactionInfo__costBreakdown__item__labelDiscount__value">
-                  {client?.variableDiscount ? (
+                  {watch("clientId")?.variableDiscount ? (
                     <Controller
                       control={control}
                       name="discount"
@@ -287,14 +306,12 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
                               (floatValue <
                                 discountRange.minimumPercentage * 100 ||
                                 floatValue >
-                                  discountRange.maximumPercentage * 100)
+                                discountRange.maximumPercentage * 100)
                             ) {
                               snackbar({
-                                message: `Discount should be between ${
-                                  discountRange.minimumPercentage * 100
-                                }% and ${
-                                  discountRange.maximumPercentage * 100
-                                }%`,
+                                message: `Discount should be between ${discountRange.minimumPercentage * 100
+                                  }% and ${discountRange.maximumPercentage * 100
+                                  }%`,
                                 variant: "error",
                               });
                               return false;
@@ -310,12 +327,12 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
                         />
                       )}
                     />
-                  ) : (
+                  ) : watch("discount") != null ? (
                     `(${watch("discount")?.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
-                      maximumFractionsDigits: 2,
+                      maximumFractionDigits: 2,
                     })}%)`
-                  )}
+                  ) : ""}
                 </Typography>
               </Box>
 
@@ -400,6 +417,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
               </Typography>
             </Box>
 
+
             <Divider sx={{ my: "10px" }} />
 
             <Box className="cashoutModal__transactionInfo__costBreakdown__net">
@@ -408,7 +426,7 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
               </Typography>
 
               <Typography className="cashoutModal__transactionInfo__costBreakdown__net__value">
-                ₱{netSales.toFixed(2)}
+                {formatPesoAmount(netSales)}
               </Typography>
             </Box>
           </Box>
@@ -445,11 +463,11 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
                   control={<Radio />}
                   label="Charge"
                 />
-                <FormControlLabel
+                {/* <FormControlLabel
                   value="Sales"
                   control={<Radio />}
                   label="Sales"
-                />
+                /> */}
               </RadioGroup>
             )}
           />
@@ -485,12 +503,42 @@ function CashoutModal({ total, resetTransaction, orderData, ...props }) {
                   value={value || null} // ✅ Ensure Moment or null
                   onChange={(date) => onChange(date)} // ✅ Pass Moment value to controller
                   label="OR Date"
-                  disabled
+                  shouldDisableDate={(date) => {
+                    const today = moment();
+
+                    const minDate =
+                      today.date() <= 5
+                        ? today.clone().subtract(1, "month").startOf("month") // First day of previous month
+                        : today.clone().startOf("month"); // First day of current month
+
+                    return (
+                      date.isBefore(minDate, "day") ||
+                      date.isAfter(today, "day")
+                    );
+                  }}                // disabled
                   slotProps={{
                     textField: { size: "small" },
                   }}
                 />
               </LocalizationProvider>
+            )}
+          />
+          <Controller
+            name="drNo"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <TextField
+                label="DR No."
+                size="small"
+                autoComplete="off"
+                type="number"
+                {...field}
+                inputRef={chargeInvoiceRef}
+                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                helperText={errors?.payee?.message}
+                error={errors?.payee}
+              />
             )}
           />
         </Box>

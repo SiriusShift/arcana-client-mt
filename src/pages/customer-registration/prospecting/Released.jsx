@@ -27,7 +27,7 @@ function Released() {
   const [voidConfirmBox, setVoidConfirmBox] = useState("");
 
   const dispatch = useDispatch();
-  const { validateEndingInventory, isNotificationFetching } = useValidate();
+  const { isNotificationFetching } = useValidate();
 
   const badges = useSelector((state) => state.badge.value);
   const selectedStoreType = useSelector(
@@ -161,8 +161,6 @@ function Released() {
             }
             onVoid={() => {
               if (registrationStatus !== "Voided") {
-                const error = validateEndingInventory();
-                if(error) return
                 onVoidOpen();
               }
             }}

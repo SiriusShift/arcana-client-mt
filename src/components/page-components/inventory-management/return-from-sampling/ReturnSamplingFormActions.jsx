@@ -31,7 +31,7 @@ const ReturnSamplingFormActions = () => {
   const [returnSampling] = usePostAddReturnFromSamplingMutation();
 
   const handleCancel = () => {
-    navigate("/inventory-management/return-sampling", { replace: true });
+    navigate("/sales-management/return-sampling", { replace: true });
   };
 
   const onSubmit = async (data) => {
@@ -59,7 +59,7 @@ const ReturnSamplingFormActions = () => {
         variant: "success",
       });
 
-      navigate("/inventory-management/return-sampling", { replace: true });
+      navigate("/sales-management/return-sampling", { replace: true });
     } catch (error) {
       if (error.isConfirmed) {
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });

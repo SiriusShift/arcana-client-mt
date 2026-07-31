@@ -22,7 +22,7 @@ function ViewCDOModal({ ...props }) {
         customOnClose={handleClose}
       >
         <Box className="viewCDOModal">
-          <Typography className="viewCDOModal__title">View CDO List</Typography>
+          <Typography className="viewCDOModal__title">View TDO List</Typography>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: "30px" }}>
             <Box className="viewCDOModal__cluster">
@@ -34,14 +34,14 @@ function ViewCDOModal({ ...props }) {
                   color: "white !important",
                 }}
               >
-                Cluster Name
+                Territory Name
               </Box>
               <TextField
                 size="small"
                 value={
                   // selectedRowData?.latestPriceChange?.price?.toLocaleString() ||
                   // ""
-                  selectedRowData?.cluster || ""
+                  selectedRowData?.name || ""
                 }
                 readOnly
                 sx={{ pointerEvents: "none", flex: 1 }}
@@ -49,7 +49,7 @@ function ViewCDOModal({ ...props }) {
             </Box>
 
             <Box className="viewCDOModal__content">
-              {selectedRowData?.users?.length === 0 ? (
+              {selectedRowData?.tdOs?.length === 0 ? (
                 <Box
                   sx={{
                     display: "flex",
@@ -63,7 +63,7 @@ function ViewCDOModal({ ...props }) {
                   </div>
                 </Box>
               ) : (
-                selectedRowData?.users?.map((user, index) => (
+                selectedRowData?.tdOs?.map((user, index) => (
                   <>
                     <Box
                       key={user.id}

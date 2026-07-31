@@ -1,3 +1,4 @@
+
 import { Box, IconButton, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
@@ -45,7 +46,7 @@ function PriceModeSetup() {
     onOpen: onDrawerOpen,
     onClose: onDrawerClose,
   } = useDisclosure();
-  
+
   const {
     isOpen: isAddDrawerOpen,
     onOpen: onAddDrawerOpen,
@@ -62,7 +63,7 @@ function PriceModeSetup() {
   const tableHeads = [
     "Price Mode Code",
     "Price Mode Description",
-    "Tagged Products",
+    // "Tagged Products",
   ];
 
   const customOrderKeys = ["priceModeCode", "priceModeDescription"];
@@ -120,7 +121,7 @@ function PriceModeSetup() {
   //   setValue("products", productsArray);
   // }, [priceModeItems]);
 
-  console.log("hello",watch());
+  console.log("hello", watch());
 
   //Drawer Functions
   const onDrawerSubmit = async (data) => {
@@ -146,9 +147,8 @@ function PriceModeSetup() {
         snackbar({ message: error?.data?.error?.message, variant: "error" });
       } else {
         snackbar({
-          message: `Error ${
-            drawerMode === "add" ? "adding" : "updating"
-          } Price Mode`,
+          message: `Error ${drawerMode === "add" ? "adding" : "updating"
+            } Price Mode`,
           variant: "error",
         });
       }
@@ -234,9 +234,9 @@ function PriceModeSetup() {
           <CommonTable
             evenLesserCompact
             mapData={data?.priceMode}
-            onEdit={handleEditOpen}
+            // onEdit={handleEditOpen}
             onArchive={onArchive}
-            onViewMoreConstant={onViewProductsByPriceModeModalOpen}
+            // onViewMoreConstant={onViewProductsByPriceModeModalOpen}
             onViewMoreConstantDisabled={!status}
             page={page}
             setPage={setPage}
@@ -255,7 +255,7 @@ function PriceModeSetup() {
           drawerHeader={"Edit Price Mode"}
           onSubmit={handleSubmit(onDrawerSubmit)}
           disableSubmit={!isValid}
-          isLoading={drawerMode === "edit" && isAddLoading }
+          isLoading={drawerMode === "edit" && isAddLoading}
         >
           <TextField
             className="priceModeSetup__row__code"

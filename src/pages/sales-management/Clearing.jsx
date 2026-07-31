@@ -22,6 +22,7 @@ import SessionExpired from "../SessionExpired";
 import useConfirm from "../../hooks/useConfirm";
 import useReasonConfirm from "../../hooks/useReasonConfirm";
 import { downloadFile } from "../../utils/DownloadFile";
+import ATagModal from "../../components/modals/sales-management/ATagModal";
 
 function Clearing() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -32,6 +33,7 @@ function Clearing() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [clearingModalMode, setClearingModalMode] = useState("Viewing");
+  const [downloadLoading, setDownloadLoading] = useState(false)
   const confirm = useConfirm();
   const reasonConfirm = useReasonConfirm();
 
@@ -48,6 +50,13 @@ function Clearing() {
     onOpen: onClearingModalOpen,
     onClose: onClearingModalClose,
   } = useDisclosure();
+
+    const {
+    isOpen: isATagModalOpen,
+    onOpen: onATagModalOpen,
+    onClose: onATagModalClose,
+  } = useDisclosure();
+
 
   //Constants
   const tabsList = useMemo(() => {
@@ -159,7 +168,9 @@ function Clearing() {
 
   const checkedArrayData = clearingData?.transactions.filter((_, index) =>
     checkedArray.includes(index)
-  );
+  ) || [];
+
+  console.log(checkedArrayData)
 
   // Functions
   const onInspect = () => {
@@ -174,6 +185,10 @@ function Clearing() {
     }
     onClearingModalOpen();
   };
+
+  const onATag = () => {
+    onATagModalOpen()
+  }
 
   const onFile = async () => {
     try {
@@ -265,6 +280,7 @@ function Clearing() {
         onClose={onClearingModalClose}
         mode={clearingModalMode}
       />
+      <ATagModal open={isATagModalOpen} onClose={onATagModalClose} data={checkedArrayData}/>
 
       <Box className="commonPageLayout">
         <PageHeaderTabs
@@ -286,14 +302,14 @@ function Clearing() {
         >
           {clearingStatus === "For Filing" && (
             <>
-              <Button
+              {/* <Button
                 variant="contained"
                 color="secondary"
                 onClick={onFile}
-                disabled={checkedArrayData.length === 0}
+                disabled={checkedArrayData?.length === 0}
               >
                 File
-              </Button>
+              </Button> */}
 
               {/* <Button
               variant="contained"
@@ -305,22 +321,51 @@ function Clearing() {
             </Button> */}
             </>
           )}
-          <Button
-            onClick={async () =>
-              await downloadFile(
-                `clearing-transaction/export`,
-                `?${clusterId && `clusterId=${clusterId}`}&status=${
-                  encodeURI(tabsList.find((item) => item.case === tabViewing)
+                    {clearingStatus === "For Clearing" && (
+            <>
+              {/* <Button
+                variant="contained"
+                color="secondary"
+                onClick={onATag}
+                disabled={checkedArrayData?.length === 0}
+              >
+                Tag
+              </Button> */}
+
+              {/* <Button
+              variant="contained"
+              color="secondary"
+              onClick={onReturn}
+              disabled={checkedArrayData.length === 0}
+            >
+              Return
+            </Button> */}
+            </>
+          )}
+          {/* <Button
+            onClick={async () => {
+              try {
+                setDownloadLoading(true)
+                await downloadFile(
+                  `clearing-transaction/export`,
+                  `?${clusterId && `clusterId=${clusterId}`}&status=${encodeURI(tabsList.find((item) => item.case === tabViewing)
                     ?.clearingStatus)
-                }`,
-                `Remittance_${tabsList.find((item) => item.case === tabViewing)?.status}`
-              )
+                  }`,
+                  `Remittance_${tabsList.find((item) => item.case === tabViewing)?.status}`
+                ).finally(() => setDownloadLoading(false))
+              } catch (err) {
+                console.log(err)
+                setDownloadLoading(false)
+              }
             }
+
+            }
+            disabled={downloadLoading}
             variant="contained"
             color="secondary"
           >
             <Download />
-          </Button>
+          </Button> */}
         </SearchActionMixin>
 
         {isClearingFetching ? (
@@ -341,7 +386,7 @@ function Clearing() {
             setRowsPerPage={setRowsPerPage}
             count={clearingData?.totalCount}
             lowerCompact
-            checkboxSelection={clearingStatus === "For Filing"}
+            // checkboxSelection={clearingStatus === "For Filing" || clearingStatus === "For Clearing"}
             includeActions
             onView={onInspect}
             checkedArray={checkedArray}

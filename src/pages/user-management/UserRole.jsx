@@ -38,6 +38,8 @@ function UserRole() {
   const [checkedReports, setCheckedReports] = useState([])
   // const [checkedModules, setCheckedModules] = useState([]);
 
+
+  console.log(checkedModules)
   // Drawer Disclosures
   const {
     isOpen: isDrawerOpen,

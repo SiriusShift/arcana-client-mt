@@ -216,7 +216,6 @@ const PrintingComponent = ({ type, data, fullname, style }) => {
 };
 
 function PrintInventoryModal({ data, type, copies = 1, ...otherProps }) {
-  console.log(data);
   const [isLoading, setIsLoading] = useState(false);
 
   const { fullname } = useSelector((state) => state.login);

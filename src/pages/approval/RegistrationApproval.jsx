@@ -91,22 +91,22 @@ function RegistrationApproval() {
 
   const tableHeads = [
     "Business Name",
-    "Owner's Name",
+    "Branch Name",
     "Contact Number",
     "Business Type",
     "Business Address",
-    "Cluster",
+    // "Cluster",
     "Requested By",
     "Origin",
   ];
 
   const customOrderKeys = [
     "businessName",
-    "ownersName",
+    "branchName",
     "phoneNumber",
-    "storeType",
+    "distriType",
     "businessAddress",
-    "clusterName",
+    // "clusterName",
     "requestor",
     "origin",
   ];

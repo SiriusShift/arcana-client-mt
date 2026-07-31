@@ -1,5 +1,11 @@
-import { useContext, useEffect, useState } from "react";
-import CommonDrawer from "../../../components/CommonDrawer";
+import { yupResolver } from "@hookform/resolvers/yup";
+import {
+  Check,
+  Close,
+  Gavel,
+  Payment,
+  Person
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -12,86 +18,79 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import "../../../assets/styles/drawerForms.styles.scss";
-import {
-  Attachment,
-  Check,
-  Close,
-  Gavel,
-  Payment,
-  Person,
-} from "@mui/icons-material";
-import { useDispatch, useSelector } from "react-redux";
-import { directRegisterPersonalSchema } from "../../../schema/schema";
+import moment from "moment";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import useDisclosure from "../../../hooks/useDisclosure";
+import { PatternFormat } from "react-number-format";
+import { useDispatch, useSelector } from "react-redux";
+import "../../../assets/styles/drawerForms.styles.scss";
 import CommonDialog from "../../../components/common/CommonDialog";
+import CommonDrawer from "../../../components/CommonDrawer";
+import DangerButton from "../../../components/DangerButton";
+import AgreeTermsModal from "../../../components/modals/registration/AgreeTermsModal";
+import SecondaryButton from "../../../components/SecondaryButton";
+import RegisterClientFormSkeleton from "../../../components/skeletons/RegisterClientFormSkeleton";
+import { AttachmentsContext } from "../../../context/AttachmentsContext";
+import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
 import {
-  useGetFreebiesByClientIdQuery,
+  usePostListingFeeMutation,
+  usePutUpdateListingFeeMutation,
+} from "../../../features/listing-fee/api/listingFeeApi";
+import { useSendMessageMutation } from "../../../features/misc/api/rdfSmsApi";
+import { setSelectedRow } from "../../../features/misc/reducers/selectedRowSlice";
+import {
+  usePostExpensesMutation,
+  usePutUpdateExpensesMutation,
+} from "../../../features/otherExpenses/api/otherExpensesRegApi";
+import {
   useLazyGetAttachmentsByClientIdQuery,
   useLazyGetListingFeeByClientIdQuery,
   useLazyGetOtherExpensesByClientIdQuery,
   useLazyGetTermsByClientIdQuery,
   usePostDirectRegistrationMutation,
+  usePostEditClientRequestMutation,
   usePostValidateClientMutation,
   usePutAddAttachmentsForDirectMutation,
   usePutReleaseFreebiesMutation,
   usePutUpdateClientAttachmentsMutation,
-  usePutUpdateClientInformationMutation,
+  usePutUpdateClientInformationMutation
 } from "../../../features/registration/api/registrationApi";
-import useSnackbar from "../../../hooks/useSnackbar";
-import TermsAndConditions from "../prospecting/TermsAndConditions";
-import Attachments from "../prospecting/Attachments";
-import { AttachmentsContext } from "../../../context/AttachmentsContext";
 import {
   resetExpensesForRegistration,
   resetFreebies,
   resetListingFeeForRegistration,
+  resetPriceMode,
   resetTermsAndConditions,
+  setDirty,
   setExpensesForRegistration,
-  setFreebies,
   setIsExpensesValid,
   setIsListingFeeValid,
   setListingFeeForRegistration,
+  setPriceModeId,
+  setPriceModeItems,
   setWholeTermsAndConditions,
-  toggleFeesToStore,
+  toggleFeesToStore
 } from "../../../features/registration/reducers/regularRegistrationSlice";
+import { useGetAllDistributionQuery } from "../../../features/setup/api/distributionApi";
+import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
+import { useGetAllPriceModeForClientsQuery } from "../../../features/setup/api/priceModeSetupApi";
+import { useGetAllProductsQuery } from "../../../features/setup/api/productsApi";
+import { useGetAllTermDaysQuery } from "../../../features/setup/api/termDaysApi";
+import { useGetTerritoryQuery } from "../../../features/setup/api/territoryApi";
+import useDisclosure from "../../../hooks/useDisclosure";
+import useSnackbar from "../../../hooks/useSnackbar";
+import { directRegisterPersonalSchema } from "../../../schema/schema";
+import { creditType } from "../../../utils/Constants";
 import {
   base64ToBlob,
   convertToTitleCase,
   handleCatchErrorMessage,
   shallowEqual,
 } from "../../../utils/CustomFunctions";
-import ControlledAutocomplete from "../../../components/ControlledAutocomplete";
-import { useGetAllStoreTypesQuery } from "../../../features/setup/api/storeTypeApi";
-import DangerButton from "../../../components/DangerButton";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
-import moment from "moment";
-import { setSelectedRow } from "../../../features/misc/reducers/selectedRowSlice";
-import { useGetAllTermDaysQuery } from "../../../features/setup/api/termDaysApi";
-import { DirectReleaseContext } from "../../../context/DirectReleaseContext";
-import { PatternFormat } from "react-number-format";
-import { useGetAllClustersQuery } from "../../../features/setup/api/clusterApi";
-import RegisterClientFormSkeleton from "../../../components/skeletons/RegisterClientFormSkeleton";
-import { useGetAllPriceModeForClientsQuery } from "../../../features/setup/api/priceModeSetupApi";
-import { useSendMessageMutation } from "../../../features/misc/api/rdfSmsApi";
-import SecondaryButton from "../../../components/SecondaryButton";
 import ListingFeeClient from "../prospecting/ListingFeeClient";
 import OtherExpensesClient from "../prospecting/OtherExpensesClient";
-import AgreeTermsModal from "../../../components/modals/registration/AgreeTermsModal";
-import {
-  usePostListingFeeMutation,
-  usePutUpdateListingFeeMutation,
-} from "../../../features/listing-fee/api/listingFeeApi";
-import {
-  usePostExpensesMutation,
-  usePutUpdateExpensesMutation,
-} from "../../../features/otherExpenses/api/otherExpensesRegApi";
-import { useGetAllProductsQuery } from "../../../features/setup/api/productsApi";
-import { useGetAllOtherExpensesQuery } from "../../../features/setup/api/otherExpensesApi";
-import { set } from "lodash";
+import PriceMode from "../prospecting/PriceMode";
+import TermsAndConditions from "../prospecting/TermsAndConditions";
 
 function DirectRegisterForm({
   open,
@@ -110,17 +109,19 @@ function DirectRegisterForm({
   } = useContext(AttachmentsContext);
 
   const snackbar = useSnackbar();
+  const originalItemsRef = useRef(null); // ← use ref so it doesn't cause re-renders
 
   const [activeTab, setActiveTab] = useState("Personal Info");
   const [sameAsOwnersAddress, setSameAsOwnersAddress] = useState(false);
+  const [originalItems, setOriginalItems] = useState();
   const [includeAuthorizedRepresentative, setIncludeAuthorizedRepresentative] =
     useState(false);
 
-  // console.log(includeAuthorizedRepresentative);
   const [isAllApiLoading, setIsAllApiLoading] = useState(false);
 
   const { ownersRequirements, representativeRequirements, requirementsMode } =
     useContext(AttachmentsContext);
+
 
   const {
     signatureDirect,
@@ -129,15 +130,13 @@ function DirectRegisterForm({
     setPhotoProofDirect,
   } = useContext(DirectReleaseContext);
 
-  // console.log(photoProofDirect, signatureDirect);
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  console.log("selected row", selectedRowData);
+  const userDetails = useSelector((state) => state.login.userDetails);
+  const priceModeItems = useSelector((state) => state.regularRegistration.value.priceMode)
   const termsAndConditions = useSelector(
     (state) => state.regularRegistration.value.termsAndConditions
   );
-
-  // console.log(termsAndConditions);
   const freebiesDirect = useSelector(
     (state) => state.regularRegistration.value.directFreebie.freebies
   );
@@ -155,6 +154,12 @@ function DirectRegisterForm({
   const isExpensesValid = useSelector(
     (state) => state.regularRegistration.value.expensesForRegistration.isValid
   );
+
+  const isPriceModeDirty = useSelector(
+    (state) => state.regularRegistration.value.isDirty
+  )
+
+
 
   const signatureToCheck =
     requirementsMode === "owner"
@@ -191,82 +196,153 @@ function DirectRegisterForm({
     defaultValues: directRegisterPersonalSchema.defaultValues,
   });
 
-  console.log(watch());
 
+
+  // const { watch: watchItems, formState: { isValid: itemsValid }, reset: resetPriceMode, setValue: setValueItems } = itemsMethod
+  const priceMode = priceModeItems.priceModeId;
+
+  const isCreditValid = Boolean(
+    (termsAndConditions?.creditTypeId?.value === 1 &&
+      termsAndConditions?.creditLimit &&
+      termsAndConditions?.termDaysId) ||
+
+    (termsAndConditions?.creditTypeId?.value === 2 &&
+      termsAndConditions?.termDaysId) ||
+
+    (termsAndConditions?.creditTypeId?.value === 3 &&
+      termsAndConditions?.creditLimit) ||
+
+    termsAndConditions?.terms === 1
+  );
+
+  const isTermsValid = Object.keys(termsAndConditions).every((key) => {
+    const value = termsAndConditions[key];
+
+
+    // Mode of Payments
+    if (key === "modeOfPayments") {
+      return value?.length > 0;
+    }
+
+    if (key === "termDaysId" || key === "creditTypeId" || key === "creditLimit") {
+      if (termsAndConditions?.terms === 1) {
+        return true
+      }
+    }
+
+    // Fixed Discount
+    if (key === "fixedDiscount" || key === "variableDiscount") {
+      return true;
+    }
+
+    if (key === "creditLimit") {
+      if (termsAndConditions?.terms === 3) {
+        return true
+      }
+    }
+
+    // Default validation
+    return value !== null && value !== "";
+  });
+
+
+  const isDiscountValid =
+    priceMode !== 1
+      ? true
+      : Object.keys(termsAndConditions).every((key) => {
+        const value = termsAndConditions[key];
+
+        if (key === "fixedDiscount") {
+          return value?.discountPercentage != null &&
+            value?.discountPercentage !== "";
+        }
+
+        if (key === "variableDiscount") {
+          return value != null && value !== "";
+        }
+
+        return true;
+      });
+
+  const isTDO = userDetails?.roleName === "TDO";
+  const isHead = userDetails?.roleName === "Head";
+
+  const isApprovedEdit =
+    editMode &&
+    (isTDO || isHead) &&
+    clientStatus === "Approved";
+
+  const isUnderReviewEdit =
+    editMode &&
+    isTDO &&
+    clientStatus === "Under review";
+
+  const showNextButton =
+    // 1. New registration
+    (!editMode && activeTab !== "Costs and Fees") ||
+
+    // 2. Under Review edit (stop at Terms & Conditions)
+    (isUnderReviewEdit &&
+      activeTab !== "Terms & Conditions") ||
+
+    // 3. Other edit modes (except Approved)
+    (editMode &&
+      !isApprovedEdit &&
+      !isUnderReviewEdit &&
+      activeTab !== "Costs and Fees");
+
+  const showSubmitButton =
+    // New registration
+    (!editMode && activeTab === "Costs and Fees") ||
+
+    // Under Review edit submits at Terms & Conditions
+    (isUnderReviewEdit &&
+      activeTab === "Terms & Conditions") ||
+
+    // Approved edit submits on Price Mode only
+    (isApprovedEdit &&
+      activeTab === "Price Mode");
   //Constants
   const navigators = [
     {
       label: "Personal Info",
       // isValid: isValid,
-      isValid: includeAuthorizedRepresentative
-        ? watch("authorizedRepresentative") &&
-          watch("authorizedRepresentativePosition") &&
-          isValid
-        : isValid,
+      isValid:
+        isValid,
       icon: <Person />,
       disabled: false,
     },
 
     {
+      label: "Price Mode",
+      isValid: priceModeItems.isValid && isDiscountValid,
+      // && !!signatureToCheck,
+      icon: <Gavel />,
+      disabled: false,
+    },
+    {
       label: "Terms & Conditions",
-      isValid:
-        Object.keys(termsAndConditions).every((key) => {
-          if (
-            key === "fixedDiscount" &&
-            (termsAndConditions[key].discountPercentage === null ||
-              termsAndConditions[key].discountPercentage === "" ||
-              termsAndConditions[key].discountPercentage === undefined) &&
-            termsAndConditions["variableDiscount"] === false
-          ) {
-            return false;
-          }
-
-          if (!termsAndConditions["freezer"] && key === "freezerAssetTag") {
-            return true;
-          }
-
-          if (termsAndConditions["terms"] === 1 && key === "termDaysId") {
-            return true;
-          } else if (
-            termsAndConditions["terms"] !== 3 &&
-            key === "creditLimit"
-          ) {
-            return true;
-          }
-
-          if (key === "modeOfPayments") {
-            if (termsAndConditions[key]?.length === 0) {
-              return false;
-            }
-            return true;
-          }
-
-          if (key === "withholdingIssuance") {
-            return true;
-          }
-
-          const value = termsAndConditions[key];
-          return value !== null && value !== "";
-        }) && !!signatureToCheck,
+      isValid: isTermsValid && isCreditValid,
+      // && !!signatureToCheck,
       icon: <Gavel />,
       disabled: false,
     },
 
-    termsAndConditions["terms"] !== 1 && {
-      label: "Attachments",
-      isValid:
-        requirementsMode === "owner"
-          ? !Object.values(ownersRequirements).some(
-              (value) => value === null || value === undefined
-            )
-          : requirementsMode === "representative"
-          ? !Object.values(representativeRequirements).some(
-              (value) => value === null || value === undefined
-            )
-          : false,
-      icon: <Attachment />,
-      disabled: false,
-    },
+    // termsAndConditions["terms"] !== 1 && {
+    //   label: "Attachments",
+    //   isValid:
+    //     requirementsMode === "owner"
+    //       ? !Object.values(ownersRequirements).some(
+    //         (value) => value === null || value === undefined
+    //       )
+    //       : requirementsMode === "representative"
+    //         ? !Object.values(representativeRequirements).some(
+    //           (value) => value === null || value === undefined
+    //         )
+    //         : false,
+    //   icon: <Attachment />,
+    //   disabled: false,
+    // },
 
     {
       label: "Costs and Fees",
@@ -276,17 +352,21 @@ function DirectRegisterForm({
     },
   ].filter(Boolean);
 
+
   navigators[1].disabled = !editMode && activeTab === "Personal Info";
-  navigators[2].disabled = !navigators[0].isValid || !navigators[1].isValid;
+  navigators[2].disabled = !editMode && activeTab === "Personal Info";
+  navigators[3].disabled = !navigators[0].isValid || !navigators[1].isValid;
   if (navigators?.length > 3) {
     navigators[3].disabled =
       !navigators[0].isValid ||
       !navigators[1].isValid ||
-      !navigators[2].isValid;
+      !navigators[2].isValid ||
+      !navigators[3].isValid;
   }
 
   //RTK Query
   const [postDirectRegistration] = usePostDirectRegistrationMutation();
+  const [postUpdateTDOItems] = usePostEditClientRequestMutation();
   const [putAddAttachmentsForDirect] = usePutAddAttachmentsForDirectMutation();
   const [postListingFee] = usePostListingFeeMutation();
   const [postExpenses] = usePostExpensesMutation();
@@ -300,21 +380,26 @@ function DirectRegisterForm({
 
   const [putReleaseFreebies] = usePutReleaseFreebiesMutation();
 
-  const { data: storeTypeData, isLoading: isStoreTypeLoading } =
-    useGetAllStoreTypesQuery({ Status: true, Page: 1, PageSize: 1000 });
+  const { data: distriTypeData, isLoading: isStoreTypeLoading } =
+    useGetAllDistributionQuery({ Status: true, Page: 1, PageSize: 1000 });
   const { data: termDaysData } = useGetAllTermDaysQuery({
     Status: true,
     Page: 1,
     PageSize: 1000,
   });
-  const { data: clusterData, isLoading: isClusterDataLoading } =
-    useGetAllClustersQuery({
-      Status: true,
-      ModuleName: "Registration",
-      Page: 1,
-      PageSize: 1000,
-    });
-  console.log("cluster", clusterData);
+
+  const { data: territory, isLoading: isTerritoryLoading } = useGetTerritoryQuery({
+    Status: true,
+    Page: 1,
+    PageSize: 1000,
+  })
+  // const { data: clusterData, isLoading: isClusterDataLoading } =
+  //   useGetAllClustersQuery({
+  //     Status: true,
+  //     ModuleName: "Registration",
+  //     Page: 1,
+  //     PageSize: 1000,
+  //   });
   const { data: productData } = useGetAllProductsQuery({
     Status: true,
     page: 1,
@@ -333,10 +418,9 @@ function DirectRegisterForm({
   //Fetch Terms, Attachments, Listing Fee, and OtherExpenses
   const [triggerTerms, { data: termsData, isLoading: isTermsDataLoading }] =
     useLazyGetTermsByClientIdQuery();
-  const { data, isLoading } = useGetFreebiesByClientIdQuery({
-    id: selectedRowData?.id,
-  });
-  console.log(productData, data, "productData");
+  // const { data, isLoading } = useGetFreebiesByClientIdQuery({
+  //   id: selectedRowData?.id,
+  // });
   const [
     triggerAttachments,
     { data: attachmentsData, isLoading: isAttachmentsDataLoading },
@@ -361,115 +445,150 @@ function DirectRegisterForm({
     try {
       setIsAllApiLoading(true);
 
-      const { terms, freezer, freezerAssetTag, ...noTerms } =
-        termsAndConditions;
+      const { terms, ...noTerms } = termsAndConditions;
+
+
       const transformedData = {
         ...data,
         dateOfBirth: moment(data?.dateOfBirth).format("YYYY-MM-DD"),
-        storeTypeId: data?.storeTypeId?.id,
-        clusterId: data?.clusterId?.id,
-        priceModeId: data?.priceModeId?.id,
+        priceModeId: priceModeItems.priceModeId,
+        tdoId: data?.territory?.id,
         clientId: selectedRowData?.id,
+        distriTypeId: data?.distriTypeId?.id
       };
 
       const transformedTermsAndConditions = {
         ...noTerms,
         termDaysId: termsAndConditions?.termDaysId?.id,
         termsId: termsAndConditions?.terms,
-        freezer: freezer ? freezerAssetTag : null,
+        creditType: termsAndConditions?.creditTypeId?.value,
       };
+
+      // const mappedFreebies =
+      //   freebiesDirect?.length > 0
+      //     ? {
+      //       freebies: freebiesDirect.map((freebie) => ({
+      //         itemId: freebie.itemId.itemId,
+      //         quantity: freebie.quantity,
+      //       })),
+      //     }
+      //     : {};
+
+      const mappedClientItems = {
+        clientItems: priceModeItems?.items?.map((item) => ({
+          itemId: item.itemCode.itemId,
+          price: item.price,
+        })),
+      };
+
+      const originalItems = originalItemsRef.current; // ← read from ref
+
+      const isExistingItem = (item) =>
+        originalItems?.some(
+          (data) =>
+            data.itemCode?.itemCode === item.itemCode?.itemCode
+        );
+
+      const addedItems = priceModeItems.items
+        ?.filter((item) => !isExistingItem(item))
+        ?.map((item) => ({
+          itemId: item.itemCode?.itemId,
+          price: item.price,
+        }));
+
+      const changedItems = priceModeItems.changedItems
+        ?.filter((item) => !isExistingItem(item))
+        ?.map((item) => ({
+          itemId: item?.itemId,
+          price: item.price,
+        }));
+
+      const removedItems = priceModeItems.removedItems
+        ?.filter((item) => !isExistingItem(item))
+        ?.map((item) => ({
+          itemId: item.itemId,
+        }));
+
 
       let response;
 
       if (editMode) {
-        response = await putUpdateClientInformation({
-          clientId: selectedRowData?.id,
-          ...transformedData,
-          ...transformedTermsAndConditions,
-          ...(freebiesDirect?.length > 0
-            ? {
-                freebies: freebiesDirect.map((freebie) => ({
-                  itemId: freebie.itemId.itemId,
-                  quantity: freebie.quantity,
-                })),
-              }
-            : {}),
-        }).unwrap();
+        const newDisc = termsAndConditions?.fixedDiscount?.discountPercentage / 100
+        if ((isTDO || isHead) && clientStatus === "Approved" && editMode) {
+          const payload = {
+            clientId: selectedRowData?.id,
+
+            ...(isHead && (newDisc !== termsData?.fixedDiscount?.discountPercentage) && {
+              discount: termsData?.fixedDiscount?.discountPercentage !== newDisc ? (newDisc * 100) : null,
+            }),
+            ...(isTDO &&
+              addedItems?.length > 0 && {
+              addItems: addedItems,
+            }),
+
+            ...(isHead &&
+              changedItems?.length > 0 && {
+              changeItemPrices: changedItems,
+            }),
+
+            ...(isHead &&
+              removedItems?.length > 0 && {
+              removeItems: removedItems,
+            }),
+          };
+
+
+          response = await postUpdateTDOItems(payload).unwrap();
+
+        } else {
+          response = await putUpdateClientInformation({
+            clientId: selectedRowData?.id,
+            ...transformedData,
+            ...transformedTermsAndConditions,
+            ...mappedClientItems,
+          }).unwrap();
+        }
       } else {
         response = await postDirectRegistration({
           ...transformedData,
           ...transformedTermsAndConditions,
-          ...(freebiesDirect?.length > 0
-            ? {
-                freebies: freebiesDirect.map((freebie) => ({
-                  itemId: freebie.itemId.itemId,
-                  quantity: freebie.quantity,
-                })),
-              }
-            : {}),
-        }).unwrap();
-      }
-
-      if (freebiesDirect && signatureDirect && photoProofDirect) {
-        const signatureFile = new File(
-          [base64ToBlob(signatureDirect)],
-          `signature_${Date.now()}.jpg`,
-          { type: "image/jpeg" }
-        );
-
-        const formData = new FormData();
-        formData.append("PhotoProof", photoProofDirect);
-        formData.append("ESignature", signatureFile);
-
-        await putReleaseFreebies({
-          id: response?.value?.id || selectedRowData?.id,
-          body: formData,
+          ...mappedClientItems,
         }).unwrap();
 
-        setPhotoProofDirect(null);
-        setSignatureDirect(null);
-        dispatch(resetFreebies());
+
+        const clientId = editMode
+          ? selectedRowData?.id
+          : response?.value?.id;
+
+        if (
+          listingFees &&
+          (listingFees?.length > 0 ||
+            listingFeeData?.listingFees?.length > 0)
+        ) {
+          await addListingFee(clientId);
+        }
+
+        if (
+          expenses &&
+          (expenses?.length > 0 ||
+            expensesData?.expenses?.length > 0)
+        ) {
+          await addExpenses(clientId);
+        }
       }
 
-      const clientId = editMode ? selectedRowData?.id : response?.value?.id;
-
-      listingFees &&
-        (listingFees?.length > 0 || listingFeeData?.listingFees?.length > 0) &&
-        (await addListingFee(clientId));
-
-      expenses &&
-        (expenses?.length > 0 || expensesData?.expenses?.length > 0) &&
-        (await addExpenses(clientId));
-
-      // termsAndConditions["terms"] !== 1 &&
-      //   (await addAttachmentsSubmit(clientId));
-      await addAttachmentsSubmit(clientId);
-
-      if (editMode) {
-        clientStatus === "Rejected" &&
-          (await sendMessage({
-            message: `Fresh morning ${
-              selectedRowData?.currentApprover || "approver"
-            }! You have a new customer approval.`,
-            mobile_number: `+63${selectedRowData?.currentApproverPhoneNumber}`,
-          }).unwrap());
-      } else {
-        await sendMessage({
-          message: `Fresh morning ${
-            response?.value?.approver || "approver"
-          }! You have a new customer approval.`,
-          mobile_number: `+63${response?.value?.approverMobileNumber}`,
-        }).unwrap();
-      }
 
       snackbar({
-        message: `Client ${editMode ? "updated" : "registered"}  successfully`,
+        message: `Client ${editMode ? "updated" : "registered"
+          } successfully`,
         variant: "success",
       });
 
       onClose();
       handleResetForms();
     } catch (error) {
+      console.log(error);
+
       if (error.function !== "sendMessage") {
         snackbar({
           message: handleCatchErrorMessage(error),
@@ -481,17 +600,20 @@ function DirectRegisterForm({
             "Client registered successfully but failed to send message to approver.",
           variant: "warning",
         });
+
         onClose();
-        //Reset Direct Freebies
+
         setPhotoProofDirect(null);
         setSignatureDirect(null);
+
         dispatch(resetFreebies());
+
         handleResetForms();
       }
+    } finally {
+      onConfirmClose();
+      setIsAllApiLoading(false);
     }
-
-    onConfirmClose();
-    setIsAllApiLoading(false);
   };
 
   const addAttachmentsSubmit = async (clientId) => {
@@ -514,10 +636,10 @@ function DirectRegisterForm({
         convertedSignature = ownersRequirements["signature"];
       }
 
-      setOwnersRequirements((prevOwnersRequirements) => ({
-        ...prevOwnersRequirements,
-        signature: convertedSignature,
-      }));
+      // setOwnersRequirements((prevOwnersRequirements) => ({
+      //   ...prevOwnersRequirements,
+      //   signature: convertedSignature,
+      // }));
       attachmentsObject = {
         ...ownersRequirements,
         signature: convertedSignature,
@@ -548,10 +670,13 @@ function DirectRegisterForm({
       };
     }
 
+
+
     if (attachmentsObject) {
       if (termsAndConditions["terms"] !== 1) {
         Object.keys(attachmentsObject).forEach((key, index) => {
           const attachment = attachmentsObject[key];
+
 
           formData.append(`Attachments[${index}].Attachment`, attachment);
           formData.append(
@@ -567,7 +692,8 @@ function DirectRegisterForm({
         formData.append("Attachments[0].DocumentType", "Signature");
       }
     }
-
+    for (const [key, value] of formData.entries()) {
+    }
     if (editMode) {
       await putUpdateClientAttachments({
         id: selectedRowData?.id,
@@ -664,7 +790,6 @@ function DirectRegisterForm({
   };
 
   const handleDrawerClose = () => {
-    console.log("first");
     onClose();
     onCancelConfirmClose();
     handleResetForms();
@@ -672,8 +797,9 @@ function DirectRegisterForm({
 
   const handleResetForms = () => {
     reset();
+    setOriginalItems(null)
+    dispatch(resetPriceMode());
     clearErrors();
-    console.log("test");
     // setValue("phoneNumber", "");
 
     setSameAsOwnersAddress(false);
@@ -708,63 +834,73 @@ function DirectRegisterForm({
       authorizationLetter: false,
     });
 
-    console.log("test");
-
     setRequirementsMode(null);
     dispatch(resetTermsAndConditions());
     dispatch(resetListingFeeForRegistration());
     dispatch(resetExpensesForRegistration());
     dispatch(resetFreebies());
+    dispatch(setDirty(false));
     setEditMode(false);
     setActiveTab("Personal Info");
-    console.log("REsetted Listing and Expenses");
   };
 
   const customRibbonContent = (
     <Box sx={{ display: "flex", flex: 1, gap: "10px" }}>
       <Box
-        className={
-          termsAndConditions["terms"] === 1
-            ? "register__headersThreeTabs"
-            : "register__headers"
-        }
+        className={"register__headers"}
       >
-        {navigators.map((item, i) => {
-          return isTermsDataLoading ||
-            isAttachmentsDataLoading ||
-            isListingFeeLoading ||
-            isExpensesLoading ||
-            isLoading ? (
-            <Skeleton key={i} sx={{ transform: "none" }} />
-          ) : (
-            <Button
-              key={i}
-              disabled={item.disabled}
-              className={
-                "register__headers__item" +
-                (activeTab === item.label ? " active" : "")
-              }
-              onClick={() => {
-                setActiveTab(item.label);
-              }}
-              // sx={{ bgcolor: item.disabled && "#a9a7c1" }}
-            >
-              {item.isValid && (
-                <Check
-                  sx={{
-                    color: "white !important",
-                    stroke: "white",
-                    strokeWidth: 1,
-                  }}
-                />
-              )}
-              <Typography className="register__headers__item__label">
-                {item.label}
-              </Typography>
-              <span className="register__headers__item__icon">{item.icon}</span>
-            </Button>
-          );
-        })}
+        {navigators
+          .filter((item) => {
+            if (isTDO && clientStatus === "Under review" && editMode) {
+              return item.label !== "Costs and Fees"
+            }
+
+            else if ((isTDO || isHead) && clientStatus === "Approved" && editMode) {
+              return item.label === "Price Mode";
+            }
+
+
+
+            return true;
+          })
+          .map((item, i) => {
+            return isTermsDataLoading ||
+              isAttachmentsDataLoading ||
+              isListingFeeLoading ||
+              isExpensesLoading ? (
+              <Skeleton key={i} sx={{ transform: "none" }} />
+            ) : (
+              <Button
+                key={i}
+                disabled={item.disabled}
+                className={
+                  "register__headers__item" +
+                  (activeTab === item.label ? " active" : "")
+                }
+                onClick={() => {
+                  setActiveTab(item.label);
+                }}
+              >
+                {item.isValid && (
+                  <Check
+                    sx={{
+                      color: "white !important",
+                      stroke: "white",
+                      strokeWidth: 1,
+                    }}
+                  />
+                )}
+
+                <Typography className="register__headers__item__label">
+                  {item.label}
+                </Typography>
+
+                <span className="register__headers__item__icon">
+                  {item.icon}
+                </span>
+              </Button>
+            );
+          })}
       </Box>
 
       <IconButton
@@ -785,8 +921,8 @@ function DirectRegisterForm({
           await postValidateClient({
             clientId: editMode ? selectedRowData?.id : 0,
             businessName: watch("businessName"),
-            fullName: watch("ownersName"),
-            businessTypeId: watch("storeTypeId")?.id,
+            branchName: watch("branchName"),
+            // distriTypeId: watch("distriTypeId")?.id,
           }).unwrap();
         } catch (error) {
           if (error?.data?.error?.message) {
@@ -795,13 +931,13 @@ function DirectRegisterForm({
               variant: "error",
             });
           } else {
-            snackbar({ message: "Client already exists", variant: "error" });
+            snackbar({ message: "Business already exists", variant: "error" });
           }
           return;
         }
       }
 
-      setActiveTab("Terms & Conditions");
+      setActiveTab("Price Mode");
       dispatch(
         setSelectedRow({
           id: selectedRowData?.id,
@@ -811,10 +947,12 @@ function DirectRegisterForm({
           ...getValues(),
           dateOfBirth: getValues().dateOfBirth.format("YYYY-MM-DD"),
           clusterId: watch("clusterId"),
-          priceModeId: watch("priceModeId"),
+          // priceModeId: watch("priceModeId"),
           storeType: watch("storeTypeId"),
         })
       );
+    } else if (activeTab === "Price Mode") {
+      setActiveTab("Terms & Conditions")
     } else if (
       activeTab === "Terms & Conditions" &&
       termsAndConditions["terms"] === 1
@@ -824,21 +962,24 @@ function DirectRegisterForm({
       activeTab === "Terms & Conditions" &&
       termsAndConditions["terms"] !== 1
     ) {
-      setActiveTab("Attachments");
-    } else if (activeTab === "Attachments") {
       setActiveTab("Costs and Fees");
     }
+    // else if (activeTab === "Attachments") {
+    //   setActiveTab("Costs and Fees");
+    // }
   };
-  console.log("watch", watch());
 
   const handleBack = () => {
-    if (activeTab === "Terms & Conditions") {
+    if (activeTab === "Price Mode") {
       setActiveTab("Personal Info");
-    } else if (activeTab === "Attachments") {
-      setActiveTab("Terms & Conditions");
-    } else if (
-      activeTab === "Costs and Fees" &&
-      termsAndConditions["terms"] === 1
+    } else if (activeTab === "Terms & Conditions") {
+      setActiveTab("Price Mode")
+    }
+    // else if (activeTab === "Attachments") {
+    //   setActiveTab("Terms & Conditions");
+    // } 
+    else if (
+      activeTab === "Costs and Fees"
     ) {
       setActiveTab("Terms & Conditions");
     } else if (
@@ -853,23 +994,20 @@ function DirectRegisterForm({
     if (activeTab === "Personal Info") {
       if (navigators[0].isValid === false) {
         return true;
-      } else if (
-        includeAuthorizedRepresentative &&
-        (!watch("authorizedRepresentative") ||
-          !watch("authorizedRepresentativePosition"))
-      ) {
-        return true;
       } else if (isValidateClientLoading) {
         return true;
       }
+    } else if (activeTab === "Price Mode" && navigators[1].isValid === false) {
+      return true
     } else if (
       activeTab === "Terms & Conditions" &&
-      navigators[1].isValid === false
+      navigators[2].isValid === false
     ) {
       return true;
-    } else if (activeTab === "Attachments" && navigators[2].isValid === false) {
-      return true;
     }
+    // else if (activeTab === "Attachments" && navigators[2].isValid === false) {
+    //   return true;
+    // }
 
     return false;
   };
@@ -878,32 +1016,32 @@ function DirectRegisterForm({
     setSameAsOwnersAddress((prev) => !prev);
     if (!sameAsOwnersAddress) {
       setValue(
-        "businessAddress.houseNumber",
-        watch("ownersAddress.houseNumber"),
+        "deliveryAddress.houseNumber",
+        watch("businessAddress.houseNumber"),
         { shouldValidate: true }
       );
       setValue(
-        "businessAddress.streetName",
-        watch("ownersAddress.streetName"),
+        "deliveryAddress.streetName",
+        watch("businessAddress.streetName"),
         { shouldValidate: true }
       ),
         setValue(
-          "businessAddress.barangayName",
-          watch("ownersAddress.barangayName"),
+          "deliveryAddress.barangayName",
+          watch("businessAddress.barangayName"),
           { shouldValidate: true }
         );
-      setValue("businessAddress.city", watch("ownersAddress.city"), {
+      setValue("deliveryAddress.city", watch("businessAddress.city"), {
         shouldValidate: true,
       }),
-        setValue("businessAddress.province", watch("ownersAddress.province"), {
+        setValue("deliveryAddress.province", watch("businessAddress.province"), {
           shouldValidate: true,
         });
     } else {
-      setValue("businessAddress.houseNumber", "", { shouldValidate: true });
-      setValue("businessAddress.streetName", "", { shouldValidate: true });
-      setValue("businessAddress.barangayName", "", { shouldValidate: true });
-      setValue("businessAddress.city", "", { shouldValidate: true });
-      setValue("businessAddress.province", "", { shouldValidate: true });
+      setValue("deliveryAddress.houseNumber", "", { shouldValidate: true });
+      setValue("deliveryAddress.streetName", "", { shouldValidate: true });
+      setValue("deliveryAddress.barangayName", "", { shouldValidate: true });
+      setValue("deliveryAddress.city", "", { shouldValidate: true });
+      setValue("deliveryAddress.province", "", { shouldValidate: true });
     }
   };
 
@@ -911,38 +1049,42 @@ function DirectRegisterForm({
   useEffect(() => {
     if (editMode) {
       //Personal Info
-      setValue("ownersName", selectedRowData?.ownersName);
+      setValue("branchName", selectedRowData?.branchName);
       setValue("emailAddress", selectedRowData?.emailAddress);
       setValue("tinNumber", selectedRowData?.tinNumber);
       setValue("dateOfBirth", moment(selectedRowData?.dateOfBirth));
       setValue("phoneNumber", selectedRowData?.phoneNumber);
-      setValue("ownersAddress", selectedRowData?.ownersAddress);
+      setValue("businessAddress", selectedRowData?.businessAddress);
       setValue("businessName", selectedRowData?.businessName);
       setValue(
-        "storeTypeId",
-        storeTypeData?.storeTypes?.find(
+        "distriTypeId",
+        distriTypeData?.distributionTypes?.find(
           (item) =>
-            item.storeTypeName === selectedRowData?.storeType ||
-            selectedRowData.storeType.id === item.id
+            item.name === selectedRowData?.distriType
         )
       );
-      setValue("businessAddress", selectedRowData?.businessAddress);
-      setValue(
-        "clusterId",
-        clusterData?.cluster?.find(
-          (item) =>
-            selectedRowData?.clusterId === item.id ||
-            selectedRowData.clusterId.id === item.id
-        )
-      );
-      setValue(
-        "priceModeId",
-        priceModeData.find(
-          (item) =>
-            selectedRowData?.priceModeId === item.id ||
-            selectedRowData.priceModeId.id === item.id
-        )
-      );
+      setValue("deliveryAddress", selectedRowData?.businessAddress);
+      dispatch(setPriceModeId(selectedRowData?.priceModeId));
+      dispatch(setPriceModeItems(selectedRowData?.clientItems?.map((item) => ({
+        itemCode: productData?.items?.find((data) => data.itemCode === item.itemCode),
+        itemDescription: item.itemDescription,
+        price: item.price,
+      }))))
+      // setValue(
+      //   "clusterId",
+      //   clusterData?.cluster?.find(
+      //     (item) =>
+      //       selectedRowData?.clusterId === item.id ||
+      //       selectedRowData.clusterId.id === item.id
+      //   )
+      // );
+      // setValue(
+      //   "priceModeId",
+      //   priceModeData.find(
+      //     (item) =>
+      //       selectedRowData?.priceModeId === item.id
+      //   )
+      // );
       setValue(
         "authorizedRepresentative",
         selectedRowData?.authorizedRepresentative
@@ -953,45 +1095,43 @@ function DirectRegisterForm({
       );
       if (
         shallowEqual(
-          selectedRowData?.ownersAddress,
+          selectedRowData?.businessAddress,
           selectedRowData?.businessAddress
         )
       ) {
         setSameAsOwnersAddress(true);
       }
 
-      console.log(data?.freebies?.[0]?.freebies, "testing dispatch!");
 
-      dispatch(
-        setFreebies(
-          data?.freebies?.[0]?.freebies?.map((freebie) => ({
-            itemId: productData?.items?.find(
-              (item) => item.itemCode === freebie.itemCode
-            ),
-            quantity: freebie.quantity,
-            uom: freebie?.uom,
-            itemDescription: freebie?.itemDescription,
-          }))
-        )
-      );
+      // dispatch(
+      //   setFreebies(
+      //     data?.freebies?.[0]?.freebies?.map((freebie) => ({
+      //       itemId: productData?.items?.find(
+      //         (item) => item.itemCode === freebie.itemCode
+      //       ),
+      //       quantity: freebie.quantity,
+      //       uom: freebie?.uom,
+      //       itemDescription: freebie?.itemDescription,
+      //     }))
+      //   )
+      // );
 
-      console.log("testing dispatch!");
 
-      setSignatureDirect(data?.freebies?.[0]?.eSignature);
-      setPhotoProofDirect(data?.freebies?.[0]?.photoProof);
+      // setSignatureDirect(data?.freebies?.[0]?.eSignature);
+      // setPhotoProofDirect(data?.freebies?.[0]?.photoProof);
 
       // Terms & Conditions
       dispatch(
         setWholeTermsAndConditions({
-          freezer: termsData?.freezer ? true : false,
-          freezerAssetTag: termsData?.freezer ? termsData?.freezer : "",
-          typeOfCustomer: termsData?.typeOfCustomer,
-          directDelivery: termsData?.directDelivery,
-          bookingCoverageId: parseInt(
-            termsData?.bookingCoverage.substring(1),
-            10
-          ),
-          withholdingIssuance: termsData?.withholdingIssuance,
+          // freezer: termsData?.freezer ? true : false,
+          // freezerAssetTag: termsData?.freezer ? termsData?.freezer : "",
+          // typeOfCustomer: termsData?.typeOfCustomer,
+          // directDelivery: termsData?.directDelivery,
+          // bookingCoverageId: parseInt(
+          //   termsData?.bookingCoverage.substring(1),
+          //   10
+          // ),
+          // withholdingIssuance: termsData?.withholdingIssuance,
           // terms: termsData?.termId,
           terms: termsData?.termId,
           termDaysId: termDaysData?.termDays?.find(
@@ -1001,18 +1141,21 @@ function DirectRegisterForm({
             modeOfPaymentId: payment.id,
           })),
           creditLimit: termsData?.creditLimit,
+          creditTypeId: (termsData?.creditLimit !== -1 && termsData?.termDays) ? creditType[0] : termsData?.termDaysId === null ? creditType[2] : creditType[1],
           variableDiscount: !termsData?.variableDiscount
             ? false
             : termsData?.variableDiscount,
           fixedDiscount:
             termsData?.fixedDiscount === null
               ? {
-                  discountPercentage: null,
-                }
+                discountPercentage: null,
+              }
               : {
-                  discountPercentage:
-                    termsData?.fixedDiscount?.discountPercentage * 100,
-                },
+                discountPercentage:
+                  termsData?.fixedDiscount?.discountPercentage * 100,
+                originalPercentage: termsData?.fixedDiscount?.discountPercentage * 100,
+
+              },
         })
       );
 
@@ -1174,7 +1317,7 @@ function DirectRegisterForm({
     termDaysData,
     termsData,
     attachmentsData,
-    clusterData,
+    // clusterData,
     dispatch,
     editMode,
     priceModeData,
@@ -1185,13 +1328,26 @@ function DirectRegisterForm({
     setRepresentativeRequirementsIsLink,
     setRequirementsMode,
     setValue,
-    storeTypeData,
+    distriTypeData,
     listingFeeData,
     productData,
     expensesData,
     expensesDataChoices,
     includeAuthorizedRepresentative,
   ]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    dispatch(setDirty(true))
+  }, [isDirty])
+
+
+  useEffect(() => {
+    if (!open) return;
+    if ((isTDO || isHead) && clientStatus === "Approved" && editMode) {
+      setActiveTab("Price Mode");
+    }
+  }, [isTDO, open]);
 
   useEffect(() => {
     if (
@@ -1218,21 +1374,21 @@ function DirectRegisterForm({
   }, [includeAuthorizedRepresentative, setRequirementsMode, setValue, open]);
 
   useEffect(() => {
-    if (!editMode && clusterData && open) {
-      setValue("clusterId", clusterData?.cluster?.[0]);
+    if (!editMode && territory && open) {
+      setValue("tdoId", territory?.territories?.[0]);
     }
-  }, [open, clusterData, editMode, setValue]);
+  }, [open, territory, editMode, setValue]);
 
-  useEffect(() => {
-    if (!editMode && priceModeData && open) {
-      setValue(
-        "priceModeId",
-        priceModeData?.find(
-          (item) => item.priceModeDescription?.toLowerCase() === "regular"
-        )
-      );
-    }
-  }, [open, priceModeData, editMode, setValue]);
+  // useEffect(() => {
+  //   if (!editMode && priceModeData && open) {
+  //     setValue(
+  //       "priceModeId",
+  //       priceModeData?.find(
+  //         (item) => item.priceModeDescription?.toLowerCase() === "regular"
+  //       )
+  //     );
+  //   }
+  // }, [open, priceModeData, editMode, setValue]);
 
   useEffect(() => {
     if (editMode) {
@@ -1285,8 +1441,8 @@ function DirectRegisterForm({
         disableSubmit={
           termsAndConditions["terms"] === 1
             ? navigators.some(
-                (obj) => obj.isValid === false && obj.label !== ""
-              )
+              (obj) => obj.isValid === false && obj.label !== ""
+            )
             : navigators.some((obj) => obj.isValid === false)
         }
         onSubmit={onConfirmOpen}
@@ -1301,18 +1457,18 @@ function DirectRegisterForm({
                 <Box className="register__firstRow">
                   <Box className="register__firstRow__customerInformation">
                     <Typography className="register__title">
-                      Customer&apos;s Information
+                      Sales&apos;s Invoice Information
                     </Typography>
 
                     <Box className="register__firstRow__customerInformation__row">
                       <Controller
                         control={control}
-                        name="ownersName"
+                        name="businessName"
                         render={({
                           field: { onChange, onBlur, value, ref },
                         }) => (
                           <TextField
-                            label="Owner's Name"
+                            label="Business Name"
                             size="small"
                             autoComplete="off"
                             required
@@ -1339,78 +1495,47 @@ function DirectRegisterForm({
                         helperText={errors?.emailAddress?.message}
                         error={!!errors?.emailAddress}
                       />
-                    </Box>
-                  </Box>
-
-                  <Box className="register__firstRow__tinNumber">
-                    <Typography className="register__title">
-                      TIN Number
-                    </Typography>
-
-                    <Controller
-                      control={control}
-                      name={"tinNumber"}
-                      render={({ field: { onChange, onBlur, value, ref } }) => {
-                        const formattedValue = value.replace(/-/g, ""); // Remove existing dashes
-                        // let format = "###-###-###-###";
-                        let format = "###-###-###";
-
-                        if (formattedValue.length <= 3) {
-                          format = "####";
-                        } else if (formattedValue.length <= 6) {
-                          format = "###-####";
-                        }
-                        //  else if (formattedValue.length <= 9) {
-                        //   format = "###-###-####";
-                        // }
-
-                        return (
-                          <PatternFormat
-                            format={format}
-                            label="TIN Number"
-                            type="text"
-                            size="small"
-                            customInput={TextField}
-                            autoComplete="off"
-                            valueIsNumericString
-                            inputRef={ref}
-                            onValueChange={(e) => {
-                              onChange(e.value);
-                            }}
-                            onBlur={onBlur}
-                            value={value || ""}
-                            // required
-                            helperText={errors?.tinNumber?.message}
-                            error={!!errors?.tinNumber}
-                          />
-                        );
-                      }}
-                    />
-                  </Box>
-
-                  <Box className="register__firstRow__customerInformation">
-                    <Box className="register__firstRow__customerInformation__row">
                       <Controller
-                        name="dateOfBirth"
                         control={control}
-                        render={({ field }) => (
-                          <LocalizationProvider dateAdapter={AdapterMoment}>
-                            <DatePicker
-                              {...field}
-                              className="register__textField"
-                              label="Date of Birth"
-                              slotProps={{
-                                textField: { size: "small", required: true },
-                              }}
-                              helperText={errors?.birthDate?.message}
-                              error={!!errors?.birthDate}
-                              minDate={moment().subtract(117, "years")}
-                              maxDate={moment().subtract(18, "years")}
-                            />
-                          </LocalizationProvider>
-                        )}
-                      />
+                        name={"tinNumber"}
+                        render={({ field: { onChange, onBlur, value, ref } }) => {
+                          const formattedValue = value.replace(/-/g, ""); // Remove existing dashes
+                          // let format = "###-###-###-###";
+                          let format = "###-###-###-###";
 
+                          if (formattedValue.length <= 3) {
+                            format = "####";
+                          } else if (formattedValue.length <= 6) {
+                            format = "###-####";
+                          } else if (formattedValue.length <= 9) {
+                            format = "###-###-####";
+                          }
+                          //  else if (formattedValue.length <= 9) {
+                          //   format = "###-###-####";
+                          // }
+
+                          return (
+                            <PatternFormat
+                              format={format}
+                              label="TIN Number"
+                              type="text"
+                              size="small"
+                              customInput={TextField}
+                              autoComplete="off"
+                              valueIsNumericString
+                              inputRef={ref}
+                              onValueChange={(e) => {
+                                onChange(e.value);
+                              }}
+                              onBlur={onBlur}
+                              value={value || ""}
+                              // required
+                              helperText={errors?.tinNumber?.message}
+                              error={!!errors?.tinNumber}
+                            />
+                          );
+                        }}
+                      />
                       <Controller
                         control={control}
                         name={"phoneNumber"}
@@ -1462,15 +1587,75 @@ function DirectRegisterForm({
                     </Box>
                   </Box>
                 </Box>
+                <Box className="register__thirdRow">
+                  <>
+                    <Box className="register__thirdRow__column">
+                      <Typography className="register__title">
+                        Branch Name
+                      </Typography>
+
+                      <Controller
+                        control={control}
+                        name="branchName"
+                        render={({ field: { onChange, onBlur, value, ref } }) => (
+                          <TextField
+                            label="Branch Name"
+                            size="small"
+                            autoComplete="off"
+                            required
+                            className="register__textField"
+                            onChange={(e) =>
+                              onChange(e.target.value.toUpperCase())
+                            }
+                            onBlur={onBlur}
+                            value={value}
+                            inputRef={ref}
+                            helperText={errors?.branchName?.message}
+                            error={!!errors?.branchName}
+                          />
+                        )}
+                      />
+                    </Box>
+                    {/* <Box className="register__thirdRow__column">
+                      <Typography className="register__title">
+                        Price Mode
+                      </Typography>
+
+                      <ControlledAutocomplete
+                        name="priceModeId"
+                        control={control}
+                        options={priceModeData || []}
+                        getOptionLabel={(option) =>
+                          `${option.priceModeCode?.toUpperCase()} -  ${option.priceModeDescription?.toUpperCase()}`
+                        }
+                        disableClearable
+                        isOptionEqualToValue={(option, value) =>
+                          option.id === value.id
+                        }
+                        loading={isPriceModeLoading}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            size="small"
+                            label="Price Mode"
+                            required
+                            helperText={errors?.priceModeId?.message}
+                            error={!!errors?.priceModeId}
+                          />
+                        )}
+                      />
+                    </Box> */}
+                  </>
+                </Box>
                 <Box className="register__secondRow">
                   <Box className="register__secondRow">
                     <Typography className="register__title">
-                      Owner&apos;s Address
+                      Business Address
                     </Typography>
                     <Box className="register__secondRow">
                       <Box className="register__secondRow__content">
                         <Controller
-                          name="ownersAddress.houseNumber"
+                          name="businessAddress.houseNumber"
                           control={control}
                           defaultValue=""
                           render={({ field }) => (
@@ -1484,15 +1669,15 @@ function DirectRegisterForm({
                                 field.onChange(e.target.value.toUpperCase())
                               }
                               helperText={
-                                errors?.ownersAddress?.houseNumber?.message
+                                errors?.businessAddress?.houseNumber?.message
                               }
-                              error={!!errors?.ownersAddress?.houseNumber}
+                              error={!!errors?.businessAddress?.houseNumber}
                             />
                           )}
                         />
 
                         <Controller
-                          name="ownersAddress.streetName"
+                          name="businessAddress.streetName"
                           control={control}
                           defaultValue="" // Set your default value here if needed
                           render={({ field }) => (
@@ -1506,15 +1691,15 @@ function DirectRegisterForm({
                                 field.onChange(e.target.value.toUpperCase())
                               }
                               helperText={
-                                errors?.ownersAddress?.streetName?.message
+                                errors?.businessAddress?.streetName?.message
                               }
-                              error={!!errors?.ownersAddress?.streetName}
+                              error={!!errors?.businessAddress?.streetName}
                             />
                           )}
                         />
 
                         <Controller
-                          name="ownersAddress.barangayName"
+                          name="businessAddress.barangayName"
                           control={control}
                           defaultValue="" // Set your default value here if needed
                           rules={{ required: "Barangay is required" }} // Add your validation rules here
@@ -1530,16 +1715,16 @@ function DirectRegisterForm({
                                 field.onChange(e.target.value.toUpperCase())
                               }
                               helperText={
-                                errors?.ownersAddress?.barangayName?.message
+                                errors?.businessAddress?.barangayName?.message
                               }
-                              error={!!errors?.ownersAddress?.barangayName}
+                              error={!!errors?.businessAddress?.barangayName}
                             />
                           )}
                         />
                       </Box>
                       <Box className="register__secondRow__content">
                         <Controller
-                          name="ownersAddress.city"
+                          name="businessAddress.city"
                           control={control}
                           defaultValue="" // Set your default value here if needed
                           rules={{ required: "Municipality/City is required" }} // Add your validation rules here
@@ -1554,14 +1739,14 @@ function DirectRegisterForm({
                               onChange={(e) =>
                                 field.onChange(e.target.value.toUpperCase())
                               }
-                              helperText={errors?.ownersAddress?.city?.message}
-                              error={!!errors?.ownersAddress?.city}
+                              helperText={errors?.businessAddress?.city?.message}
+                              error={!!errors?.businessAddress?.city}
                             />
                           )}
                         />
 
                         <Controller
-                          name="ownersAddress.province"
+                          name="businessAddress.province"
                           control={control}
                           defaultValue="" // Set your default value here if needed
                           rules={{ required: "Province is required" }} // Add your validation rules here
@@ -1577,9 +1762,9 @@ function DirectRegisterForm({
                                 field.onChange(e.target.value.toUpperCase())
                               }
                               helperText={
-                                errors?.ownersAddress?.province?.message
+                                errors?.businessAddress?.province?.message
                               }
-                              error={!!errors?.ownersAddress?.province}
+                              error={!!errors?.businessAddress?.province}
                             />
                           )}
                         />
@@ -1588,76 +1773,13 @@ function DirectRegisterForm({
                   </Box>
                 </Box>
 
-                <Box className="register__thirdRow">
-                  <Box className="register__thirdRow__column">
-                    <Typography className="register__title">
-                      Business Name
-                    </Typography>
 
-                    <Controller
-                      control={control}
-                      name="businessName"
-                      render={({ field: { onChange, onBlur, value, ref } }) => (
-                        <TextField
-                          label="Business Name"
-                          size="small"
-                          autoComplete="off"
-                          required
-                          className="register__textField"
-                          onChange={(e) =>
-                            onChange(e.target.value.toUpperCase())
-                          }
-                          onBlur={onBlur}
-                          value={value}
-                          inputRef={ref}
-                          helperText={errors?.businessName?.message}
-                          error={!!errors?.businessName}
-                        />
-                      )}
-                    />
-                  </Box>
 
-                  <Box className="register__thirdRow__column">
-                    <Typography className="register__title">
-                      Business Type
-                    </Typography>
-                    <ControlledAutocomplete
-                      name={"storeTypeId"}
-                      control={control}
-                      options={storeTypeData?.storeTypes || []}
-                      getOptionLabel={(option) =>
-                        option.storeTypeName?.toUpperCase()
-                      }
-                      disableClearable
-                      loading={isStoreTypeLoading}
-                      onChange={(_, value) => {
-                        dispatch(resetFreebies());
-                        setSignatureDirect(null);
-                        setPhotoProofDirect(null);
-
-                        return value;
-                      }}
-                      isOptionEqualToValue={(option, value) =>
-                        option.id === value.id
-                      }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          size="small"
-                          label="Business Type"
-                          required
-                          helperText={errors?.storeTypeId?.message}
-                          error={!!errors?.storeTypeId}
-                        />
-                      )}
-                    />
-                  </Box>
-                </Box>
 
                 <Box className="register__secondRow">
                   <Box className="register__titleBox">
                     <Typography className="register__title">
-                      Business Address
+                      Delivery Address
                     </Typography>
                     <Checkbox
                       sx={{ ml: "10px" }}
@@ -1669,14 +1791,14 @@ function DirectRegisterForm({
                       // disabled={Object.values(watch("ownersAddress")).some(
                       //   (value) => !value
                       // )}
-                      disabled={Object.entries(watch("ownersAddress")).some(
+                      disabled={Object.entries(watch("businessAddress")).some(
                         ([key, value]) =>
                           key !== "houseNumber" &&
                           key !== "streetName" &&
                           !value
                       )}
                       title={
-                        !Object.values(watch("ownersAddress")).some(
+                        !Object.values(watch("businessAddress")).some(
                           (value) => !value
                         )
                           ? "Fill up owner's address first"
@@ -1684,14 +1806,14 @@ function DirectRegisterForm({
                       }
                     />
                     <Typography variant="subtitle2">
-                      Same as owner&apos;s address
+                      Same as business address
                     </Typography>
                   </Box>
 
                   <Box className="register__secondRow__content">
                     <Controller
                       control={control}
-                      name="businessAddress.houseNumber"
+                      name="deliveryAddress.houseNumber"
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <TextField
                           disabled={sameAsOwnersAddress}
@@ -1707,16 +1829,16 @@ function DirectRegisterForm({
                           value={value}
                           inputRef={ref}
                           helperText={
-                            errors?.businessAddress?.houseNumber?.message
+                            errors?.deliveryAddress?.houseNumber?.message
                           }
-                          error={!!errors?.businessAddress?.houseNumber}
+                          error={!!errors?.deliveryAddress?.houseNumber}
                         />
                       )}
                     />
 
                     <Controller
                       control={control}
-                      name="businessAddress.streetName"
+                      name="deliveryAddress.streetName"
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <TextField
                           disabled={sameAsOwnersAddress}
@@ -1725,9 +1847,9 @@ function DirectRegisterForm({
                           autoComplete="off"
                           className="register__textField"
                           helperText={
-                            errors?.businessAddress?.streetName?.message
+                            errors?.deliveryAddress?.streetName?.message
                           }
-                          error={!!errors?.businessAddress?.streetName}
+                          error={!!errors?.deliveryAddress?.streetName}
                           onChange={(e) =>
                             onChange(e.target.value.toUpperCase())
                           }
@@ -1740,7 +1862,7 @@ function DirectRegisterForm({
 
                     <Controller
                       control={control}
-                      name="businessAddress.barangayName"
+                      name="deliveryAddress.barangayName"
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <TextField
                           disabled={sameAsOwnersAddress}
@@ -1750,9 +1872,9 @@ function DirectRegisterForm({
                           required
                           className="register__textField"
                           helperText={
-                            errors?.businessAddress?.barangayName?.message
+                            errors?.deliveryAddress?.barangayName?.message
                           }
-                          error={!!errors?.businessAddress?.barangayName}
+                          error={!!errors?.deliveryAddress?.barangayName}
                           onChange={(e) =>
                             onChange(e.target.value.toUpperCase())
                           }
@@ -1767,7 +1889,7 @@ function DirectRegisterForm({
                   <Box className="register__secondRow__content">
                     <Controller
                       control={control}
-                      name="businessAddress.city"
+                      name="deliveryAddress.city"
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <TextField
                           disabled={sameAsOwnersAddress}
@@ -1776,8 +1898,8 @@ function DirectRegisterForm({
                           autoComplete="off"
                           required
                           className="register__textField"
-                          helperText={errors?.businessAddress?.city?.message}
-                          error={!!errors?.businessAddress?.city}
+                          helperText={errors?.deliveryAddress?.city?.message}
+                          error={!!errors?.deliveryAddress?.city}
                           onChange={(e) =>
                             onChange(e.target.value.toUpperCase())
                           }
@@ -1790,7 +1912,7 @@ function DirectRegisterForm({
 
                     <Controller
                       control={control}
-                      name="businessAddress.province"
+                      name="deliveryAddress.province"
                       render={({ field: { onChange, onBlur, value, ref } }) => (
                         <TextField
                           disabled={sameAsOwnersAddress}
@@ -1800,9 +1922,9 @@ function DirectRegisterForm({
                           required
                           className="register__textField"
                           helperText={
-                            errors?.businessAddress?.province?.message
+                            errors?.deliveryAddress?.province?.message
                           }
-                          error={!!errors?.businessAddress?.province}
+                          error={!!errors?.deliveryAddress?.province}
                           onChange={(e) =>
                             onChange(e.target.value.toUpperCase())
                           }
@@ -1822,65 +1944,7 @@ function DirectRegisterForm({
                   </Box>
                 </Box>
 
-                <Box className="register__thirdRow">
-                  <Box className="register__thirdRow__column">
-                    <Typography className="register__title">Cluster</Typography>
-                    <ControlledAutocomplete
-                      name={"clusterId"}
-                      control={control}
-                      options={clusterData?.cluster || []}
-                      loading={isClusterDataLoading}
-                      getOptionLabel={(option) => option.cluster?.toUpperCase()}
-                      disableClearable
-                      isOptionEqualToValue={(option, value) =>
-                        option.id === value.id
-                      }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          size="small"
-                          label="Cluster"
-                          required
-                          helperText={errors?.clusterId?.message}
-                          error={!!errors?.clusterId}
-                        />
-                      )}
-                    />
-                  </Box>
-
-                  <Box className="register__thirdRow__column">
-                    <Typography className="register__title">
-                      Price Mode
-                    </Typography>
-
-                    <ControlledAutocomplete
-                      name="priceModeId"
-                      control={control}
-                      disabled
-                      options={priceModeData || []}
-                      getOptionLabel={(option) =>
-                        `${option.priceModeCode?.toUpperCase()} -  ${option.priceModeDescription?.toUpperCase()}`
-                      }
-                      disableClearable
-                      isOptionEqualToValue={(option, value) =>
-                        option.id === value.id
-                      }
-                      loading={isPriceModeLoading}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          size="small"
-                          label="Price Mode"
-                          required
-                          helperText={errors?.priceModeId?.message}
-                          error={!!errors?.priceModeId}
-                        />
-                      )}
-                    />
-                  </Box>
-                </Box>
-
-                <Box className="register__secondRow">
+                {/* <Box className="register__secondRow">
                   <Box className="register__titleBox">
                     <Typography className="register__title">
                       Authorized Representative Details
@@ -1953,8 +2017,13 @@ function DirectRegisterForm({
                       />
                     </Box>
                   </Box>
-                </Box>
+                </Box> */}
               </Box>
+            )}
+            {activeTab === "Price Mode" && (
+              <PriceMode clientStatus={clientStatus} editMode={editMode} onOriginalItemsReady={(items) => {
+                originalItemsRef.current = items; // ← store it silently
+              }} />
             )}
 
             {activeTab === "Terms & Conditions" && (
@@ -1965,7 +2034,7 @@ function DirectRegisterForm({
               />
             )}
 
-            {activeTab === "Attachments" && <Attachments />}
+            {/* {activeTab === "Attachments" && <Attachments />} */}
 
             {activeTab === "Costs and Fees" && (
               <Box className="feesClient">
@@ -1977,34 +2046,29 @@ function DirectRegisterForm({
 
             <Box
               className={
-                activeTab === "Personal Info"
+                activeTab === "Personal Info" || ((isTDO || isHead) && clientStatus === "Approved" && editMode)
                   ? "commonDrawer__actionsNoMarginBottom"
                   : "commonDrawer__actionsSpread"
               }
             >
-              {activeTab !== "Personal Info" && (
+              {(activeTab !== "Personal Info" && !((isTDO || isHead) && clientStatus === "Approved" && editMode)) && (
                 <DangerButton onClick={handleBack}>Back</DangerButton>
               )}
 
-              {activeTab !== "Costs and Fees" && (
-                // (activeTab === "Personal Info" ||
-                //   (activeTab === "Terms & Conditions" &&
-                //     termsAndConditions["terms"] !== 1))
+              {showNextButton && (
                 <SecondaryButton
                   onClick={handleNext}
                   disabled={handleDisableNext()}
                 >
                   {isValidateClientLoading ? (
-                    <>
-                      <CircularProgress size="20px" color="white" />
-                    </>
+                    <CircularProgress size="20px" color="white" />
                   ) : (
                     "Next"
                   )}
                 </SecondaryButton>
               )}
 
-              {activeTab === "Costs and Fees" && (
+              {showSubmitButton && (
                 <SecondaryButton
                   onClick={() => {
                     dispatch(toggleFeesToStore());
@@ -2013,9 +2077,10 @@ function DirectRegisterForm({
                   disabled={
                     termsAndConditions["terms"] === 1
                       ? navigators.some(
-                          (obj) => obj.isValid === false && obj.label !== ""
-                        )
-                      : navigators.some((obj) => obj.isValid === false)
+                        (obj) => obj.isValid === false && obj.label !== ""
+                      )
+                      : navigators.some((obj) => obj.isValid === false) ||
+                      (!isPriceModeDirty && editMode)
                   }
                 >
                   {editMode ? "Update" : "Register"}
@@ -2024,7 +2089,7 @@ function DirectRegisterForm({
             </Box>
           </>
         )}
-      </CommonDrawer>
+      </CommonDrawer >
 
       <AgreeTermsModal
         open={isConfirmOpen && !editMode}
@@ -2042,9 +2107,11 @@ function DirectRegisterForm({
       >
         Confirm {editMode ? "update" : "registration"} of{" "}
         <span style={{ textTransform: "uppercase", fontWeight: "bold" }}>
-          {watch("businessName") ? watch("businessName") : "client"}
-        </span>{" "}
-        as a regular customer?
+          {watch("businessName") || "CLIENT"}
+        </span>
+        {((isTDO || isHead) && clientStatus !== "Under review")
+          ? "'s items?"
+          : " as a regular customer?"}
       </CommonDialog>
 
       <CommonDialog
@@ -2056,7 +2123,7 @@ function DirectRegisterForm({
         <span style={{ textTransform: "uppercase", fontWeight: "bold" }}>
           {watch("businessName") ? watch("businessName") : "client"}
         </span>{" "}
-        as a regular customer? <br />
+        as a business? <br />
         <span style={{ textTransform: "uppercase", fontWeight: "bold" }}>
           (Fields will be reset)
         </span>

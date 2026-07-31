@@ -43,7 +43,6 @@ function AddSearchMixin({
     setSearch(value);
   }, 200);
 
-  console.log(disableButton);
 
   const userDetails = useSelector((state) => state.login.userDetails);
 

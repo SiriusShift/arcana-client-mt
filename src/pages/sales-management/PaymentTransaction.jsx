@@ -24,6 +24,7 @@ import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
 import ViewTransactionModal from "../../components/modals/sales-management/ViewTransactionModal";
 import SessionExpired from "../SessionExpired";
 import { filter } from "lodash";
+import useVoidConfirm from "../../hooks/useVoidConfirm";
 
 function PaymentTransaction() {
   const [paymentMode, setPaymentMode] = useState(false);
@@ -43,6 +44,7 @@ function PaymentTransaction() {
   const confirmReason = useReasonConfirm();
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
+  const voidConfirm = useVoidConfirm()
   const selectedRowData = useSelector((state) => state.selectedRow?.value);
   const userDetails = useSelector((state) => state.login.userDetails);
 
@@ -192,6 +194,7 @@ function PaymentTransaction() {
   //     }
   //   }
   // };
+
   const onVoid = async () => {
     try {
       await confirmReason({
@@ -205,11 +208,28 @@ function PaymentTransaction() {
           </>
         ),
         question: false,
-        callback: (remarks) =>
-          voidSalesTransaction({
-            transactionId: selectedRowData?.transactionNo,
-            reason: remarks,
-          }).unwrap(),
+        callback: async (remarks) => {
+          try {
+            await voidConfirm({
+              // children: <>Type <b>{code}</b> to proceed</>,
+              callback: async (result) => {
+                console.log(result)
+                if (result) {
+                  await voidSalesTransaction({
+                    transactionId: selectedRowData?.transactionNo,
+                    reason: remarks,
+                  }).unwrap();
+                } else {
+                  console.error("Incorrect code entered");
+                }
+              },
+            });
+          } catch (err) {
+            console.log(err)
+          }
+
+        },
+
       });
 
       snackbar({
@@ -218,16 +238,16 @@ function PaymentTransaction() {
       });
     } catch (error) {
       if (error.isConfirmed) {
+        console.log(error);
         snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
       }
     }
   };
 
 
-
   const checkIsVoidable = (date, totalAmount, balance) => {
     const firstDay = moment().format("YYYY-MM") + "-01";
-    const cutOff = moment().format("YYYY-MM") + "-10";
+    const cutOff = moment().format("YYYY-MM") + "-07";
     const voidLastMonth = moment().isBetween(firstDay, cutOff, undefined, "[]");
     // If current day is within the first day of the month upto 10th day of the month
     if(voidLastMonth){

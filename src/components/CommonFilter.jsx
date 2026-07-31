@@ -26,6 +26,7 @@ import { useGetAllStoreTypesQuery } from "../features/setup/api/storeTypeApi";
 import { useGetAllUsersQuery } from "../features/user-management/api/userAccountApi";
 import { useGetAllUserRolesQuery } from "../features/user-management/api/userRoleApi";
 import { useGetAllClustersQuery } from "../features/setup/api/clusterApi";
+import { useGetAllDistributionQuery } from "../features/setup/api/distributionApi";
 
 function CommonFilter({
   filter,
@@ -34,7 +35,7 @@ function CommonFilter({
   clusterFilter,
   paymentMethodFilter,
   // expenseTypeFilter,
-  businessTypeFilter,
+  distriTypeFilter,
   userTypeFilter,
   typeFilter,
   userFilter,
@@ -51,7 +52,7 @@ function CommonFilter({
     clusterId: null,
     // paymentType: null,
     // expenseType: null,
-    businessType: null,
+    distriType: null,
     // invoiceType: null,
     // validity: null,
     // uploadStatus: null,
@@ -63,15 +64,14 @@ function CommonFilter({
     // status: null,
   });
 
-  console.log(filters)
-
   //Query
   // const { data: otherExpensesOptions } = useGetAllOtherExpensesQuery();
   const { data: storeTypeData } = useGetAllStoreTypesQuery({ Status: true });
+    const { data: distriData } = useGetAllDistributionQuery({ Status: true });
+
 
   //slice
   const userDetails = useSelector((state) => state.login.userDetails);
-  console.log(userDetails);
 
   const { data: roleData, isFetching: isRolesFetching } =
     useGetAllUserRolesQuery({
@@ -82,7 +82,7 @@ function CommonFilter({
 
   const cdoRoleId = roleData?.userRoles?.find(
     (role) =>
-      role.roleName === "CDO" ||
+      role.roleName === "TDO" ||
       role.roleName?.toLowerCase() === "Chief Distribution Officer"
   )?.id;
 
@@ -97,8 +97,6 @@ function CommonFilter({
     }
   );
 
-  console.log(data);
-
   //Function
   const resetFilter = () => {
     setFilters({
@@ -106,7 +104,7 @@ function CommonFilter({
       clusterId: null,
       // paymentType: null,
       // expenseType: null,
-      businessType: null,
+      distriType: null,
       // invoiceType: null,
       // validity: null,
       // uploadStatus: null,
@@ -120,7 +118,7 @@ function CommonFilter({
       clusterId: null,
       // paymentType: null,
       // expenseType: null,
-      businessType: null,
+      distriType: null,
       // invoiceType: null,
       // validity: null,
       // uploadStatus: null,
@@ -166,7 +164,6 @@ function CommonFilter({
               options={data?.cluster}
               getOptionLabel={(option) => option?.cluster || option}
               onChange={(_, value) => {
-                console.log(value)
                 setFilters({ ...filters, clusterId: value });
               }}
               value={filters.clusterId}
@@ -176,7 +173,7 @@ function CommonFilter({
                   // value={filters.clusterId || ""}
                   size="small"
                   sx={{ width: "300px" }}
-                  label="Cluster Group"
+                  label="Terittory"
                 />
               )}
             />
@@ -225,14 +222,14 @@ function CommonFilter({
             ></Autocomplete>
           )} */}
 
-          {businessTypeFilter && (
+          {distriTypeFilter && (
             <Autocomplete
-              options={storeTypeData?.storeTypes}
-              getOptionLabel={(option) => option?.storeTypeName}
+              options={distriData?.distributionTypes}
+              getOptionLabel={(option) => option?.name}
               onChange={(_, value) => {
-                setFilters({ ...filters, businessType: value });
+                setFilters({ ...filters, distriType: value });
               }}
-              value={filters?.businessType}
+              value={filters?.distriType}
               renderInput={(params) => (
                 <TextField
                   {...params}

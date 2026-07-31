@@ -9,19 +9,22 @@ import { AttachmentsProvider } from "./context/AttachmentsContext";
 import { DirectReleaseProvider } from "./context/DirectReleaseContext";
 import { ConfirmProvider } from "./context/ConfirmContext";
 import { ReasonConfirmProvider } from "./context/ReasonConfirmContext";
+import { VoidConfirmProvider } from "./context/VoidConfirmContext";
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <AppProvider>
         <ConfirmProvider>
-          <ReasonConfirmProvider>
-            <AttachmentsProvider>
-              <DirectReleaseProvider>
-                <RouterProvider router={router} />
-              </DirectReleaseProvider>
-            </AttachmentsProvider>
-          </ReasonConfirmProvider>
+          <VoidConfirmProvider>
+            <ReasonConfirmProvider>
+              <AttachmentsProvider>
+                <DirectReleaseProvider>
+                  <RouterProvider router={router} />
+                </DirectReleaseProvider>
+              </AttachmentsProvider>
+            </ReasonConfirmProvider>
+          </VoidConfirmProvider>
         </ConfirmProvider>
       </AppProvider>
     </ThemeProvider>

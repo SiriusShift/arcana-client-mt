@@ -6,7 +6,7 @@ const FreebiesFormHeader = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/inventory-management/freebies", { replace: true });
+    navigate("/sales-management/freebies", { replace: true });
   };
 
   return (

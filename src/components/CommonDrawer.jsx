@@ -34,7 +34,6 @@ function CommonDrawer({
 }) {
   const [parent] = useAutoAnimate();
 
-  console.log(zIndex);
   return (
     <Drawer anchor="right" sx={{ zIndex: zIndex && zIndex }} {...otherProps}>
       <Box

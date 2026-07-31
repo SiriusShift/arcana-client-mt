@@ -108,7 +108,7 @@ function Sampling() {
     navigate("sampling-form");
   };
 
-  if (location.pathname === "/inventory-management/sampling") {
+  if (location.pathname === "/sales-management/sampling") {
     return (
       <Box className="commonPageLayout">
         <PageHeaderAddTabs

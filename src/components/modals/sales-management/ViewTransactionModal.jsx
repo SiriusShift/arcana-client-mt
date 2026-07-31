@@ -17,7 +17,7 @@ import { useSelector } from "react-redux";
 import { formatPesoAmount } from "../../../utils/CustomFunctions";
 import ViewTransactionModalSkeleton from "../../skeletons/ViewTransactionModalSkeleton";
 
-function ViewTransactionModal({ transactionId, ...props}) {
+function ViewTransactionModal({ transactionId, ...props }) {
 	const { open } = props;
 	const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -85,38 +85,31 @@ function ViewTransactionModal({ transactionId, ...props}) {
 									Address:{" "}
 								</Typography>
 								<Typography>
-									{`${
-										data?.businessAddress?.houseNumber
+									{`${data?.businessAddress?.houseNumber
 											? `#${data?.businessAddress.houseNumber}`
 											: ""
-									}${
-										data?.businessAddress?.houseNumber &&
-										(data?.businessAddress?.streetName ||
-											data?.businessAddress?.barangayName)
+										}${data?.businessAddress?.houseNumber &&
+											(data?.businessAddress?.streetName ||
+												data?.businessAddress?.barangayName)
 											? ", "
 											: ""
-									}${
-										data?.businessAddress?.streetName
+										}${data?.businessAddress?.streetName
 											? `${data?.businessAddress.streetName}`
 											: ""
-									}${
-										data?.businessAddress?.streetName &&
-										data?.businessAddress?.barangayName
+										}${data?.businessAddress?.streetName &&
+											data?.businessAddress?.barangayName
 											? ", "
 											: ""
-									}${
-										data?.businessAddress?.barangayName
+										}${data?.businessAddress?.barangayName
 											? `${data?.businessAddress.barangayName}`
 											: ""
-									}${
-										data?.businessAddress?.city ? `, ${data?.businessAddress.city}` : ""
-									}${
-										data?.businessAddress?.province
+										}${data?.businessAddress?.city ? `, ${data?.businessAddress.city}` : ""
+										}${data?.businessAddress?.province
 											? `, ${data?.businessAddress.province}`
 											: ""
-									}`}
+										}`}
 								</Typography>
-							</Box>	
+							</Box>
 							<Box className="viewTransactionSlipModal__details__left__row">
 								<Typography fontWeight="700" textTransform="uppercase">
 									Remarks:{" "}
@@ -187,7 +180,7 @@ function ViewTransactionModal({ transactionId, ...props}) {
 
 							<TableBody
 								className="viewTransactionSlipModal__tableContainer__tableBody"
-								// sx={{ position: "sticky", bottom: 0 }}
+							// sx={{ position: "sticky", bottom: 0 }}
 							>
 								<TableRow>
 									<TableCell></TableCell>
@@ -282,12 +275,6 @@ function ViewTransactionModal({ transactionId, ...props}) {
 								<TableRow>
 									<TableCell></TableCell>
 									<TableCell></TableCell>
-									<TableCell>
-										<Box className="labelValueGrid">
-											<span className="label">VAT AMOUNT</span>{" "}
-											{formatPesoAmount(data?.vatAmount)}
-										</Box>
-									</TableCell>
 									<TableCell></TableCell>
 									<TableCell></TableCell>
 								</TableRow>

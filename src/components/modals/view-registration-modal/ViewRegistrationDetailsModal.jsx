@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import CommonModal from "../../CommonModal";
+import { Close } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -8,44 +7,51 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import PersonalInfoTab from "./PersonalInfoTab";
-import TermsAndConditionsTab from "./TermsAndConditionsTab";
-import AttachmentsTab from "./AttachmentsTab";
-import DangerButton from "../../DangerButton";
-import useDisclosure from "../../../hooks/useDisclosure";
+import { useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import CommonDialog from "../../common/CommonDialog";
-import { Close } from "@mui/icons-material";
+import { useLocation } from "react-router-dom";
+import { AppContext } from "../../../context/AppContext";
+import { useGetUsersWithAdjustmentsQuery } from "../../../features/inventory-management/api/endingInventoryApi";
 import {
   useLazyGetListingFeeByClientIdQuery,
   useLazyGetOtherExpensesByClientIdQuery,
+  usePatchApproveEditClientRequestMutation,
+  usePatchRejectEditClientRequestMutation,
   usePutApproveClientMutation,
   usePutRejectClientMutation,
 } from "../../../features/registration/api/registrationApi";
+import useDisclosure from "../../../hooks/useDisclosure";
 import useSnackbar from "../../../hooks/useSnackbar";
-import ListingFeeTab from "./ListingFeeTab";
-import FreebiesTab from "./FreebiesTab";
-import OtherExpensesTab from "./OtherExpensesTab";
-import { useSendMessageMutation } from "../../../features/misc/api/rdfSmsApi";
 import { handleCatchErrorMessage } from "../../../utils/CustomFunctions";
+import CommonDialog from "../../common/CommonDialog";
+import CommonModal from "../../CommonModal";
+import DangerButton from "../../DangerButton";
 import SecondaryButton from "../../SecondaryButton";
-import useValidate from "../../../hooks/useValidate";
-import { useGetUsersWithAdjustmentsQuery } from "../../../features/inventory-management/api/endingInventoryApi";
+import ListingFeeTab from "./ListingFeeTab";
+import OtherExpensesTab from "./OtherExpensesTab";
+import PersonalInfoTab from "./PersonalInfoTab";
+import PriceModeTab from "./PriceModeTab";
+import TermsAndConditionsTab from "./TermsAndConditionsTab";
 
-function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
+function ViewRegistrationDetailsModal({ approval, clientStatus, module, ...props }) {
   const { onClose, open } = props;
+  const { notifications, isNotificationFetching } = useContext(AppContext);
 
   const [reason, setReason] = useState("");
   const [confirmReason, setConfirmReason] = useState(false);
-  const [activeTab, setActiveTab] = useState("Personal Info");
   const [viewedTabs, setViewedTabs] = useState({
     "Personal Info": false,
     "Terms and Conditions": false,
     Attachments: false,
   });
 
-  const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const location = useLocation();
+  const isRegistrationApproval = location?.pathname === "/approval/registration-approval"
+  const isAddItemsApproval = location?.pathname === "/approval/item-approval"
+  const isEditClientApproval = location?.pathname === "/approval/edit-client-approval"
 
+  const selectedRowData = useSelector((state) => state.selectedRow.value);
+  const userDetails = useSelector((state) => state.login.userDetails);
   const messageReceiverNumberApproved =
     selectedRowData?.nextApproverMobileNumber
       ? selectedRowData?.nextApproverMobileNumber
@@ -64,6 +70,15 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
 
   const snackbar = useSnackbar();
 
+  const isHead = userDetails?.roleName === "Head";
+  const isManager = userDetails?.roleName === "Manager";
+  const isAdmin = userDetails?.roleName === "Admin";
+
+  const [activeTab, setActiveTab] = useState(
+    // (isHead || isManager || module === "Add Item Approval" || module === "Edit Client Approval") ? "Price Mode" : 
+    "Personal Info"
+  );
+
   //Disclosures
   const {
     isOpen: isApproveConfirmOpen,
@@ -80,36 +95,49 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
   //Constants
   const navigators = [
     { label: "Personal Info", disabled: false },
+    { label: "Price Mode", disabled: false },
     { label: "Terms and Conditions", disabled: false },
-    { label: "Attachments", disabled: false },
-    { label: "Freebies", disabled: false },
+    // { label: "Attachments", disabled: false },
     { label: "Listing Fee", disabled: false },
     { label: "Other Expenses", disabled: false },
-  ];
+  ]
+    .filter((item) => {
+      if (
+        isAddItemsApproval || isEditClientApproval
+      ) {
+        return item.label === "Price Mode";
+      }
 
-  navigators[1].disabled = approval && !viewedTabs["Personal Info"];
-  navigators[2].disabled = approval && !viewedTabs["Terms and Conditions"];
-  navigators[3].disabled = approval && !viewedTabs["Attachments"];
-  navigators[4].disabled = approval && !viewedTabs["Freebies"];
-  navigators[5].disabled = approval && !viewedTabs["Listing Fee"];
+      return true;
+    });
 
+
+  if (!(isHead || isManager || module === "Add Item Approval" || module === "Edit Client Approval")) {
+    navigators[1].disabled = approval && !viewedTabs["Personal Info"];
+    navigators[2].disabled = approval && !viewedTabs["Price Mode"];
+    navigators[3].disabled = approval && !viewedTabs["Terms and Conditions"];
+    // navigators[4].disabled = approval && !viewedTabs["Attachments"];
+    navigators[4].disabled = approval && !viewedTabs["Listing Fee"];
+  }
   // if (clientStatus !== "Approved") {
   //   for (let i = navigators.length - 1; i >= 3; i--) {
   //     navigators.splice(i, 1);
   //   }
   // }
 
-  if (selectedRowData?.terms === "COD") {
-    navigators.splice(2, 1);
-  }
+
 
   //RTK Query
   const [putApproveClient, { isLoading: isApproveLoading }] =
     usePutApproveClientMutation();
   const [putRejectClient, { isLoading: isRejectLoading }] =
     usePutRejectClientMutation();
-  const [sendMessage, { isLoading: isSendMessageLoading }] =
-    useSendMessageMutation();
+  const [putApproveItemRequest, { isLoading: isRequestApproveLoading }] = usePatchApproveEditClientRequestMutation()
+  const [putRejectItemRequest, { isLoading: isRequestRejectLoading }] = usePatchRejectEditClientRequestMutation()
+
+  // const [sendMessage, { isLoading: isSendMessageLoading }] =
+  //   useSendMessageMutation();
+
 
   const [triggerListingFee, { data: listingFeeData }] =
     useLazyGetListingFeeByClientIdQuery();
@@ -127,8 +155,7 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
     onClose();
     setReason("");
     setConfirmReason(false);
-    setActiveTab("Personal Info");
-    setViewedTabs({
+    setActiveTab((module === "Add Item Approval") ? "Price Mode" : "Personal Info"); setViewedTabs({
       "Personal Info": false,
       "Terms and Conditions": false,
       Attachments: false,
@@ -171,20 +198,12 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
 
   const handleNext = () => {
     if (activeTab === "Personal Info") {
+      setActiveTab("Price Mode");
+    } else if (activeTab === "Price Mode") {
       setActiveTab("Terms and Conditions");
     } else if (
-      activeTab === "Terms and Conditions" &&
-      selectedRowData?.terms !== "COD"
+      activeTab === "Terms and Conditions"
     ) {
-      setActiveTab("Attachments");
-    } else if (
-      activeTab === "Terms and Conditions" &&
-      selectedRowData?.terms === "COD"
-    ) {
-      setActiveTab("Freebies");
-    } else if (activeTab === "Attachments") {
-      setActiveTab("Freebies");
-    } else if (activeTab === "Freebies") {
       setActiveTab("Listing Fee");
     } else if (activeTab === "Listing Fee") {
       setActiveTab("Other Expenses");
@@ -192,16 +211,13 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
   };
 
   const handleBack = () => {
-    if (activeTab === "Terms and Conditions") {
+    if (activeTab === "Price Mode") {
       setActiveTab("Personal Info");
-    } else if (activeTab === "Attachments") {
-      setActiveTab("Terms and Conditions");
-    } else if (activeTab === "Freebies" && selectedRowData?.terms !== "COD") {
-      setActiveTab("Attachments");
-    } else if (activeTab === "Freebies" && selectedRowData?.terms === "COD") {
-      setActiveTab("Terms and Conditions");
+    }
+    if (activeTab === "Terms and Conditions") {
+      setActiveTab("Price Mode");
     } else if (activeTab === "Listing Fee") {
-      setActiveTab("Freebies");
+      setActiveTab("Terms and Conditions");
     } else if (activeTab === "Other Expenses") {
       setActiveTab("Listing Fee");
     }
@@ -209,20 +225,25 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
 
   const handleApprove = async () => {
     try {
-      await putApproveClient({
-        id: selectedRowData?.requestId,
-        ...(listingFeeData?.listingFees?.[0]?.listingItems?.length > 0 && {
-          ListingFeeRequestId: listingFeeData?.listingFees?.[0]?.requestId,
-        }),
-        ...(otherExpensesData?.expenses?.[0]?.expenses?.length > 0 && {
-          OtherExpensesRequestId: otherExpensesData?.expenses?.[0]?.requestId,
-        }),
-      }).unwrap();
+      if (!isRegistrationApproval) {
+        await putApproveItemRequest(selectedRowData?.id).unwrap()
+      } else {
+        await putApproveClient({
+          id: selectedRowData?.requestId,
+          ...(listingFeeData?.listingFees?.[0]?.listingItems?.length > 0 && {
+            ListingFeeRequestId: listingFeeData?.listingFees?.[0]?.requestId,
+          }),
+          ...(otherExpensesData?.expenses?.[0]?.expenses?.length > 0 && {
+            OtherExpensesRequestId: otherExpensesData?.expenses?.[0]?.requestId,
+          }),
+        }).unwrap();
+      }
 
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
-        mobile_number: `+63${messageReceiverNumberApproved}`,
-      }).unwrap();
+
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
+      //   mobile_number: `+63${messageReceiverNumberApproved}`,
+      // }).unwrap();
 
       snackbar({ message: "Client approved successfully", variant: "success" });
 
@@ -255,21 +276,24 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
 
   const handleReject = async () => {
     try {
-      await putRejectClient({
-        id: selectedRowData?.requestId,
-        body: { reason },
-        ...(listingFeeData?.listingFees?.[0]?.listingItems?.length > 0 && {
-          ListingFeeRequestId: listingFeeData?.listingFees?.[0]?.requestId,
-        }),
-        ...(otherExpensesData?.expenses?.[0]?.expenses?.length > 0 && {
-          OtherExpensesRequestId: otherExpensesData?.expenses?.[0]?.requestId,
-        }),
-      }).unwrap();
-
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
-        mobile_number: `+63${messageReceiverNumberRejected}`,
-      }).unwrap();
+      if ((isHead && !isRegistrationApproval) || isManager) {
+        await putRejectItemRequest(selectedRowData?.id).unwrap()
+      } else {
+        await putRejectClient({
+          id: selectedRowData?.requestId,
+          body: { reason },
+          ...(listingFeeData?.listingFees?.[0]?.listingItems?.length > 0 && {
+            ListingFeeRequestId: listingFeeData?.listingFees?.[0]?.requestId,
+          }),
+          ...(otherExpensesData?.expenses?.[0]?.expenses?.length > 0 && {
+            OtherExpensesRequestId: otherExpensesData?.expenses?.[0]?.requestId,
+          }),
+        }).unwrap();
+      }
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
+      //   mobile_number: `+63${messageReceiverNumberRejected}`,
+      // }).unwrap();
 
       snackbar({ message: "Client rejected successfully", variant: "success" });
     } catch (error) {
@@ -315,6 +339,14 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
     }
   }, [open, selectedRowData?.id, triggerListingFee, triggerExpenses]);
 
+
+  useEffect(() => {
+    if (!open) return;
+    if (isAddItemsApproval || isEditClientApproval) {
+      setActiveTab("Price Mode");
+    }
+  }, [isAddItemsApproval, isEditClientApproval, open]);
+
   return (
     <>
       <CommonModal
@@ -332,9 +364,10 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
       >
         <Box className="viewRegistrationModal">
           {activeTab === "Personal Info" && <PersonalInfoTab />}
+          {activeTab === "Price Mode" && <PriceModeTab />}
           {activeTab === "Terms and Conditions" && <TermsAndConditionsTab />}
-          {activeTab === "Attachments" && <AttachmentsTab />}
-          {activeTab === "Freebies" && <FreebiesTab />}
+          {/* {activeTab === "Attachments" && <AttachmentsTab />} */}
+          {/* {activeTab === "Freebies" && <FreebiesTab />} */}
           {activeTab === "Listing Fee" && <ListingFeeTab />}
           {activeTab === "Other Expenses" && <OtherExpensesTab />}
 
@@ -355,11 +388,11 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
                 gap: "10px",
                 // justifyContent: "end",
                 justifyContent:
-                  activeTab === "Personal Info" ? "end" : "space-between",
+                  (activeTab === "Personal Info" || isEditClientApproval || isAddItemsApproval) ? "end" : "space-between",
                 flex: 1,
               }}
             >
-              {activeTab !== "Personal Info" && (
+              {!(isEditClientApproval || isAddItemsApproval || activeTab === "Personal Info") && (
                 <DangerButton onClick={handleBack}>Back</DangerButton>
               )}
               {/* <Box
@@ -383,11 +416,11 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
                 <SecondaryButton onClick={handleNext}>Next</SecondaryButton>
               )}
               {/* </Box> */}
-              {activeTab ===
+              {((activeTab ===
                 // "Listing Fee"
                 navigators[navigators?.length - 1]?.label &&
                 approval &&
-                clientStatus === "Under review" && (
+                clientStatus === "Under review") && !isAdmin) && (
                   <>
                     <Box
                       sx={{
@@ -399,19 +432,19 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
                       <DangerButton
                         contained
                         onClick={() => {
-                          if (filteredUsers?.length > 0) {
-                            const error = filteredUsers?.find(
-                              (users) =>
-                                users?.name === selectedRowData?.requestor
-                            );
-                            if (error) {
-                              snackbar({
-                                message: `Pending Ending Inventory : ${notifications?.scheduledInventoryAdjustments}`,
-                                variant: "warning",
-                              });
-                              return;
-                            }
-                          }
+                          // if (filteredUsers?.length > 0) {
+                          //   const error = filteredUsers?.find(
+                          //     (users) =>
+                          //       users?.name === selectedRowData?.requestor
+                          //   );
+                          //   if (error) {
+                          //     snackbar({
+                          //       message: `Pending Ending Inventory : ${notifications?.scheduledInventoryAdjustments}`,
+                          //       variant: "warning",
+                          //     });
+                          //     return;
+                          //   }
+                          // }
                           onRejectConfirmOpen();
                         }}
                         data-testid="reject-registration"
@@ -421,19 +454,19 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
 
                       <SecondaryButton
                         onClick={() => {
-                          if (filteredUsers?.length > 0) {
-                            const error = filteredUsers?.find(
-                              (users) =>
-                                users?.name === selectedRowData?.requestor
-                            );
-                            if (error) {
-                              snackbar({
-                                message: `Pending Ending Inventory : ${notifications?.scheduledInventoryAdjustments}`,
-                                variant: "warning",
-                              });
-                              return;
-                            }
-                          }
+                          // if (filteredUsers?.length > 0) {
+                          //   const error = filteredUsers?.find(
+                          //     (users) =>
+                          //       users?.name === selectedRowData?.requestor
+                          //   );
+                          //   if (error) {
+                          //     snackbar({
+                          //       message: `Pending Ending Inventory : ${notifications?.scheduledInventoryAdjustments}`,
+                          //       variant: "warning",
+                          //     });
+                          //     return;
+                          //   }
+                          // }
                           onApproveConfirmOpen();
                         }}
                         data-testid="approve-registration"
@@ -454,13 +487,11 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
             onClose={onApproveConfirmClose}
             open={isApproveConfirmOpen}
             onYes={handleApprove}
-            isLoading={isApproveLoading || isSendMessageLoading}
+            isLoading={isApproveLoading || isRequestApproveLoading}
             question
           >
-            Are you sure you want to approve{" "}
-            <span style={{ fontWeight: "bold", textTransform: "uppercase" }}>
-              {selectedRowData?.businessName || "client"}
-            </span>
+            Are you sure you want to approve{" "} {isHead ? isRegistrationApproval ? " " : " additional items for " : " item changes from "}
+            {selectedRowData?.clientName || "client"}
             ?
           </CommonDialog>
 
@@ -468,7 +499,7 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
             onClose={handleRejectConfirmClose}
             open={isRejectConfirmOpen}
             onYes={handleReject}
-            isLoading={isRejectLoading || isSendMessageLoading}
+            isLoading={isRejectLoading || isRequestRejectLoading}
             disableYes={!confirmReason || !reason.trim()}
           >
             <Box sx={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -508,7 +539,8 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, ...props }) {
             </Box>
           </CommonDialog>
         </>
-      )}
+      )
+      }
     </>
   );
 }

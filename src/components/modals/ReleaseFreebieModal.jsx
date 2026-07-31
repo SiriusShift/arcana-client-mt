@@ -48,7 +48,6 @@ function ReleaseFreebieModal({ direct, inventory, ...otherProps }) {
       PageSize: 2000,
     });
 
-  console.log(clientData);
 
   const address = selectedRowData?.ownersAddress
     ? selectedRowData?.ownersAddress
@@ -138,7 +137,6 @@ function ReleaseFreebieModal({ direct, inventory, ...otherProps }) {
     formData.append("ESignature", signatureFile);
     formData.append("FreebieRequestId", selectedRowData?.id);
 
-    console.log(selectedRowData?.id);
 
     try {
       if (inventory) {

@@ -18,7 +18,7 @@ function PageHeaderAdd({
 }) {
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);
-  }, 200);
+  }, 500);
 
   return (
     <Box sx={{ padding: "1px" }}>

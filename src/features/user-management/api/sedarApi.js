@@ -17,9 +17,10 @@ export const sedarApi = createApi({
   }),
   endpoints: (builder) => ({
     getAllEmployees: builder.query({
-      query: () => ({
-        url: "/api/data/employees",
+      query: (params) => ({
+        url: "/api/data/employee/filter/active",
         method: "GET",
+        params
       }),
       transformResponse: (response) => response.data,
     }),
@@ -33,4 +34,4 @@ export const sedarApi = createApi({
   }),
 });
 
-export const { useGetAllEmployeesQuery, useGetEmployeeByIdQuery } = sedarApi;
+export const { useGetEmployeeByIdQuery, useLazyGetAllEmployeesQuery, useGetAllEmployeesQuery } = sedarApi;

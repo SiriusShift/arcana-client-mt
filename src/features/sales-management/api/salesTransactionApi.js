@@ -10,11 +10,24 @@ const salesTransactionApi = api
   })
   .injectEndpoints({
     endpoints: (builder) => ({
+      receiveMoveOrder: builder.mutation({
+        // Uncomment this when the backend is ready
+        query: (body) => ({
+          url: `/add-move-order-receivings`,
+          method: "POST",
+          body,
+        }),
+        invalidatesTags: ["Sales Transaction"],
+      }),
+
       getAllClientsForPOS: builder.query({
         query: (params) => ({
           url: "/clients/pos",
           method: "GET",
           params,
+          headers: {
+            "x-api-key": import.meta.env.VITE_ARCANA_API_KEY,
+          },
         }),
         providesTags: ["Clients POS"],
         transformResponse: (response) => response.value,
@@ -29,9 +42,29 @@ const salesTransactionApi = api
         invalidatesTags: ["Sales Transaction", "Clients POS"],
       }),
 
+      // getAllSalesTransaction: builder.query({
+      //   query: (params) => ({
+      //     url: "/sales-transaction/page",
+      //     method: "GET",
+      //     params,
+      //   }),
+      //   providesTags: ["Sales Transaction"],
+      //   transformResponse: (response) => response.value,
+      // }),
+
       getAllSalesTransaction: builder.query({
         query: (params) => ({
           url: "/sales-transaction/page",
+          method: "GET",
+          params,
+        }),
+        providesTags: ["Sales Transaction"],
+        transformResponse: (response) => response.value,
+      }),
+
+      getAllMoveOrderTransaction: builder.query({
+        query: (params) => ({
+          url: "/get-move-order-arcana",
           method: "GET",
           params,
         }),
@@ -66,7 +99,7 @@ const salesTransactionApi = api
           body,
         }),
         invalidatesTags: ["Sales Transaction"],
-      }), 
+      }),
 
       uploadCiAttachment: builder.mutation({
         query: ({ id, formData }) => ({
@@ -89,4 +122,5 @@ export const {
   useUploadCiAttachmentMutation,
   useCreateSalesTransactionMutation,
   useLazyGetSalesTransactionByIdQuery,
+  useGetAllMoveOrderTransactionQuery,
 } = salesTransactionApi;

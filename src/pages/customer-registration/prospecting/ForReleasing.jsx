@@ -49,7 +49,7 @@ function ForReleasing() {
   const [editMode, setEditMode] = useState(false);
 
   const dispatch = useDispatch();
-  const { validateEndingInventory, isNotificationFetching } = useValidate();
+  const { isNotificationFetching } = useValidate();
 
   const selectedStoreType = useSelector(
     (state) => state.selectedStoreType.value
@@ -285,18 +285,14 @@ function ForReleasing() {
             customOrderKeys={customOrderKeys}
             onView={handleEditOpen}
             onCancelFreebies={() => {
-              const error = validateEndingInventory();
-              if (error) return;
+
               onFreebieCancelOpen();
             }}
             onUpdateFreebies={() => {
-              const error = validateEndingInventory();
-              if (error) return;
+
               onFreebieFormOpen();
             }}
             onReleaseFreebie={() => {
-              const error = validateEndingInventory();
-              if (error) return;
               onFreebieReleaseOpen();
             }}
             page={page}

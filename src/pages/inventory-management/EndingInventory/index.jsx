@@ -1,7 +1,7 @@
 import { Autocomplete, Box, TextField } from "@mui/material";
 import PageHeaderAdd from "../../../components/PageHeaderAdd";
 import CommonTable from "../../../components/CommonTable";
-import GenerateMoveOrderModal from "../../../components/modals/inventory-management/GenerateMoveOrderModal";
+import GenerateMoveOrderModal from "../../../components/page-components/sales-management/sales-transaction/GenerateMoveOrderModal";
 import useDisclosure from "../../../hooks/useDisclosure";
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";

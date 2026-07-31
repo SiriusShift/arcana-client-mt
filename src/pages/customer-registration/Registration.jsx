@@ -1,38 +1,39 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { Box, TextField, Typography } from "@mui/material";
 import { GetApp } from "@mui/icons-material";
+import { Box, TextField, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import CommonTable from "../../components/CommonTable";
-import useDisclosure from "../../hooks/useDisclosure";
-import PageHeaderAddTabs from "../../components/PageHeaderAddTabs";
-import DirectRegisterForm from "./registration/DirectRegisterForm";
-import {
-  useGetAllClientsQuery,
-  usePutVoidClientRegistrationMutation,
-} from "../../features/registration/api/registrationApi";
-import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import ViewRegistrationDetailsModal from "../../components/modals/view-registration-modal/ViewRegistrationDetailsModal";
-import CommonDialog from "../../components/common/CommonDialog";
-import useSnackbar from "../../hooks/useSnackbar";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import CommonDialog from "../../components/common/CommonDialog";
+import CommonTable from "../../components/CommonTable";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
+import SearchVoidFilterMixin from "../../components/mixins/SearchVoidFilterMixin";
 import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
 import PrintFreebiesModal from "../../components/modals/PrintFreebiesModal";
-import { AppContext } from "../../context/AppContext";
-import SearchVoidFilterMixin from "../../components/mixins/SearchVoidFilterMixin";
-import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 import PrintTTAModal from "../../components/modals/registration/PrintTTAModal";
-import SessionExpired from "../SessionExpired";
+import ViewRegistrationDetailsModal from "../../components/modals/view-registration-modal/ViewRegistrationDetailsModal";
+import PageHeaderAddTabs from "../../components/PageHeaderAddTabs";
 import SecondaryButton from "../../components/SecondaryButton";
+import { AppContext } from "../../context/AppContext";
+import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
+import {
+  useGetAllClientsQuery,
+  usePatchUpdateRegistrationStatusMutation,
+  usePutVoidClientRegistrationMutation,
+} from "../../features/registration/api/registrationApi";
+import useDisclosure from "../../hooks/useDisclosure";
+import useSnackbar from "../../hooks/useSnackbar";
+import SessionExpired from "../SessionExpired";
+import DirectRegisterForm from "./registration/DirectRegisterForm";
 // import { useLazyGetConsolidateApprovedClientsExportQuery } from "../../features/registration/api/registrationApi";
 import * as _ from "lodash";
+import useConfirm from "../../hooks/useConfirm";
 import { decryptString } from "../../utils/CustomFunctions";
-import useValidate from "../../hooks/useValidate";
 
 function DirectRegistration() {
   const [search, setSearch] = useState("");
-  const [businessType, setBusinessType] = useState("");
+  const [distriType, setDistriType] = useState("");
   const [clusterId, setClusterId] = useState("");
   const [origin, setOrigin] = useState("");
   const [page, setPage] = useState(0);
@@ -49,19 +50,26 @@ function DirectRegistration() {
   const [voidConfirmBox, setVoidConfirmBox] = useState("");
 
   const snackbar = useSnackbar();
-  const { validateEndingInventory } = useValidate();
+  const confirm = useConfirm()
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const userDetails = useSelector((state) => state.login.userDetails);
 
+  const isTDO = userDetails?.roleName === "TDO"
+
+  console.log(isTDO)
+
   const isApprovedOnly =
     userDetails?.permission?.includes("Approved Clients") &&
     !userDetails?.permission?.includes("Pending Clients") &&
-    !userDetails?.permission?.includes("Rejected Clients");
+    !userDetails?.permission?.includes("Rejected Clients") &&
+    !userDetails?.permission?.includes("Inactive Clients");
 
   const [clientStatus, setClientStatus] = useState(
     isApprovedOnly ? "Approved" : "Under review"
   );
+
+  console.log(clientStatus)
   const [tabViewing, setTabViewing] = useState(isApprovedOnly ? 2 : 1);
   console.log(tabViewing);
 
@@ -109,10 +117,11 @@ function DirectRegistration() {
     {
       Search: search,
       // Status: status,
-      RegistrationStatus: clientStatus,
+      ...(tabViewing !== 4 && { RegistrationStatus: clientStatus }),
+      ...(tabViewing === 4 && { Status: false }),
       Origin: origin,
-      ClusterId: clusterId?.value || "",
-      BusinessType: businessType?.id || "",
+      TerittoryId: clusterId?.id || "",
+      DistriType: distriType?.id || "",
       PageNumber: page + 1,
       PageSize: rowsPerPage,
     },
@@ -122,6 +131,7 @@ function DirectRegistration() {
   );
   const [putVoidClientRegistration, { isLoading: isVoidLoading }] =
     usePutVoidClientRegistrationMutation();
+  const [patchUpdateStatus] = usePatchUpdateRegistrationStatusMutation()
 
   const [patchReadNotification] = usePatchReadNotificationMutation();
 
@@ -146,13 +156,13 @@ function DirectRegistration() {
     () => [
       ...(userDetails?.permission?.includes("Pending Clients")
         ? [
-            {
-              case: 1,
-              name: "Pending Clients",
-              registrationStatus: "Under review",
-              // badge: notifications["pendingClient"],
-            },
-          ]
+          {
+            case: 1,
+            name: "Pending Clients",
+            registrationStatus: "Under review",
+            // badge: notifications["pendingClient"],
+          },
+        ]
         : []),
       {
         case: 2,
@@ -162,13 +172,23 @@ function DirectRegistration() {
       },
       ...(userDetails?.permission?.includes("Rejected Clients")
         ? [
-            {
-              case: 3,
-              name: "Rejected Clients",
-              registrationStatus: "Rejected",
-              badge: notifications["rejectedClient"],
-            },
-          ]
+          {
+            case: 3,
+            name: "Rejected Clients",
+            registrationStatus: "Rejected",
+            badge: notifications["rejectedClient"],
+          },
+        ]
+        : []),
+      ...(userDetails?.permission?.includes("Inactive Clients")
+        ? [
+          {
+            case: 4,
+            name: "Inactive Clients",
+            registrationStatus: "Inactive",
+            badge: notifications["inactiveClient"],
+          },
+        ]
         : []),
     ],
     [notifications, userDetails?.permission]
@@ -188,24 +208,25 @@ function DirectRegistration() {
       label: "Direct",
     },
   ];
+  const statusIndex = tabViewing - (isTDO ? 1 : 2);
+  console.log(statusIndex)
+
 
   const tableHeads = [
     "Business Name",
-    "Owner's Name",
+    "Branch Name",
     "Contact Number",
-    "Business Type",
+    "Distribution Type",
     "Business Address",
-    "Cluster",
     "Origin",
   ];
 
   const customOrderKeys = [
     "businessName",
-    "ownersName",
+    "branchName",
     "phoneNumber",
-    "storeType",
+    "distriType",
     "businessAddress",
-    "clusterName",
     "origin",
   ];
 
@@ -217,17 +238,35 @@ function DirectRegistration() {
   const disableActions = ["printFreebies"];
 
   const handleEditOpen = () => {
-    const error = validateEndingInventory();
-    if(error) return
     setEditMode(true);
     onRegisterOpen();
   };
 
+  const handleArchive = async () => {
+    try {
+      confirm({
+        children: `Are you sure you want to ${tabViewing === 2 ? "archive" : tabViewing === 4 ? "restore" : ""} this client?`,
+        question: true,
+        callback: async () => await patchUpdateStatus(selectedRowData?.id).unwrap(),
+      })
+      // else if (tabViewing === 4) {
+      //   await confirm({
+      //     children: "Are you sure you want to restore this client?",
+      //     question: true,
+      //     callback: () => patchUpdateStatus(id).unwrap(),
+      //   })
+      // }
+    } catch (err) {
+      console.log(err)
+    }
+
+  }
+
+
   const useDownloadExcel = async () => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_BASEURL
+        `${import.meta.env.VITE_BASEURL
         }approved-clients-export?DateFrom=${moment(dateFromTemp).format(
           "MM-DD-YYYY"
         )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
@@ -276,10 +315,11 @@ function DirectRegistration() {
     useDownloadExcel();
   };
 
-  const onFilter = async ({ clusterId, businessType }) => {
+  const onFilter = async ({ clusterId, distriType }) => {
+    console.log(clusterId)
     try {
       setClusterId(clusterId);
-      setBusinessType(businessType);
+      setDistriType(distriType);
     } catch (error) {
       console.log(error);
     }
@@ -335,8 +375,6 @@ function DirectRegistration() {
           tabViewing={tabViewing}
           setTabViewing={setTabViewing}
           onOpen={() => {
-            const error = validateEndingInventory();
-            if(error) return
             onRegisterOpen();
           }}
           addTitle="Register Direct"
@@ -350,7 +388,7 @@ function DirectRegistration() {
           status={clientStatus}
           setStatus={setClientStatus}
           tabViewing={tabViewing}
-          businessTypeFilter={true}
+          distriTypeFilter={true}
           clusterFilter={true}
           onFilter={onFilter}
         >
@@ -420,14 +458,19 @@ function DirectRegistration() {
             customOrderKeys={customOrderKeys}
             nestedProperty={nestedProperty}
             onView={onViewOpen}
-            onHistory={onHistoryOpen}
+            onArchive={((tabViewing === 2 || tabViewing === 4) && isTDO) && handleArchive}
+
+            status={
+              tabViewing === 2 &&
+              registrationNavigation[statusIndex]?.registrationStatus
+            } onHistory={onHistoryOpen}
             onEdit={
               clientStatus !== "Voided" &&
               (userDetails?.roleName === "Admin"
                 ? handleEditOpen
                 : userDetails?.roleName !== "Admin"
-                ? clientStatus !== "Approved" && handleEditOpen
-                : null)
+                  ? (clientStatus !== "Rejected" && clientStatus !== "Inactive") && handleEditOpen
+                  : null)
             }
             // onArchive={onArchiveOpen}
             onVoid={clientStatus === "Rejected" && onVoidOpen}

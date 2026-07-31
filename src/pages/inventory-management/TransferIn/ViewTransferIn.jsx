@@ -26,6 +26,7 @@ const ViewTransferIn = () => {
   const { data, isFetching, isUninitialized, isError } =
     useGetTransferInByIdQuery({
       Status: "For Receiving",
+            TransferOrderId: id,
       DateFrom: dateFrom,
       DateTo: dateTo,
     });

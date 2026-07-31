@@ -70,7 +70,7 @@ const MiscReceiptFormDetails = ({ details, isFetching }) => {
 
   const cdoRoleId = roleData?.userRoles?.find(
     (role) =>
-      role.roleName === "CDO" ||
+      role.roleName === "TDO" ||
       role.roleName?.toLowerCase() === "Chief Distribution Officer"
   )?.id;
 

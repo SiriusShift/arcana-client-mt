@@ -55,7 +55,7 @@ const FreebiesFormDetails = ({ details, isFetching }) => {
             ", " +
             option.businessAddress?.province?.toUpperCase() +
             " - " +
-            option.ownersName?.toUpperCase() || ""
+            option.branchName?.toUpperCase() || ""
         }
         loading={isClientFetching}
         isOptionEqualToValue={() => true}

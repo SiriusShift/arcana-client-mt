@@ -108,10 +108,10 @@ function ViewExpensesModal({ approval, expenseStatus, ...props }) {
         id: selectedRowData?.requestId,
       }).unwrap();
 
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
-        mobile_number: `+63${messageReceiverNumberApproved}`,
-      }).unwrap();
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
+      //   mobile_number: `+63${messageReceiverNumberApproved}`,
+      // }).unwrap();
 
       snackbar({
         message: "Other Expenses approved successfully",
@@ -146,10 +146,10 @@ function ViewExpensesModal({ approval, expenseStatus, ...props }) {
         reason: reason,
       }).unwrap();
 
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
-        mobile_number: `+63${messageReceiverNumberRejected}`,
-      }).unwrap();
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
+      //   mobile_number: `+63${messageReceiverNumberRejected}`,
+      // }).unwrap();
 
       snackbar({
         message: "Other Expenses rejected successfully",

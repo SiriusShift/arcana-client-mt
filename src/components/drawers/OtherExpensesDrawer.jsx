@@ -1,28 +1,27 @@
-import { useCallback, useEffect, useState } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { Box, IconButton, TextField, Typography } from "@mui/material";
-import CommonDrawer from "../CommonDrawer";
-import ControlledAutocomplete from "../ControlledAutocomplete";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
-import { useSelector } from "react-redux";
-import SecondaryButton from "../SecondaryButton";
-import ErrorSnackbar from "../ErrorSnackbar";
-import useDisclosure from "../../hooks/useDisclosure";
-import SuccessSnackbar from "../SuccessSnackbar";
-import CommonDialog from "../common/CommonDialog";
-import { requestExpensesSchema } from "../../schema/schema";
-import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
+import { Box, IconButton, TextField, Typography } from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
-import { useGetAllOtherExpensesQuery } from "../../features/setup/api/otherExpensesApi";
+import { useSelector } from "react-redux";
+import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
 import {
   usePostExpensesMutation,
   usePutUpdateExpensesMutation,
 } from "../../features/otherExpenses/api/otherExpensesRegApi";
-import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
+import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
+import { useGetAllOtherExpensesQuery } from "../../features/setup/api/otherExpensesApi";
+import useDisclosure from "../../hooks/useDisclosure";
 import useSnackbar from "../../hooks/useSnackbar";
-import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { requestExpensesSchema } from "../../schema/schema";
+import CommonDrawer from "../CommonDrawer";
+import ControlledAutocomplete from "../ControlledAutocomplete";
+import ErrorSnackbar from "../ErrorSnackbar";
+import SecondaryButton from "../SecondaryButton";
+import SuccessSnackbar from "../SuccessSnackbar";
+import CommonDialog from "../common/CommonDialog";
 
 function OtherExpensesDrawer({
   editMode,
@@ -140,35 +139,35 @@ function OtherExpensesDrawer({
         );
       }
 
-      if (editMode) {
-        expenseStatus === "Rejected" &&
-          (await sendMessage({
-            message: `Fresh morning ${
-              selectedRowData?.currentApprover || "approver"
-            }! You have a new other expenses approval.`,
-            mobile_number: `+63${selectedRowData?.currentApproverNumber}`,
-          }).unwrap());
-      } else {
-        await sendMessage({
-          message: `Fresh morning ${
-            response?.approver || "approver"
-          }! You have a new other expenses approval.`,
-          mobile_number: `+63${response?.approverMobileNumber}`,
-        }).unwrap();
-      }
+      // if (editMode) {
+      //   expenseStatus === "Rejected" &&
+      //     (await sendMessage({
+      //       message: `Fresh morning ${
+      //         selectedRowData?.currentApprover || "approver"
+      //       }! You have a new other expenses approval.`,
+      //       mobile_number: `+63${selectedRowData?.currentApproverNumber}`,
+      //     }).unwrap());
+      // } else {
+      //   await sendMessage({
+      //     message: `Fresh morning ${
+      //       response?.approver || "approver"
+      //     }! You have a new other expenses approval.`,
+      //     mobile_number: `+63${response?.approverMobileNumber}`,
+      //   }).unwrap();
+      // }
 
       handleDrawerClose();
       onSuccessOpen();
     } catch (error) {
-      if (error.function !== "sendMessage") {
-        snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
-      }
+      // if (error.function !== "sendMessage") {
+      //   snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
+      // }
 
-      snackbar({
-        message:
-          "Other expenses requested successfully but failed to send message to approver.",
-        variant: "warning",
-      });
+      // snackbar({
+      //   message:
+      //     "Other expenses requested successfully but failed to send message to approver.",
+      //   variant: "warning",
+      // });
       handleDrawerClose();
     }
     onConfirmSubmitClose();
@@ -289,8 +288,8 @@ function OtherExpensesDrawer({
               options={clientData?.regularClient || []}
               getOptionLabel={(option) =>
                 option.businessName?.toUpperCase() +
-                  " - " +
-                  option.ownersName?.toUpperCase() || ""
+                " - " +
+                option.branchName?.toUpperCase() || ""
               }
               disableClearable
               loading={isClientLoading}
@@ -300,7 +299,7 @@ function OtherExpensesDrawer({
                 <TextField
                   {...params}
                   size="small"
-                  label="Business Name - Owner's Name"
+                  label="Business Name - Branch Name"
                   // required
                   helperText={errors?.clientId?.message}
                   error={errors?.clientId}
@@ -372,10 +371,10 @@ function OtherExpensesDrawer({
 
                       const isExpenseRepeating = Array.isArray(otherExpenses)
                         ? otherExpenses.some(
-                            (expense) =>
-                              expense?.otherExpenseId?.expenseType ===
-                              option.expenseType
-                          )
+                          (expense) =>
+                            expense?.otherExpenseId?.expenseType ===
+                            option.expenseType
+                        )
                         : false;
 
                       // const selectedClientData = watch("clientId");
@@ -459,7 +458,7 @@ function OtherExpensesDrawer({
                       fields?.length <= 1
                         ? handleExpensesError()
                         : // : remove(fields[index]);
-                          remove(index);
+                        remove(index);
                       handleRecalculateTotalAmount();
                     }}
                     tabIndex={-1}

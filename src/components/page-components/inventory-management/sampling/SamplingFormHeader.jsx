@@ -6,7 +6,7 @@ const SamplingFormHeader = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/inventory-management/sampling", { replace: true });
+    navigate("/sales-management/sampling", { replace: true });
   };
 
   return (

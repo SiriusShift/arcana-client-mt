@@ -598,7 +598,7 @@ function Reports() {
     returnSamplingFetching ||
     inventoryAdjustmentFetching ||
     inventoryFreebiesFetching ||
-    miscReceiptFetching || 
+    miscReceiptFetching ||
     consolidatedFetching;
 
   //functions
@@ -1006,7 +1006,7 @@ function Reports() {
       "Cluster",
     ],
     [
-      "CDO",
+      "TDO",
       "Date",
       "Business Name",
       "Full Name",
@@ -1124,6 +1124,9 @@ function Reports() {
             if (value?.value === "SOA-reports") {
               setValue("dateFrom", null);
             }
+            setValue("dateFrom", moment())
+            setValue("dateTo", moment())
+
           }}
           value={activeReport}
           renderInput={(params) => (
@@ -1140,7 +1143,7 @@ function Reports() {
             userDetails?.roleName === "Treasury" ||
             userDetails?.roleName === "GAS" ||
             userDetails?.roleName === "Finance" ||
-            (userDetails?.roleName === "CDO" &&
+            (userDetails?.roleName === "TDO" &&
               activeReport?.value === "GetTransferReportExport")) &&
             activeReport?.value !== "SOA-reports" &&
             activeReport?.value !== "listing-fee-reports" && (
@@ -1148,14 +1151,14 @@ function Reports() {
                 filter={onFilter}
                 userTypeFilter={
                   activeReport?.value === "arcana-mo-reports" ||
-                  (userDetails?.roleName !== "CDO" &&
+                  (userDetails?.roleName !== "TDO" &&
                     activeReport?.value === "GetTransferReportExport") ||
                   activeReport?.value === "MRPRollbackExport" ||
                   activeReport?.value === "InventoryMovementExport" ||
                   activeReport?.value === "TransactionHistoricalExport"
                 }
                 typeFilter={activeReport?.value === "GetTransferReportExport"}
-                clusterFilter={userDetails?.roleName !== "CDO" ? true : null}
+                clusterFilter={userDetails?.roleName !== "TDO" ? true : null}
                 userFilter={
                   activeReport?.value === "InventoryMovementExport" ||
                   activeReport?.value === "MRPRollbackExport"

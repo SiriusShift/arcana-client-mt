@@ -21,7 +21,6 @@ import { useLazyGetSpecialDiscountApprovalHistoryByIdQuery } from "../../feature
 import { useLazyGetApprovalFreebieHistoryQuery } from "../../features/inventory-management/api/freebiesApi";
 
 function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
-  console.log(variant);
   const { onClose, open } = otherProps;
   // const [steps, setSteps] = useState([
   //   { label: "REQUESTED", icon: <EventNote /> },
@@ -67,7 +66,6 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
     triggerSampling,
     { data: samplingApprovalData, isFetching: isSamplingApprovalFetching },
   ] = useLazyGetApprovalFreebieHistoryQuery();
-  console.log(freebieApprovalData);
 
   //Combining approval and update histories
   const combinedClientHistories = [
@@ -100,7 +98,6 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
     ...(samplingApprovalData?.updateHistories || []),
   ];
 
-  console.log(combinedFreebieHistories);
 
   //Sorting
   combinedClientHistories.sort(
@@ -139,15 +136,12 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
       new Date(a.createdAt || a.updatedAt)
   );
 
-  console.log(combinedFreebieHistories);
 
   //Functions
   const handleActiveStep = (recentData) => {
     const level = recentData?.level || 1;
-    console.log("level", level);
     const status = recentData?.status;
     const updatedAtExists = !!recentData?.updatedAt;
-    console.log(updatedAtExists);
     const approverCount = selectedRowData?.approvers?.length || 0;
 
     if (!recentData) {
@@ -184,7 +178,6 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
           { preferCacheValue: true }
         );
       } else if (variant === "freebies") {
-        console.log("test");
         triggerFreebie(
           {
             id: selectedRowData?.id,
@@ -290,7 +283,6 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
                   ? samplingApprovalData
                   : clientApprovalData
                 )?.approvers?.map((item, index) => {
-                  console.log(item);
                   return (
                     <Step key={index}>
                       <StepLabel
@@ -692,9 +684,7 @@ function ApprovalHistoryModal({ variant = "registration", ...otherProps }) {
                           <span
                             style={{ fontWeight: "600", marginRight: "5px" }}
                           >
-                            {console.log(moment(
-                              history?.createdAt || history?.updatedAt
-                            ).format("MMMM D H:mm a"))}
+                            
                             {moment(
                               history?.createdAt || history?.updatedAt
                             ).format("MMMM D")}

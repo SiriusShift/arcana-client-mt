@@ -7,6 +7,7 @@ import { selectedStoreTypeSlice } from "../features/prospect/reducers/selectedSt
 import { badgeSlice } from "../features/prospect/reducers/badgeSlice";
 import { regularRegistrationSlice } from "../features/registration/reducers/regularRegistrationSlice";
 import { sedarApi } from "../features/user-management/api/sedarApi";
+import { oneChargingApi } from "../features/user-management/api/oneChargingApi";
 import { disclosureSlice } from "../features/misc/reducers/disclosureSlice";
 import { rdfSmsApi } from "../features/misc/api/rdfSmsApi";
 import { api } from "../features/api";
@@ -30,7 +31,9 @@ export const store = configureStore({
     [api.reducerPath]: api.reducer,
     [initialChangePasswordApi.reducerPath]: initialChangePasswordApi.reducer,
     [sedarApi.reducerPath]: sedarApi.reducer,
+        [oneChargingApi.reducerPath]: oneChargingApi.reducer,
     [rdfSmsApi.reducerPath]: rdfSmsApi.reducer,
+
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -39,6 +42,7 @@ export const store = configureStore({
       initialChangePasswordApi.middleware,
       sedarApi.middleware,
       rdfSmsApi.middleware,
+      oneChargingApi.middleware
     ]),
 });
 

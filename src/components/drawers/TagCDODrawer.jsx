@@ -58,7 +58,7 @@ function TagCDODrawer({ editMode, open, onClose }) {
   //RTK Query
   const { data: cdoData, isFetching } = useGetAllUsersQuery({
     Status: true,
-    Role: "CDO",
+    Role: "TDO",
   });
 
   const [postTagUserInCluster, { isLoading: isTagLoading }] =
@@ -78,7 +78,6 @@ function TagCDODrawer({ editMode, open, onClose }) {
       reset();
       onSuccessOpen();
     } catch (error) {
-      console.log(error);
       if (error?.data?.error?.message) {
         setSnackbarMessage(error?.data?.error?.message);
       } else {
@@ -131,7 +130,7 @@ function TagCDODrawer({ editMode, open, onClose }) {
             <TextField
               {...params}
               size="small"
-              label="CDO"
+              label="TDO"
               required
               helperText={errors?.userId?.message}
               error={errors?.userId}

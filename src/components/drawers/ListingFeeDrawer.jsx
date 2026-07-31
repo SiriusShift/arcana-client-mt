@@ -1,30 +1,28 @@
-import { useCallback, useEffect, useState } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { Box, IconButton, TextField, Typography } from "@mui/material";
-import CommonDrawer from "../CommonDrawer";
-import ControlledAutocomplete from "../ControlledAutocomplete";
 import { Add, RemoveCircleOutline } from "@mui/icons-material";
-import { useGetAllProductsQuery } from "../../features/setup/api/productsApi";
+import { Box, IconButton, TextField, Typography } from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { NumericFormat } from "react-number-format";
 import { useDispatch, useSelector } from "react-redux";
-import SecondaryButton from "../SecondaryButton";
-import ErrorSnackbar from "../ErrorSnackbar";
-import useDisclosure from "../../hooks/useDisclosure";
-import SuccessSnackbar from "../SuccessSnackbar";
-import CommonDialog from "../common/CommonDialog";
-import { requestListingFeeSchema } from "../../schema/schema";
-import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
-import { useGetAllClientsForListingFeeQuery, useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import {
   usePostListingFeeMutation,
   usePutUpdateListingFeeMutation,
 } from "../../features/listing-fee/api/listingFeeApi";
-import { NumericFormat } from "react-number-format";
 import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
-import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
+import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
+import { useGetAllProductsQuery } from "../../features/setup/api/productsApi";
+import useDisclosure from "../../hooks/useDisclosure";
 import useSnackbar from "../../hooks/useSnackbar";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi";
+import { requestListingFeeSchema } from "../../schema/schema";
+import CommonDrawer from "../CommonDrawer";
+import ControlledAutocomplete from "../ControlledAutocomplete";
+import ErrorSnackbar from "../ErrorSnackbar";
+import SecondaryButton from "../SecondaryButton";
+import SuccessSnackbar from "../SuccessSnackbar";
+import CommonDialog from "../common/CommonDialog";
 
 function ListingFeeDrawer({
   editMode,
@@ -106,11 +104,10 @@ function ListingFeeDrawer({
   //     IncludeRejected: editMode ? editMode : "",
   //   });
 
-  console.log(clusterId.value);
   const { data: clientData, isLoading: isClientLoading, error } = useGetAllClientsQuery(
     {
       RegistrationStatus: "Approved",
-      ClusterId: clusterId?.id || "",  
+      ClusterId: clusterId?.id || "",
       PageNumber: 1,
       PageSize: 1000,
     },
@@ -120,12 +117,11 @@ function ListingFeeDrawer({
   );
 
   const { data: productData, isFetching: isProductLoading } =
-    useGetAllItemsByPriceModeIdQuery(
+    useGetAllProductsQuery(
       {
         Status: true,
         Page: 1,
         PageSize: 1000,
-        PriceModeId: 1,
       },
     );
 
@@ -181,35 +177,35 @@ function ListingFeeDrawer({
       }
       dispatch(setSelectedRow(response));
 
-      if (editMode) {
-        listingFeeStatus === "Rejected" &&
-          (await sendMessage({
-            message: `Fresh morning ${
-              selectedRowData?.currentApprover || "approver"
-            }! You have a new listing fee approval.`,
-            mobile_number: `+63${selectedRowData?.currentApproverNumber}`,
-          }).unwrap());
-      } else {
-        await sendMessage({
-          message: `Fresh morning ${
-            response?.approver || "approver"
-          }! You have a new listing fee approval.`,
-          mobile_number: `+63${response?.approverMobileNumber}`,
-        }).unwrap();
-      }
+      // if (editMode) {
+      //   listingFeeStatus === "Rejected" &&
+      //     (await sendMessage({
+      //       message: `Fresh morning ${
+      //         selectedRowData?.currentApprover || "approver"
+      //       }! You have a new listing fee approval.`,
+      //       mobile_number: `+63${selectedRowData?.currentApproverNumber}`,
+      //     }).unwrap());
+      // } else {
+      //   await sendMessage({
+      //     message: `Fresh morning ${
+      //       response?.approver || "approver"
+      //     }! You have a new listing fee approval.`,
+      //     mobile_number: `+63${response?.approverMobileNumber}`,
+      //   }).unwrap();
+      // }
 
       handleDrawerClose();
       onSuccessOpen();
     } catch (error) {
-      if (error.function !== "sendMessage") {
-        snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
-      }
+      // if (error.function !== "sendMessage") {
+      //   snackbar({ message: handleCatchErrorMessage(error), variant: "error" });
+      // }
 
-      snackbar({
-        message:
-          "Listing fee requested successfully but failed to send message to approver.",
-        variant: "warning",
-      });
+      // snackbar({
+      //   message:
+      //     "Listing fee requested successfully but failed to send message to approver.",
+      //   variant: "warning",
+      // });
       handleDrawerClose();
     }
 
@@ -274,7 +270,7 @@ function ListingFeeDrawer({
     });
 
     setValue("clientId", clientId);
-    setValue(`customerName`, clientId.ownersName);
+    setValue(`customerName`, clientId.branchName);
     setTotalAmount(0);
     onClientConfirmationClose();
   };
@@ -284,10 +280,10 @@ function ListingFeeDrawer({
       const foundItem = clientData?.regularClient?.find(
         (item) =>
           item.businessName === selectedRowData?.businessName &&
-          item.ownersName === selectedRowData?.ownersName
+          item.branchName === selectedRowData?.branchName
       );
       setValue("clientId", foundItem);
-      setValue("customerName", foundItem?.ownersName);
+      setValue("customerName", foundItem?.branchName);
     }
   }, [isListingFeeOpen, clientData, redirect, selectedRowData, setValue]);
 
@@ -298,7 +294,7 @@ function ListingFeeDrawer({
       );
 
       setValue("clientId", foundItem);
-      setValue("customerName", foundItem?.ownersName);
+      setValue("customerName", foundItem?.branchName);
       setValue(
         "listingItems",
         selectedRowData?.listingItems?.map((item) => ({
@@ -333,7 +329,7 @@ function ListingFeeDrawer({
         width="1000px"
         disableSubmit={!isValid || totalAmount <= 0}
         onSubmit={onConfirmSubmitOpen}
-        // zIndex={editMode && 1300}
+      // zIndex={editMode && 1300}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: "30px" }}>
           <Box
@@ -361,8 +357,8 @@ function ListingFeeDrawer({
               options={clientData?.regularClient || []}
               getOptionLabel={(option) =>
                 option.businessName?.toUpperCase() +
-                  " - " +
-                  option.ownersName?.toUpperCase() || ""
+                " - " +
+                option.branchName?.toUpperCase() || ""
               }
               disableClearable
               loading={isClientLoading}
@@ -376,7 +372,7 @@ function ListingFeeDrawer({
                 <TextField
                   {...params}
                   size="small"
-                  label="Business Name - Owner's Name"
+                  label="Business Name - Branch Name"
                   // required
                   helperText={errors?.clientId?.message}
                   error={errors?.clientId}
@@ -439,7 +435,7 @@ function ListingFeeDrawer({
                   <ControlledAutocomplete
                     name={`listingItems[${index}].itemId`}
                     control={control}
-                    options={productData?.priceModeItems || []}
+                    options={productData?.items || []}
                     getOptionLabel={(option) => option.itemCode || ""}
                     getOptionDisabled={(option) => {
                       const listingFees = watch("listingItems");
@@ -449,8 +445,8 @@ function ListingFeeDrawer({
 
                       const isListingFeeRepeating = Array.isArray(listingFees)
                         ? listingFees.some(
-                            (item) => item?.itemId?.itemCode === option.itemCode
-                          )
+                          (item) => item?.itemId?.itemCode === option.itemCode
+                        )
                         : false;
 
                       const selectedClientData = watch("clientId");
@@ -481,8 +477,8 @@ function ListingFeeDrawer({
                         isListingFeeRepeating ||
                         (editMode
                           ? !isInitialValue &&
-                            // !isInitialValueStillSelected &&
-                            isListingFeeRepeatingBackend
+                          // !isInitialValueStillSelected &&
+                          isListingFeeRepeatingBackend
                           : isListingFeeRepeatingBackend)
                       );
                     }}
@@ -596,11 +592,10 @@ function ListingFeeDrawer({
                   <IconButton
                     sx={{ color: "error.main" }}
                     onClick={() => {
-                      console.log(index);
                       fields.length <= 1
                         ? handleListingFeeError()
                         : // : remove(fields[index]);
-                          remove(index);
+                        remove(index);
                       handleRecalculateTotalAmount();
                     }}
                     tabIndex={-1}

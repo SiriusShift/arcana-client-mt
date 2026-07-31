@@ -84,6 +84,7 @@ export const priceModeItemsApi = api
         }),
         invalidatesTags: ["Price Change"],
       }),
+
     }),
   });
 

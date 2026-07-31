@@ -42,7 +42,7 @@ function PageHeaderFilterAdd({
 
   const cdoRoleId = roleData?.userRoles?.find(
     (role) =>
-      role.roleName === "CDO" ||
+      role.roleName === "TDO" ||
       role.roleName?.toLowerCase() === "Chief Distribution Officer"
   )?.id;
 
@@ -53,8 +53,6 @@ function PageHeaderFilterAdd({
     Status: true,
     isMarketing: true,
   });
-
-  console.log(userData);
 
   return (
     <Box sx={{ padding: "1px" }}>

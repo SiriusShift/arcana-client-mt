@@ -1,21 +1,20 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Box, Checkbox, Chip, TextField, Typography } from "@mui/material";
 import { useContext, useEffect, useMemo, useState } from "react";
-import PageHeaderTabs from "../../components/PageHeaderTabs";
-import { AppContext } from "../../context/AppContext";
-import AddVoidSearchMixin from "../../components/mixins/AddVoidSearchMixin";
-import useDisclosure from "../../hooks/useDisclosure";
+import { Controller, useForm } from "react-hook-form";
+import { NumericFormat } from "react-number-format";
+import { useSelector } from "react-redux";
+import CommonModalForm from "../../components/CommonModalForm";
 import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
-import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
-import { specialDiscountSchema } from "../../schema/schema";
-import { Controller, useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import CommonModalForm from "../../components/CommonModalForm";
-import { NumericFormat } from "react-number-format";
-import useSnackbar from "../../hooks/useSnackbar";
-import { useSelector } from "react-redux";
+import AddVoidSearchMixin from "../../components/mixins/AddVoidSearchMixin";
 import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
+import PageHeaderTabs from "../../components/PageHeaderTabs";
+import { AppContext } from "../../context/AppContext";
+import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
+import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
+import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import {
 	useCancelSpecialDiscountMutation,
 	useCreateSpecialDiscountMutation,
@@ -23,10 +22,11 @@ import {
 	useUpdateSpecialDiscountMutation,
 	useVoidSpecialDiscountMutation,
 } from "../../features/special-discount/api/specialDiscountApi";
-import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import useConfirm from "../../hooks/useConfirm";
-import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
-import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
+import useDisclosure from "../../hooks/useDisclosure";
+import useSnackbar from "../../hooks/useSnackbar";
+import { specialDiscountSchema } from "../../schema/schema";
+import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import SessionExpired from "../SessionExpired";
 
 function SpecialDiscount() {
@@ -136,7 +136,7 @@ function SpecialDiscount() {
 	const tableHeads = [
 		// "Request No.",
 		"Business Name",
-		"Owner's Name",
+		"Branch Name",
 		"Discount",
 		"Frequency",
 	];
@@ -156,11 +156,11 @@ function SpecialDiscount() {
 	//Functions: Other Functions
 	const onFilter = async ({ clusterId, search }) => {
 		try {
-		  setClusterId(clusterId);
+			setClusterId(clusterId);
 		} catch (error) {
-		  console.log(error);
+			console.log(error);
 		}
-	  };
+	};
 
 	//Functions: API
 	const onSubmit = async (data) => {
@@ -192,26 +192,26 @@ function SpecialDiscount() {
 							clientId: data?.clientId.id,
 						}).unwrap();
 
-						if (approvalStatus === "Rejected") {
-							await sendMessage({
-								message: `Fresh morning ${
-									selectedRowData?.currentApprover || "approver"
-								}! You have a new sp. discount approval.`,
-								mobile_number: `+63${selectedRowData?.currentApproverPhoneNumber}`,
-							}).unwrap();
-						}
+						// if (approvalStatus === "Rejected") {
+						// 	await sendMessage({
+						// 		message: `Fresh morning ${
+						// 			selectedRowData?.currentApprover || "approver"
+						// 		}! You have a new sp. discount approval.`,
+						// 		mobile_number: `+63${selectedRowData?.currentApproverPhoneNumber}`,
+						// 	}).unwrap();
+						// }
 					} else {
 						const response = await createSpecialDiscount({
 							...data,
 							clientId: data?.clientId.id,
 						}).unwrap();
 
-						await sendMessage({
-							message: `Fresh morning ${
-								response?.approver || "approver"
-							}! You have a new sp. discount approval.`,
-							mobile_number: `+63${response?.approverMobileNumber}`,
-						}).unwrap();
+						// await sendMessage({
+						// 	message: `Fresh morning ${
+						// 		response?.approver || "approver"
+						// 	}! You have a new sp. discount approval.`,
+						// 	mobile_number: `+63${response?.approverMobileNumber}`,
+						// }).unwrap();
 					}
 				},
 			});
@@ -375,7 +375,7 @@ function SpecialDiscount() {
 
 	return (
 		<>
-		   {error && <SessionExpired />}
+			{error && <SessionExpired />}
 			<Box className="commonPageLayout">
 				<PageHeaderTabs
 					wide
@@ -394,7 +394,7 @@ function SpecialDiscount() {
 					status={approvalStatus}
 					clusterFilter={true}
 					onFilter={onFilter}
-					//frequencyFilter={true}
+				//frequencyFilter={true}
 				/>
 
 				{isSpecialDiscountFetching ? (
@@ -418,8 +418,8 @@ function SpecialDiscount() {
 							(userDetails?.roleName === "Admin"
 								? handleEditOpen
 								: userDetails?.roleName !== "Admin"
-								? approvalStatus !== "Approved" && handleEditOpen
-								: null)
+									? approvalStatus !== "Approved" && handleEditOpen
+									: null)
 						}
 						onHistory={onHistoryOpen}
 						onCancel={tabViewing === 1 ? onCancel : null}
@@ -456,8 +456,8 @@ function SpecialDiscount() {
 							options={clientData?.regularClient || []}
 							getOptionLabel={(option) =>
 								option.businessName?.toUpperCase() +
-									" - " +
-									option.ownersName?.toUpperCase() || ""
+								" - " +
+								option.branchName?.toUpperCase() || ""
 							}
 							disableClearable
 							disabled={editMode}
@@ -467,7 +467,7 @@ function SpecialDiscount() {
 								<TextField
 									{...params}
 									size="small"
-									label="Business Name - Owner's Name"
+									label="Business Name - Branch Name"
 									helperText={errors?.clientId?.message}
 									error={errors?.clientId}
 								/>

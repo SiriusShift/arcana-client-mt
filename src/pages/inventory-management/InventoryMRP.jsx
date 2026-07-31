@@ -57,7 +57,7 @@ function InventoryMRP() {
     "Transfer In (+)",
     "Transfer Out (-)",
     "Return to Depot (-)",
-    "Return from Sampling (+)",
+    "Return (+)",
     "Freebies (-)",
     "Sampling (-)",
     "Replaced (-)",
@@ -117,7 +117,7 @@ function InventoryMRP() {
         removeArchive
         removeAdd
         removeFilter={
-          userDetails?.roleName.includes("CDO") ||
+          userDetails?.roleName.includes("TDO") ||
             userDetails?.roleName.includes("Marketing") ||
             userDetails?.roleName.includes("Depot")
             ? true

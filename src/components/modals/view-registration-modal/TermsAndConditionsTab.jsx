@@ -30,33 +30,33 @@ function TermsAndConditionsTab() {
             Terms and Conditions
           </Typography>
           <Box className="viewRegistrationModal__termsAndConditions__content__fields">
-            <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
+            {/* <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__label">
                 Freezer:
               </Typography>
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
                 {data?.freezer ? data.freezer : "N/A"}
               </Typography>
-            </Box>
+            </Box> */}
 
-            <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
+            {/* <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__label">
                 Type of Customer:
               </Typography>
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
                 {data?.typeOfCustomer}
               </Typography>
-            </Box>
+            </Box> */}
 
-            <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
+            {/* <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__label">
                 Direct Delivery:
               </Typography>
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
                 {data?.freezer ? "Yes" : "No"}
               </Typography>
-            </Box>
-
+            </Box> */}
+            {/* 
             <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__label">
                 Booking Coverage:
@@ -64,16 +64,16 @@ function TermsAndConditionsTab() {
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
                 {data?.bookingCoverage}
               </Typography>
-            </Box>
+            </Box> */}
 
-            <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
+            {/* <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__label">
                 Withholding Issuance:
               </Typography>
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
                 {data?.withholdingIssuance ? data?.withholdingIssuance : "N/A"}
               </Typography>
-            </Box>
+            </Box> */}
 
             <Box className="viewRegistrationModal__termsAndConditions__content__fields__item">
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__label">
@@ -102,11 +102,10 @@ function TermsAndConditionsTab() {
               </Typography>
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
                 {/* Credit Limit (P50,000) (45 Days) */}
-                {data?.term} {data?.termId === 2 && `(${data?.termDays} Day/s)`}
-                {data?.termId === 3 &&
-                  `(₱${data?.creditLimit?.toLocaleString()}) (${
-                    data?.termDays
-                  } Day/s)`}
+                {data?.term}
+                {(data?.termId === 3 && data?.creditLimit !== null && data?.creditLimit !== -1) &&
+                  `(₱${data?.creditLimit?.toLocaleString()})`}
+                {(data?.termId === 3 && data?.termDays !== -1 && data?.termDays !== null) && `(${data?.termDays} Day/s)`}
               </Typography>
             </Box>
 
@@ -117,11 +116,11 @@ function TermsAndConditionsTab() {
               <Typography className="viewRegistrationModal__termsAndConditions__content__fields__item__value">
                 {data?.fixedDiscount?.discountPercentage
                   ? `Fixed (${(
-                      data?.fixedDiscount?.discountPercentage * 100
-                    ).toFixed(2)}%)`
+                    data?.fixedDiscount?.discountPercentage * 100
+                  ).toFixed(2)}%)`
                   : data?.variableDiscount
-                  ? "Variable"
-                  : "N/A"}
+                    ? "Variable"
+                    : "N/A"}
               </Typography>
             </Box>
           </Box>

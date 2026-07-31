@@ -39,6 +39,16 @@ const productsApi = api
         }),
         invalidatesTags: ["Products"],
       }),
+      getClientProducts: builder.query({
+        query: (params) => ({
+          params: params,
+          url: "/ClientX",
+          method: "GET",
+        }),
+        providesTags: ["Products"],
+        transformResponse: (response) => response.value,
+        transformErrorResponse: (response) => response.value,
+      })
     }),
   });
 
@@ -48,4 +58,5 @@ export const {
   useLazyGetAllProductsQuery,
   usePutProductMutation,
   usePatchProductStatusMutation,
+  useGetClientProductsQuery
 } = productsApi;

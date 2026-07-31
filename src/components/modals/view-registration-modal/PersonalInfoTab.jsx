@@ -21,16 +21,24 @@ function PersonalInfoTab() {
           Customer&apos;s Information
         </Typography>
         <Box className="viewRegistrationModal__personalInfo__content__fields">
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
+                    <Box className="viewRegistrationModal__personalInfo__content__fields__item">
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Name:
+              Customer Code:
             </Typography>
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.ownersName}
+              {selectedRowData?.id}
+            </Typography>
+          </Box>
+          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
+            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
+              Business Name:
+            </Typography>
+            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
+              {selectedRowData?.businessName}
             </Typography>
           </Box>
 
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
+          {/* <Box className="viewRegistrationModal__personalInfo__content__fields__item">
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
               Birthday:
             </Typography>
@@ -39,7 +47,7 @@ function PersonalInfoTab() {
                 .format("MMMM D, YYYY")
                 ?.toUpperCase()}
             </Typography>
-          </Box>
+          </Box> */}
 
           <Box className="viewRegistrationModal__personalInfo__content__fields__item">
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
@@ -65,50 +73,6 @@ function PersonalInfoTab() {
             </Typography>
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
               {selectedRowData?.tinNumber || "N/A"}
-            </Typography>
-          </Box>
-
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Owner&apos;s Address:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {`${
-                selectedRowData?.ownersAddress?.houseNumber
-                  ? `#${selectedRowData.ownersAddress.houseNumber} `
-                  : ""
-              }${
-                selectedRowData?.ownersAddress?.streetName
-                  ? `${selectedRowData.ownersAddress.streetName} `
-                  : ""
-              }${
-                selectedRowData?.ownersAddress?.barangayName
-                  ? `${selectedRowData.ownersAddress.barangayName}, `
-                  : ""
-              }${
-                selectedRowData?.ownersAddress?.city
-                  ? `${selectedRowData.ownersAddress.city}, `
-                  : ""
-              }${
-                selectedRowData?.ownersAddress?.province
-                  ? `${selectedRowData.ownersAddress.province}`
-                  : ""
-              }`}
-
-              {/* #{selectedRowData?.ownersAddress?.houseNumber}{" "}
-              {selectedRowData?.ownersAddress?.streetName}{" "}
-              {selectedRowData?.ownersAddress?.barangayName},{" "}
-              {selectedRowData?.ownersAddress?.city},{" "}
-              {selectedRowData?.ownersAddress?.province} */}
-            </Typography>
-          </Box>
-
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Business Name:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.businessName}
             </Typography>
           </Box>
 
@@ -148,27 +112,48 @@ function PersonalInfoTab() {
 
           <Box className="viewRegistrationModal__personalInfo__content__fields__item">
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Cluster:
+              Branch Name:
             </Typography>
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.clusterName}
+              {selectedRowData?.branchName}
             </Typography>
           </Box>
 
           <Box className="viewRegistrationModal__personalInfo__content__fields__item">
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Price Mode:
+              Delivery Address:
             </Typography>
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.priceModeName?.toUpperCase() || "N/A"}
-              {/* {selectedRowData?.priceModeCode
-                ? `${selectedRowData?.priceModeCode} - 
-              ${selectedRowData?.priceModeDescription}$`
-                : "N/A"} */}
+              {`${
+                selectedRowData?.deliveryAddress?.houseNumber
+                  ? `#${selectedRowData.deliveryAddress.houseNumber} `
+                  : ""
+              }${
+                selectedRowData?.deliveryAddress?.streetName
+                  ? `${selectedRowData.deliveryAddress.streetName} `
+                  : ""
+              }${
+                selectedRowData?.deliveryAddress?.barangayName
+                  ? `${selectedRowData.deliveryAddress.barangayName}, `
+                  : ""
+              }${
+                selectedRowData?.deliveryAddress?.city
+                  ? `${selectedRowData.deliveryAddress.city}, `
+                  : ""
+              }${
+                selectedRowData?.deliveryAddress?.province
+                  ? `${selectedRowData.deliveryAddress.province}`
+                  : ""
+              }`}
+              {/* #{selectedRowData?.businessAddress?.houseNumber}{" "}
+              {selectedRowData?.businessAddress?.streetName}{" "}
+              {selectedRowData?.businessAddress?.barangayName},{" "}
+              {selectedRowData?.businessAddress?.city},{" "}
+              {selectedRowData?.businessAddress?.province} */}
             </Typography>
           </Box>
-
-          {isRepresentativeRequirements && (
+         
+          {/* {isRepresentativeRequirements && (
             <Box className="viewRegistrationModal__personalInfo__content__fields__itemWrapped">
               <Typography className="viewRegistrationModal__personalInfo__content__fields__itemWrapped__label">
                 Name of Authorized <br />
@@ -178,7 +163,7 @@ function PersonalInfoTab() {
                 {selectedRowData?.authorizedRepresentative}
               </Typography>
             </Box>
-          )}
+          )} */}
         </Box>
       </Box>
     </Box>

@@ -8,7 +8,6 @@ const { BaseLayer } = LayersControl;
 function MapModal({ ...otherProps }) {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
-  console.log(selectedRowData);
 
   return (
     <CommonModal {...otherProps} closeTopRight width={"600px"}>

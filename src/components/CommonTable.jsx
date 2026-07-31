@@ -145,7 +145,6 @@ function CommonTable({
     return 0;
   });
 
-  console.log("map", mapData);
 
   const dispatch = useDispatch();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
@@ -302,7 +301,6 @@ function CommonTable({
                 {
                   const sortCol = sortColumn?.find(col => item === col?.header);
 
-                  console.log(sortCol)
 
                   if (sortCol) {
                     return <TableCell
@@ -506,7 +504,6 @@ function CommonTable({
                             )
                             .map(([key, value]) => ({ key, value })) // Store both key (color) and value
                           : [];
-                        console.log(nestedValues);
 
                         return (
                           <TableCell key={k}>

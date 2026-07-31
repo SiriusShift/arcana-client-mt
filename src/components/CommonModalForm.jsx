@@ -24,7 +24,6 @@ function CommonModalForm({
   ...otherProps
 }) {
   const { onClose, ...noOnCloseProps } = otherProps;
-  console.log(date);
   // const isDisabled = moment(date).isBefore(moment().add(1, "days")) && date !== "0001-01-01T00:00:00"
   
   return (

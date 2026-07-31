@@ -1,31 +1,31 @@
-import { Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
-import { useRef } from "react";
-import "../assets/styles/navbar.styles.scss";
-import { useLocation, useNavigate } from "react-router-dom";
-import { setSelectedStoreType } from "../features/prospect/reducers/selectedStoreTypeSlice";
 import {
   AccountCircle,
   KeyboardDoubleArrowLeft,
   Logout,
-  Password,
   Menu as MenuIcon,
+  Password,
   Tour,
 } from "@mui/icons-material";
+import { Box, IconButton, Menu, MenuItem, Typography } from "@mui/material";
+import moment from "moment";
+import { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import useDisclosure from "../hooks/useDisclosure";
+import { useLocation, useNavigate } from "react-router-dom";
+import "../assets/styles/navbar.styles.scss";
+import { api } from "../features/api";
 import {
   setFullname,
   setToken,
 } from "../features/authentication/reducers/loginSlice";
 import { setPermissisons } from "../features/authentication/reducers/permissionsSlice";
-import ChangePasswordModal from "./modals/ChangePasswordModal";
 import {
   toggleSidebar,
   toggleSidebarSmallScreen,
 } from "../features/misc/reducers/disclosureSlice";
-import moment from "moment";
-import { api } from "../features/api";
+import { setSelectedStoreType } from "../features/prospect/reducers/selectedStoreTypeSlice";
+import useDisclosure from "../hooks/useDisclosure";
 import useTour from "../hooks/useTour";
+import ChangePasswordModal from "./modals/ChangePasswordModal";
 
 function Header() {
   const dispatch = useDispatch();
@@ -38,6 +38,9 @@ function Header() {
   );
 
   const fullName = useSelector((state) => state.login.fullname);
+  const role = useSelector((state) => state.login.userDetails.roleName);
+  const territoryName = useSelector((state) => state.login.userDetails.territoryName);
+
 
   const {
     isOpen: isMenuOpen,
@@ -140,7 +143,11 @@ function Header() {
             )}
             onChange={handleNavigate}
           /> */}
-          <Typography>{fullName}</Typography>
+          <Box sx={{ textAlign: "end" }}>
+            <Typography>{fullName}</Typography>
+            <Typography variant="subtitle">{role}{territoryName && ` - ${territoryName}`}</Typography>
+
+          </Box>
 
           <IconButton
             sx={{ color: "secondary.main" }}

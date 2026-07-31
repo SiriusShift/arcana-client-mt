@@ -1,46 +1,42 @@
-import {
-  Box,
-  TextField,
-  Typography,
-  Button,
-  Autocomplete,
-} from "@mui/material";
-import PageHeaderAdd from "../../components/PageHeaderAdd";
-import CommonTable from "../../components/CommonTable";
-import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { useEffect, useRef, useState } from "react";
-import useDisclosure from "../../hooks/useDisclosure";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller, useForm } from "react-hook-form";
-import { attendanceSchema, othersAttendance } from "../../schema/schema";
-import CommonDrawer from "../../components/CommonDrawer";
-import WebcamForm from "../../utils/webcam";
-import useGeolocation from "../../hooks/useGeolocation";
-import { useGetAllClientsForCheckInQuery } from "../../features/registration/api/registrationApi";
-import ControlledAutocomplete from "../../components/ControlledAutocomplete";
-import { useSelector } from "react-redux";
-import moment from "moment/moment";
-import ViewTransactionModal from "../../components/modals/sales-management/ViewTransactionModal";
 import {
-  useGetCheckinQuery,
-  usePostCheckinMutation,
-  usePatchTimeOutMutation,
-} from "../../features/check-in/api/checkinApi";
-import CheckInModal from "../../components/modals/CheckInModal";
-import MapModal from "../../components/modals/MapModal";
-import useSnackbar from "../../hooks/useSnackbar";
-import useConfirm from "../../hooks/useConfirm";
+  Autocomplete,
+  Box,
+  TextField
+} from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import moment from "moment/moment";
+import { useEffect, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
+import CommonDrawer from "../../components/CommonDrawer";
+import CommonTable from "../../components/CommonTable";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
+import ControlledAutocomplete from "../../components/ControlledAutocomplete";
+import CheckInModal from "../../components/modals/CheckInModal";
+import MapModal from "../../components/modals/MapModal";
 import PageHeaderFilterAdd from "../../components/PageHeaderFilterAdd";
-import { clusterOptions } from "../../utils/Constants";
+import {
+  useGetCheckinQuery,
+  usePatchTimeOutMutation,
+  usePostCheckinMutation,
+} from "../../features/check-in/api/checkinApi";
+import { useGetAllClientsForCheckInQuery } from "../../features/registration/api/registrationApi";
+import { useGetTerritoryQuery } from "../../features/setup/api/territoryApi";
+import useConfirm from "../../hooks/useConfirm";
+import useDisclosure from "../../hooks/useDisclosure";
+import useGeolocation from "../../hooks/useGeolocation";
+import useSnackbar from "../../hooks/useSnackbar";
+import { attendanceSchema, othersAttendance } from "../../schema/schema";
+import WebcamForm from "../../utils/webcam";
 
 function CheckIn() {
   const userData = useSelector((state) => state.login.userDetails);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [typeCustomer, setTypeCustomer] = useState(null);
-  const [clusterId, setClusterId] = useState(userData?.roleName === "CDO" ? " " : 1);
+  const [clusterId, setClusterId] = useState(userData?.roleName === "TDO" ? " " : 1);
   const [search, setSearch] = useState("");
   const location = useGeolocation();
   const confirm = useConfirm();
@@ -118,6 +114,13 @@ function CheckIn() {
     DateFrom: moment(watch("dateFrom")).format("YYYY-MM-DD"),
     DateTo: moment(watch("dateTo")).format("YYYY-MM-DD"),
   });
+
+
+  const { data: territory, isLoading: isTerritoryLoading } = useGetTerritoryQuery({
+    Status: true,
+    Page: 1,
+    PageSize: 1000,
+  })
 
   const { data: clients, isFetching: isFetchingClients } =
     useGetAllClientsForCheckInQuery({
@@ -279,13 +282,13 @@ function CheckIn() {
         pageTitle="Check In"
         removeArchive
         removeAllItem
-        removeFilter={userData?.roleName.includes("CDO") ? true : false}
-        filterChoices={clusterOptions}
+        removeFilter={userData?.roleName.includes("TDO") ? true : false}
+        filterChoices={territory?.territories}
         setSearch={setSearch}
         onOpen={handleAddOpen}
         setFilter={setClusterId}
-        choiceLabel="label"
-        choiceValue="value"
+        choiceLabel="name"
+        choiceValue="id"
       />
 
       <Box className="mixin" sx={{ justifyContent: "end" }}>
@@ -405,7 +408,7 @@ function CheckIn() {
                 <TextField
                   {...field}
                   size="small"
-                  label="Owner's Name"
+                  label="Branch Name"
                   autoComplete="off"
                   onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                 />
@@ -457,10 +460,8 @@ function CheckIn() {
             control={control}
             options={clients}
             getOptionLabel={(option) =>
-              `${option?.fullName + " - " || "N/A"}  ${
-                option?.businessName
-              } - ${option?.barangayName || "N/A"}, ${
-                option?.municipality || "N/A"
+              `${option?.fullName + " - " || "N/A"}  ${option?.businessName
+              } - ${option?.barangayName || "N/A"}, ${option?.municipality || "N/A"
               }, ${option?.province || "N/A"} - ${option?.clientId}`
             }
             isOptionEqualToValue={(option, value) =>

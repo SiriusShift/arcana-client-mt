@@ -49,22 +49,30 @@ export const userAccountSchema = {
     mobileNumber: yup.string().required("Mobile number is required"),
     userRoleId: yup.object().required("Role is required"),
     // clusterId: yup.object().nullable(),
-    clusterId: yup.object().when("userRoleId", {
-      is: (userRoleId) => userRoleId && userRoleId?.roleName === "CDO" || userRoleId?.roleName === "Marketing",
-      then: (schema) => schema.required("Cluster is required"),
+    territoryId: yup.object().when("userRoleId", {
+      is: (userRoleId) =>
+        (userRoleId && userRoleId?.roleName === "TDO") ||
+        userRoleId?.roleName === "Marketing",
+      then: (schema) => schema.required("Territory is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+    charging: yup.object().when("userRoleId.roleName", {
+      is: "TDO",
+      then: (schema) => schema.required("Charging is required"),
       otherwise: (schema) => schema.nullable(),
     }),
     // clusters: yup.array().of(yup.object()),
   }),
   // .required(),
   defaultValues: {
-    fullIdNo: "",
+    fullIdNo: "RDFFLFI",
     fullname: "",
     username: "",
     password: "",
     mobileNumber: "",
     userRoleId: null,
-    clusterId: null,
+    territoryId: null,
+    charging: null,
     // clusters: [],
   },
 };
@@ -113,7 +121,7 @@ export const productSchema = {
     uomId: yup.object().required("UOM is required"),
     productSubCategoryId: yup.object().required("Subcategory is required"),
     meatTypeId: yup.object().required("Meat type is required"),
-    itemImageLink: yup.mixed().nullable(),
+    // itemImageLink: yup.mixed().nullable(),
   }),
   defaultValues: {
     itemCode: "",
@@ -121,7 +129,8 @@ export const productSchema = {
     uomId: null,
     productSubCategoryId: null,
     meatTypeId: null,
-    itemImageLink: null,
+    vatable: false
+    // itemImageLink: null,
   },
 };
 
@@ -167,7 +176,6 @@ export const uomSchema = {
   },
 };
 
-
 export const priceModeSetupSchema = {
   schema: yup.object({
     priceModeCode: yup.string().required("Price mode code is required"),
@@ -181,7 +189,7 @@ export const priceModeSetupSchema = {
         uom: yup.string().required("UOM is required"),
         price: yup.number().required("Price is required"),
         isClearPack: yup.bool(),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -249,7 +257,7 @@ export const priceModeTaggingSchema = {
         priceModeId: yup.number().required("Price mode is required"),
         itemId: yup.object().required("Product Code is required"),
         price: yup.number().required("Price is required"),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -277,7 +285,7 @@ export const priceModePriceChangeSchema = {
         priceModeItemId: yup.object().required("Product Code is required"),
         price: yup.number().required("Price is required"),
         effectivityDate: yup.date().required("Effectivity date is required"),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -405,7 +413,7 @@ export const requestFreebiesSchema = {
       yup.object({
         itemId: yup.object().required("Product Code Required"),
         quantity: yup.number().required("Quantity is required").positive(),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -427,7 +435,7 @@ export const requestFreebiesDirectSchema = {
         quantity: yup.number().required("Quantity is required").positive(),
         uom: yup.string(),
         itemDescription: yup.string(),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -497,41 +505,7 @@ const maxDate = today.clone().subtract(18, "years").toDate();
 
 export const directRegisterPersonalSchema = {
   schema: yup.object({
-    ownersName: yup.string().required("Owner's name is required"),
-    ownersAddress: yup
-      .object({
-        houseNumber: yup.string(),
-        // .required("House number is required")
-        streetName: yup.string(),
-        // .required("Street name is required")
-        barangayName: yup.string().required("Barangay name is required"),
-        city: yup.string().required("City/Municipality is required"),
-        province: yup.string().required("Province is required"),
-      })
-      .required(),
-    phoneNumber: yup.string().required("Phone number is required"),
-    dateOfBirth: yup
-      .date()
-      .required("Birthdate is required")
-      .min(
-        minDate,
-        `Date must be after ${moment(minDate).format("MMMM D, YYYY")}`
-      )
-      .max(
-        maxDate,
-        `Date must be before ${moment(maxDate).format("MMMM D, YYYY")}`
-      ),
-    tinNumber: yup.string(),
-    // tinNumber: yup.string().required("TIN number is required"),
     businessName: yup.string().required("Business name is required"),
-    storeTypeId: yup.object().required("Business type is required"),
-    emailAddress: yup.string(),
-    // emailAddress: yup.string().required("Email address is required"),
-    clusterId: yup.object().required("Cluster is required"),
-    priceModeId: yup.object().required("Price mode is required"),
-    // cluster: yup.number().required("Cluster is required").integer(),
-    latitude: yup.string().nullable(),
-    longitude: yup.string().nullable(),
     businessAddress: yup
       .object({
         houseNumber: yup.string(),
@@ -543,32 +517,39 @@ export const directRegisterPersonalSchema = {
         province: yup.string().required("Province is required"),
       })
       .required(),
-    authorizedRepresentative: yup.string(),
-    // .required("Representative name is required")
-    authorizedRepresentativePosition: yup.string(),
+
+    phoneNumber: yup.string().required("Phone number is required"),
+    tinNumber: yup.string(),
+    // tinNumber: yup.string().required("TIN number is required"),
+    branchName: yup.string().required("Branch name is required"),
+    deliveryAddress: yup
+      .object({
+        houseNumber: yup.string(),
+        // .required("House number is required")
+        streetName: yup.string(),
+        // .required("Street name is required")
+        barangayName: yup.string().required("Barangay name is required"),
+        city: yup.string().required("City/Municipality is required"),
+        province: yup.string().required("Province is required"),
+      })
+      .required(),
+    // distriTypeId: yup.object().required("Distribution type is required"),
+    // subTerritoryId: yup.object().required("Sub Territory Id is required"),
+    emailAddress: yup.string(),
+    // emailAddress: yup.string().required("Email address is required"),
+    // clusterId: yup.object().required("Cluster is required"),
+    // priceModeId: yup.object().required("Price mode is required"),
+    // cluster: yup.number().required("Cluster is required").integer(),
+    latitude: yup.string().nullable(),
+    longitude: yup.string().nullable(),
+
+    // authorizedRepresentative: yup.string(),
+    // // .required("Representative name is required")
+    // authorizedRepresentativePosition: yup.string(),
     // .required("Representative position is required")
   }),
   defaultValues: {
-    ownersName: "",
-    ownersAddress: {
-      houseNumber: "",
-      streetName: "",
-      barangayName: "",
-      city: "",
-      province: "",
-    },
-    phoneNumber: "",
-    dateOfBirth: null,
-    // dateOfBirth: moment(Date.now()),
-    tinNumber: "",
     businessName: "",
-    storeTypeId: null,
-    emailAddress: "",
-    clusterId: null,
-    priceModeId: null,
-    // cluster: null,
-    latitude: "",
-    longitude: "",
     businessAddress: {
       houseNumber: "",
       streetName: "",
@@ -576,10 +557,49 @@ export const directRegisterPersonalSchema = {
       city: "",
       province: "",
     },
-    authorizedRepresentative: "",
-    authorizedRepresentativePosition: "",
+    phoneNumber: "",
+    // dateOfBirth: moment(Date.now()),
+    tinNumber: "",
+    branchName: "",
+    // distriTypeId: null,
+    emailAddress: "",
+    // clusterId: null,
+    // priceModeId: null,
+    // cluster: null,
+    latitude: "",
+    longitude: "",
+    deliveryAddress: {
+      houseNumber: "",
+      streetName: "",
+      barangayName: "",
+      city: "",
+      province: "",
+    },
+    // authorizedRepresentative: "",
+    // authorizedRepresentativePosition: "",
   },
 };
+
+export const priceModeRegistrationSchema = {
+  schema: yup.object({
+    priceMode: yup.string().required("Price mode is required"),
+    items: yup.array().of(
+      yup.object({
+        itemCode: yup.object().required("Product Code is required"),
+        price: yup.number().required("Price is required")
+      })
+    ),
+    isVatable: yup.boolean().required("Taxable is required")
+  }),
+  defaultValues: {
+    priceMode: null,
+    items: [{
+      itemCode: null,
+      price: null
+    }],
+    isVatable: false
+  }
+}
 
 export const requestListingFeeSchema = {
   schema: yup.object({
@@ -590,7 +610,7 @@ export const requestListingFeeSchema = {
         sku: yup.number().required("SKU is required"),
         unitCost: yup.string().required("Unit Cost is required"),
         // quantity: yup.number().required("Quantity is required"),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -613,7 +633,7 @@ export const listingFeeForRegistrationSchema = {
         sku: yup.number().required("SKU is required"),
         unitCost: yup.string().required("Unit Cost is required"),
         // quantity: yup.number().required("Quantity is required"),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -629,7 +649,7 @@ export const approversSchema = {
         userId: yup.object().required("User is required"),
         // moduleName: yup.string(),
         level: yup.number().required("Level is required"),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -651,86 +671,112 @@ export const approverSettingsSchema = {
     approvers: yup.array().of(
       yup.object().shape({
         userId: yup.object().required("User is required"),
-        level: yup.number().required("Level is required"),
-        minValue: yup.number().nullable(),
-      })
+      }),
     ),
-    approversWithLimit: yup
-      .array()
-      .of(
-        yup.object().shape({
-          userId: yup.object().required("User is required"),
-          level: yup.number().required("Level is required"),
-          minValue: yup
-            .number()
-            .required("Minimum value is required")
-            .test(
-              "minValue",
-              "Minimum value must be from 1% - 100%",
-              function (value) {
-                return value > 0 && value <= 100;
-              }
-            ),
-        })
-      )
-      .test(
-        "minValue-greater-than-previous",
-        "Each item's minimum value must be greater than the previous item's minimum value",
-        function (value) {
-          for (let i = 1; i < value.length; i++) {
-            if (value[i].minValue < value[i - 1].minValue) {
-              return false;
-            }
-          }
-          return true;
-        }
-      ),
-    approversWithLimitDigit: yup
-      .array()
-      .of(
-        yup.object().shape({
-          userId: yup.object().required("User is required"),
-          level: yup.number().required("Level is required"),
-          minValue: yup.number().required("Minimum value is required"),
-        })
-      )
-      .test(
-        "minValue-greater-than-previous",
-        "Each item's minimum value must be greater than the previous item's minimum value",
-        function (value) {
-          console.log("Validating approversWithLimitDigit:", value); // Debugging
+    approversWithTerritory: yup.array().of(
+      yup.object().shape({
+        userId: yup.object().required("User is required"),
+        territory: yup
+          .object()
+          .nullable(),
+      }),
+    ),
+    // approversWithLimit: yup
+    //   .array()
+    //   .of(
+    //     yup.object().shape({
+    //       userId: yup.object().required("User is required"),
+    //       level: yup.number().required("Level is required"),
+    //       minValue: yup
+    //         .number()
+    //         .required("Minimum value is required")
+    //         .test(
+    //           "minValue",
+    //           "Minimum value must be from 1% - 100%",
+    //           function (value) {
+    //             return value > 0 && value <= 100;
+    //           },
+    //         ),
+    //     }),
+    //   )
+    //   .test(
+    //     "minValue-greater-than-previous",
+    //     "Each item's minimum value must be greater than the previous item's minimum value",
+    //     function (value) {
+    //       for (let i = 1; i < value.length; i++) {
+    //         if (value[i].minValue < value[i - 1].minValue) {
+    //           return false;
+    //         }
+    //       }
+    //       return true;
+    //     },
+    //   ),
+    // approversWithLimitDigit: yup
+    //   .array()
+    //   .of(
+    //     yup.object().shape({
+    //       userId: yup.object().required("User is required"),
+    //       level: yup.number().required("Level is required"),
+    //       minValue: yup.number().required("Minimum value is required"),
+    //     }),
+    //   )
+    //   .test(
+    //     "minValue-greater-than-previous",
+    //     "Each item's minimum value must be greater than the previous item's minimum value",
+    //     function (value) {
+    //       console.log("Validating approversWithLimitDigit:", value); // Debugging
 
-          if (!Array.isArray(value) || value.length === 0) return true; // Allow empty array
+    //       if (!Array.isArray(value) || value.length === 0) return true; // Allow empty array
 
-          for (let i = 1; i < value.length; i++) {
-            console.log(
-              `Comparing: ${value[i].minValue} (current) vs ${
-                value[i - 1].minValue
-              } (previous)`
-            );
-            if (value[i].minValue <= value[i - 1].minValue) {
-              return false;
-            }
-          }
-          return true;
-        }
-      ),
+    //       for (let i = 1; i < value.length; i++) {
+    //         console.log(
+    //           `Comparing: ${value[i].minValue} (current) vs ${value[i - 1].minValue
+    //           } (previous)`,
+    //         );
+    //         if (value[i].minValue <= value[i - 1].minValue) {
+    //           return false;
+    //         }
+    //       }
+    //       return true;
+    //     },
+    //   ),
   }),
   defaultValues: {
     moduleName: "",
     approvers: [],
-    approversWithLimit: [],
+    approversWithTerritory: [],
   },
 };
 
 export const clusterSchema = {
   schema: yup.object({
     cluster: yup.string().required("Cluster is required"),
-    type: yup.string().required("Type is required")
   }),
   defaultValues: {
     cluster: "",
-    type: ""
+  },
+};
+
+export const territorySchema = {
+  schema: yup.object({
+    name: yup.string().required("Cluster is required"),
+    distributionType: yup.object().required("Distribution Type is Required"),
+  }),
+  defaultValues: {
+    name: "",
+    distributionType: {
+      id: null,
+      name: "",
+    },
+  },
+};
+
+export const distributionSchema = {
+  schema: yup.object({
+    name: yup.string().required("Cluster is required"),
+  }),
+  defaultValues: {
+    name: "",
   },
 };
 
@@ -776,7 +822,7 @@ export const requestExpensesSchema = {
         otherExpenseId: yup.object().required("Expense Type is required"),
         amount: yup.string().required("Amount is required"),
         remarks: yup.string(),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -798,7 +844,7 @@ export const expensesForRegistrationSchema = {
         otherExpenseId: yup.object().required("Expense Type is required"),
         amount: yup.string().required("Amount is required"),
         remarks: yup.string(),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -889,14 +935,14 @@ export const paymentTransactionSchema = {
     invoiceNo: yup.array().of(yup.number()),
     receiptNo: yup.number().required("Receipt number is required"),
     paymentDate: yup.date().required("Date is required"),
-    receiptAttachment: yup.mixed().required("Receipt attachment is required"),
+    // receiptAttachment: yup.mixed().required("Receipt attachment is required"),
   }),
   defaultValues: {
     transactionId: [],
     payments: [],
     invoiceNo: [],
     paymentDate: moment(),
-    receiptAttachment: null,
+    // receiptAttachment: null,
     receiptNo: null,
   },
 };
@@ -966,11 +1012,11 @@ export const paymentSchema = {
     }),
 
     //Withholding
-    attachment: yup.mixed().when("paymentMethod.label", {
-      is: "Withholding",
-      then: (schema) => schema.required("Attachment  is required"),
-      otherwise: (schema) => schema.nullable(),
-    }),
+    // attachment: yup.mixed().when("paymentMethod.label", {
+    //   is: "Withholding",
+    //   then: (schema) => schema.required("Attachment  is required"),
+    //   otherwise: (schema) => schema.nullable(),
+    // }),
 
     //Others
     otherExpense: yup.object().when("paymentMethod.value", {
@@ -1035,13 +1081,14 @@ export const cashoutSchema = {
     discount: yup.number().required("Discount is required").nullable(),
     // rebateAmount: yup.number().required("Rebate is required").nullable(),
     orDate: yup.date().required("Date is required"),
+    drNo: yup.number().required("Delivery Receipt Number is required"),
     specialDiscount: yup.number().nullable(),
     specialDiscountId: yup.number().nullable(),
     isOneTimeSp: yup.bool().nullable(),
   }),
   defaultValues: {
     invoiceNo: "",
-    invoiceType: "",
+    invoiceType: "Charge",
     discount: null,
     // rebateAmount: 0,
     orDate: moment(),
@@ -1072,39 +1119,67 @@ export const wrongDeliverSchema = {
         uom: yup.string().nullable(),
         itemDescription: yup.string().nullable(),
         reason: yup.string().required("Reason is required"),
-      })
+      }),
     ),
   }),
   defaultValues: {
     wrong: [],
   },
 };
-
 export const receivingItemsSchema = {
   schema: yup.object({
     items: yup.array().of(
       yup.object({
+        itemId: yup.number().nullable(),
+
         itemCode: yup.string().required("Item Code is required"),
+
         quantity: yup.number().nullable(),
-        productionDate: yup.string(),
-        uom: yup.string().required("UOM is required"),
-        itemDescription: yup.string().required("Item Description is required"),
-        actualQuantity: yup.number().required("Quantity Received is required"),
+
+
+        actualQuantity: yup
+          .number()
+          .required("Quantity is required")
+          .min(0, "Quantity cannot be negative"),
+
+
         variance: yup.number(),
-        reason: yup.string(),
-      })
+
+        amount: yup
+          .number()
+          .required("Amount is required")
+          .min(0, "Amount must be a positive number"),
+
+        uom: yup.string().required("UOM is required"),
+
+        itemDescription: yup.string().required("Item Description is required"),
+
+        reason: yup.string().when(["variance", "quantity"], {
+          is: (variance, quantity) =>
+            variance !== 0 || quantity === undefined || quantity === null,
+          then: (schema) => schema.required("Reason is required"),
+        }),
+        price: yup
+          .number()
+          .required("Price is required")
+          .positive("Price must be positive"),
+      }),
     ),
   }),
+
   defaultValues: {
     items: [
       {
+        itemId: null,
         itemCode: "",
-        quantity: null,
-        productionDate: "",
+        quantity: 0,
+        actualQuantity: null,
+        variance: null,
+        amount: 0,
         uom: "",
         itemDescription: "",
-        actualQuantity: null,
         reason: "",
+        price: 0,
       },
     ],
   },
@@ -1121,7 +1196,7 @@ export const endingInventorySchema = {
         actualQuantity: yup.number().required("Quantity Received is required"),
         variance: yup.number(),
         reason: yup.string().nullable(),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -1152,7 +1227,7 @@ export const transferOutSchema = {
           // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
   }),
@@ -1182,7 +1257,7 @@ export const freebiesSchema = {
           // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
   }),
@@ -1213,7 +1288,7 @@ export const samplingSchema = {
           // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
   }),
@@ -1243,7 +1318,7 @@ export const returnSchema = {
           bbd: yup.string().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
     replaceItems: yup
@@ -1254,7 +1329,7 @@ export const returnSchema = {
           bbd: yup.string().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string().nullable(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
   }),
@@ -1370,7 +1445,7 @@ export const bbdCallsheet = {
         itemCode: yup.string().required("Item Code is required"),
         quantity: yup.number().required("Quantity is required"),
         bbdDate: yup.string().nullable(),
-      })
+      }),
     ),
   }),
   defaultValues: {
@@ -1401,7 +1476,7 @@ export const outrightReturnSchema = {
           quantity: yup.number().required("Quantity is required").min(1),
           remarks: yup.object().required("Remarks is required"),
           reason: yup.string().nullable(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
     referenceNo: yup.number().required("Reference No. is required"),
@@ -1438,7 +1513,7 @@ export const returnSamplingSchema = {
           quantity: yup.number().required("Quantity is required").min(1),
           remarks: yup.object().required("Remarks is required"),
           reason: yup.string().nullable(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
   }),
@@ -1473,7 +1548,7 @@ export const miscInSchema = {
           // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
   }),
@@ -1506,7 +1581,7 @@ export const miscOutSchema = {
           // bbd: yup.object().required("BBD is required"),
           quantity: yup.number().required("Quantity is required").min(1),
           reason: yup.string(),
-        })
+        }),
       )
       .min(1, "At least one product is required"),
   }),

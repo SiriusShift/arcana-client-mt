@@ -57,12 +57,11 @@ function ListingFeeClient() {
 
   //RTK Query
   const { data: productData, isFetching: isProductLoading } =
-    useGetAllItemsByPriceModeIdQuery(
+    useGetAllProductsQuery(
       {
         Status: true,
         Page: 1,
         PageSize: 1000,
-        PriceModeId: 1,
       },
     );
 
@@ -148,7 +147,7 @@ function ListingFeeClient() {
             <ControlledAutocomplete
               name={`listingItems[${index}].itemId`}
               control={control}
-              options={productData?.priceModeItems || []}
+              options={productData?.items || []}
               getOptionLabel={(option) => option.itemCode || ""}
               getOptionDisabled={(option) => {
                 const listingFees = watch("listingItems");

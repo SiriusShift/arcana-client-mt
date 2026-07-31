@@ -116,10 +116,10 @@ function ViewListingFeeModal({
         id: selectedRowData?.requestId,
       }).unwrap();
 
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
-        mobile_number: `+63${messageReceiverNumberApproved}`,
-      }).unwrap();
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
+      //   mobile_number: `+63${messageReceiverNumberApproved}`,
+      // }).unwrap();
 
       snackbar({
         message: "Listing Fee approved successfully",
@@ -154,10 +154,10 @@ function ViewListingFeeModal({
         reason: reason,
       }).unwrap();
 
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
-        mobile_number: `+63${messageReceiverNumberRejected}`,
-      }).unwrap();
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
+      //   mobile_number: `+63${messageReceiverNumberRejected}`,
+      // }).unwrap();
 
       snackbar({
         message: "Listing Fee rejected successfully",

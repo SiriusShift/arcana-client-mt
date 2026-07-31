@@ -1,41 +1,28 @@
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { yupResolver } from "@hookform/resolvers/yup";
+import {
+  Settings
+} from "@mui/icons-material";
 import {
   Box,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Stack,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
-import { useEffect, useState } from "react";
-import PageHeaderAdd from "../../components/PageHeaderAdd";
-import CommonTable from "../../components/CommonTable";
-import CommonDrawer from "../../components/CommonDrawer";
-import useDisclosure from "../../hooks/useDisclosure";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { approverSettingsSchema } from "../../schema/schema";
+import { useEffect, useMemo, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
+import CommonDrawer from "../../components/CommonDrawer";
+import CommonTable from "../../components/CommonTable";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
-import {
-  Add,
-  KeyboardArrowDown,
-  KeyboardArrowUp,
-  RemoveCircleOutline,
-  Settings,
-} from "@mui/icons-material";
-import { useGetAllApproversQuery } from "../../features/user-management/api/approverApi";
-import SecondaryButton from "../../components/SecondaryButton";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { navigationData } from "../../navigation/navigationData";
+import PageHeaderAdd from "../../components/PageHeaderAdd";
+import { useGetTerritoryQuery } from "../../features/setup/api/territoryApi";
+import { useGetApproverModulesQuery, useLazyGetApproverModuleCandidatesQuery, useLazyGetApproversOfModuleQuery, useUpdateApproversOfExpensesMutation, useUpdateApproversOfModuleMutation } from "../../features/user-management/api/approverApi";
+import useDisclosure from "../../hooks/useDisclosure";
 import useSnackbar from "../../hooks/useSnackbar";
+import { navigationData } from "../../navigation/navigationData";
+import { approverSettingsSchema } from "../../schema/schema";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
-import {
-  useLazyGetApproversByRangeQuery,
-  useUpdateApproversByRangeMutation,
-} from "../../features/user-management/api/approverSettingsApi";
-import { NumericFormat } from "react-number-format";
-import SessionExpired from "../SessionExpired";
 
 function Approver() {
   const [status, setStatus] = useState(true);
@@ -63,6 +50,13 @@ function Approver() {
   const isRegistrationApproval =
     selectedRowData?.name === "Registration Approval";
 
+  const isItemApproval =
+    selectedRowData?.name === "Add Item Approval";
+
+  const isClientEditApproval = selectedRowData?.name === "Edit Client Approval";
+
+  const isOtherExpenses = selectedRowData?.name === "Other Expenses Approval";
+
   //React Hook Form
   const {
     handleSubmit,
@@ -77,8 +71,6 @@ function Approver() {
     defaultValues: approverSettingsSchema.defaultValues,
   });
 
-  console.log(errors);
-
   const {
     fields: approverFields,
     append: approverAppend,
@@ -89,12 +81,23 @@ function Approver() {
     name: "approvers",
   });
 
+  console.log(approverFields)
+
+  const {
+    fields: approverWithTerritoryFields,
+    append: approverWithTerritoryAppend,
+    remove: approverWithTerritoryRemove,
+    swap: approverWithTerritorySwap,
+  } = useFieldArray({
+    control,
+    name: "approversWithTerritory",
+  });
+
   const {
     fields: approverWithLimitFields,
     append: approverWithLimitAppend,
     remove: approverWithLimitRemove,
     swap: approverWithLimitSwap,
-    update: approverWithLimitUpdate,
   } = useFieldArray({
     control,
     name: "approversWithLimit",
@@ -105,151 +108,33 @@ function Approver() {
     append: approverWithLimitDigitAppend,
     remove: approverWithLimitDigitRemove,
     swap: approverWithLimitDigitSwap,
-    update: approverWithLimitDigitUpdate,
   } = useFieldArray({
     control,
     name: "approversWithLimitDigit",
   });
 
-  console.log(approverWithLimitDigitAppend?.length, approverWithLimitFields?.length)
-
-  console.log(watch());
-  console.log("errors: ", errors, isValid);
-
   const [parent] = useAutoAnimate();
 
-  //RTK Query
-  const { data, isLoading, error } = useGetAllApproversQuery({
-    refetchOnMountOrArgChange: true,
-  });
+  const {
+    data: modules, isLoading: modulesLoading
+  } = useGetApproverModulesQuery();
 
+  console.log(watch())
+  const [triggerCandidates, { data: moduleApprovers, isLoading: moduleApproversLoading }] = useLazyGetApproverModuleCandidatesQuery()
+  const [triggerApprovers, { data: approverModule, isLoading: approverModuleLoading }] = useLazyGetApproversOfModuleQuery()
+  const [updateApprovers, { isLoading: approversUpdating }] = useUpdateApproversOfModuleMutation();
+  const [updateOtherExpenseApprovers, { isLoading: otherExpenseApproversUpdating }] = useUpdateApproversOfExpensesMutation();
 
-  let [
-    triggerApprovers,
-    { data: approversByRangeData, isFetching: isApproverByRangeFetching },
-  ] = useLazyGetApproversByRangeQuery({
-    refetchOnMountOrArgChange: true,
-  });
+  console.log(approverModule)
+  const { data: territoryData, isFetching: isTerritoryFetching } = useGetTerritoryQuery({
+    Status: true,
+    Page: 1,
+    PageSize: 1000,
+  })
 
-  useEffect(() => {
-    approversByRangeData = {
-      approvers:
-        approversByRangeData?.approvers
-          ?.slice()
-          .sort((a, b) => a.level - b.level) || [],
-    };
-  }, [approversByRangeData]);
-
-
-  console.log(data, approversByRangeData);
-
-  const [updateApprovers, { isLoading: isUpdateLoading }] =
-    useUpdateApproversByRangeMutation();
-
-  //Drawer Functions
-  const onSubmit = async (values) => {
-    console.log("test", values);
-    const approvers = values.approvers.map((item) => ({
-      userId: item.userId.userId,
-      minValue: null,
-      // maxValue: item.maxValue,
-      level: item.level,
-    }));
-
-    const approversWithLimit = values.approversWithLimit.map((item) => ({
-      userId: item.userId.userId,
-      minValue: item.minValue,
-      // maxValue: item.maxValue,
-      level: item.level + values.approvers.length,
-    }));
-
-    const approversWithLimitDigit = values.approversWithLimitDigit.map(
-      (item) => ({
-        userId: item.userId.userId,
-        minValue: item.minValue,
-        // maxValue: item.maxValue,
-        level:
-          item.level +
-          values.approvers.length +
-          values.approversWithLimit.length,
-      })
-    );
-
-    const combinedApprovers = [
-      ...approvers,
-      ...approversWithLimit,
-      ...approversWithLimitDigit,
-    ];
-
-    try {
-      await updateApprovers({
-        params: { moduleName: values.moduleName.name },
-        body: { approvers: combinedApprovers },
-      });
-
-      snackbar({
-        variant: "success",
-        message: "Approver settings updated successfully",
-      });
-      handleDrawerClose();
-    } catch (error) {
-      snackbar({ variant: "error", message: handleCatchErrorMessage(error) });
-    }
-  };
 
   const handleEditOpen = () => {
     onDrawerOpen();
-  };
-
-  const handleSwapApprover = (indexA, indexB) => {
-    // Get the current values of the items at indexA and indexB
-    const itemA = watch(`approvers[${indexA}]`);
-    const itemB = watch(`approvers[${indexB}]`);
-
-    // Update only the level property between items at indexA and indexB
-    const updatedItemA = { ...itemB, level: itemA.level };
-    const updatedItemB = { ...itemA, level: itemB.level };
-
-    // Swap the items in the array
-    approverSwap(indexA, indexB);
-
-    // // Use update to update the specific items in the array
-    setValue(`approvers[${indexA}]`, updatedItemA);
-    setValue(`approvers[${indexB}]`, updatedItemB);
-  };
-
-  const handleSwapApproverWithLimit = (indexA, indexB) => {
-    console.log("hello");
-    // Get the current values of the items at indexA and indexB
-    const itemA = watch(
-      watch("moduleName")?.name === "Sp. Discount Approval"
-        ? `approversWithLimit[${indexA}]`
-        : `approversWithLimitDigit[${indexA}]`
-    );
-    const itemB = watch(
-      watch("moduleName")?.name === "Sp. Discount Approval"
-        ? `approversWithLimit[${indexB}]`
-        : `approversWithLimitDigit[${indexB}]`
-    );
-
-    // // Update only the userId property between items at indexA and indexB
-    const updatedItemA = { ...itemB, level: itemA.level };
-    const updatedItemB = { ...itemA, level: itemB.level };
-
-    console.log(updatedItemA, updatedItemB);
-
-    // Use update to update the specific items in the array
-    // setValue(`approversWithLimit[${indexA}]`, updatedItemA);
-    // setValue(`approversWithLimit[${indexB}]`, updatedItemB);
-    watch("moduleName")?.name === "Sp. Discount Approval"
-      ? approverWithLimitUpdate(indexA, updatedItemA)
-      : approverWithLimitDigitUpdate(indexA, updatedItemA);
-    watch("moduleName")?.name === "Sp. Discount Approval"
-      ? approverWithLimitUpdate(indexB, updatedItemB)
-      : approverWithLimitDigitUpdate(indexB, updatedItemB);
-
-    // Swap the items in the array
-    // approverWithLimitSwap(indexA, indexB);
   };
 
   const handleDrawerClose = () => {
@@ -258,76 +143,194 @@ function Approver() {
     setWithLimit(true);
   };
 
+  //Drawer Functions
+  const onSubmit = async (values) => {
+    console.log("submit values", values);
+
+    try {
+      if (isOtherExpenses) {
+        await updateOtherExpenseApprovers({
+          moduleName: selectedRowData?.key,
+          body: {
+            approvers: {
+              heads: values.approversWithTerritory.map((item) => ({
+                userId: item.userId?.userId,
+                territoryId: item.territory?.id,
+              })),
+              managers: values.approvers.map((item) => ({
+                userId: item.userId?.userId,
+                territoryId: null,
+              })),
+            }
+          },
+        }).unwrap();
+      } else {
+        await updateApprovers({
+          moduleName: selectedRowData?.key,
+          body: {
+            approvers: isClientEditApproval
+              ? values.approvers.map((item) => ({
+                userId: item.userId?.userId,
+              }))
+              : values.approversWithTerritory.map((item) => ({
+                userId: item.userId?.userId,
+                territoryId: item.territory?.id,
+              })),
+          },
+        }).unwrap();
+      }
+
+      handleDrawerClose();
+
+      snackbar({
+        variant: "success",
+        message: "Successfully updated approvers",
+      });
+    } catch (err) {
+      console.error(err);
+
+      snackbar({
+        variant: "error",
+        message: handleCatchErrorMessage(err),
+      });
+    }
+  };
+
   useEffect(() => {
     if (isDrawerOpen) {
       setValue("moduleName", selectedRowData);
+      triggerCandidates(
+        {
+          moduleName: selectedRowData?.key,
+        },
+        {
+          preferCacheValue: true,
+        }
+      );
       triggerApprovers(
         {
-          moduleName: selectedRowData?.name,
+          moduleName: selectedRowData?.key,
         },
         {
           preferCacheValue: true,
         }
       );
 
-      if (isRegistrationApproval) {
+      if (isRegistrationApproval || isOtherExpenses) {
         setWithLimit(false);
       }
     }
   }, [
     isDrawerOpen,
     selectedRowData,
+    triggerCandidates,
     triggerApprovers,
     setValue,
     isRegistrationApproval,
+    isOtherExpenses,
   ]);
+  const arr = (v) => (Array.isArray(v) ? v : []);
+
+  // Memoize derived candidates so identity is stable unless data truly changes
+  const headCandidates = useMemo(
+    () => arr(moduleApprovers?.approvers?.heads ?? moduleApprovers?.approvers),
+    [moduleApprovers]
+  );
+  const managerCandidates = useMemo(
+    () => arr(moduleApprovers?.approvers?.managers ?? moduleApprovers?.approvers),
+    [moduleApprovers]
+  );
+
+  console.log(managerCandidates)
+  console.log(headCandidates)
 
   useEffect(() => {
-    if (approversByRangeData) {
-      const approvers = approversByRangeData?.approvers;
-      console.log("test",approvers);
+    if (!isDrawerOpen || !moduleApprovers || !approverModule) return;
 
-      // Assuming approvers is an array of objects
-      const [withMinValue, withoutMinValue] = approvers.reduce(
-        (acc, approver) => {
-          // Check if the approver has a minValue that is not null or undefined
-          if (approver.minValue != null) {
-            acc[0].push({
-              userId: data?.find((user) => user.userId === approver.userId),
-              level: approver.level,
-              minValue: approver.minValue ?? 0,
-            }); // Add to the first array if minValue exists
-          } else {
-            acc[1].push({
-              userId: data?.find((user) => user.userId === approver.userId),
-              level: approver.level,
-              minValue: null,
-            }); // Add to the second array if minValue is null or undefined
-          }
-          return acc?.sort((a, b) => a.level - b.level);
-        },
-        [[], []]
-      ); // Initial accumulator is two empty arrays
+    const findIn = (list, userId) =>
+      list.find((c) => String(c.userId ?? c.id) === String(userId)) || null;
 
-      const transformedWithMinValue = withMinValue.map((item, index) => ({
-        ...item,
-        level: index + 1,
-      }));
+    const buildTerritories = (source) => [
+      ...new Map(
+        source
+          .filter((a) => a?.territoryId != null)
+          .map((a) => [a.territoryId, { id: a.territoryId, name: a.territoryName }])
+      ).values(),
+    ];
 
-      console.log(transformedWithMinValue);
+    console.log(headCandidates)
 
-      setValue("approvers", withoutMinValue);
-      if (watch("moduleName")?.name === "Sp. Discount Approval") {
-        setValue("approversWithLimit", transformedWithMinValue);
-      } else {
-        setValue("approversWithLimitDigit", transformedWithMinValue);
-      }
+    if (isOtherExpenses) {
+      const existingHeads = arr(approverModule?.approvers?.heads ?? approverModule?.heads);
+      const existingManagers = arr(approverModule?.approvers?.managers ?? approverModule?.managers);
+
+
+      const headRows = buildTerritories(headCandidates).map((territory) => {
+        const match = existingHeads.find(
+          (h) =>
+            String(h.territoryId ?? "") === String(territory.id) ||
+            h.territoryName === territory.name
+        );
+        return {
+          territory,
+          userId: match ? findIn(headCandidates, match.userId ?? match.id) : null,
+        };
+      });
+
+      const managerRows =
+        existingManagers.length > 0
+          ? existingManagers.map((m) => ({
+            userId: findIn(managerCandidates, m.userId ?? m.id),
+          }))
+          : [{ userId: null }];
+
+      setValue("approversWithTerritory", headRows, { shouldValidate: true });
+      setValue("approvers", managerRows, { shouldValidate: true });
+      return;
     }
-  }, [approversByRangeData, data, selectedRowData, setValue]);
+
+    const existing = arr(approverModule?.approvers);
+
+    console.log(existing)
+
+    if (isClientEditApproval) {
+      const managerRows =
+        existing.length > 0
+          ? existing.map((m) => ({
+            userId: findIn(managerCandidates, m.userId ?? m.id),
+          }))
+          : [{ userId: null }]; setValue(
+            "approvers",
+            managerRows, { shouldValidate: true }
+          );
+      return;
+    }
+
+    setValue(
+      "approversWithTerritory",
+      buildTerritories(headCandidates).map((territory) => {
+        const match = existing.find((a) => a.territoryId === territory.id);
+        return {
+          territory,
+          userId: match ? findIn(headCandidates, match.userId) : null,
+        };
+      }),
+      { shouldValidate: true }
+    );
+  }, [
+    isDrawerOpen,
+    moduleApprovers,
+    approverModule,
+    // headCandidates,
+    // managerCandidates,
+    // setValue,
+    isOtherExpenses,
+    isClientEditApproval,
+  ]);
 
   return (
     <>
-      {error && <SessionExpired />}
+      {/* {error && <SessionExpired />} */}
       <Box className="commonPageLayout">
         <PageHeaderAdd
           pageTitle={
@@ -342,19 +345,21 @@ function Approver() {
           removeAdd
         />
 
-        <CommonTable
-          evenLesserCompact
-          mapData={approvalItem?.sub}
-          customOrderKeys={customOrderKeys}
-          tableHeads={tableHeads}
-          onManageApprovers={handleEditOpen}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={approvalItem?.sub?.length}
-          status={status}
-        />
+        {modulesLoading ? <CommonTableSkeleton compact />
+          : <CommonTable
+            evenLesserCompact
+            mapData={modules}
+            customOrderKeys={customOrderKeys}
+            tableHeads={tableHeads}
+            onManageApprovers={handleEditOpen}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={approvalItem?.sub?.length}
+            isLo
+            status={status}
+          />}
 
         <CommonDrawer
           open={isDrawerOpen}
@@ -362,9 +367,8 @@ function Approver() {
           drawerHeader="Approver Settings"
           onSubmit={handleSubmit(onSubmit)}
           disableSubmit={!isValid}
+          isLoading={approverModuleLoading || moduleApproversLoading}
           width="1000px"
-          isLoading={isUpdateLoading}
-          isFetching={isApproverByRangeFetching}
         >
           <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
             Module Name
@@ -376,7 +380,6 @@ function Approver() {
             options={approvalItem?.sub || []}
             getOptionLabel={(option) => option.name || ""}
             disableClearable
-            loading={isLoading}
             isOptionEqualToValue={() => true}
             disabled
             renderInput={(params) => (
@@ -391,365 +394,178 @@ function Approver() {
           />
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
-              List of Approvers
+            {!isClientEditApproval && (<>            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
+              List of Approvers With Territory
             </Typography>
 
-            <Box
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
+                ref={parent}
+              >
+                {approverWithTerritoryFields.map((item, index) => (
+                  <Box
+                    key={item.id}
+                    sx={{
+                      display: "flex",
+                      gap: "10px",
+                      alignItems: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <ControlledAutocomplete
+                      name={`approversWithTerritory[${index}].userId`}
+                      control={control}
+                      options={
+                        Array.isArray(moduleApprovers?.approvers?.heads)
+                          ? moduleApprovers.approvers.heads
+                          : Array.isArray(moduleApprovers?.heads)
+                            ? moduleApprovers.heads
+                            : Array.isArray(moduleApprovers?.approvers)
+                              ? moduleApprovers.approvers
+                              : []
+                      } getOptionLabel={(option) => option?.fullname || option?.fullName || ""}
+                      sx={{ flex: 1 }}
+                      disableClearable
+                      getOptionDisabled={(option) => {
+                        const approversWithTerritory = watch("approversWithTerritory");
+
+
+                        const checkApprover =
+                          approversWithTerritory?.some(
+                            (item) => item?.userId?.userId === option.userId
+                          )
+                        return checkApprover;
+                      }}
+                      disabled={!watch("moduleName")}
+                      loading={moduleApproversLoading}
+                      isOptionEqualToValue={() => true}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          label="Approver Name"
+                          helperText={errors?.userId?.message}
+                          error={errors?.userId}
+                        />
+                      )}
+                    />
+
+                    {!(isClientEditApproval) && <ControlledAutocomplete
+                      name={`approversWithTerritory[${index}].territory`}
+                      control={control}
+                      options={territoryData?.territories || []}
+                      getOptionLabel={(option) => option.name || ""}
+                      sx={{ flex: 1 }}
+                      disableClearable
+                      disabled={!watch("moduleName")}
+                      loading={isTerritoryFetching}
+                      isOptionEqualToValue={() => true}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          label="Territory Name"
+                          helperText={errors?.territory?.message}
+                          error={errors?.territory}
+                        />
+                      )}
+                    />}
+                    {/* 
+                  <IconButton
+                    sx={{ color: "error.main" }}
+                    onClick={() => approverWithTerritoryRemove(index)}
+                  >
+                    <RemoveCircleOutline sx={{ fontSize: "30px" }} />
+                  </IconButton> */}
+                  </Box>
+                ))}
+              </Box>
+            </>)}
+
+
+            {(isOtherExpenses || isClientEditApproval) && <>            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
+              List of Approvers Without Territory
+            </Typography>            <Box
               sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
               ref={parent}
             >
-              {approverFields.map((item, index) => (
-                <Box
-                  key={item.id}
-                  sx={{
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "center",
-                    width: "100%",
-                  }}
-                >
-                  <ControlledAutocomplete
-                    name={`approvers[${index}].userId`}
-                    control={control}
-                    options={data || []}
-                    getOptionLabel={(option) => option.fullname || ""}
-                    getOptionDisabled={(option) => {
-                      const approversWithLimit = watch("approversWithLimit");
-                      const approvers = watch("approvers");
-                      const approversWithLimitDigit = watch(
-                        "approversWithLimitDigit"
-                      );
-
-                      const checkApprover =
-                        approversWithLimit?.some(
-                          (item) => item?.userId?.userId === option.userId
-                        ) ||
-                        approvers?.some(
-                          (item) => item?.userId?.userId === option.userId
-                        );
-                      approversWithLimitDigit?.some(
-                        (item) => item?.userId?.userId === option.userId
-                      );
-                      return checkApprover;
+                {approverFields.map((item, index) => (
+                  <Box
+                    key={item.id}
+                    sx={{
+                      display: "flex",
+                      gap: "10px",
+                      alignItems: "center",
+                      width: "100%",
                     }}
-                    sx={{ flex: 1 }}
-                    disableClearable
-                    disabled={!watch("moduleName")}
-                    loading={isLoading}
-                    isOptionEqualToValue={() => true}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        label="Approver Name"
-                        helperText={errors?.userId?.message}
-                        error={errors?.userId}
-                      />
-                    )}
-                  />
-
-                  {/* {!isRegistrationApproval && (
-                  <>
-                    <Controller
-                      control={control}
-                      name={`approvers[${index}].minValue`}
-                      render={({ field: { onChange, onBlur, value, ref } }) => (
-                        <NumericFormat
-                          label="Minimum Value"
-                          type="text"
-                          size="small"
-                          customInput={TextField}
-                          autoComplete="off"
-                          onValueChange={(e) => {
-                            onChange(Number(e.value));
-                          }}
-                          onBlur={onBlur}
-                          value={value || ""}
-                          inputRef={ref}
-                          thousandSeparator=","
-                          allowNegative={false}
-                          allowLeadingZeros={false}
-                          prefix={
-                            watch("moduleName")?.name ===
-                              "Listing Fee Approval" ||
-                            watch("moduleName")?.name ===
-                              "Other Expenses Approval"
-                              ? "₱"
-                              : ""
-                          }
-                          suffix={
-                            watch("moduleName")?.name ===
-                            "Sp. Discount Approval"
-                              ? "%"
-                              : ""
-                          }
-                          sx={{ width: "180px" }}
-                          disabled
-                        />
-                      )}
-                    />
-
-                    <Controller
-                      control={control}
-                      name={`approvers[${index}].maxValue`}
-                      render={({ field: { onChange, onBlur, value, ref } }) => (
-                        <NumericFormat
-                          label="Maximum Value"
-                          type="text"
-                          size="small"
-                          customInput={TextField}
-                          autoComplete="off"
-                          onValueChange={(e) => {
-                            onChange(Number(e.value));
-                          }}
-                          onBlur={onBlur}
-                          value={value || ""}
-                          inputRef={ref}
-                          thousandSeparator=","
-                          allowNegative={false}
-                          allowLeadingZeros={false}
-                          prefix={
-                            watch("moduleName")?.name ===
-                              "Listing Fee Approval" ||
-                            watch("moduleName")?.name ===
-                              "Other Expenses Approval"
-                              ? "₱"
-                              : ""
-                          }
-                          suffix={
-                            watch("moduleName")?.name ===
-                            "Sp. Discount Approval"
-                              ? "%"
-                              : ""
-                          }
-                          min={watch(`approvers[${index}].minValue`) || 0}
-                          sx={{ width: "180px" }}
-                          disabled={
-                            !watch("moduleName") ||
-                            index !== watch("approvers").length - 1
-                          }
-                        />
-                      )}
-                    />
-                  </>
-                )} */}
-
-                  <IconButton
-                    sx={{ color: "secondary.main" }}
-                    // onClick={() => {
-                    //   setValue(`approvers[${index}].level`, index);
-                    //   setValue(`approvers[${index - 1}].level`, index + 1);
-                    //   approverSwap(index, index - 1);
-                    // }}
-                    onClick={() => handleSwapApprover(index - 1, index)}
-                    disabled={index === 0}
                   >
-                    <KeyboardArrowUp sx={{ fontSize: "30px" }} />
-                  </IconButton>
-
-                  <IconButton
-                    sx={{ color: "secondary.main" }}
-                    // onClick={() => {
-                    //   setValue(`approvers[${index}].level`, index + 2);
-                    //   setValue(`approvers[${index + 1}].level`, index + 1);
-                    //   approverSwap(index, index + 1);
-                    // }}
-                    onClick={() => handleSwapApprover(index, index + 1)}
-                    disabled={index === approverFields.length - 1}
-                  >
-                    <KeyboardArrowDown sx={{ fontSize: "30px" }} />
-                  </IconButton>
-
-                  <IconButton
-                    sx={{ color: "error.main" }}
-                    onClick={() => approverRemove(index)}
-                    // disabled={index !== approverFields.length - 1}
-                  >
-                    <RemoveCircleOutline sx={{ fontSize: "30px" }} />
-                  </IconButton>
-                </Box>
-              ))}
-
-              {(watch("moduleName")?.name === "Sp. Discount Approval"
-                ? approverWithLimitFields
-                : approverWithLimitDigitFields
-              ).map((item, index) => (
-                <Box
-                  key={item.id}
-                  sx={{
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "center",
-                    width: "100%",
-                  }}
-                >
-                  <ControlledAutocomplete
-                    name={
-                      watch("moduleName")?.name === "Sp. Discount Approval"
-                        ? `approversWithLimit[${index}].userId`
-                        : `approversWithLimitDigit[${index}].userId`
-                    }
-                    control={control}
-                    options={data || []}
-                    getOptionLabel={(option) => option.fullname || ""}
-                    getOptionDisabled={(option) => {
-                      const approversWithLimit = watch("approversWithLimit");
-                      const approversWithLimitDigit = watch(
-                        "approversWithLimitDigit"
-                      );
-                      const approvers = watch("approvers");
-                      console.log(approversWithLimit, option);
-
-                      const checkApprover =
-                        approversWithLimit?.some(
-                          (item) => item?.userId === option.userId
-                        ) ||
-                        approvers?.some(
-                          (item) => item?.userId === option.userId
-                        );
-                      approversWithLimitDigit?.some(
-                        (item) => item?.userId === option.userId
-                      );
-                      return checkApprover;
-                    }}
-                    sx={{ flex: 1 }}
-                    disableClearable
-                    disabled={!watch("moduleName")}
-                    loading={isLoading}
-                    isOptionEqualToValue={(option, value) =>
-                      option.userId === value?.userId
-                    } // Compare userId properly
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        size="small"
-                        label="Approver Name"
-                        helperText={errors?.userId?.message}
-                        error={Boolean(errors?.userId)}
-                      />
-                    )}
-                    // onChange={(_, newValue) => {
-                    //   if (newValue) {
-                    //     setValue(
-                    //       `approversWithLimit[${index}].userId`,
-                    //       newValue.userId
-                    //     );
-                    //   } else {
-                    //     setValue(
-                    //       `approversWithLimit[${index}].userId`,
-                    //       null
-                    //     );
-                    //   }
-                    // }}
-                  />
-
-                  {!isRegistrationApproval && (
-                    <Controller
+                    <ControlledAutocomplete
+                      name={`approvers[${index}].userId`}
                       control={control}
-                      name={
-                        watch("moduleName")?.name === "Sp. Discount Approval"
-                          ? `approversWithLimit[${index}].minValue`
-                          : `approversWithLimitDigit[${index}].minValue`
+                      options={moduleApprovers?.approvers?.managers || moduleApprovers?.approvers || []}
+                      getOptionLabel={(option) => option?.fullname || option?.fullName || ""}
+                      // getOptionDisabled={(option) => {
+                      //   const approversWithLimit = watch("approversWithLimit");
+                      //   const approversWithLimitDigit = watch("approversWithLimitDigit");
+                      //   const approvers = watch("approvers");
+
+                      //   return (
+                      //     approversWithLimit?.some(
+                      //       (item) => item?.userId === option.userId
+                      //     ) ||
+                      //     approversWithLimitDigit?.some(
+                      //       (item) => item?.userId === option.userId
+                      //     ) ||
+                      //     approvers?.some(
+                      //       (item) => item?.userId === option.userId
+                      //     )
+                      //   );
+                      // }}
+                      sx={{ flex: 1 }}
+                      disableClearable
+                      disabled={!watch("moduleName")}
+                      loading={moduleApproversLoading}
+                      isOptionEqualToValue={(option, value) =>
+                        option.userId === value?.userId
                       }
-                      render={({ field: { onChange, onBlur, value, ref } }) => (
-                        <NumericFormat
-                          label="Minimum Value"
-                          type="text"
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
                           size="small"
-                          customInput={TextField}
-                          autoComplete="off"
-                          onValueChange={(e) => {
-                            onChange(parseInt(e.value));
-                          }}
-                          isAllowed={(e) => {
-                            if(watch("moduleName")?.name === "Sp. Discount Approval"){
-                              if(e.value > 100){
-                                snackbar({message: "Maximum value is 100%", variant: "error"})
-                                return false
-                              }
-                            }
-                            return true
-                          }}
-                          onBlur={onBlur}
-                          value={value ?? ""}
-                          inputRef={ref}
-                          thousandSeparator=","
-                          allowNegative={false}
-                          allowLeadingZeros={false}
-                          prefix={
-                            watch("moduleName")?.name ===
-                              "Listing Fee Approval" ||
-                            watch("moduleName")?.name ===
-                              "Other Expenses Approval"
-                              ? "₱"
-                              : ""
-                          }
-                          suffix={
-                            watch("moduleName")?.name ===
-                            "Sp. Discount Approval"
-                              ? "%"
-                              : ""
-                          }
-                          sx={{ width: "180px" }}
+                          label="Approver Name"
+                          helperText={errors?.userId?.message}
+                          error={Boolean(errors?.userId)}
                         />
                       )}
                     />
-                  )}
 
-                  <IconButton
-                    sx={{ color: "secondary.main" }}
-                    onClick={() =>
-                      handleSwapApproverWithLimit(index - 1, index)
-                    }
-                    disabled={index === 0}
-                  >
-                    <KeyboardArrowUp sx={{ fontSize: "30px" }} />
-                  </IconButton>
 
-                  <IconButton
-                    sx={{ color: "secondary.main" }}
-                    // onClick={() => {
-                    //   setValue(`approvers[${index}].level`, index + 2);
-                    //   setValue(`approvers[${index + 1}].level`, index + 1);
-                    //   approverSwap(index, index + 1);
-                    // }}
-                    onClick={() =>
-                      handleSwapApproverWithLimit(index, index + 1)
-                    }
-                    disabled={
-                      watch("moduleName")?.name === "Sp. Discount Approval"
-                        ? index === approverWithLimitFields.length - 1
-                        : index === approverWithLimitDigitFields.length - 1
-                    }
-                  >
-                    <KeyboardArrowDown sx={{ fontSize: "30px" }} />
-                  </IconButton>
+                    {/* <IconButton
+                      sx={{ color: "error.main" }}
+                      onClick={() => {
+                        if (
+                          watch("moduleName")?.name === "Sp. Discount Approval"
+                        ) {
+                          approverWithLimitRemove(index);
+                        } else {
+                          approverWithLimitDigitRemove(index);
+                        }
+                      }}
+                    >
+                      <RemoveCircleOutline sx={{ fontSize: "30px" }} />
+                    </IconButton> */}
+                  </Box>
+                ))}
+              </Box></>
+            }
 
-                  <IconButton
-                    sx={{ color: "error.main" }}
-                    onClick={() => {
-                      if (
-                        watch("moduleName")?.name === "Sp. Discount Approval"
-                      ) {
-                        approverWithLimitRemove(index);
-                      } else {
-                        approverWithLimitDigitRemove(index);
-                      }
-                    }}
-                  >
-                    <RemoveCircleOutline sx={{ fontSize: "30px" }} />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
           </Box>
-
+          {/* 
           <Stack direction="row" spacing={1}>
             <SecondaryButton
               sx={{ width: "150px" }}
               onClick={() => {
-                if (withLimit) {
+                if (withLimit && !isItemApproval && !isClientEditApproval && !isOtherExpenses) {
                   if (watch("moduleName")?.name === "Sp. Discount Approval") {
                     approverWithLimitAppend({
                       userId: null,
@@ -764,10 +580,10 @@ function Approver() {
                     });
                   }
                 } else {
-                  approverAppend({
+                  approverWithTerritoryAppend({
                     userId: null,
-                    minValue: null,
-                    level: approverFields.length + 1,
+                    territory: null,
+                    level: approverWithTerritoryFields.length + 1,
                   });
                 }
               }}
@@ -776,14 +592,14 @@ function Approver() {
                 !errors &&
                 (approverFields.length > 0 ||
                   approverWithLimitFields.length > 0 ||
-                  approverWithLimitFields.length > 0)
+                  approverWithLimitDigitFields.length > 0)
               }
               endIcon={<Add />}
             >
               Add Approver
             </SecondaryButton>
 
-            {!isRegistrationApproval && (
+            {!(isRegistrationApproval || isClientEditApproval || isItemApproval) && (
               <FormControlLabel
                 control={
                   <Checkbox
@@ -794,7 +610,7 @@ function Approver() {
                 label="No Limit"
               />
             )}
-          </Stack>
+          </Stack> */}
         </CommonDrawer>
       </Box>
     </>

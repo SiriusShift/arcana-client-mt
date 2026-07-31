@@ -133,10 +133,10 @@ function ViewSamplingModal({
         id: selectedRowData?.id,
       }).unwrap();
 
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
-        mobile_number: `+63${messageReceiverNumberApproved}`,
-      }).unwrap();
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
+      //   mobile_number: `+63${messageReceiverNumberApproved}`,
+      // }).unwrap();
 
       snackbar({
         message: "Freebies approved successfully",
@@ -174,10 +174,10 @@ function ViewSamplingModal({
 
       dispatch(freebiesApi.util.invalidateTags(["Freebies"]));
 
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
-        mobile_number: `+63${messageReceiverNumberRejected}`,
-      }).unwrap();
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
+      //   mobile_number: `+63${messageReceiverNumberRejected}`,
+      // }).unwrap();
 
       snackbar({
         message: "Freebies rejected successfully",

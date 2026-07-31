@@ -138,8 +138,6 @@ function Return() {
   };
 
   const handleNoReplace = () => {
-    const error = validateEndingInventory();
-    if (error) return;
     onCancelOpen();
   };
 
@@ -161,8 +159,6 @@ function Return() {
   };
 
   const handleVoid = async () => {
-    const error = validateEndingInventory();
-    if (error) return;
     onVoidOpen();
   };
 
@@ -180,11 +176,7 @@ function Return() {
         <PageHeaderAddTabs
           pageTitle="Return"
           addTitle="Add Return"
-          onOpen={() => {
-            const error = validateEndingInventory();
-            if (error) return;
-            handleAdd();
-          }}
+          onOpen={handleAdd}
           tabsList={paymentNavigation}
           setTabViewing={setTabViewing}
           tabViewing={tabViewing}

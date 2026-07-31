@@ -1,31 +1,30 @@
-import { Box, Input, TextField, Typography } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import PageHeaderAdd from "../../components/PageHeaderAdd";
-import CommonTable from "../../components/CommonTable";
-import CommonDrawer from "../../components/CommonDrawer";
-import useDisclosure from "../../hooks/useDisclosure";
-import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { productSchema } from "../../schema/schema";
+import { LocalMall } from "@mui/icons-material";
+import { Box, Switch, TextField, Typography } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
+import CommonDrawer from "../../components/CommonDrawer";
+import CommonTable from "../../components/CommonTable";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
+import ControlledAutocomplete from "../../components/ControlledAutocomplete";
+import PageHeaderAdd from "../../components/PageHeaderAdd";
+import { useGetAllMeatTypesQuery } from "../../features/setup/api/meatTypeApi";
 import {
   useGetAllProductsQuery,
   usePatchProductStatusMutation,
   usePostProductMutation,
   usePutProductMutation,
 } from "../../features/setup/api/productsApi";
-import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import ControlledAutocomplete from "../../components/ControlledAutocomplete";
-import { useGetAllUomsQuery } from "../../features/setup/api/uomApi";
 import { useGetAllProductSubCategoriesQuery } from "../../features/setup/api/productSubCategoryApi";
-import { useGetAllMeatTypesQuery } from "../../features/setup/api/meatTypeApi";
-import { useSelector } from "react-redux";
-import { FileUpload, LocalMall } from "@mui/icons-material";
-import {
-  handleCatchErrorMessage,
-  isValidUrl,
-} from "../../utils/CustomFunctions";
+import { useGetAllUomsQuery } from "../../features/setup/api/uomApi";
 import useConfirm from "../../hooks/useConfirm";
+import useDisclosure from "../../hooks/useDisclosure";
 import useSnackbar from "../../hooks/useSnackbar";
+import { productSchema } from "../../schema/schema";
+import {
+  handleCatchErrorMessage
+} from "../../utils/CustomFunctions";
 import SessionExpired from "../SessionExpired";
 
 function Products() {
@@ -116,6 +115,7 @@ function Products() {
         meatTypeId: { id: meatTypeId },
         itemCode,
         itemDescription,
+        vatable
       } = data;
 
       formData.append("itemCode", itemCode);
@@ -123,8 +123,10 @@ function Products() {
       formData.append("uomId", uomId);
       formData.append("productSubCategoryId", productSubCategoryId);
       formData.append("meatTypeId", meatTypeId);
-      data.itemImageLink &&
-        formData.append("itemImageLink", data.itemImageLink);
+      formData.append("isVatable", vatable);
+
+      // data.itemImageLink &&
+      //   formData.append("itemImageLink", data.itemImageLink);
 
       if (drawerMode === "add") {
         await postProduct({
@@ -141,9 +143,8 @@ function Products() {
       reset();
 
       snackbar({
-        message: `Product ${
-          drawerMode === "add" ? "added" : "updated"
-        } successfully`,
+        message: `Product ${drawerMode === "add" ? "added" : "updated"
+          } successfully`,
         type: "success",
       });
     } catch (error) {
@@ -233,188 +234,206 @@ function Products() {
 
   return (
     <>
-    {error && <SessionExpired />}
-    <Box className="commonPageLayout">
-      <PageHeaderAdd
-        pageTitle={
-          <>
-            Products <LocalMall />
-          </>
-        }
-        onOpen={handleAddOpen}
-        setSearch={setSearch}
-        setStatus={setStatus}
-      />
+      {error && <SessionExpired />}
+      <Box className="commonPageLayout">
+        <PageHeaderAdd
+          pageTitle={
+            <>
+              Products <LocalMall />
+            </>
+          }
+          onOpen={handleAddOpen}
+          setSearch={setSearch}
+          setStatus={setStatus}
+        />
 
-      {isFetching ? (
-        <CommonTableSkeleton evenLesserCompact />
-      ) : (
-        <CommonTable
-          evenLesserCompact
-          mapData={data?.items}
-          onEdit={handleEditOpen}
-          onArchive={onArchive}
-          page={page}
-          setPage={setPage}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          count={count}
-          status={status}
-          tableHeads={tableHeads}
-          customOrderKeys={customOrderKeys}
-          attachKey={attachKey}
+        {isFetching ? (
+          <CommonTableSkeleton evenLesserCompact />
+        ) : (
+          <CommonTable
+            evenLesserCompact
+            mapData={data?.items}
+            onEdit={handleEditOpen}
+            onArchive={onArchive}
+            page={page}
+            setPage={setPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            count={count}
+            status={status}
+            tableHeads={tableHeads}
+            customOrderKeys={customOrderKeys}
+            attachKey={attachKey}
           // viewMoreKey={"priceChangeHistories"}
           // onViewMoreClick={onPriceOpen}
           // onAddPriceChange={onAddPriceOpen}
-        />
-      )}
+          />
+        )}
 
-      <CommonDrawer
-        open={isDrawerOpen}
-        onClose={handleDrawerClose}
-        drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Product"}
-        onSubmit={handleSubmit(onDrawerSubmit)}
-        disableSubmit={!isValid || !isDirty}
-        isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
-      >
-        <TextField
-          label="Item Code"
-          size="small"
-          autoComplete="off"
-          {...register("itemCode")}
-        />
-        <TextField
-          label="Item Description"
-          size="small"
-          autoComplete="off"
-          {...register("itemDescription")}
-        />
-
-        <ControlledAutocomplete
-          name={"uomId"}
-          control={control}
-          options={uomData?.uom || []}
-          getOptionLabel={(option) => option.uomCode}
-          disableClearable
-          isOptionEqualToValue={() => true}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              label="Unit of Measurement"
-              helperText={errors?.uomId?.message}
-              error={errors?.uomId}
-            />
-          )}
-        />
-
-        <ControlledAutocomplete
-          name={"productSubCategoryId"}
-          control={control}
-          options={productSubcategoriesData?.productSubCategories || []}
-          getOptionLabel={(option) => option.productSubCategoryName}
-          disableClearable
-          isOptionEqualToValue={() => true}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              label="Product Sub Category"
-              helperText={errors?.productSubCategoryId?.message}
-              error={errors?.productSubCategoryId}
-            />
-          )}
-          onChange={(_, value) => {
-            setValue("productCategory", value?.productCategoryName);
-            return value;
-          }}
-        />
-
-        <Controller
-          control={control}
-          name={"productCategory"}
-          render={({ field: { onChange, onBlur, value, ref } }) => (
-            <TextField
-              label="Product Category"
-              size="small"
-              autoComplete="off"
-              disabled
-              onChange={onChange}
-              onBlur={onBlur}
-              value={value || ""}
-              ref={ref}
-            />
-          )}
-        />
-
-        <ControlledAutocomplete
-          name={"meatTypeId"}
-          control={control}
-          options={meatTypeData?.meatTypes || []}
-          getOptionLabel={(option) => option.meatTypeName}
-          disableClearable
-          isOptionEqualToValue={() => true}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              size="small"
-              label="Meat Type"
-              helperText={errors?.meatTypeId?.message}
-              error={errors?.meatTypeId}
-            />
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="itemImageLink"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Input
-              label="Product Image"
-              size="small"
-              type="file"
-              
-              onChange={(event) => {
-                onChange(event.target.files[0]);
-              }}
-              onBlur={onBlur}
-              value={value?.fileName || ""}
-              inputRef={imageUploadRef}
-              sx={{ display: "none" }}
-            />
-          )}
-        />
-
-        <Box
-          className="productDrawer__canvas"
-          onClick={() => imageUploadRef.current.click()}
+        <CommonDrawer
+          open={isDrawerOpen}
+          onClose={handleDrawerClose}
+          drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Product"}
+          onSubmit={handleSubmit(onDrawerSubmit)}
+          disableSubmit={!isValid || !isDirty}
+          isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
         >
-          {watch("itemImageLink") ? (
-            <img
-              src={
-                isValidUrl(watch("itemImageLink"))
-                  ? watch("itemImageLink")
-                  : URL.createObjectURL(watch("itemImageLink"))
-              }
-              alt="attachment-preview"
-              style={{
-                borderRadius: "5px",
-                maxWidth: "100%",
-                maxHeight: "100%",
-              }}
-            />
-          ) : (
-            <>
-              <FileUpload sx={{ fontSize: "5rem", color: "#33333361" }} />
+          <TextField
+            label="Item Code"
+            size="small"
+            autoComplete="off"
+            {...register("itemCode")}
+          />
+          <TextField
+            label="Item Description"
+            size="small"
+            autoComplete="off"
+            {...register("itemDescription")}
+          />
 
-              <Typography fontWeight="500" color="#333333A8" fontSize="1.1rem">
-                Upload Product Image
-              </Typography>
-            </>
-          )}
-        </Box>
-      </CommonDrawer>
-    </Box>
+          <ControlledAutocomplete
+            name={"uomId"}
+            control={control}
+            options={uomData?.uom || []}
+            getOptionLabel={(option) => option.uomCode}
+            disableClearable
+            isOptionEqualToValue={() => true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                label="Unit of Measurement"
+                helperText={errors?.uomId?.message}
+                error={errors?.uomId}
+              />
+            )}
+          />
+
+          <ControlledAutocomplete
+            name={"productSubCategoryId"}
+            control={control}
+            options={productSubcategoriesData?.productSubCategories || []}
+            getOptionLabel={(option) => option.productSubCategoryName}
+            disableClearable
+            isOptionEqualToValue={() => true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                label="Product Sub Category"
+                helperText={errors?.productSubCategoryId?.message}
+                error={errors?.productSubCategoryId}
+              />
+            )}
+            onChange={(_, value) => {
+              setValue("productCategory", value?.productCategoryName);
+              return value;
+            }}
+          />
+
+          <Controller
+            control={control}
+            name={"productCategory"}
+            render={({ field: { onChange, onBlur, value, ref } }) => (
+              <TextField
+                label="Product Category"
+                size="small"
+                autoComplete="off"
+                disabled
+                onChange={onChange}
+                onBlur={onBlur}
+                value={value || ""}
+                ref={ref}
+              />
+            )}
+          />
+
+          <ControlledAutocomplete
+            name={"meatTypeId"}
+            control={control}
+            options={meatTypeData?.meatTypes || []}
+            getOptionLabel={(option) => option.meatTypeName}
+            disableClearable
+            isOptionEqualToValue={() => true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                label="Meat Type"
+                helperText={errors?.meatTypeId?.message}
+                error={errors?.meatTypeId}
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="vatable"
+            render={({ field }) => (
+              <div style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <Typography fontWeight="500">
+                  Vatable
+                </Typography>
+                <Switch {...field} />
+              </div>
+            )}
+          />
+          {/* 
+          <Controller
+            control={control}
+            name="itemImageLink"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                label="Product Image"
+                size="small"
+                type="file"
+
+                onChange={(event) => {
+                  onChange(event.target.files[0]);
+                }}
+                onBlur={onBlur}
+                value={value?.fileName || ""}
+                inputRef={imageUploadRef}
+                sx={{ display: "none" }}
+              />
+            )}
+          />
+
+          <Box
+            className="productDrawer__canvas"
+            onClick={() => imageUploadRef.current.click()}
+          >
+            {watch("itemImageLink") ? (
+              <img
+                src={
+                  isValidUrl(watch("itemImageLink"))
+                    ? watch("itemImageLink")
+                    : URL.createObjectURL(watch("itemImageLink"))
+                }
+                alt="attachment-preview"
+                style={{
+                  borderRadius: "5px",
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                }}
+              />
+            ) : (
+              <>
+                <FileUpload sx={{ fontSize: "5rem", color: "#33333361" }} />
+
+                <Typography fontWeight="500" color="#333333A8" fontSize="1.1rem">
+                  Upload Product Image
+                </Typography>
+              </>
+            )}
+          </Box> */}
+        </CommonDrawer>
+      </Box>
     </>
   );
 }

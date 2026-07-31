@@ -44,6 +44,15 @@ function AttachmentsTab() {
   const isRepresentativeRequirements = data?.attachments?.length > 4;
 
   const handleViewPhoto = (file, label) => {
+    console.log(file)
+    // let relativePath = file.replace(/\\/g, "/");
+
+    // // Remove the server root part
+    // relativePath = relativePath.replace(
+    //   "C:/inetpub/vhosts/rdfmis.com/httpdocs/",
+    //   ""
+    // );
+
     onViewPhotoOpen();
     setCurrentViewPhoto(file);
     setCurrentViewPhotoLabel(label);

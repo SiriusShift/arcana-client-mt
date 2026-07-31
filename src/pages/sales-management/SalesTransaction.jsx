@@ -33,7 +33,7 @@ import useDisclosure from "../../hooks/useDisclosure.js";
 import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice.js";
 import SwipeableItem from "../../components/page-components/sales-management/sales-transaction/SwipeableItem.jsx";
 import CashoutModal from "../../components/modals/sales-management/CashoutModal.jsx";
-import TransactionsList from "../../components/page-components/sales-management/sales-transaction/TransactionsList.jsx";
+import TransactionsList from "./TransactionsList.jsx";
 import UnderConstruction from "../../assets/images/under-construction.svg";
 import { useGetAllClientsForPOSQuery } from "../../features/sales-management/api/salesTransactionApi.js";
 import { useGetAllItemsByPriceModeIdQuery } from "../../features/setup/api/priceModeItemsApi.js";

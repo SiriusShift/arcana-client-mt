@@ -1,27 +1,27 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import PageHeaderTabs from "../../components/PageHeaderTabs";
+import { Wallet } from "@mui/icons-material";
 import { Box } from "@mui/material";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import CommonTable from "../../components/CommonTable";
-import useDisclosure from "../../hooks/useDisclosure";
-import ViewListingFeeModal from "../../components/modals/ViewListingFeeModal";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ListingFeeDrawer from "../../components/drawers/ListingFeeDrawer";
+import AddButtonSearchMixin from "../../components/mixins/AddButtonSearchMixin";
+import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
+import ListingFeeBalancesModal from "../../components/modals/registration/ListingFeeBalancesModal";
+import ListingHistoriesModal from "../../components/modals/sales-management/ListingHistoriesModal";
+import ViewListingFeeModal from "../../components/modals/ViewListingFeeModal";
+import PageHeaderTabs from "../../components/PageHeaderTabs";
+import { AppContext } from "../../context/AppContext";
 import {
   useDeleteCancelListingFeeMutation,
   useGetAllListingFeeQuery,
 } from "../../features/listing-fee/api/listingFeeApi";
-import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import useSnackbar from "../../hooks/useSnackbar";
-import { useSelector } from "react-redux";
-import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
-import { AppContext } from "../../context/AppContext";
 import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
-import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
-import AddButtonSearchMixin from "../../components/mixins/AddButtonSearchMixin";
-import ListingFeeBalancesModal from "../../components/modals/registration/ListingFeeBalancesModal";
-import { Wallet } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
+import useDisclosure from "../../hooks/useDisclosure";
+import useSnackbar from "../../hooks/useSnackbar";
+import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import SessionExpired from "../SessionExpired";
-import ListingHistoriesModal from "../../components/modals/sales-management/ListingHistoriesModal";
 
 function ListingFee() {
   const [tabViewing, setTabViewing] = useState(1);
@@ -114,7 +114,7 @@ function ListingFee() {
   const tableHeads = [
     "Business Name",
     "Business Address",
-    "Owner's Name",
+    "Branch Name",
     "Tx Number",
     "Balance",
     // "Requested By",

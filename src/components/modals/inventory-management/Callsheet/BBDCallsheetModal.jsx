@@ -59,7 +59,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
   const validDataKey = index !== undefined && index !== null ? index : "";
   const dataInformation = data?.callSheetDtos?.[validDataKey] || {};
 
-  console.log("total", dataInformation);
 
   const {
     handleSubmit,
@@ -69,22 +68,18 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
     setValue,
     watch,
   } = useFormContext();
-  console.log(totalQuantity);
 
-  console.log(watch());
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "bbdList",
   });
 
-  console.log(fields);
 
   const [triggerDelete, { isLoading }] = useDeleteCallsheetBBDMutation();
 
   // // FUNCTIONS
   const onSubmit = (data) => {
-    console.log(data);
 
     if (data.bbdList.length === 0) {
       dispatch(
@@ -120,7 +115,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       return acc;
     }, []);
 
-    console.log(groupedData);
 
     dispatch(upsertItem(groupedData));
     handleClose();
@@ -174,7 +168,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
       const bbdDtos = dataInformation?.bbdDtos || [];
       const callsheetItems = callsheetItem || [];
 
-      console.log("callsheet items",callsheetItems);
 
       const totalQuantity =
         callsheetItems?.length > 0
@@ -183,7 +176,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
               ?.bbds?.reduce((acc, bbd) => acc + (bbd.quantity || 0), 0) || 0
           : 0;
 
-      console.log("total quantity",totalQuantity);
 
       setTotalQuantity(totalQuantity[0] || totalQuantity);
       const mergedBbdList = [
@@ -230,7 +222,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
         //       ];
         //     })),
       ];
-      console.log(mergedBbdList);
 
       reset({ bbdList: mergedBbdList });
     } else if (!open) {
@@ -488,8 +479,6 @@ function BBDCallsheetModal({ width, onClose, data, open, index, ...props }) {
                         color="error"
                         disabled={watch("bbdList")[index]?.bbdId}
                         onClick={() => {
-                          console.log(index);
-                          console.log(item.quantity);
                           setTotalQuantity(
                             watch("bbdList").reduce(
                               (acc, item) =>

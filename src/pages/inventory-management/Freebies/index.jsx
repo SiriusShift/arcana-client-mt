@@ -18,7 +18,7 @@ import useValidate from "../../../hooks/useValidate";
 function Freebies() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { validateEndingInventory, isNotificationFetching } = useValidate();
+  const {  isNotificationFetching } = useValidate();
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
 
@@ -131,7 +131,7 @@ function Freebies() {
     navigate("freebies-form");
   };
 
-  if (location.pathname === "/inventory-management/freebies") {
+  if (location.pathname === "/sales-management/freebies") {
     return (
       <Box className="commonPageLayout">
         <PageHeaderAddTabs
@@ -142,8 +142,6 @@ function Freebies() {
           // wide
           addTitle="Add Freebie Request"
           onOpen={() => {
-            const error = validateEndingInventory();
-            if(error) return
             handleAdd();
           }}
         />

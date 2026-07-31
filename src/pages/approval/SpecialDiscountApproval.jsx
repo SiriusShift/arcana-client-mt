@@ -1,5 +1,3 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import PageHeaderTabs from "../../components/PageHeaderTabs";
 import {
   Box,
   Checkbox,
@@ -8,22 +6,24 @@ import {
   Typography,
   debounce,
 } from "@mui/material";
-import CommonTable from "../../components/CommonTable";
-import useConfirm from "../../hooks/useConfirm";
-import useSnackbar from "../../hooks/useSnackbar";
-import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import CommonDialog from "../../components/common/CommonDialog";
+import CommonTable from "../../components/CommonTable";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
+import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
+import PageHeaderTabs from "../../components/PageHeaderTabs";
+import { AppContext } from "../../context/AppContext";
+import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
 import {
   useApproveSpecialDiscountMutation,
   useGetAllSpecialDiscountQuery,
   useRejectSpecialDiscountMutation,
 } from "../../features/special-discount/api/specialDiscountApi";
+import useConfirm from "../../hooks/useConfirm";
 import useDisclosure from "../../hooks/useDisclosure";
-import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
-import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { AppContext } from "../../context/AppContext";
-import CommonDialog from "../../components/common/CommonDialog";
-import { useSendMessageMutation } from "../../features/misc/api/rdfSmsApi";
+import useSnackbar from "../../hooks/useSnackbar";
+import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import SessionExpired from "../SessionExpired";
 
 function SpecialDiscountApproval() {
@@ -84,7 +84,7 @@ function SpecialDiscountApproval() {
   const tableHeads = [
     // "Request No.",
     "Business Name",
-    "Owner's Name",
+    "Branch Name",
     "Discount",
     "Frequency",
     "Requested By",
@@ -171,10 +171,10 @@ function SpecialDiscountApproval() {
             id: selectedRowData?.requestId,
           }).unwrap();
 
-          await sendMessage({
-            message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
-            mobile_number: `+63${messageReceiverNumberApproved}`,
-          }).unwrap();
+          // await sendMessage({
+          //   message: `Fresh morning ${messageReceiverNameApproved}! ${messageReceiverMessageApproved}`,
+          //   mobile_number: `+63${messageReceiverNumberApproved}`,
+          // }).unwrap();
         },
       });
 
@@ -196,10 +196,10 @@ function SpecialDiscountApproval() {
         reason,
       }).unwrap();
 
-      await sendMessage({
-        message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
-        mobile_number: `+63${messageReceiverNumberRejected}`,
-      }).unwrap();
+      // await sendMessage({
+      //   message: `Fresh morning ${messageReceiverNameRejected}! ${messageReceiverMessageRejected}`,
+      //   mobile_number: `+63${messageReceiverNumberRejected}`,
+      // }).unwrap();
 
       snackbar({
         message: "Special Discount rejected successfully",

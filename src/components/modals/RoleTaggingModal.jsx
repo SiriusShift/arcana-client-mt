@@ -17,13 +17,10 @@ function RoleTaggingModal({
   ...props
 }) {
   const { onClose } = props;
-  console.log(checkedModules)
 
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  console.log(selectedRowData)
 
   const handleCheckboxChange = (itemName, subItemName) => {
-    console.log(subItemName)
     // if (itemName === "Reports") {
     //   const subItemValue = subItemName;
     //   if (checkedReports.includes(subItemValue)) {

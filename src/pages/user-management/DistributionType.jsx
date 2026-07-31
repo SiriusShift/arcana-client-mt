@@ -7,7 +7,7 @@ import useDisclosure from "../../hooks/useDisclosure";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { clusterSchema } from "../../schema/schema";
+import { clusterSchema, distributionSchema } from "../../schema/schema";
 import { useSelector } from "react-redux";
 import {
   useGetAllClustersQuery,
@@ -16,13 +16,14 @@ import {
   usePutClusterMutation,
 } from "../../features/setup/api/clusterApi";
 import ViewCDOModal from "../../components/modals/ViewCDOModal";
-import { PinDrop } from "@mui/icons-material";
+import { PinDrop, Business } from "@mui/icons-material";
 import useConfirm from "../../hooks/useConfirm";
 import useSnackbar from "../../hooks/useSnackbar";
 import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import SessionExpired from "../SessionExpired";
+import { useGetAllDistributionQuery, usePatchDistributionMutation, usePatchDistributionStatusMutation, usePostDistributionMutation } from "../../features/setup/api/distributionApi";
 
-function Cluster() {
+function DistributionType() {
   const [drawerMode, setDrawerMode] = useState("");
   const [status, setStatus] = useState(true);
   const [search, setSearch] = useState("");
@@ -54,8 +55,8 @@ function Cluster() {
   } = useDisclosure();
 
   // Constants
-  const tableHeads = ["Cluster", "Users Tagged"];
-  const customOrderKeys = ["cluster", "users"];
+  const tableHeads = ["Name"];
+  const customOrderKeys = ["name"];
 
   //React Hook Form
   const {
@@ -64,18 +65,20 @@ function Cluster() {
     register,
     setValue,
     reset,
+    watch
   } = useForm({
-    resolver: yupResolver(clusterSchema.schema),
+    resolver: yupResolver(distributionSchema.schema),
     mode: "onChange",
-    defaultValues: clusterSchema.defaultValues,
+    defaultValues: distributionSchema.defaultValues,
   });
 
+  console.log(watch())
   //RTK Query
-  const [postCluster, { isLoading: isAddLoading }] = usePostClusterMutation();
-  const { data, isFetching, error } = useGetAllClustersQuery(
+  const [postDistribution, { isLoading: isAddLoading }] = usePostDistributionMutation();
+  const { data, isFetching, error } = useGetAllDistributionQuery(
     {
       Search: search,
-      Status: status,
+      isActive: status,
       PageNumber: page + 1,
       PageSize: rowsPerPage,
     },
@@ -83,16 +86,16 @@ function Cluster() {
       refetchOnMountOrArgChange: true,
     }
   );
-  const [putCluster, { isLoading: isUpdateLoading }] = usePutClusterMutation();
-  const [patchClusterStatus] = usePatchClusterStatusMutation();
+  const [patchDistribution, { isLoading: isUpdateLoading }] = usePatchDistributionMutation();
+  const [patchStatus] = usePatchDistributionStatusMutation();
 
   //Drawer Functions
   const onDrawerSubmit = async (data) => {
     try {
       if (drawerMode === "add") {
-        await postCluster(data).unwrap();
+        await postDistribution(data).unwrap();
       } else if (drawerMode === "edit") {
-        await putCluster(data).unwrap();
+        await patchDistribution(data).unwrap();
       }
 
       onDrawerClose();
@@ -122,7 +125,7 @@ function Cluster() {
           </>
         ),
         question: !status,
-        callback: () => patchClusterStatus(selectedRowData?.id).unwrap(),
+        callback: () => patchStatus(selectedRowData?.id).unwrap(),
       });
 
       snackbar({
@@ -171,7 +174,7 @@ function Cluster() {
         <PageHeaderAdd
           pageTitle={
             <>
-              Cluster <PinDrop />
+              Distribution Type <Business />
             </>
           }
           onOpen={handleAddOpen}
@@ -183,7 +186,7 @@ function Cluster() {
         ) : (
           <CommonTable
             evenLesserCompact
-            mapData={data?.cluster}
+            mapData={data?.distributionTypes}
             customOrderKeys={customOrderKeys}
             onEdit={handleEditOpen}
             onArchive={onArchive}
@@ -203,23 +206,23 @@ function Cluster() {
         <CommonDrawer
           open={isDrawerOpen}
           onClose={handleDrawerClose}
-          drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Cluster"}
+          drawerHeader={(drawerMode === "add" ? "Add" : "Edit") + " Type"}
           onSubmit={handleSubmit(onDrawerSubmit)}
           disableSubmit={!isValid}
           isLoading={drawerMode === "add" ? isAddLoading : isUpdateLoading}
         >
           <TextField
-            label="Cluster Name"
+            label="Type"
             size="small"
             autoComplete="off"
-            {...register("cluster")}
+            {...register("name")}
             helperText={errors?.cluster?.message}
             error={errors?.cluster}
           />
-          <Autocomplete
+          {/* <Autocomplete
             label="Type"
             size="small"
-            options={["Marketing", "CDO"]}
+            options={["Marketing", "TDO"]}
             autoComplete="off"
             {...register("type")}
             renderInput={(params) => (
@@ -227,7 +230,7 @@ function Cluster() {
             )}
             helperText={errors?.cluster?.message}
             error={errors?.cluster}
-          />
+          /> */}
         </CommonDrawer>
       </Box>
       <ViewCDOModal
@@ -240,4 +243,4 @@ function Cluster() {
   );
 }
 
-export default Cluster;
+export default DistributionType;

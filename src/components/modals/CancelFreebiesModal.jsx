@@ -41,7 +41,6 @@ function CancelFreebiesModal({ type, reason, ...otherProps }) {
       PageSize: 2000,
     });
 
-  console.log(clientData);
 
   const address = selectedRowData?.ownersAddress
     ? selectedRowData?.ownersAddress
@@ -72,7 +71,6 @@ function CancelFreebiesModal({ type, reason, ...otherProps }) {
   //Submit API Functions
   const handleCancelSubmit = async () => {
     const freebiesLength = selectedRowData?.freebies?.length;
-    console.log("test");
 
     try {
       await putRejectFreebies({

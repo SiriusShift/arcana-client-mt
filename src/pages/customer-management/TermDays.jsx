@@ -170,7 +170,7 @@ function TermDays() {
         ) : (
           <CommonTable
             evenLesserCompact
-            mapData={data?.termDays}
+            mapData={data?.termDays?.filter((item) => item.days !== -1)}
             customOrderKeys={customOrderKeys}
             onEdit={handleEditOpen}
             onArchive={onArchive}

@@ -6,7 +6,7 @@ const ReturnSamplingFormHeader = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/inventory-management/return-sampling", { replace: true });
+    navigate("/sales-management/return-sampling", { replace: true });
   };
 
   return (
@@ -19,7 +19,7 @@ const ReturnSamplingFormHeader = () => {
             </IconButton>
 
             <Typography className="pageHeader__title">
-              Return from Sampling Form
+              Return Form
             </Typography>
           </Box>
         </Box>
