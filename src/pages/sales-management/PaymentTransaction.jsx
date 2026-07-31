@@ -380,17 +380,17 @@ function PaymentTransaction() {
                   ) &&
                   disableActions
                 }
-                onVoid={
-                  (transactionStatus === "Pending" ||
-                    transactionStatus === "Paid") &&
-                  !isCustomerApprover &&
-                  // checkIsVoidable(
-                  //   selectedRowData?.createdAt,
-                  //   selectedRowData?.totalAmountDue,
-                  //   selectedRowData?.remainingBalance
-                  // ) &&
-                  onVoid
-                }
+                // onVoid={
+                //   (transactionStatus === "Pending" ||
+                //     transactionStatus === "Paid") &&
+                //   !isCustomerApprover &&
+                //   // checkIsVoidable(
+                //   //   selectedRowData?.createdAt,
+                //   //   selectedRowData?.totalAmountDue,
+                //   //   selectedRowData?.remainingBalance
+                //   // ) &&
+                //   onVoid
+                // }
                 onView={
                   (transactionStatus === "Paid" ||
                     transactionStatus === "Pending") &&
