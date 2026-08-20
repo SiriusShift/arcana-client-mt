@@ -1,8 +1,13 @@
 import {
+  Attachment,
+  Cancel,
+  CheckCircle,
+  PriorityHigh,
+  Visibility
+} from "@mui/icons-material";
+import {
   Box,
-  Button,
   Checkbox,
-  Chip,
   IconButton,
   Paper,
   Table,
@@ -14,27 +19,15 @@ import {
   TableRow,
   TableSortLabel,
   Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
-import React from "react";
-import { transformKey } from "../utils/CustomFunctions";
-import CommonActions from "./common/CommonActions";
-import NoData from "../assets/images/NoRecordsFound.svg";
-import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { setSelectedRow } from "../features/misc/reducers/selectedRowSlice";
-import {
-  Attachment,
-  Cancel,
-  Check,
-  CheckCircle,
-  Filter,
-  FilterAlt,
-  MoreHoriz,
-  PriorityHigh,
-  Visibility,
-} from "@mui/icons-material";
-import { formatPhoneNumber } from "../utils/CustomFunctions";
 import moment from "moment";
+import React from "react";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import NoData from "../assets/images/NoRecordsFound.svg";
+import { setSelectedRow } from "../features/misc/reducers/selectedRowSlice";
+import { formatPhoneNumber, transformKey } from "../utils/CustomFunctions";
+import CommonActions from "./common/CommonActions";
 
 function CommonTable({
   actionsHead,
@@ -401,7 +394,10 @@ function CommonTable({
                   )}
 
                   {(customOrderKeys || dataToMapKeys).map((keys, k) => {
-                    //Special module to change color whether there is a time out data
+                    const value =
+                      typeof keys === "function"
+                        ? keys(item)
+                        : item[keys];
                     if (checkIn) {
                       if (keys === "timeOut" || keys === "createdDate") {
                         return (
@@ -807,28 +803,21 @@ function CommonTable({
                         key={k}
                         sx={border && { borderRight: "1px solid #BDBDBD77" }}
                       >
-                        {pesoArray && pesoArray.includes(keys) && "₱"}
-                        {/* {keys === "phoneNumber" && "+63"} */}
+                        {pesoArray?.includes(keys) && "₱"}
 
-                        {percentageArray && percentageArray.includes(keys)
-                          ? (item[keys] * 100)?.toLocaleString(undefined, {
+                        {percentageArray?.includes(keys)
+                          ? (Number(value) * 100).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
-                            maximumFractionsDigits: 2,
+                            maximumFractionDigits: 2,
                           })
-                          : pesoArray && pesoArray.includes(keys)
-                            ? item[keys]?.toLocaleString(undefined, {
+                          : pesoArray?.includes(keys)
+                            ? Number(value).toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })
-                            : !item[keys]
-                              ? item[keys] === null
-                                ? "N/A"
-                                : item[keys]
-                              : item[keys]}
+                            : value ?? "N/A"}
 
-                        {percentageArray &&
-                          percentageArray.includes(keys) &&
-                          "%"}
+                        {percentageArray?.includes(keys) && "%"}
                       </TableCell>
                     );
                   })}

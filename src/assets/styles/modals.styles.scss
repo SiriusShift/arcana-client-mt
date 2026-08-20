@@ -1522,6 +1522,22 @@
           font-size: 1.2rem;
         }
       }
+
+      &__vat {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+
+        & &__label {
+          font-weight: 500;
+        }
+
+        & &__value {
+          color: gray;
+          font-size: 1.2rem;
+        }
+      }
     }
   }
 

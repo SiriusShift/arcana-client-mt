@@ -29,7 +29,7 @@ import {
   handleCatchErrorMessage,
 } from "../../../utils/CustomFunctions";
 import CommonModalForm from "../../CommonModalForm";
-function CashoutModal({ total, resetTransaction, orderData, data: salesData, ...props }) {
+function CashoutModal({ total, totalVat, resetTransaction, orderData, data: salesData, ...props }) {
   const { onClose, open } = props;
   //Hooks
   const reasonConfirm = useReasonConfirm();
@@ -53,13 +53,10 @@ function CashoutModal({ total, resetTransaction, orderData, data: salesData, ...
     defaultValues: cashoutSchema.defaultValues,
   });
 
-
-  console.log(watch())
-
-
   //Watch Constants
   const watchDiscount = watch("discount");
   const watchSpecialDiscount = watch("specialDiscount");
+  const customerVatable = watch("isVatable")
   //Calculations
 
   const specialDiscountAmount = useMemo(
@@ -419,6 +416,16 @@ function CashoutModal({ total, resetTransaction, orderData, data: salesData, ...
 
 
             <Divider sx={{ my: "10px" }} />
+            {/* 
+            {customerVatable && <Box className="cashoutModal__transactionInfo__costBreakdown__vat">
+              <Typography className="cashoutModal__transactionInfo__costBreakdown__vat__label">
+                VAT
+              </Typography>
+
+              <Typography className="cashoutModal__transactionInfo__costBreakdown__vat__value">
+                {formatPesoAmount(totalVat)}
+              </Typography>
+            </Box>} */}
 
             <Box className="cashoutModal__transactionInfo__costBreakdown__net">
               <Typography className="cashoutModal__transactionInfo__costBreakdown__net__label">

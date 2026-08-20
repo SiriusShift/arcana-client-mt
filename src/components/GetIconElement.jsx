@@ -35,6 +35,7 @@ import {
   LocalMall,
   LocalOffer,
   LocationOn,
+  LooksOne,
   MonetizationOn,
   MoreHoriz,
   MoveToInbox,
@@ -561,6 +562,15 @@ export const getIconElement = (iconName, color, fontSize) => {
 
     LocalOffer: (
       <LocalOffer
+        sx={{
+          color: color && `${color} !important`,
+          fontSize: fontSize && `${fontSize} !important`,
+        }}
+      />
+    ),
+
+    LooksOne: (
+      <LooksOne
         sx={{
           color: color && `${color} !important`,
           fontSize: fontSize && `${fontSize} !important`,

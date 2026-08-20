@@ -60,8 +60,7 @@ const useUserForm = ({
           ...restData,
           userRoleId: id,
           territoryId: territoryId?.id,
-          charingCode: charging?.code,
-          chargingName: charging?.name
+          chargingId: charging?.id,
 
         }).unwrap();
 
@@ -74,8 +73,8 @@ const useUserForm = ({
           ...restData,
           userRoleId: id,
           territoryId: territoryId?.id,
-          chargingCode: charging?.code,
-          charingName: charging?.name
+          chargingId: charging?.id,
+
         }).unwrap();
         snackbar({
           message: "User Account updated successfully",
@@ -123,7 +122,7 @@ const useUserForm = ({
       setValue("territoryId", selectedCluster);
 
       setValue("mobileNumber", selectedRowData.mobileNumber);
-      const selectedCharging = chargingData.find((item) => item.code === selectedRowData.chargingCode);
+      const selectedCharging = chargingData?.chargings?.find((item) => item.code === selectedRowData.chargingCode);
       setValue("charging", selectedCharging)
     } else if (
       approveMode &&

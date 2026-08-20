@@ -60,6 +60,8 @@ function TransactionItems({
     isFetching,
 }) {
     const items = client?.moveItems ?? []
+    const clientVatable = client?.isVatable
+    // const clientVatable = true
     const snackbar = useSnackbar();
     const {
         control,
@@ -72,6 +74,7 @@ function TransactionItems({
         resolver: yupResolver(receivingItemsSchema.schema),
         defaultValues: receivingItemsSchema.defaultValues,
     });
+
 
 
     const { data: products, isFetching: isProductsFetching } =
@@ -112,7 +115,8 @@ function TransactionItems({
                     quantity: item?.quantity || null,
                     amount: Number(item?.quantity) * Number(item?.unitPrice),
                     price: Number(item?.unitPrice),
-                    reason: item?.reason || ""
+                    reason: item?.reason || "",
+                    ...(clientVatable && { isVatable: true })
                 }
             }),
         });
@@ -133,6 +137,7 @@ function TransactionItems({
                     uom: item?.uom,
                     reason: item?.reason,
                     price: Number(item?.price),
+                    ...(clientVatable && { isVatable: item?.isVatable })
                 })),
             }));
         }
@@ -169,203 +174,206 @@ function TransactionItems({
                     ) : (
                         <TableCell sx={{ borderBottom: "none" }}>
                             <Stack spacing={1}>
-                                {fields.map((item, index) => (
-                                    <Stack direction="row" spacing={1.5} key={item.id}>
-                                        {/* ControlledAutocomplete for itemCode */}
-                                        <ControlledAutocomplete
-                                            control={control}
-                                            name={`items[${index}].itemCode`}
-                                            options={priceModeItems?.filter((items) => {
-                                                return (
-                                                    !watch("items")?.some(
-                                                        (existingItem) =>
-                                                            existingItem.itemCode === items.itemCode
-                                                    ) // Exclude items already in the items array
-                                                );
-                                            }) || []}
-                                            getOptionLabel={(option) => option?.itemCode || option}
-                                            isOptionEqualToValue={(option, value) =>
-                                                option?.itemCode === value?.itemCode
-                                            }
-                                            disabled={
-                                                disableFields ||
-                                                items?.some(
-                                                    (item, itemIndex) =>
-                                                        item.itemCode ===
-                                                        watch(`items[${index}].itemCode`) &&
-                                                        itemIndex === index // Disable rows with the same itemCode except the current row
-                                                )
-                                            }
-                                            onChange={(_, value) => {
-                                                console.log(value)
-                                                // Set relevant fields when a product is selected
-                                                setValue(
-                                                    `items[${index}].itemDescription`,
-                                                    value?.itemDescription || ""
-                                                );
-                                                setValue(`items[${index}].uom`, value?.uomDescription || "");
-                                                setValue(`items[${index}].price`, value?.price || "");
-                                                setValue(`items[${index}].itemId`, value?.id || "");
+                                {fields.map((item, index) => {
+                                    const itemVatable = item.isVatable; return (
+                                        <Stack direction="row" spacing={1.5} key={item.id}>
+                                            {/* ControlledAutocomplete for itemCode */}
+                                            <ControlledAutocomplete
+                                                control={control}
+                                                name={`items[${index}].itemCode`}
+                                                options={
+                                                    priceModeItems?.filter(
+                                                        (item) =>
+                                                            !watchItems?.some(
+                                                                (existingItem, existingIndex) =>
+                                                                    existingItem.itemCode === item.itemCode && existingIndex !== index
+                                                            ) // Exclude items already selected in other rows
+                                                    ) || []
+                                                }
+                                                getOptionLabel={(option) =>
+                                                    typeof option === "string" ? option : option?.itemCode ?? ""
+                                                }
+                                                isOptionEqualToValue={(option, value) => option?.itemCode === value?.itemCode}
+                                                disabled={
+                                                    disableFields ||
+                                                    watchItems?.some(
+                                                        (item, itemIndex) =>
+                                                            item.itemCode === watchItems?.[index]?.itemCode && itemIndex !== index
+                                                    )
+                                                }
+                                                onChange={(_, value) => {
+                                                    setValue(`items[${index}].itemDescription`, value?.itemDescription || "");
+                                                    setValue(`items[${index}].uom`, value?.uomDescription || "");
+                                                    setValue(`items[${index}].price`, value?.price || "");
+                                                    setValue(`items[${index}].itemId`, value?.id || "");
 
-                                                return value?.itemCode;
-                                            }}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    size="small"
-                                                    label="Item Code"
-                                                    helperText={
-                                                        errors?.items?.[index]?.itemCode?.message || ""
-                                                    }
-                                                    error={!!errors?.items?.[index]?.itemCode}
-                                                    sx={{ width: "140px" }}
-                                                    value={params.value?.itemCode || ""} // Ensure itemCode is displayed correctly
-                                                />
-                                            )}
-                                        />
+                                                    return value?.itemCode || "";
+                                                }}
+                                                renderInput={(params) => (
+                                                    <div style={{ display: "flex", flexDirection: "column" }}>
+                                                        <TextField
+                                                            {...params}
+                                                            size="small"
+                                                            label="Item Code"
+                                                            helperText={errors?.items?.[index]?.itemCode?.message || ""}
+                                                            error={!!errors?.items?.[index]?.itemCode}
+                                                            sx={{ width: "140px" }}
+                                                        // Do NOT override `value` here — Autocomplete already
+                                                        // controls the input value via `params`. Manually setting
+                                                        // it fights MUI's internal state and can freeze the field.
+                                                        />
+                                                        {/* 
+                                                        {clientVatable && (
+                                                            <Typography variant="caption" color={itemVatable ? "success.main" : "text.secondary"}>
+                                                                {itemVatable ? "VATable" : "Non-VAT"}
+                                                            </Typography>
+                                                        )} */}
+                                                    </div>
+                                                )}
+                                            />
 
-                                        {/* Controlled TextFields for other fields */}
-                                        <Controller
-                                            control={control}
-                                            name={`items[${index}].itemDescription`}
-                                            render={({ field }) => (
-                                                <TextField
-                                                    label="Item Description"
-                                                    size="small"
-                                                    autoComplete="off"
-                                                    {...field}
-                                                    value={field.value || ""}
-                                                    inputRef={field.ref}
-                                                    disabled
-                                                    sx={{ flex: 1 }}
-                                                />
-                                            )}
-                                        />
-
-                                        <Controller
-                                            control={control}
-                                            name={`items[${index}].uom`}
-                                            render={({ field: { onChange, onBlur, value, ref } }) => (
-                                                <TextField
-                                                    label="UOM"
-                                                    size="small"
-                                                    autoComplete="off"
-                                                    onChange={onChange}
-                                                    onBlur={onBlur}
-                                                    value={value || ""}
-                                                    inputRef={ref}
-                                                    sx={{ maxWidth: "120px" }}
-                                                    disabled
-                                                />
-                                            )}
-                                        />
-
-                                        <Controller
-                                            control={control}
-                                            name={`items[${index}].quantity`}
-                                            render={({ field: { onChange, onBlur, value, ref } }) => (
-                                                <TextField
-                                                    label="Quantity"
-                                                    size="small"
-                                                    autoComplete="off"
-                                                    type="number"
-                                                    onChange={(e) => {
-                                                        const newValue = e.target.value;
-                                                        if (parseFloat(newValue) < 0) {
-                                                            snackbar({
-                                                                message:
-                                                                    "Quantity received must not be a negative value",
-                                                                variant: "error",
-                                                            });
-                                                        } else {
-                                                            setValue(`items[${index}].amount`, newValue * watch("items")?.[index]?.price);
-                                                            onChange(newValue);
-                                                        }
-                                                    }}
-                                                    onBlur={onBlur}
-                                                    value={value || ""}
-                                                    inputRef={ref}
-                                                    sx={{ maxWidth: "120px" }}
-                                                    disabled
-                                                />
-                                            )}
-                                        />
-
-
-                                        <Controller
-                                            control={control}
-                                            name={`items[${index}].actualQuantity`}
-                                            render={({ field: { onChange, onBlur, value, ref } }) => (
-                                                <TextField
-                                                    label="Actual Quantity"
-                                                    size="small"
-                                                    autoComplete="off"
-                                                    type="number"
-                                                    onChange={(e) => {
-                                                        const newValue = parseFloat(e.target.value);
-                                                        if (parseFloat(newValue) < 0) {
-                                                            snackbar({
-                                                                message:
-                                                                    "Quantity received must not be a negative value",
-                                                                variant: "error",
-                                                            });
-                                                        } else {
-                                                            if (!!watch("items")?.[index].quantity) {
-                                                                const variance = newValue - watch("items")?.[index].quantity
-                                                                setValue(`items[${index}].variance`, variance)
-                                                            }
-                                                            setValue(`items[${index}].amount`, newValue * watch("items")?.[index]?.price);
-                                                            onChange(newValue);
-                                                        }
-                                                    }}
-                                                    onBlur={onBlur}
-                                                    value={value || ""}
-                                                    inputRef={ref}
-                                                    sx={{ maxWidth: "120px" }}
-                                                />
-                                            )}
-                                        />
-
-                                        <Stack gap={0.6} alignItems="center">
+                                            {/* Controlled TextFields for other fields */}
                                             <Controller
                                                 control={control}
-                                                name={`items[${index}].price`}
-                                                render={({
-                                                    field: { onChange, onBlur, value, ref },
-                                                }) => (
-                                                    <NumericFormat
-                                                        customInput={TextField}
-                                                        label="Price"
+                                                name={`items[${index}].itemDescription`}
+                                                render={({ field }) => (
+                                                    <TextField
+                                                        label="Item Description"
                                                         size="small"
                                                         autoComplete="off"
-                                                        type="text"
-                                                        value={value}
-                                                        decimalScale={2}
-                                                        fixedDecimalScale
-                                                        required
+                                                        {...field}
+                                                        value={field.value || ""}
+                                                        inputRef={field.ref}
                                                         disabled
-                                                        onValueChange={(values) => {
-                                                            const numericValue = Number(values.value);
-
-                                                            onChange(numericValue);
-
-                                                            if (watch("items")?.[index]?.actualQuantity === null) return;
-
-                                                            setValue(
-                                                                `items[${index}].amount`,
-                                                                numericValue * watch("items")?.[index]?.actualQuantity
-                                                            );
-                                                        }}
-                                                        onBlur={onBlur}
-                                                        inputRef={ref}
-                                                        sx={{ maxWidth: "120px" }}
-                                                        allowNegative={false}
-                                                        thousandSeparator=","
+                                                        sx={{ flex: 1 }}
                                                     />
                                                 )}
                                             />
 
-                                            {/* {!disableFields && (
+                                            <Controller
+                                                control={control}
+                                                name={`items[${index}].uom`}
+                                                render={({ field: { onChange, onBlur, value, ref } }) => (
+                                                    <TextField
+                                                        label="UOM"
+                                                        size="small"
+                                                        autoComplete="off"
+                                                        onChange={onChange}
+                                                        onBlur={onBlur}
+                                                        value={value || ""}
+                                                        inputRef={ref}
+                                                        sx={{ maxWidth: "120px" }}
+                                                        disabled
+                                                    />
+                                                )}
+                                            />
+
+                                            <Controller
+                                                control={control}
+                                                name={`items[${index}].quantity`}
+                                                render={({ field: { onChange, onBlur, value, ref } }) => (
+                                                    <TextField
+                                                        label="Quantity"
+                                                        size="small"
+                                                        autoComplete="off"
+                                                        type="number"
+                                                        onChange={(e) => {
+                                                            const newValue = e.target.value;
+                                                            if (parseFloat(newValue) < 0) {
+                                                                snackbar({
+                                                                    message:
+                                                                        "Quantity received must not be a negative value",
+                                                                    variant: "error",
+                                                                });
+                                                            } else {
+                                                                setValue(`items[${index}].amount`, newValue * watch("items")?.[index]?.price);
+                                                                onChange(newValue);
+                                                            }
+                                                        }}
+                                                        onBlur={onBlur}
+                                                        value={value || ""}
+                                                        inputRef={ref}
+                                                        sx={{ maxWidth: "120px" }}
+                                                        disabled
+                                                    />
+                                                )}
+                                            />
+
+
+                                            <Controller
+                                                control={control}
+                                                name={`items[${index}].actualQuantity`}
+                                                render={({ field: { onChange, onBlur, value, ref } }) => (
+                                                    <TextField
+                                                        label="Actual Quantity"
+                                                        size="small"
+                                                        autoComplete="off"
+                                                        type="number"
+                                                        onChange={(e) => {
+                                                            const newValue = parseFloat(e.target.value);
+                                                            if (parseFloat(newValue) < 0) {
+                                                                snackbar({
+                                                                    message:
+                                                                        "Quantity received must not be a negative value",
+                                                                    variant: "error",
+                                                                });
+                                                            } else {
+                                                                if (!!watch("items")?.[index].quantity) {
+                                                                    const variance = newValue - watch("items")?.[index].quantity
+                                                                    setValue(`items[${index}].variance`, variance)
+                                                                }
+                                                                setValue(`items[${index}].amount`, newValue * watch("items")?.[index]?.price);
+                                                                onChange(newValue);
+                                                            }
+                                                        }}
+                                                        onBlur={onBlur}
+                                                        value={value ?? ""}
+                                                        inputRef={ref}
+                                                        sx={{ maxWidth: "120px" }}
+                                                    />
+                                                )}
+                                            />
+
+                                            <Stack gap={0.6} alignItems="center">
+                                                <Controller
+                                                    control={control}
+                                                    name={`items[${index}].price`}
+                                                    render={({
+                                                        field: { onChange, onBlur, value, ref },
+                                                    }) => (
+                                                        <NumericFormat
+                                                            customInput={TextField}
+                                                            label="Price"
+                                                            size="small"
+                                                            autoComplete="off"
+                                                            type="text"
+                                                            value={value}
+                                                            decimalScale={2}
+                                                            fixedDecimalScale
+                                                            required
+                                                            disabled
+                                                            onValueChange={(values) => {
+                                                                const numericValue = Number(values.value);
+
+                                                                onChange(numericValue);
+
+                                                                if (watch("items")?.[index]?.actualQuantity === null) return;
+
+                                                                setValue(
+                                                                    `items[${index}].amount`,
+                                                                    numericValue * watch("items")?.[index]?.actualQuantity
+                                                                );
+                                                            }}
+                                                            onBlur={onBlur}
+                                                            inputRef={ref}
+                                                            sx={{ maxWidth: "120px" }}
+                                                            allowNegative={false}
+                                                            thousandSeparator=","
+                                                        />
+                                                    )}
+                                                />
+
+                                                {/* {!disableFields && (
                                                     <Typography
                                                         variant="caption"
                                                         color={
@@ -397,82 +405,83 @@ function TransactionItems({
                                                             : "Select Item first"}
                                                     </Typography>
                                                 )} */}
-                                        </Stack>
+                                            </Stack>
 
-                                        <Controller
-                                            control={control}
-                                            name={`items[${index}].amount`}
-                                            render={({ field: { onChange, onBlur, value, ref } }) => (
-                                                <NumericFormat
-                                                    customInput={TextField}
-                                                    label="Amount"
-                                                    size="small"
-                                                    autoComplete="off"
-                                                    type="text"
-                                                    value={value}
-                                                    decimalScale={2}
-                                                    fixedDecimalScale
-                                                    required
-                                                    onBlur={onBlur}
-                                                    disabled
-                                                    sx={{ maxWidth: "120px" }}
-                                                    allowNegative={false}
-                                                    thousandSeparator=","
-                                                />
-                                            )}
-                                        />
-
-                                        <Controller
-                                            control={control}
-                                            name={`items[${index}].reason`}
-                                            render={({ field: { onChange, onBlur, value, ref } }) => {
-                                                const variance = watch(`items[${index}].variance`);
-                                                const quantity = watchItems[index]?.quantity
-                                                return (
-                                                    <TextField
-                                                        label="Remarks"
+                                            <Controller
+                                                control={control}
+                                                name={`items[${index}].amount`}
+                                                render={({ field: { onChange, onBlur, value, ref } }) => (
+                                                    <NumericFormat
+                                                        customInput={TextField}
+                                                        label="Amount"
                                                         size="small"
                                                         autoComplete="off"
-                                                        onChange={onChange}
+                                                        type="text"
+                                                        value={value}
+                                                        decimalScale={2}
+                                                        fixedDecimalScale
+                                                        required
                                                         onBlur={onBlur}
-                                                        value={value || ""}
-                                                        inputRef={ref}
-                                                        disabled={disableFields}
-                                                        required={variance > 0 || variance < 0 || !quantity}
-
-                                                    // disabled={
-                                                    //   disableFields ||
-                                                    //   items?.some(
-                                                    //     (item, itemIndex) =>
-                                                    //       item.itemCode ===
-                                                    //         watch(`items[${index}].itemCode`) &&
-                                                    //       itemIndex === index // Disable rows with the same itemCode except the current row
-                                                    //   )
-                                                    // }
+                                                        disabled
+                                                        sx={{ maxWidth: "120px" }}
+                                                        allowNegative={false}
+                                                        thousandSeparator=","
                                                     />
-                                                )
-                                            }}
-                                        />
+                                                )}
+                                            />
 
-                                        {!disableFields && (
-                                            <IconButton
-                                                disabled={
-                                                    disableFields ||
-                                                    items?.some(
-                                                        (item, itemIndex) =>
-                                                            item.itemCode ===
-                                                            watch(`items[${index}].itemCode`) &&
-                                                            itemIndex === index // Disable rows with the same itemCode except the current row
+                                            <Controller
+                                                control={control}
+                                                name={`items[${index}].reason`}
+                                                render={({ field: { onChange, onBlur, value, ref } }) => {
+                                                    const variance = watch(`items[${index}].variance`);
+                                                    const quantity = watchItems[index]?.quantity
+                                                    return (
+                                                        <TextField
+                                                            label="Remarks"
+                                                            size="small"
+                                                            autoComplete="off"
+                                                            onChange={onChange}
+                                                            onBlur={onBlur}
+                                                            value={value || ""}
+                                                            inputRef={ref}
+                                                            disabled={disableFields}
+                                                            required={variance > 0 || variance < 0 || !quantity}
+
+                                                        // disabled={
+                                                        //   disableFields ||
+                                                        //   items?.some(
+                                                        //     (item, itemIndex) =>
+                                                        //       item.itemCode ===
+                                                        //         watch(`items[${index}].itemCode`) &&
+                                                        //       itemIndex === index // Disable rows with the same itemCode except the current row
+                                                        //   )
+                                                        // }
+                                                        />
                                                     )
-                                                }
-                                                color="error"
-                                                onClick={() => remove(index)}
-                                            >
-                                                <RemoveCircleOutline />
-                                            </IconButton>
-                                        )}
-                                    </Stack>
-                                ))}
+                                                }}
+                                            />
+
+                                            {!disableFields && (
+                                                <IconButton
+                                                    disabled={
+                                                        disableFields ||
+                                                        items?.some(
+                                                            (item, itemIndex) =>
+                                                                item.itemCode ===
+                                                                watch(`items[${index}].itemCode`) &&
+                                                                itemIndex === index // Disable rows with the same itemCode except the current row
+                                                        )
+                                                    }
+                                                    color="error"
+                                                    onClick={() => remove(index)}
+                                                >
+                                                    <RemoveCircleOutline />
+                                                </IconButton>
+                                            )}
+                                        </Stack>
+                                    )
+                                })}
 
                                 {!disableFields && (
                                     <SecondaryButton

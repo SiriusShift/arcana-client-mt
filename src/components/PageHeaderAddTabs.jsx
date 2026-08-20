@@ -1,7 +1,7 @@
-import { Box, Paper, Typography, Stack, Badge, Divider } from "@mui/material";
+import { Add, Sync } from "@mui/icons-material";
+import { Badge, Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import "../assets/styles/common.styles.scss";
 import SecondaryButton from "./SecondaryButton";
-import { Add } from "@mui/icons-material";
 
 function PageHeaderAddTabs({
   small,
@@ -31,12 +31,13 @@ function PageHeaderAddTabs({
             <SecondaryButton
               sx={{ height: largeButton && "50px" }}
               className="addRowButtons"
-              endIcon={<Add />}
+              endIcon={addTitle === "Sync" ? <Sync /> : <Add />}
               onClick={onOpen}
             >
               {addTitle}
             </SecondaryButton>
           )}
+
         </Box>
         <Box className="pageHeader__right">
           <Box
@@ -54,10 +55,10 @@ function PageHeaderAddTabs({
                   width: extraWide
                     ? "200px"
                     : wide
-                    ? "180px"
-                    : small
-                    ? "120px"
-                    : "160px",
+                      ? "180px"
+                      : small
+                        ? "120px"
+                        : "160px",
                 }}
                 key={i}
                 onClick={() => setTabViewing(item.case)}
@@ -86,10 +87,10 @@ function PageHeaderAddTabs({
                       width: extraWide
                         ? "200px"
                         : wide
-                        ? "180px"
-                        : small
-                        ? "120px"
-                        : "160px",
+                          ? "180px"
+                          : small
+                            ? "120px"
+                            : "160px",
                       // width: "auto",
                       height: "3px",
                       borderRadius: "10px",

@@ -57,6 +57,8 @@ function Products() {
     "Product Sub Category",
     "Meat Type",
     "Has Image",
+    "Vatable"
+
   ];
 
   const customOrderKeys = [
@@ -67,6 +69,7 @@ function Products() {
     "productSubCategoryName",
     "meatType",
     "itemImageLink",
+    "isVATable"
   ];
 
   const attachKey = "itemImageLink";
@@ -115,7 +118,7 @@ function Products() {
         meatTypeId: { id: meatTypeId },
         itemCode,
         itemDescription,
-        vatable
+        isVATable
       } = data;
 
       formData.append("itemCode", itemCode);
@@ -123,7 +126,7 @@ function Products() {
       formData.append("uomId", uomId);
       formData.append("productSubCategoryId", productSubCategoryId);
       formData.append("meatTypeId", meatTypeId);
-      formData.append("isVatable", vatable);
+      formData.append("isVATable", isVATable);
 
       // data.itemImageLink &&
       //   formData.append("itemImageLink", data.itemImageLink);
@@ -185,6 +188,7 @@ function Products() {
   };
 
   const handleEditOpen = (editData) => {
+    console.log(editData)
     setDrawerMode("edit");
     onDrawerOpen();
     setValue("id", editData.id);
@@ -209,7 +213,8 @@ function Products() {
         (item) => item.meatTypeName === editData.meatType
       )
     );
-    setValue("itemImageLink", editData.itemImageLink);
+    setValue("isVATable", editData.isVATable);
+    // setValue("itemImageLink", editData.itemImageLink);
   };
 
   const handleDrawerClose = () => {
@@ -231,6 +236,8 @@ function Products() {
   //     setValue("effectivityDate", null);
   //   }
   // }, [changePrice]);
+
+  console.log(watch())
 
   return (
     <>
@@ -368,18 +375,22 @@ function Products() {
 
           <Controller
             control={control}
-            name="vatable"
+            name="isVATable"
             render={({ field }) => (
-              <div style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}>
-                <Typography fontWeight="500">
-                  Vatable
-                </Typography>
-                <Switch {...field} />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography fontWeight={500}>Vatable</Typography>
+
+                <Switch
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  inputRef={field.ref}
+                />
               </div>
             )}
           />

@@ -12,6 +12,7 @@ import {
     Radio,
     RadioGroup,
     Stack,
+    Switch,
     TextField,
     Typography
 } from "@mui/material";
@@ -88,7 +89,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
     useEffect(() => {
         if (priceModeStore.priceModeId != null) {
             setValue("priceMode", priceModeStore.priceModeId, { shouldValidate: true });
-            setValue("isVatable", priceModeStore.isVatable, { shouldValidate: true });
+            setValue("isVATable", priceModeStore.isVATable, { shouldValidate: true });
         }
         if (priceModeStore.items?.length > 0) {
             setValue(
@@ -118,7 +119,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                 )
             );
 
-            dispatch(setTax(values.isVatable ?? false));
+            dispatch(setTax(values.isVATable ?? false));
         });
 
         return () => subscription.unsubscribe();
@@ -292,14 +293,14 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                         </RadioGroup>
                     </Box>
                 )}
-                {/* <Box className="priceMode__mode">
+                <Box className="priceMode__mode">
                     <Typography className="priceMode__mode__title">
                         Tax
                     </Typography>
 
                     <Controller
                         control={control}
-                        name="isVatable"
+                        name="isVATable"
                         defaultValue={false}
                         render={({ field }) => (
                             <FormControlLabel
@@ -315,7 +316,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                             />
                         )}
                     />
-                </Box> */}
+                </Box>
             </Box>
 
             {/* PRODUCTS */}

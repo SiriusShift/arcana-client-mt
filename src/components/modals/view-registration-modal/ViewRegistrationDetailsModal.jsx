@@ -113,11 +113,10 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, module, ...props
 
 
   if (!(isHead || isManager || module === "Add Item Approval" || module === "Edit Client Approval")) {
-    navigators[1].disabled = approval && !viewedTabs["Personal Info"];
-    navigators[2].disabled = approval && !viewedTabs["Price Mode"];
-    navigators[3].disabled = approval && !viewedTabs["Terms and Conditions"];
-    // navigators[4].disabled = approval && !viewedTabs["Attachments"];
-    navigators[4].disabled = approval && !viewedTabs["Listing Fee"];
+    navigators[1] && (navigators[1].disabled = approval && !viewedTabs["Personal Info"]);
+    navigators[2] && (navigators[2].disabled = approval && !viewedTabs["Price Mode"]);
+    navigators[3] && (navigators[3].disabled = approval && !viewedTabs["Terms and Conditions"]);
+    navigators[4] && (navigators[4].disabled = approval && !viewedTabs["Listing Fee"]);
   }
   // if (clientStatus !== "Approved") {
   //   for (let i = navigators.length - 1; i >= 3; i--) {

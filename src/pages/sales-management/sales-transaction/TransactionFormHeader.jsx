@@ -45,7 +45,8 @@ function TransactionFormHeader({
     transactionDate = "",
     moveOrderId = "",
     deliveryDate = "",
-    dateReceived = ""
+    dateReceived = "",
+    clientVatable = false
   } = {},
   isFetching,
 }) {
@@ -96,6 +97,9 @@ function TransactionFormHeader({
               <Typography variant="subtitle1" fontWeight="500">
                 Details: {details}
               </Typography>
+              {/* <Typography variant="subtitle1" fontWeight={500}>
+                PVatable: {clientVatable ? "VATable" : "Non-VAT"}
+              </Typography> */}
             </Stack>
 
             <Stack>

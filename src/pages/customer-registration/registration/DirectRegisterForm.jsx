@@ -68,6 +68,7 @@ import {
   setListingFeeForRegistration,
   setPriceModeId,
   setPriceModeItems,
+  setTax,
   setWholeTermsAndConditions,
   toggleFeesToStore
 } from "../../../features/registration/reducers/regularRegistrationSlice";
@@ -454,6 +455,7 @@ function DirectRegisterForm({
         ...data,
         dateOfBirth: moment(data?.dateOfBirth).format("YYYY-MM-DD"),
         priceModeId: priceModeItems.priceModeId,
+        isVATable: priceModeItems.isVATable,
         tdoId: data?.territory?.id,
         clientId: selectedRowData?.id,
         distriTypeId: data?.distriTypeId?.id
@@ -1067,6 +1069,7 @@ function DirectRegisterForm({
       );
       setValue("deliveryAddress", selectedRowData?.deliveryAddress);
       dispatch(setPriceModeId(selectedRowData?.priceModeId));
+      dispatch(setTax(selectedRowData?.isVATable));
       dispatch(setPriceModeItems(selectedRowData?.clientItems?.map((item) => ({
         itemCode: productData?.items?.find((data) => data.itemCode === item.itemCode),
         itemDescription: item.itemDescription,
@@ -1323,7 +1326,7 @@ function DirectRegisterForm({
     dispatch,
     editMode,
     priceModeData,
-  selectedRowData?.id,   
+    selectedRowData?.id,
     setOwnersRequirements,
     setOwnersRequirementsIsLink,
     setRepresentativeRequirements,
@@ -1392,23 +1395,23 @@ function DirectRegisterForm({
   //   }
   // }, [open, priceModeData, editMode, setValue]);
 
-// trigger effect
-useEffect(() => {
-  if (editMode) {
-    triggerTerms({ id: selectedRowData?.id }, { preferCacheValue: true });
-    triggerAttachments({ id: selectedRowData?.id }, { preferCacheValue: true });
-    triggerListingFee({ id: selectedRowData?.id }, { preferCacheValue: true });
-    triggerExpenses({ id: selectedRowData?.id }, { preferCacheValue: true });
-  }
-}, [
-  open,
-  editMode,
-  selectedRowData?.id, 
-  triggerAttachments,
-  triggerTerms,
-  triggerListingFee,
-  triggerExpenses,
-]);
+  // trigger effect
+  useEffect(() => {
+    if (editMode) {
+      triggerTerms({ id: selectedRowData?.id }, { preferCacheValue: true });
+      triggerAttachments({ id: selectedRowData?.id }, { preferCacheValue: true });
+      triggerListingFee({ id: selectedRowData?.id }, { preferCacheValue: true });
+      triggerExpenses({ id: selectedRowData?.id }, { preferCacheValue: true });
+    }
+  }, [
+    open,
+    editMode,
+    selectedRowData?.id,
+    triggerAttachments,
+    triggerTerms,
+    triggerListingFee,
+    triggerExpenses,
+  ]);
 
   useEffect(() => {
     if (open && !editMode) {

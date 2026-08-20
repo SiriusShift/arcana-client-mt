@@ -1,63 +1,57 @@
-import { Autocomplete, Box, Button, TextField } from "@mui/material";
-import PageHeaderAdd from "../../components/PageHeaderAdd";
-import CommonTable from "../../components/CommonTable";
-import CommonTableSkeleton from "../../components/CommonTableSkeleton";
-import { reportNames } from "../../utils/constants";
-import { useEffect, useState } from "react";
-import { useGetInventoryMrpQuery } from "../../features/inventory-management/api/inventoryMrpApi";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { GetApp } from "@mui/icons-material";
+import { Autocomplete, Box, TextField } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import SecondaryButton from "../../components/SecondaryButton";
-import _ from "lodash";
-import { GetApp } from "@mui/icons-material";
-import { decryptString } from "../../utils/CustomFunctions";
-import {
-  useCDOReportsQuery,
-  useSJReportsQuery,
-  useASReportsQuery,
-  useGetCheckInReportsQuery,
-  useGetSOAReportsQuery,
-  useGetCheckInFiloReportsQuery,
-  useGetVoidTransactionsReportsQuery,
-  useGetFreebieReportsQuery,
-  useGetSamplingReportsQuery,
-  useGetReturnReportsQuery,
-  useGetReplaceReportsQuery,
-  useGetPaymentReportsQuery,
-  useGetMrpRollbackReportsQuery,
-  useGetCashReceiptReportsQuery,
-  useGetInventoriablesReportsQuery,
-  useGetSalesGTReportsQuery,
-  useGetReturnToDepotReportsQuery,
-  useGetInventoryMovementReportsQuery,
-  useGetInventoryTransactionsHistoryReportsQuery,
-  useGetReturnSamplingReportsQuery,
-  useGetInventoryAdjustmentReportsQuery,
-  useGetMiscReceiptReportsQuery,
-  useGetMiscIssueReportsQuery,
-  useGetConsolidatedReportsQuery,
-} from "../../features/reports/api/reportsApi";
-import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import CommonFilter from "../../components/CommonFilter";
+import CommonTable from "../../components/CommonTable";
+import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller, useForm } from "react-hook-form";
-import { reportsSchema, transferOutSchema } from "../../schema/schema";
-import Report from "../../components/page-components/reports/SOAreport";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import PageHeaderAdd from "../../components/PageHeaderAdd";
+import SecondaryButton from "../../components/SecondaryButton";
+import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
+import {
+  useASReportsQuery,
+  useCDOReportsQuery,
+  useGetCashReceiptReportsQuery,
+  useGetCheckInFiloReportsQuery,
+  useGetCheckInReportsQuery,
+  useGetConsolidatedReportsQuery,
+  useGetFreebieReportsQuery,
+  useGetInventoriablesReportsQuery,
+  useGetInventoryAdjustmentReportsQuery,
+  useGetInventoryMovementReportsQuery,
+  useGetInventoryTransactionsHistoryReportsQuery,
+  useGetMiscIssueReportsQuery,
+  useGetMiscReceiptReportsQuery,
+  useGetMrpRollbackReportsQuery,
+  useGetPaymentReportsQuery,
+  useGetReplaceReportsQuery,
+  useGetReturnReportsQuery,
+  useGetReturnSamplingReportsQuery,
+  useGetReturnToDepotReportsQuery,
+  useGetSalesGTReportsQuery,
+  useGetSamplingReportsQuery,
+  useGetSOAReportsQuery,
+  useGetVoidTransactionsReportsQuery,
+  useSJReportsQuery,
+} from "../../features/reports/api/reportsApi";
+import { reportsSchema } from "../../schema/schema";
+import { reportNames } from "../../utils/constants";
+import { decryptString } from "../../utils/CustomFunctions";
 // import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
-import { useDispatch } from "react-redux";
+import { useGetAllReceivedOrdersQuery } from "../../features/inventory-management/api/receivingApi";
 import {
   useGetAllListingFeeQuery,
   useGetListingFeeHistoryByClientIdQuery,
 } from "../../features/listing-fee/api/listingFeeApi";
-import { useGetAllReceivedOrdersQuery } from "../../features/inventory-management/api/receivingApi";
-import { useGetAllTransferOutsQuery } from "../../features/inventory-management/api/transferOutApi";
-import SOAPDFDownload from "./PDFDownload";
 import useSnackbar from "../../hooks/useSnackbar";
 import ExportExcel from "../../utils/Excel";
+import SOAPDFDownload from "./PDFDownload";
 // import SOAReport from "../../utils/Excel"
 
 function Reports() {
@@ -623,7 +617,7 @@ function Reports() {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_BASEURL}${activeReport?.value
+        `${import.meta.env.VITE_BASEURL}/${activeReport?.value
         }?DateFrom=${moment(watch("dateFrom")).format(
           "MM-DD-YYYY"
         )}&DateTo=${moment(watch("dateTo")).format("MM-DD-YYYY")}${clusterId ? `&clusterId=${clusterId?.id}` : ""

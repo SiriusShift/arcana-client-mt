@@ -47,6 +47,13 @@ export const navigationData = [
         icon: "Settings",
         description: "Manage approver settings with minimum and maximum amount",
       },
+      {
+        id: 3,
+        name: "One Charging",
+        path: "/user-management/one-charging",
+        icon: "LooksOne",
+        description: "Manage approver settings with minimum and maximum amount",
+      },
 
       // {
       //   id: 5,

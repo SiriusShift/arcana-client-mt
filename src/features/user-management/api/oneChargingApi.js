@@ -16,7 +16,7 @@ export const oneChargingApi = createApi({
     },
   }),
   endpoints: (builder) => ({
-      getCharging: builder.query({
+    getCharging: builder.query({
       query: (params) => ({
         url: "/api/charging_api?status=active&pagination=none",
         method: "GET",

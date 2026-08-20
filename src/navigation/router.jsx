@@ -88,6 +88,7 @@ import TransactionForm from "../pages/sales-management/sales-transaction/Transac
 import TransactionsList from "../pages/sales-management/sales-transaction/TransactionsList";
 import ViewTransaction from "../pages/sales-management/sales-transaction/ViewTransaction";
 import ProductType from "../pages/setup/ProductType";
+import OneCharging from "../pages/user-management/OneCharging";
 import Teritory from "../pages/user-management/Teritory";
 
 export const router = createBrowserRouter([
@@ -136,6 +137,10 @@ export const router = createBrowserRouter([
           {
             path: "approver-settings",
             element: <ApproverSettings />,
+          },
+          {
+            path: "one-charging",
+            element: <OneCharging />,
           },
 
 

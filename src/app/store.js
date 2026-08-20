@@ -1,20 +1,20 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { loginSlice } from "../features/authentication/reducers/loginSlice";
-import { permissionsSlice } from "../features/authentication/reducers/permissionsSlice";
-import { selectedRowSlice } from "../features/misc/reducers/selectedRowSlice";
-import { selectedStoreTypeSlice } from "../features/prospect/reducers/selectedStoreTypeSlice";
-import { badgeSlice } from "../features/prospect/reducers/badgeSlice";
-import { regularRegistrationSlice } from "../features/registration/reducers/regularRegistrationSlice";
-import { sedarApi } from "../features/user-management/api/sedarApi";
-import { oneChargingApi } from "../features/user-management/api/oneChargingApi";
-import { disclosureSlice } from "../features/misc/reducers/disclosureSlice";
-import { rdfSmsApi } from "../features/misc/api/rdfSmsApi";
 import { api } from "../features/api";
 import { initialChangePasswordApi } from "../features/authentication/api/initialChangePasswordApi";
-import { generateReceivingSlice } from "../features/inventory-management/reducers/generateReceivingSlice";
+import { loginSlice } from "../features/authentication/reducers/loginSlice";
+import { permissionsSlice } from "../features/authentication/reducers/permissionsSlice";
 import { bbdCacheSlice } from "../features/inventory-management/reducers/bbdCacheSlice";
 import { callsheetSlice } from "../features/inventory-management/reducers/callsheetSlice";
+import { generateReceivingSlice } from "../features/inventory-management/reducers/generateReceivingSlice";
+import { rdfSmsApi } from "../features/misc/api/rdfSmsApi";
+import { disclosureSlice } from "../features/misc/reducers/disclosureSlice";
+import { selectedRowSlice } from "../features/misc/reducers/selectedRowSlice";
+import { badgeSlice } from "../features/prospect/reducers/badgeSlice";
+import { selectedStoreTypeSlice } from "../features/prospect/reducers/selectedStoreTypeSlice";
+import { regularRegistrationSlice } from "../features/registration/reducers/regularRegistrationSlice";
+import { oneChargingApi } from "../features/user-management/api/oneChargingApi";
+import { sedarApi } from "../features/user-management/api/sedarApi";
 
 export const store = configureStore({
   reducer: {
@@ -31,7 +31,7 @@ export const store = configureStore({
     [api.reducerPath]: api.reducer,
     [initialChangePasswordApi.reducerPath]: initialChangePasswordApi.reducer,
     [sedarApi.reducerPath]: sedarApi.reducer,
-        [oneChargingApi.reducerPath]: oneChargingApi.reducer,
+    [oneChargingApi.reducerPath]: oneChargingApi.reducer,
     [rdfSmsApi.reducerPath]: rdfSmsApi.reducer,
 
   },

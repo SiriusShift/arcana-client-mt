@@ -121,6 +121,7 @@ export const productSchema = {
     uomId: yup.object().required("UOM is required"),
     productSubCategoryId: yup.object().required("Subcategory is required"),
     meatTypeId: yup.object().required("Meat type is required"),
+    isVATable: yup.boolean()
     // itemImageLink: yup.mixed().nullable(),
   }),
   defaultValues: {
@@ -129,7 +130,7 @@ export const productSchema = {
     uomId: null,
     productSubCategoryId: null,
     meatTypeId: null,
-    vatable: false
+    isVATable: false
     // itemImageLink: null,
   },
 };

@@ -32,7 +32,7 @@ export const regularRegistrationSlice = createSlice({
         isValid: false,
         changedItems: [],  // items with modified price
         removedItems: [],  // items that were removed
-        isVatable: false
+        isVATable: false
       },
       isAgree: false,
       toggleFees: false,
@@ -106,7 +106,7 @@ export const regularRegistrationSlice = createSlice({
       state.value.priceMode.priceModeId = action.payload;
     },
     setTax: (state, action) => {
-      state.value.priceMode.isVatable = action.payload;
+      state.value.priceMode.isVATable = action.payload;
     },
     setPriceModeItems: (state, action) => {
       state.value.priceMode.items = action.payload;
@@ -174,7 +174,7 @@ export const regularRegistrationSlice = createSlice({
         isValid: false,
         changedItems: [],
         removedItems: [],
-        isVatable: false
+        isVATable: false
       };
     },
   },

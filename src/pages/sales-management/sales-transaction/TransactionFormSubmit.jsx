@@ -33,7 +33,12 @@ function TransactionFormSubmit({
   } = useDisclosure();
 
   const totalAmount = formData?.items?.reduce((prev, curr) => prev + curr?.amount, 0)
-
+  const totalVAT = formData?.items?.reduce(
+    (total, item) =>
+      total + (item.isVatable ? item.amount * (12 / 112) : 0),
+    0
+  );
+  console.log(totalVAT)
   // RTK Query
   const [receiveMoveOrder] = useReceiveMoveOrderMutation();
 
@@ -96,6 +101,7 @@ function TransactionFormSubmit({
       <CashoutModal
         total={parseFloat(totalAmount).toFixed(2)}
         // resetTransaction={reset}
+        totalVat={totalVAT}
         data={data}
         orderData={formData}
         open={isCashoutOpen}

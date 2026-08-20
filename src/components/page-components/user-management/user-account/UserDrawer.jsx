@@ -1,5 +1,3 @@
-import { Controller } from "react-hook-form";
-import CommonDrawer from "../../../CommonDrawer";
 import {
   Autocomplete,
   InputAdornment,
@@ -7,17 +5,18 @@ import {
   TextField,
   createFilterOptions,
 } from "@mui/material";
-import ControlledAutocompleteMultiple from "../../../ControlledAutocompleteMultiple";
-import ControlledAutocomplete from "../../../ControlledAutocomplete";
-import { PatternFormat } from "react-number-format";
-import { useGetAllUserRolesQuery } from "../../../../features/user-management/api/userRoleApi";
-import { useGetAllEmployeesQuery, useLazyGetAllEmployeesQuery } from "../../../../features/user-management/api/sedarApi";
-import { useGetAllClustersQuery } from "../../../../features/setup/api/clusterApi";
-import { useSelector } from "react-redux";
-import useUserForm from "./useUserForm.hooks";
 import { useEffect, useMemo, useState } from "react";
+import { Controller } from "react-hook-form";
+import { PatternFormat } from "react-number-format";
+import { useSelector } from "react-redux";
 import { useGetTerritoryQuery } from "../../../../features/setup/api/territoryApi";
-import { useGetChargingQuery } from "../../../../features/user-management/api/oneChargingApi";
+import { useGetChargingQuery } from "../../../../features/user-management/api/oneChargingArcanaApi";
+import { useLazyGetAllEmployeesQuery } from "../../../../features/user-management/api/sedarApi";
+import { useGetAllUserRolesQuery } from "../../../../features/user-management/api/userRoleApi";
+import CommonDrawer from "../../../CommonDrawer";
+import ControlledAutocomplete from "../../../ControlledAutocomplete";
+import ControlledAutocompleteMultiple from "../../../ControlledAutocompleteMultiple";
+import useUserForm from "./useUserForm.hooks";
 
 const UserDrawer = ({ editMode, approveMode, ...props }) => {
   const { onClose, open } = props;
@@ -32,7 +31,10 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
     Status: true,
     PageSize: 1000,
   });
-  const { data: chargingData, isFetching: chargingFetching } = useGetChargingQuery()
+  const { data: chargingData, isFetching: chargingFetching } = useGetChargingQuery({
+    pageSize: 100000,
+    pageNumber: 1
+  })
 
   const [triggerSedar, { data: sedarData = [] }] =
     useLazyGetAllEmployeesQuery();
@@ -62,6 +64,8 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
     onClose,
     open,
   });
+
+  console.log(watch())
 
 
 
@@ -303,7 +307,7 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
           defaultValue={[]}
           render={({ field }) => (
             <Autocomplete
-              options={chargingData}
+              options={chargingData?.chargings}
               value={field.value}
               onChange={(event, newValue) => {
                 field.onChange(newValue);
