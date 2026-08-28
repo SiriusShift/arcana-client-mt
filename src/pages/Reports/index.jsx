@@ -63,6 +63,7 @@ function Reports() {
   const [clusterId, setClusterId] = useState();
   const [userId, setUserId] = useState();
   const [userType, setUserType] = useState();
+  console.log(activeReport)
   console.log("Test", clusterId);
   const [isActive, setIsActive] = useState({
     cdo: true,
@@ -844,6 +845,7 @@ function Reports() {
   const customOrderKeys = [
     [
       "date",
+      "tdo",
       "invoiceNo",
       "itemDescription",
       "quantity",
@@ -972,6 +974,7 @@ function Reports() {
   const tableHeads = [
     [
       "Date",
+      "TDO",
       "Invoice Number",
       "Item Description",
       "Quantity",

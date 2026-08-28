@@ -60,7 +60,9 @@ const useUserForm = ({
           ...restData,
           userRoleId: id,
           territoryId: territoryId?.id,
-          chargingId: charging?.id,
+          chargingId: charging?.id
+          // charingCode: charging?.code,
+          // chargingName: charging?.name
 
         }).unwrap();
 
@@ -73,7 +75,7 @@ const useUserForm = ({
           ...restData,
           userRoleId: id,
           territoryId: territoryId?.id,
-          chargingId: charging?.id,
+          chargingId: charging?.id
 
         }).unwrap();
         snackbar({
@@ -122,7 +124,7 @@ const useUserForm = ({
       setValue("territoryId", selectedCluster);
 
       setValue("mobileNumber", selectedRowData.mobileNumber);
-      const selectedCharging = chargingData?.chargings?.find((item) => item.code === selectedRowData.chargingCode);
+      const selectedCharging = chargingData.find((item) => item.code === selectedRowData.chargingCode);
       setValue("charging", selectedCharging)
     } else if (
       approveMode &&

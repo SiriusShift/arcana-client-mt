@@ -87,7 +87,6 @@ import Reports from "../pages/Reports";
 import TransactionForm from "../pages/sales-management/sales-transaction/TransactionForm";
 import TransactionsList from "../pages/sales-management/sales-transaction/TransactionsList";
 import ViewTransaction from "../pages/sales-management/sales-transaction/ViewTransaction";
-import ProductType from "../pages/setup/ProductType";
 import OneCharging from "../pages/user-management/OneCharging";
 import Teritory from "../pages/user-management/Teritory";
 
@@ -178,10 +177,10 @@ export const router = createBrowserRouter([
             path: "meat-type",
             element: <MeatType />,
           },
-          {
-            path: "product-type",
-            element: <ProductType />,
-          },
+          // {
+          //   path: "product-type",
+          //   element: <ProductType />,
+          // },
           {
             path: "uom",
             element: <UnitOfMeasurements />,

@@ -38,7 +38,7 @@ function TransactionFormSubmit({
       total + (item.isVatable ? item.amount * (12 / 112) : 0),
     0
   );
-  console.log(totalVAT)
+  console.log(formData)
   // RTK Query
   const [receiveMoveOrder] = useReceiveMoveOrderMutation();
 

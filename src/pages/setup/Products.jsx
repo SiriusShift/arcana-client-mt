@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LocalMall } from "@mui/icons-material";
-import { Box, Switch, TextField, Typography } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
@@ -69,7 +69,7 @@ function Products() {
     "productSubCategoryName",
     "meatType",
     "itemImageLink",
-    "isVATable"
+    // "isVATable"
   ];
 
   const attachKey = "itemImageLink";
@@ -118,7 +118,7 @@ function Products() {
         meatTypeId: { id: meatTypeId },
         itemCode,
         itemDescription,
-        isVATable
+        // isVATable
       } = data;
 
       formData.append("itemCode", itemCode);
@@ -126,7 +126,7 @@ function Products() {
       formData.append("uomId", uomId);
       formData.append("productSubCategoryId", productSubCategoryId);
       formData.append("meatTypeId", meatTypeId);
-      formData.append("isVATable", isVATable);
+      // formData.append("isVATable", isVATable);
 
       // data.itemImageLink &&
       //   formData.append("itemImageLink", data.itemImageLink);
@@ -213,7 +213,7 @@ function Products() {
         (item) => item.meatTypeName === editData.meatType
       )
     );
-    setValue("isVATable", editData.isVATable);
+    // setValue("isVATable", editData.isVATable);
     // setValue("itemImageLink", editData.itemImageLink);
   };
 
@@ -373,7 +373,7 @@ function Products() {
             )}
           />
 
-          <Controller
+          {/* <Controller
             control={control}
             name="isVATable"
             render={({ field }) => (
@@ -393,7 +393,7 @@ function Products() {
                 />
               </div>
             )}
-          />
+          /> */}
           {/* 
           <Controller
             control={control}

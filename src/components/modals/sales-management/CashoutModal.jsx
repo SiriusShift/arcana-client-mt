@@ -69,6 +69,8 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
     [watchDiscount, total]
   );
 
+  console.log(watchDiscount)
+
 
   const netSales = useMemo(
     () => (Number(total)) - (discountAmount ? discountAmount : 0) - (specialDiscountAmount ? specialDiscountAmount : 0),
@@ -83,6 +85,8 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
     Page: 1,
     PageSize: 1000,
   });
+
+  console.log(variableDiscountData)
   const { data, isLoading } =
     useGetAllClientsQuery({
       RegistrationStatus: "Approved",
@@ -209,9 +213,9 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
 
   useEffect(() => {
     if (open) {
-      !client?.variableDiscount &&
-        setValue("discount", Number(salesData?.regDiscount) * 100);
-      setValue("specialDiscount", Number(salesData?.specialDiscount) * 100);
+      // !client?.variableDiscount &&
+      setValue("discount", Number(client?.discountPercentage) * 100);
+      setValue("specialDiscount", Number(client?.specialDiscount) * 100);
       setValue("specialDiscountId", client?.specialDiscountId);
       setValue("isOneTimeSp", client?.isOnetimeSp);
       setValue("invoiceType", "Charge")

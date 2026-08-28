@@ -10,7 +10,7 @@ import { Controller } from "react-hook-form";
 import { PatternFormat } from "react-number-format";
 import { useSelector } from "react-redux";
 import { useGetTerritoryQuery } from "../../../../features/setup/api/territoryApi";
-import { useGetChargingQuery } from "../../../../features/user-management/api/oneChargingArcanaApi";
+import { useGetChargingQuery } from "../../../../features/user-management/api/oneChargingApi";
 import { useLazyGetAllEmployeesQuery } from "../../../../features/user-management/api/sedarApi";
 import { useGetAllUserRolesQuery } from "../../../../features/user-management/api/userRoleApi";
 import CommonDrawer from "../../../CommonDrawer";
@@ -31,10 +31,7 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
     Status: true,
     PageSize: 1000,
   });
-  const { data: chargingData, isFetching: chargingFetching } = useGetChargingQuery({
-    pageSize: 100000,
-    pageNumber: 1
-  })
+  const { data: chargingData, isFetching: chargingFetching } = useGetChargingQuery()
 
   const [triggerSedar, { data: sedarData = [] }] =
     useLazyGetAllEmployeesQuery();
@@ -64,8 +61,6 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
     onClose,
     open,
   });
-
-  console.log(watch())
 
 
 
@@ -301,13 +296,13 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
       </FieldSkeleton>
 
       <FieldSkeleton loading={chargingFetching}>
-        {(userRole?.roleName === "TDO" || userRole?.roleName === "Marketing") && (<Controller
+        {(userRole?.roleName === "TDO" || userRole?.roleName === "Head" || userRole?.roleName === "Marketing") && (<Controller
           name="charging"
           control={control}
           defaultValue={[]}
           render={({ field }) => (
             <Autocomplete
-              options={chargingData?.chargings}
+              options={chargingData}
               value={field.value}
               onChange={(event, newValue) => {
                 field.onChange(newValue);

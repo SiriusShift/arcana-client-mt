@@ -43,9 +43,9 @@ export const marketingCluster = [
 
 export const reportNames = [
   {
-    name: "CDO Reports",
+    name: "TDO Reports",
     index: 0,
-    value: "CDO-reports",
+    value: "TDO-reports",
   },
   {
     name: "Sales Analyst Reports",

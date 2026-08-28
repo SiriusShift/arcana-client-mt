@@ -68,7 +68,6 @@ import {
   setListingFeeForRegistration,
   setPriceModeId,
   setPriceModeItems,
-  setTax,
   setWholeTermsAndConditions,
   toggleFeesToStore
 } from "../../../features/registration/reducers/regularRegistrationSlice";
@@ -269,41 +268,48 @@ function DirectRegisterForm({
 
   const isTDO = userDetails?.roleName === "TDO";
   const isHead = userDetails?.roleName === "Head";
+  const isAdmin = userDetails?.roleName === "Admin";
 
   const isApprovedEdit =
     editMode &&
-    (isTDO || isHead) &&
+    (isTDO || isHead || isAdmin) &&
     clientStatus === "Approved";
 
   const isUnderReviewEdit =
     editMode &&
-    isTDO &&
+    (isTDO || isAdmin) &&
     clientStatus === "Under review";
+  const isAdminEdit =
+    editMode &&
+    isAdmin &&
+    (clientStatus === "Approved" || clientStatus === "Under review");
 
   const showNextButton =
     // 1. New registration
     (!editMode && activeTab !== "Costs and Fees") ||
 
-    // 2. Under Review edit (stop at Terms & Conditions)
-    (isUnderReviewEdit &&
+    // 2. Under Review edit, or Admin edit (Approved or Under review) — stop at Terms & Conditions
+    ((isUnderReviewEdit || isAdminEdit) &&
       activeTab !== "Terms & Conditions") ||
 
-    // 3. Other edit modes (except Approved)
+    // 3. Other edit modes (except Approved, Under Review, Admin)
     (editMode &&
       !isApprovedEdit &&
       !isUnderReviewEdit &&
+      !isAdminEdit &&
       activeTab !== "Costs and Fees");
 
   const showSubmitButton =
     // New registration
     (!editMode && activeTab === "Costs and Fees") ||
 
-    // Under Review edit submits at Terms & Conditions
-    (isUnderReviewEdit &&
+    // Under Review edit, or Admin edit (Approved or Under review) submits at Terms & Conditions
+    ((isUnderReviewEdit || isAdminEdit) &&
       activeTab === "Terms & Conditions") ||
 
-    // Approved edit submits on Price Mode only
+    // TDO/Head Approved edit submits on Price Mode only (Admin excluded — handled above)
     (isApprovedEdit &&
+      !isAdmin &&
       activeTab === "Price Mode");
   //Constants
   const navigators = [
@@ -455,7 +461,7 @@ function DirectRegisterForm({
         ...data,
         dateOfBirth: moment(data?.dateOfBirth).format("YYYY-MM-DD"),
         priceModeId: priceModeItems.priceModeId,
-        isVATable: priceModeItems.isVATable,
+        // isVATable: priceModeItems.isVATable,
         tdoId: data?.territory?.id,
         clientId: selectedRowData?.id,
         distriTypeId: data?.distriTypeId?.id
@@ -855,7 +861,10 @@ function DirectRegisterForm({
       >
         {navigators
           .filter((item) => {
-            if (isTDO && clientStatus === "Under review" && editMode) {
+            if (isAdmin && editMode) {
+              return item.label !== "Costs and Fees"
+            }
+            if ((isTDO) && clientStatus === "Under review" && editMode) {
               return item.label !== "Costs and Fees"
             }
 
@@ -1059,7 +1068,7 @@ function DirectRegisterForm({
       setValue("dateOfBirth", moment(selectedRowData?.dateOfBirth));
       setValue("phoneNumber", selectedRowData?.phoneNumber);
       setValue("businessAddress", selectedRowData?.businessAddress);
-      setValue("businessName", selectedRowData?.businessName);
+      setValue("businessName", selectedRowData?.businessName)
       setValue(
         "distriTypeId",
         distriTypeData?.distributionTypes?.find(
@@ -1069,7 +1078,7 @@ function DirectRegisterForm({
       );
       setValue("deliveryAddress", selectedRowData?.deliveryAddress);
       dispatch(setPriceModeId(selectedRowData?.priceModeId));
-      dispatch(setTax(selectedRowData?.isVATable));
+      // dispatch(setTax(selectedRowData?.isVATable));
       dispatch(setPriceModeItems(selectedRowData?.clientItems?.map((item) => ({
         itemCode: productData?.items?.find((data) => data.itemCode === item.itemCode),
         itemDescription: item.itemDescription,

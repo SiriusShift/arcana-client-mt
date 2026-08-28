@@ -149,7 +149,7 @@ function DirectRegistration() {
   //   link.setAttribute("download", fileName);
   //   document.body.appendChild(link);
   //   link.click();
-  // }
+  // }x`
 
   //Constants
   const registrationNavigation = useMemo(
@@ -219,7 +219,7 @@ function DirectRegistration() {
     "Distribution Type",
     "Business Address",
     "Origin",
-    "Vatable"
+    // "Vatable"
   ];
 
   const customOrderKeys = [
@@ -229,7 +229,7 @@ function DirectRegistration() {
     "distriType",
     "businessAddress",
     "origin",
-    "isVATable"
+    // "isVATable"
   ];
 
   const nestedProperty = {

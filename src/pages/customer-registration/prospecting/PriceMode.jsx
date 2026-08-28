@@ -12,7 +12,6 @@ import {
     Radio,
     RadioGroup,
     Stack,
-    Switch,
     TextField,
     Typography
 } from "@mui/material";
@@ -33,8 +32,7 @@ import {
     setPriceModeId,
     setPriceModeItemPrice,
     setPriceModeItems,
-    setTax,
-    setTermsAndConditions,
+    setTermsAndConditions
 } from "../../../features/registration/reducers/regularRegistrationSlice";
 import { useGetAllPriceModeForClientsQuery } from "../../../features/setup/api/priceModeSetupApi";
 import { useGetAllProductsQuery } from "../../../features/setup/api/productsApi";
@@ -89,7 +87,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
     useEffect(() => {
         if (priceModeStore.priceModeId != null) {
             setValue("priceMode", priceModeStore.priceModeId, { shouldValidate: true });
-            setValue("isVATable", priceModeStore.isVATable, { shouldValidate: true });
+            // setValue("isVATable", priceModeStore.isVATable, { shouldValidate: true });
         }
         if (priceModeStore.items?.length > 0) {
             setValue(
@@ -119,7 +117,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                 )
             );
 
-            dispatch(setTax(values.isVATable ?? false));
+            // dispatch(setTax(values.isVATable ?? false));
         });
 
         return () => subscription.unsubscribe();
@@ -293,12 +291,12 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                         </RadioGroup>
                     </Box>
                 )}
-                <Box className="priceMode__mode">
+                {/* <Box className="priceMode__mode">
                     <Typography className="priceMode__mode__title">
                         Tax
                     </Typography>
 
-                    <Controller
+                  <Controller
                         control={control}
                         name="isVATable"
                         defaultValue={false}
@@ -316,7 +314,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                             />
                         )}
                     />
-                </Box>
+                </Box> */}
             </Box>
 
             {/* PRODUCTS */}
