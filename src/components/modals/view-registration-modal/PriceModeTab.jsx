@@ -1,6 +1,7 @@
 import { Box, Chip, Divider, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import { useGetAllProductsQuery } from "../../../features/setup/api/productsApi";
 
 const formatPrice = (price) =>
   price != null
@@ -9,6 +10,8 @@ const formatPrice = (price) =>
 
 const ProductTable = ({ items, columns }) => {
   const gridTemplate = `1fr 2fr ${columns.slice(2).map(() => "1fr").join(" ")}`;
+
+  console.log(items)
 
   return (
     <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, overflow: "hidden", mt: 1 }}>
@@ -30,7 +33,7 @@ const ProductTable = ({ items, columns }) => {
           <Typography sx={{ fontSize: 13, fontFamily: "monospace" }}>{item.itemCode ?? "—"}</Typography>
           <Typography sx={{ fontSize: 13 }}>{item.itemDescription || "—"}</Typography>
           {columns.slice(2).map((col) => {
-            const key = col === "Price From" ? "priceFrom" : col === "Price To" ? "priceTo" : "price";
+            const key = col === "Price From" ? "priceFrom" : col === "Price To" ? "priceTo" : col === "Srp" ? "srp" : "price";
             return (
               <Typography key={col} sx={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
                 {formatPrice(item[key])}
@@ -44,7 +47,7 @@ const ProductTable = ({ items, columns }) => {
 };
 
 const COLS = {
-  standard: ["Item Code", "Description", "Price"],
+  standard: ["Item Code", "Description", "Srp", "Price"],
   changed: ["Item Code", "Description", "Price From", "Price To"],
   removed: ["Item Code", "Description", "Price From"],
 };
@@ -72,11 +75,21 @@ function PriceModeTab() {
   const discountPercent = selectedRowData?.discount;
   const isRetail = priceMode === 1;
 
+  const { data: products } = useGetAllProductsQuery({
+    PageSize: 1000,
+    Status: true,
+  });
+
   const isRegistration = location.pathname === "/approval/registration-approval" || location.pathname === "/customer-registration/registration"
 
-  const items = (((isHead || isAdmin) && !isRegistration) ? selectedRowData?.addItems : selectedRowData?.clientItems) ?? [];
+  const items = (((isHead || isAdmin) && !isRegistration) ? selectedRowData?.addItems : selectedRowData?.clientItems.map((item) => ({
+    ...item,
+    srp: products?.items?.find((product) => product?.itemCode === item.itemCode)?.latestSRP
+  }))) ?? [];
   const changedItems = selectedRowData?.changeItemPrices ?? [];
   const removedItems = selectedRowData?.removeItems ?? [];
+
+  console.log(items)
 
   console.log(isRetail)
   return (

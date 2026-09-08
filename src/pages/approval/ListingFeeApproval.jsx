@@ -91,7 +91,7 @@ function ListingFeeApproval() {
 
   const tableHeads = [
     "Business Name",
-    "Business Address",
+    // "Business Address",
     "Branch Name",
     "Tx Number",
     "Total Amount",
@@ -100,7 +100,7 @@ function ListingFeeApproval() {
 
   const customOrderKeys = [
     "businessName",
-    "businessAddress",
+    // "businessAddress",
     "clientName",
     "listingFeeId",
     "total",

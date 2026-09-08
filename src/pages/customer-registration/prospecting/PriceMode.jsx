@@ -44,7 +44,6 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
     const snackbar = useSnackbar();
     const isRestoredRef = useRef(false); // ← prevent restore from triggering sync
 
-    console.log(isRestoredRef.current)
     const priceModeStore = useSelector(
         (state) => state.regularRegistration.value.priceMode
     );
@@ -75,7 +74,6 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
         defaultValues: priceModeRegistrationSchema.defaultValues,
     });
 
-    console.log(watch())
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -83,37 +81,52 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
     });
 
     const watchItems = watch("items");
-    console.log(watchItems)
     useEffect(() => {
-        if (priceModeStore.priceModeId != null) {
-            setValue("priceMode", priceModeStore.priceModeId, { shouldValidate: true });
-            // setValue("isVATable", priceModeStore.isVATable, { shouldValidate: true });
+        const { priceModeId,
+            // isVATable, 
+
+            items = [] } = priceModeStore;
+
+        if (priceModeId != null) {
+            setValue("priceMode", priceModeId);
+            // setValue("isVATable", isVATable);
         }
-        if (priceModeStore.items?.length > 0) {
-            setValue(
-                "items",
-                priceModeStore.items.map((item) => ({ ...item })),
-                { shouldValidate: true }
-            );
-            // ✅ Only set once when items are actually populated
+
+        if (items.length) {
+            setValue("items", items);
+
             if (!originalItems) {
-                setOriginalItems(priceModeStore.items);
-                onOriginalItemsReady?.(priceModeStore.items); // ← send it up once
+                setOriginalItems(items);
+                onOriginalItemsReady?.(items);
             }
         }
-        isRestoredRef.current = true;
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+        isRestoredRef.current = true; // always mark init as done, whether or not there was anything to restore
+    }, []);
+    useEffect(() => {
+        if (!products?.items?.length) return;
+
+        const currentItems = watch("items");
+
+        currentItems.forEach((item, index) => {
+            const srp = products.items.find(
+                p => p.itemCode === item.itemCode?.itemCode
+            )?.latestSRP;
+
+            setValue(`items.${index}.srp`, srp ?? 0);
+        });
+    }, [products]);
     // ✅ Sync form → Redux
     useEffect(() => {
         const subscription = watch((values) => {
+            console.log(values)
             if (!isRestoredRef.current) return;
 
             dispatch(setPriceModeId(values.priceMode ?? null));
 
             dispatch(
                 setPriceModeItems(
-                    values.items?.map((item) => ({ ...item })) ?? []
+                    values?.items?.map((item) => ({ ...item })) ?? []
                 )
             );
 
@@ -130,7 +143,6 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
 
     useEffect(() => {
         if (!isDirty) return;
-        console.log(isDirty, "DIRTY!")
         dispatch(setDirty(true))
     }, [isDirty])
 
@@ -273,9 +285,9 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     }}
                                     disabled={editTDO}
                                     isAllowed={(values) => {
-                                        const val = values.floatValue;
-                                        if (val && val > 100) return false;
-                                        return true;
+                                        const { floatValue } = values;
+
+                                        return floatValue == null || (floatValue >= 0 && floatValue <= 10);
                                     }}
                                     InputProps={{
                                         endAdornment: (
@@ -295,8 +307,8 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                     <Typography className="priceMode__mode__title">
                         Tax
                     </Typography>
-
-                  <Controller
+                    
+                    <Controller
                         control={control}
                         name="isVATable"
                         defaultValue={false}
@@ -376,6 +388,12 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     value?.uom || ""
                                 );
 
+                                setValue(
+                                    `items.${index}.srp`,
+                                    value?.latestSRP || ""
+                                );
+
+
                                 return value;
                             }}
                             renderInput={(params) => (
@@ -404,6 +422,30 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     disabled
                                     value={field.value || ""}
                                     sx={{ flex: 1, minWidth: 250 }}
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            control={control}
+                            name={`items.${index}.srp`}
+                            render={({ field: { onChange, onBlur, value, ref } }) => (
+                                <NumericFormat
+                                    customInput={TextField}
+                                    label="SRP"
+                                    size="small"
+                                    value={value ?? ""}
+                                    onBlur={onBlur}
+                                    inputRef={ref}
+
+                                    allowNegative={false}
+                                    thousandSeparator
+                                    decimalScale={2}
+                                    disabled fixedDecimalScale
+                                    prefix="₱ "
+                                    sx={{ width: 170 }}
+                                    error={!!errors?.items?.[index]?.price}
+                                    helperText={errors?.items?.[index]?.price?.message || ""}
                                 />
                             )}
                         />

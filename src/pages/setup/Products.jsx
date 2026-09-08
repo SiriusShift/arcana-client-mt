@@ -8,6 +8,7 @@ import CommonDrawer from "../../components/CommonDrawer";
 import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
+import SrpHistory from "../../components/modals/SrpHistory";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import { useGetAllMeatTypesQuery } from "../../features/setup/api/meatTypeApi";
 import {
@@ -48,6 +49,12 @@ function Products() {
     onClose: onDrawerClose,
   } = useDisclosure();
 
+  const {
+    isOpen: isSrpOpen,
+    onOpen: onSrpOpen,
+    onClose: onSrpClose,
+  } = useDisclosure();
+
   // Constants
   const tableHeads = [
     "Item Code",
@@ -56,9 +63,8 @@ function Products() {
     "Product Category",
     "Product Sub Category",
     "Meat Type",
-    "Has Image",
-    "Vatable"
-
+    // "Has Image",
+    // "Vatable"
   ];
 
   const customOrderKeys = [
@@ -68,7 +74,7 @@ function Products() {
     "productCategory",
     "productSubCategoryName",
     "meatType",
-    "itemImageLink",
+    // "itemImageLink",
     // "isVATable"
   ];
 
@@ -118,7 +124,8 @@ function Products() {
         meatTypeId: { id: meatTypeId },
         itemCode,
         itemDescription,
-        // isVATable
+        // isVATable,
+        // srpPrice
       } = data;
 
       formData.append("itemCode", itemCode);
@@ -127,6 +134,7 @@ function Products() {
       formData.append("productSubCategoryId", productSubCategoryId);
       formData.append("meatTypeId", meatTypeId);
       // formData.append("isVATable", isVATable);
+      // formData.append("SrpPrice", srpPrice);
 
       // data.itemImageLink &&
       //   formData.append("itemImageLink", data.itemImageLink);
@@ -214,6 +222,8 @@ function Products() {
       )
     );
     // setValue("isVATable", editData.isVATable);
+    // setValue("srpPrice", editData.latestSRP);
+
     // setValue("itemImageLink", editData.itemImageLink);
   };
 
@@ -271,6 +281,7 @@ function Products() {
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             attachKey={attachKey}
+            onHistory={onSrpOpen}
           // viewMoreKey={"priceChangeHistories"}
           // onViewMoreClick={onPriceOpen}
           // onAddPriceChange={onAddPriceOpen}
@@ -372,8 +383,37 @@ function Products() {
               />
             )}
           />
-
           {/* <Controller
+            control={control}
+            name={"srpPrice"}
+            render={({ field: { onChange, onBlur, value, ref } }) => (
+              <NumericFormat
+                label="SRP"
+                type="text"
+                size="small"
+                customInput={TextField}
+                autoComplete="off"
+                onValueChange={(e) => {
+                  onChange(Number(e.value));
+                }}
+                onBlur={onBlur}
+                value={value || ""}
+                ref={ref}
+                // required
+                allowNegative={false}
+                isAllowed={(values) => {
+                  const { floatValue } = values;
+                  return floatValue === undefined || floatValue > 0;
+                }}
+                thousandSeparator=","
+                prefix="₱"
+                helperText={errors?.price?.message}
+                error={errors?.price}
+              />
+            )}
+          />
+
+          <Controller
             control={control}
             name="isVATable"
             render={({ field }) => (
@@ -445,6 +485,7 @@ function Products() {
           </Box> */}
         </CommonDrawer>
       </Box>
+      <SrpHistory onClose={onSrpClose} open={isSrpOpen} />
     </>
   );
 }

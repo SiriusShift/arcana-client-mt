@@ -121,7 +121,8 @@ export const productSchema = {
     uomId: yup.object().required("UOM is required"),
     productSubCategoryId: yup.object().required("Subcategory is required"),
     meatTypeId: yup.object().required("Meat type is required"),
-    isVATable: yup.boolean()
+    isVATable: yup.boolean(),
+    srpPrice: yup.number()
     // itemImageLink: yup.mixed().nullable(),
   }),
   defaultValues: {
@@ -130,7 +131,8 @@ export const productSchema = {
     uomId: null,
     productSubCategoryId: null,
     meatTypeId: null,
-    isVATable: false
+    isVATable: false,
+    srpPrice: null
     // itemImageLink: null,
   },
 };
@@ -590,7 +592,7 @@ export const priceModeRegistrationSchema = {
         price: yup.number().required("Price is required")
       })
     ),
-    isVatable: yup.boolean().required("Taxable is required")
+    isVATable: yup.boolean().required("Taxable is required")
   }),
   defaultValues: {
     priceMode: null,
@@ -598,7 +600,7 @@ export const priceModeRegistrationSchema = {
       itemCode: null,
       price: null
     }],
-    isVatable: false
+    isVATable: false
   }
 }
 
@@ -811,7 +813,7 @@ export const specialDiscountSchema = {
   defaultValues: {
     clientId: null,
     discount: null,
-    isOnetime: false,
+    isOnetime: true,
   },
 };
 

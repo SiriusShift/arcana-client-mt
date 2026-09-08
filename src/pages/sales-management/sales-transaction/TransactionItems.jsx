@@ -198,7 +198,7 @@ function TransactionItems({
                                                     disableFields ||
                                                     watchItems?.some(
                                                         (item, itemIndex) =>
-                                                            item.itemCode === watchItems?.[index]?.itemCode
+                                                            item.itemCode === items?.[index]?.itemCode
                                                     )
                                                 }
                                                 onChange={(_, value) => {

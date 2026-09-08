@@ -159,8 +159,6 @@ function DirectRegisterForm({
     (state) => state.regularRegistration.value.isDirty
   )
 
-
-
   const signatureToCheck =
     requirementsMode === "owner"
       ? ownersRequirements["signature"]
@@ -195,8 +193,6 @@ function DirectRegisterForm({
     mode: "onSubmit",
     defaultValues: directRegisterPersonalSchema.defaultValues,
   });
-
-  console.log(watch())
 
 
 

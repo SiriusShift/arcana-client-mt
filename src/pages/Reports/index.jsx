@@ -13,6 +13,11 @@ import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
 import SecondaryButton from "../../components/SecondaryButton";
+import { useGetAllReceivedOrdersQuery } from "../../features/inventory-management/api/receivingApi";
+import {
+  useGetAllListingFeeQuery,
+  useGetListingFeeHistoryByClientIdQuery,
+} from "../../features/listing-fee/api/listingFeeApi";
 import { useGetAllClientsQuery } from "../../features/registration/api/registrationApi";
 import {
   useASReportsQuery,
@@ -21,7 +26,9 @@ import {
   useGetCheckInFiloReportsQuery,
   useGetCheckInReportsQuery,
   useGetConsolidatedReportsQuery,
+  useGetDepotSalesReportsQuery,
   useGetFreebieReportsQuery,
+  useGetGizmoReportsQuery,
   useGetInventoriablesReportsQuery,
   useGetInventoryAdjustmentReportsQuery,
   useGetInventoryMovementReportsQuery,
@@ -40,16 +47,10 @@ import {
   useGetVoidTransactionsReportsQuery,
   useSJReportsQuery,
 } from "../../features/reports/api/reportsApi";
+import useSnackbar from "../../hooks/useSnackbar";
 import { reportsSchema } from "../../schema/schema";
 import { reportNames } from "../../utils/constants";
 import { decryptString } from "../../utils/CustomFunctions";
-// import { setSelectedRow } from "../../features/misc/reducers/selectedRowSlice";
-import { useGetAllReceivedOrdersQuery } from "../../features/inventory-management/api/receivingApi";
-import {
-  useGetAllListingFeeQuery,
-  useGetListingFeeHistoryByClientIdQuery,
-} from "../../features/listing-fee/api/listingFeeApi";
-import useSnackbar from "../../hooks/useSnackbar";
 import ExportExcel from "../../utils/Excel";
 import SOAPDFDownload from "./PDFDownload";
 // import SOAReport from "../../utils/Excel"
@@ -117,7 +118,12 @@ function Reports() {
     //Misc Issue
     mi: true,
     //Consolidated Report
-    cr: true
+    cr: true,
+    //Gizmo sales report
+    gsr: true,
+    //Depot sales report
+    dsr: true,
+
   });
   const [page, setPage] = useState(0);
   const [client, setClient] = useState();
@@ -142,7 +148,8 @@ function Reports() {
     "transactionDate",
     "dateReceived",
     "receivedDate",
-    "transactDate"
+    "transactDate",
+    "orDate"
   ];
 
   const {
@@ -566,6 +573,32 @@ function Reports() {
       skip: isActive.cr,
     })
 
+  const { data: gizmoSalesReportData, isFetching: gizmoFetching } = useGetGizmoReportsQuery({
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+    DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.id || "",
+    // TransactionType: "Return",
+  },
+    {
+      refetchOnMountOrArgChange: true,
+      skip: isActive.gsr,
+    })
+
+  const { data: depotSalesReportData, isFetching: depotFetching } = useGetDepotSalesReportsQuery({
+    PageNumber: page + 1,
+    PageSize: rowsPerPage,
+    DateFrom: moment(watch("dateFrom")).format("MM-DD-YYYY") || "",
+    DateTo: moment(watch("dateTo")).format("MM-DD-YYYY") || "",
+    clusterId: clusterId?.id || "",
+    // TransactionType: "Return",
+  },
+    {
+      refetchOnMountOrArgChange: true,
+      skip: isActive.dsr,
+    })
+
 
   const parentIsFetching =
     cdoFetching ||
@@ -594,7 +627,7 @@ function Reports() {
     inventoryAdjustmentFetching ||
     inventoryFreebiesFetching ||
     miscReceiptFetching ||
-    consolidatedFetching;
+    consolidatedFetching || gizmoFetching || depotFetching;
 
   //functions
   const handleSubmitDate = () => {
@@ -727,6 +760,8 @@ function Reports() {
       miscReceiptReportData,
       miscIssueReportData,
       consolidatedReportData,
+      gizmoSalesReportData,
+      depotSalesReportData,
 
       glCashReceiptReportData,
       glInventoriableReportData,
@@ -758,6 +793,8 @@ function Reports() {
       "mr",
       "mi",
       "cr",
+      "gsr",
+      "dsr",
 
       "glcr",
       "gli",
@@ -810,6 +847,7 @@ function Reports() {
     miscReceiptReportData,
     miscIssueReportData,
     consolidatedReportData,
+    gizmoSalesReportData,
 
     glInventoriableReportData,
     glSalesGTReportData,
@@ -1175,7 +1213,7 @@ function Reports() {
               getOptionLabel={(option) =>
                 option?.businessName?.toUpperCase() +
                 " - " +
-                (option?.ownersName || option?.clientName) +
+                (option?.branchName || option?.clientName) +
                 " - " +
                 String(option?.id || option?.clientId)
               }

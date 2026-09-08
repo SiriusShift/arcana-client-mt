@@ -1,47 +1,40 @@
-import { useEffect, useContext, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
-import CommonFilter from "../../../components/CommonFilter";
-import "../../../assets/styles/salesTransaction.styles.scss";
+import {
+  Cancel,
+  CheckCircle,
+  RemoveCircle,
+  Search
+} from "@mui/icons-material";
 import {
   Box,
   Chip,
-  Divider,
-  IconButton,
-  TextField,
-  Typography,
+  TextField
 } from "@mui/material";
-import {
-  CheckCircle,
-  KeyboardDoubleArrowLeft,
-  RemoveCircle,
-  Search,
-  Cancel,
-} from "@mui/icons-material";
-import CommonTable from "../../../components/CommonTable";
-import PageHeaderTabs from "../../../components/PageHeaderTabs";
-import { AppContext } from "../../../context/AppContext";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import * as _ from "lodash";
 import moment from "moment";
+import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import "../../../assets/styles/salesTransaction.styles.scss";
+import CommonFilter from "../../../components/CommonFilter";
+import CommonTable from "../../../components/CommonTable";
+import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
+import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
 import SecondaryButton from "../../../components/SecondaryButton";
-import useDisclosure from "../../../hooks/useDisclosure";
-import ViewTransactionModal from "../../../components/modals/sales-management/ViewTransactionModal";
 import ViewAttachmentModal from "../../../components/modals/sales-management/ViewAttachmentModal";
-import { debounce } from "../../../utils/CustomFunctions";
+import ViewTransactionModal from "../../../components/modals/sales-management/ViewTransactionModal";
+import GenerateMoveOrderModal from "../../../components/page-components/sales-management/sales-transaction/GenerateMoveOrderModal";
 import {
   useCancelSalesTransactionMutation,
   useGetAllMoveOrderTransactionQuery,
   useGetAllSalesTransactionQuery,
   useVoidSalesTransactionMutation,
 } from "../../../features/sales-management/api/salesTransactionApi";
-import CommonTableSkeleton from "../../../components/CommonTableSkeleton";
-import * as _ from "lodash";
+import useDisclosure from "../../../hooks/useDisclosure";
 import useReasonConfirm from "../../../hooks/useReasonConfirm";
 import useSnackbar from "../../../hooks/useSnackbar";
-import { handleCatchErrorMessage } from "../../../utils/CustomFunctions";
-import PageHeaderAddTabs from "../../../components/PageHeaderAddTabs";
-import GenerateMoveOrderModal from "../../../components/page-components/sales-management/sales-transaction/GenerateMoveOrderModal";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { debounce, handleCatchErrorMessage } from "../../../utils/CustomFunctions";
 
 function TransactionsList({ setTransactionsMode }) {
   const [search, setSearch] = useState("");
@@ -79,12 +72,12 @@ function TransactionsList({ setTransactionsMode }) {
     onClose: onGenerateClose,
   } = useDisclosure();
 
-    const {
+  const {
     isOpen: isViewOpen,
     onOpen: onViewOpen,
     onClose: onViewClose,
   } = useDisclosure();
-  
+
   const {
     isOpen: isAttachmentOpen,
     onOpen: onAttachmentOpen,
@@ -476,10 +469,10 @@ function TransactionsList({ setTransactionsMode }) {
               //   disableActions
               // }
               // onAttach={tabViewing === 2 && onAttachmentOpen}
-              onVoid={
-                (tabViewing === 2) &&
-                onVoid
-              }
+              // onVoid={
+              //   (tabViewing === 2) &&
+              //   onVoid
+              // }
               // onCancel={
               //   (transactionStatus === "Pending" ||
               //     transactionStatus === "Paid") &&
@@ -516,9 +509,9 @@ function TransactionsList({ setTransactionsMode }) {
         <ViewTransactionModal open={isViewOpen} onClose={onViewClose} />
 
         <ViewAttachmentModal
-        open={isAttachmentOpen}
-        onClose={onAttachmentClose}
-      />
+          open={isAttachmentOpen}
+          onClose={onAttachmentClose}
+        />
       </Box>
     </>
     );

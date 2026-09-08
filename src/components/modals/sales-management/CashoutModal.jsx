@@ -31,6 +31,7 @@ import {
 import CommonModalForm from "../../CommonModalForm";
 function CashoutModal({ total, totalVat, resetTransaction, orderData, data: salesData, ...props }) {
   const { onClose, open } = props;
+  console.log(salesData)
   //Hooks
   const reasonConfirm = useReasonConfirm();
   const snackbar = useSnackbar();
@@ -126,6 +127,7 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
         itemId: item?.itemId,
         quantity: item?.quantity,
         unitPrice: item?.price,
+        remarks: item?.reason
       })),
     };
 
@@ -137,8 +139,8 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
       discount: data.discount || 0,
       rebateAmount: data.rebateAmount || 0,
       specialDiscount: data.specialDiscount || 0,
-      specialDiscountId: data.specialDiscountId || null,
-      isOneTimeSp: data.isOneTimeSp || null,
+      // specialDiscountId: data.specialDiscountId || null,
+      // isOneTimeSp: data.isOneTimeSp || null,
     };
 
     console.log(combinedData)
@@ -214,8 +216,8 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
   useEffect(() => {
     if (open) {
       // !client?.variableDiscount &&
-      setValue("discount", Number(client?.discountPercentage) * 100);
-      setValue("specialDiscount", Number(client?.specialDiscount) * 100);
+      setValue("discount", Number(salesData?.regDiscount) * 100);
+      setValue("specialDiscount", Number(salesData?.specialDiscount) * 100);
       setValue("specialDiscountId", client?.specialDiscountId);
       setValue("isOneTimeSp", client?.isOnetimeSp);
       setValue("invoiceType", "Charge")
@@ -518,10 +520,10 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
                     const today = moment();
 
                     const minDate =
-                      today.date() <= 5
-                        ? today.clone().subtract(1, "month").startOf("month") // First day of previous month
-                        : today.clone().startOf("month"); // First day of current month
-
+                      // today.date() <= 5
+                      //   ? today.clone().subtract(1, "month").startOf("month") // First day of previous month
+                      //   : today.clone().startOf("month"); // First day of current month
+                      today.clone().subtract(1, "month").startOf("month")
                     return (
                       date.isBefore(minDate, "day") ||
                       date.isAfter(today, "day")

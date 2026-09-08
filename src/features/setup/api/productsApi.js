@@ -48,6 +48,12 @@ const productsApi = api
         providesTags: ["Products"],
         transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
+      }),
+      getSrpHistory: builder.query({
+        query: (id) => ({
+          url: `/Srp/GetSrpHistory/${id}`,
+          method: "GET"
+        })
       })
     }),
   });
@@ -58,5 +64,7 @@ export const {
   useLazyGetAllProductsQuery,
   usePutProductMutation,
   usePatchProductStatusMutation,
-  useGetClientProductsQuery
+  useGetClientProductsQuery,
+  useGetSrpHistoryQuery,
+  useLazyGetSrpHistoryQuery
 } = productsApi;

@@ -163,18 +163,28 @@ export const reportNames = [
     value: "ConsolidatedReport/Export"
   },
   {
-    name: "GL Cash Receipt",
+    name: "Gizmo Sales Reports",
     index: 23,
+    value: "gizmo-sales-reports"
+  },
+  {
+    name: "Depot Sales Reports",
+    index: 24,
+    value: "depot-sales-reports"
+  },
+  {
+    name: "GL Cash Receipt",
+    index: 25,
     value: "arcana-gl-cash-receipt",
   },
   {
     name: "GL Inventoriables",
-    index: 24,
+    index: 26,
     value: "arcana-gl",
   },
   {
     name: "GL Sales GT",
-    index: 25,
+    index: 27,
     value: "arcana-gt",
   },
 ];

@@ -44,8 +44,6 @@ function DirectRegistration() {
   const [dateTo, setDateTo] = useState(moment());
   const [dateFromTemp, setDateFromTemp] = useState(moment());
   const [dateToTemp, setDateToTemp] = useState(moment());
-  console.log("dateFromTemp", dateFromTemp);
-  console.log("dateToTemp", dateToTemp);
 
   const [voidConfirmBox, setVoidConfirmBox] = useState("");
 
@@ -57,7 +55,6 @@ function DirectRegistration() {
 
   const isTDO = userDetails?.roleName === "TDO"
 
-  console.log(isTDO)
 
   const isApprovedOnly =
     userDetails?.permission?.includes("Approved Clients") &&
@@ -69,9 +66,7 @@ function DirectRegistration() {
     isApprovedOnly ? "Approved" : "Under review"
   );
 
-  console.log(clientStatus)
   const [tabViewing, setTabViewing] = useState(isApprovedOnly ? 2 : 1);
-  console.log(tabViewing);
 
   const { notifications, isNotificationFetching } = useContext(AppContext);
 
@@ -209,7 +204,6 @@ function DirectRegistration() {
     },
   ];
   const statusIndex = tabViewing - (isTDO ? 1 : 2);
-  console.log(statusIndex)
 
 
   const tableHeads = [
@@ -286,7 +280,6 @@ function DirectRegistration() {
       if (!response.ok) {
         throw new Error("Failed to download Excel file.");
       }
-      console.log(response);
       const blob = await response.blob();
       const link = document.createElement("a");
       const url = window.URL.createObjectURL(blob);
@@ -318,7 +311,6 @@ function DirectRegistration() {
   };
 
   const onFilter = async ({ clusterId, distriType }) => {
-    console.log(clusterId)
     try {
       setClusterId(clusterId);
       setDistriType(distriType);

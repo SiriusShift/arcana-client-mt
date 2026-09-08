@@ -230,6 +230,23 @@ const reportsApi = api
           method: "GET",
           params
         })
+      }),
+
+
+      getGizmoReports: builder.query({
+        query: (params) => ({
+          url: "get-gizmo-sales-reports",
+          method: "GET",
+          params
+        })
+      }),
+
+      getDepotSalesReports: builder.query({
+        query: (params) => ({
+          url: "get-depot-sales-reports",
+          method: "GET",
+          params
+        })
       })
     }),
   });
@@ -249,7 +266,7 @@ export const {
   useGetFreebieReportsQuery,
   useGetSamplingReportsQuery,
   useGetReturnReportsQuery,
-  useGetReplaceReportsQuery,  
+  useGetReplaceReportsQuery,
   useGetVoidTransactionsReportsQuery,
   useGetPaymentReportsQuery,
   useGetMrpRollbackReportsQuery,
@@ -262,5 +279,7 @@ export const {
   useGetInventoryAdjustmentReportsQuery,
   useGetMiscIssueReportsQuery,
   useGetMiscReceiptReportsQuery,
-  useGetConsolidatedReportsQuery
+  useGetConsolidatedReportsQuery,
+  useGetGizmoReportsQuery,
+  useGetDepotSalesReportsQuery
 } = reportsApi

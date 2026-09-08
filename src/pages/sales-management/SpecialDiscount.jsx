@@ -61,6 +61,8 @@ function SpecialDiscount() {
 		defaultValues: specialDiscountSchema.defaultValues,
 	});
 
+	console.log(watch())
+
 	//Disclosures
 	const {
 		isOpen: isFormOpen,
@@ -418,7 +420,7 @@ function SpecialDiscount() {
 							(userDetails?.roleName === "Admin"
 								? handleEditOpen
 								: userDetails?.roleName !== "Admin"
-									? approvalStatus !== "Approved" && handleEditOpen
+									? handleEditOpen
 									: null)
 						}
 						onHistory={onHistoryOpen}
@@ -533,6 +535,7 @@ function SpecialDiscount() {
 									{...field}
 									onChange={(e) => field.onChange(e.target.checked)}
 									checked={field.value}
+									disabled={true}
 								/>
 							)}
 						/>

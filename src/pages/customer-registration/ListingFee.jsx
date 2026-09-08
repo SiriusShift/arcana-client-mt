@@ -113,7 +113,7 @@ function ListingFee() {
 
   const tableHeads = [
     "Business Name",
-    "Business Address",
+    // "Business Address",
     "Branch Name",
     "Tx Number",
     "Balance",
@@ -122,7 +122,7 @@ function ListingFee() {
 
   const customOrderKeys = [
     "businessName",
-    "businessAddress",
+    // "businessAddress",
     "clientName",
     "listingFeeId",
     "total",
