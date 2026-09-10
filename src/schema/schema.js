@@ -122,7 +122,7 @@ export const productSchema = {
     productSubCategoryId: yup.object().required("Subcategory is required"),
     meatTypeId: yup.object().required("Meat type is required"),
     isVATable: yup.boolean(),
-    srpPrice: yup.number()
+    // srpPrice: yup.number()
     // itemImageLink: yup.mixed().nullable(),
   }),
   defaultValues: {

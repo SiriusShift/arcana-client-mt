@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import SearchFilterMixin from "../../components/mixins/SearchFilterMixin";
@@ -13,11 +14,12 @@ import SessionExpired from "../SessionExpired";
 // import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 
 function EditClientApproval() {
-  const [tabViewing, setTabViewing] = useState(1);
+  const userDetails = useSelector((state) => state.login.userDetails);
+
+  const [tabViewing, setTabViewing] = useState(userDetails?.roleName !== "TDO" ? 2 : 1);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [origin, setOrigin] = useState("");
   const [clientStatus, setClientStatus] = useState("Under review");
   const [count, setCount] = useState(0);
 
@@ -56,18 +58,25 @@ function EditClientApproval() {
     () => [
       {
         case: 1,
+        name: "For Approval",
+        registrationStatus: "For Approval",
+        // badge: notifications["rejectedClient"],
+      },
+      {
+        case: 2,
         name: "Pending",
         registrationStatus: "Under review",
         badge: notifications["pendingClient"],
       },
+
       {
-        case: 2,
+        case: 3,
         name: "Approved",
         registrationStatus: "Approved",
         // badge: notifications["approvedClient"],
       },
       {
-        case: 3,
+        case: 4,
         name: "Rejected",
         registrationStatus: "Rejected",
         // badge: notifications["rejectedClient"],
@@ -144,8 +153,6 @@ function EditClientApproval() {
 
         <SearchFilterMixin
           setSearch={setSearch}
-          selectOptions={selectOptions}
-          setSelectValue={setOrigin}
         />
         {isFetching ? (
           <CommonTableSkeleton compact />

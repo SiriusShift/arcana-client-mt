@@ -103,19 +103,19 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
 
         isRestoredRef.current = true; // always mark init as done, whether or not there was anything to restore
     }, []);
-    useEffect(() => {
-        if (!products?.items?.length) return;
+    // useEffect(() => {
+    //     if (!products?.items?.length) return;
 
-        const currentItems = watch("items");
+    //     const currentItems = watch("items");
 
-        currentItems.forEach((item, index) => {
-            const srp = products.items.find(
-                p => p.itemCode === item.itemCode?.itemCode
-            )?.latestSRP;
+    //     currentItems.forEach((item, index) => {
+    //         const srp = products.items.find(
+    //             p => p.itemCode === item.itemCode?.itemCode
+    //         )?.latestSRP;
 
-            setValue(`items.${index}.srp`, srp ?? 0);
-        });
-    }, [products]);
+    //         setValue(`items.${index}.srp`, srp ?? 0);
+    //     });
+    // }, [products]);
     // ✅ Sync form → Redux
     useEffect(() => {
         const subscription = watch((values) => {
@@ -388,10 +388,10 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     value?.uom || ""
                                 );
 
-                                setValue(
-                                    `items.${index}.srp`,
-                                    value?.latestSRP || ""
-                                );
+                                // setValue(
+                                //     `items.${index}.srp`,
+                                //     value?.latestSRP || ""
+                                // );
 
 
                                 return value;
@@ -425,7 +425,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                 />
                             )}
                         />
-
+                        {/* 
                         <Controller
                             control={control}
                             name={`items.${index}.srp`}
@@ -448,7 +448,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     helperText={errors?.items?.[index]?.price?.message || ""}
                                 />
                             )}
-                        />
+                        /> */}
 
                         {/* PRICE */}
                         <Controller

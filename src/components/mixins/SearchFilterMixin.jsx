@@ -1,6 +1,6 @@
-import { Box, MenuItem, TextField, debounce } from "@mui/material";
+import { Box, TextField, debounce } from "@mui/material";
 
-function SearchFilterMixin({ setSearch, selectOptions, setSelectValue }) {
+function SearchFilterMixin({ setSearch, selectOptions, setSelectValue, removeOrigin }) {
   const debouncedSetSearch = debounce((value) => {
     setSearch(value);
   }, 200);
@@ -19,22 +19,7 @@ function SearchFilterMixin({ setSearch, selectOptions, setSelectValue }) {
           autoComplete="off"
         />
       </Box>
-      <Box className="mixin__right">
-        <TextField
-          sx={{ width: "150px" }}
-          size="small"
-          label="Origin"
-          defaultValue={selectOptions?.[0]?.value}
-          select
-          onChange={(e) => setSelectValue(e.target.value)}
-        >
-          {selectOptions.map((item, i) => (
-            <MenuItem key={i} value={item.value}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Box>
+
     </Box>
     // </Paper>
   );

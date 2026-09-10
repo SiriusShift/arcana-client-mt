@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import SearchFilterMixin from "../../components/mixins/SearchFilterMixin";
@@ -13,7 +14,9 @@ import SessionExpired from "../SessionExpired";
 // import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 
 function AddItemApproval() {
-  const [tabViewing, setTabViewing] = useState(1);
+  const userDetails = useSelector((state) => state.login.userDetails);
+
+  const [tabViewing, setTabViewing] = useState(userDetails?.roleName !== "TDO" ? 2 : 1);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -22,7 +25,6 @@ function AddItemApproval() {
   const [count, setCount] = useState(0);
 
   const { notifications, isNotificationFetching } = useContext(AppContext);
-
   //Disclosures
   const {
     isOpen: isViewOpen,
@@ -39,12 +41,13 @@ function AddItemApproval() {
   const { data, isFetching, error } = useGetEditClientRequestQuery({
     Search: search,
     // Status: true,
-    RegistrationStatus: clientStatus,
-    isApproved: tabViewing === 2 ? true : false,
-    isRejected: tabViewing === 3 ? true : false,
+    // RegistrationStatus: clientStatus,
+    isApproved: tabViewing === 3 ? true : false,
+    isRejected: tabViewing === 4 ? true : false,
     Origin: origin,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+    forRequestor: userDetails?.roleName === "TDO" ? true : false
   }, {
     refetchOnMountOrArgChange: true
   });
@@ -56,24 +59,35 @@ function AddItemApproval() {
     () => [
       {
         case: 1,
+        name: "For Approval",
+        registrationStatus: "For Approval",
+        // badge: notifications["rejectedClient"],
+      },
+      {
+        case: 2,
         name: "Pending",
         registrationStatus: "Under review",
         badge: notifications["pendingClient"],
       },
+
       {
-        case: 2,
+        case: 3,
         name: "Approved",
         registrationStatus: "Approved",
         // badge: notifications["approvedClient"],
       },
       {
-        case: 3,
+        case: 4,
         name: "Rejected",
         registrationStatus: "Rejected",
         // badge: notifications["rejectedClient"],
       },
+
     ],
     [notifications]
+  ).filter((value) =>
+    userDetails?.roleName === "TDO" ? value.case === 1 || value.case === 3
+      : value.case !== 1
   );
 
   const selectOptions = [
@@ -144,8 +158,7 @@ function AddItemApproval() {
 
         <SearchFilterMixin
           setSearch={setSearch}
-          selectOptions={selectOptions}
-          setSelectValue={setOrigin}
+          remove
         />
         {isFetching ? (
           <CommonTableSkeleton compact />

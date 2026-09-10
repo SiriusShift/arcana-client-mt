@@ -65,6 +65,7 @@ function PriceModeTab() {
 
   console.log(location)
   const role = userDetails?.roleName;
+  const isTDO = role === "TDO";
   const isManager = role === "Manager";
   const isHead = role === "Head";
   const isAdmin = role === "Admin";
@@ -82,7 +83,7 @@ function PriceModeTab() {
 
   const isRegistration = location.pathname === "/approval/registration-approval" || location.pathname === "/customer-registration/registration"
 
-  const items = (((isHead || isAdmin) && !isRegistration) ? selectedRowData?.addItems : selectedRowData?.clientItems.map((item) => ({
+  const items = (((isHead || isAdmin || isTDO) && !isRegistration) ? selectedRowData?.addItems : selectedRowData?.clientItems.map((item) => ({
     ...item,
     srp: products?.items?.find((product) => product?.itemCode === item.itemCode)?.latestSRP
   }))) ?? [];
