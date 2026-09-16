@@ -86,7 +86,7 @@ function AddItemApproval() {
     ],
     [notifications]
   ).filter((value) =>
-    userDetails?.roleName === "TDO" ? value.case === 1 || value.case === 3
+    userDetails?.roleName === "TDO" ? value.case !== 2
       : value.case !== 1
   );
 

@@ -483,7 +483,7 @@ function TransactionItems({
                                     )
                                 })}
 
-                                {!disableFields && (
+                                {(!disableFields || fields.length > 15) && (
                                     <SecondaryButton
                                         endIcon={<Add />}
                                         sx={{ width: "fit-content", alignSelf: "end" }}

@@ -8,10 +8,33 @@ const formatPrice = (price) =>
     ? `₱ ${Number(price).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     : "—";
 
+// Same diff logic as the editable PriceMode tab, reused here for the read-only view.
+const formatPriceDiff = (price, srp) => {
+  const numericPrice = price != null ? Number(price) : null;
+  const numericSrp = srp != null ? Number(srp) : null;
+
+  const hasValues =
+    numericPrice != null &&
+    !Number.isNaN(numericPrice) &&
+    numericSrp != null &&
+    !Number.isNaN(numericSrp) &&
+    numericSrp !== 0;
+
+  if (!hasValues) return { text: "—", color: "text.secondary" };
+
+  const diff = numericPrice - numericSrp;
+  const diffPercent = (diff / numericSrp) * 100;
+  const sign = diff > 0 ? "+" : diff < 0 ? "-" : "";
+  const color = diff > 0 ? "success.main" : diff < 0 ? "error.main" : "text.secondary";
+
+  return {
+    text: `${sign}₱${Math.abs(diff).toFixed(2)} (${sign}${Math.abs(diffPercent).toFixed(1)}%)`,
+    color,
+  };
+};
+
 const ProductTable = ({ items, columns }) => {
   const gridTemplate = `1fr 2fr ${columns.slice(2).map(() => "1fr").join(" ")}`;
-
-  console.log(items)
 
   return (
     <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, overflow: "hidden", mt: 1 }}>
@@ -33,7 +56,24 @@ const ProductTable = ({ items, columns }) => {
           <Typography sx={{ fontSize: 13, fontFamily: "monospace" }}>{item.itemCode ?? "—"}</Typography>
           <Typography sx={{ fontSize: 13 }}>{item.itemDescription || "—"}</Typography>
           {columns.slice(2).map((col) => {
-            const key = col === "Price From" ? "priceFrom" : col === "Price To" ? "priceTo" : col === "Srp" ? "srp" : "price";
+            if (col === "Price Diff") {
+              // Compare against Price To for the "changed" table, otherwise Price
+              const priceKey = item.priceTo != null ? "priceTo" : "price";
+              const { text, color } = formatPriceDiff(item[priceKey], item.srp);
+
+              return (
+                <Typography key={col} sx={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: "tabular-nums", color }}>
+                  {text}
+                </Typography>
+              );
+            }
+
+            const key =
+              col === "Price From" ? "priceFrom"
+                : col === "Price To" ? "priceTo"
+                  : col === "SRP" ? "srp"
+                    : "price";
+
             return (
               <Typography key={col} sx={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
                 {formatPrice(item[key])}
@@ -47,8 +87,8 @@ const ProductTable = ({ items, columns }) => {
 };
 
 const COLS = {
-  standard: ["Item Code", "Description", "Srp", "Price"],
-  changed: ["Item Code", "Description", "Price From", "Price To"],
+  standard: ["Item Code", "Description", "SRP", "Price", "Price Diff"],
+  changed: ["Item Code", "Description", "SRP", "Price From", "Price To", "Price Diff"],
   removed: ["Item Code", "Description", "Price From"],
 };
 
@@ -63,7 +103,6 @@ function PriceModeTab() {
   const selectedRowData = useSelector((state) => state.selectedRow.value);
   const userDetails = useSelector((state) => state.login.userDetails);
 
-  console.log(location)
   const role = userDetails?.roleName;
   const isTDO = role === "TDO";
   const isManager = role === "Manager";
@@ -83,16 +122,21 @@ function PriceModeTab() {
 
   const isRegistration = location.pathname === "/approval/registration-approval" || location.pathname === "/customer-registration/registration"
 
-  const items = (((isHead || isAdmin || isTDO) && !isRegistration) ? selectedRowData?.addItems : selectedRowData?.clientItems.map((item) => ({
-    ...item,
-    srp: products?.items?.find((product) => product?.itemCode === item.itemCode)?.latestSRP
-  }))) ?? [];
-  const changedItems = selectedRowData?.changeItemPrices ?? [];
+  // Attaches SRP from the products catalog whenever an item doesn't already carry one
+  const withSrp = (list = []) =>
+    list.map((item) => ({
+      ...item,
+      srp: item.srp ?? products?.items?.find((product) => product?.itemCode === item.itemCode)?.latestSRP,
+    }));
+
+  const items = withSrp(
+    (isHead || isAdmin || isTDO) && !isRegistration
+      ? selectedRowData?.addItems
+      : selectedRowData?.clientItems
+  );
+  const changedItems = withSrp(selectedRowData?.changeItemPrices);
   const removedItems = selectedRowData?.removeItems ?? [];
 
-  console.log(items)
-
-  console.log(isRetail)
   return (
     <Box className="viewRegistrationModal__priceMode">
 

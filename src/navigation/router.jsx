@@ -42,6 +42,7 @@ import ProtectedRoutes from "./ProtectedRoutes";
 import AddItemApproval from "../pages/approval/AddItemApproval";
 import EditItemApproval from "../pages/approval/EditClientApproval";
 import FreebieApproval from "../pages/approval/FreebieApproval";
+import SalesTransactionApproval from "../pages/approval/SalesTransactionApproval";
 import SamplingApproval from "../pages/approval/SamplingApproval";
 import Attendance from "../pages/check-in";
 import Cheque from "../pages/cheque";
@@ -504,6 +505,10 @@ export const router = createBrowserRouter([
           {
             path: "edit-client-approval",
             element: <EditItemApproval />
+          },
+          {
+            path: "sales-transaction-approval",
+            element: <SalesTransactionApproval />
           }
         ],
       },

@@ -42,6 +42,33 @@ const salesTransactionApi = api
         invalidatesTags: ["Sales Transaction", "Clients POS"],
       }),
 
+      getSalesTransactionRequest: builder.query({
+        query: (params) => ({
+          url: "/sales-transaction/requests",
+          method: "GET",
+          params
+        }),
+        provideTags: ["Sales Transaction"],
+        transformResponse: (response) => response.value,
+      }),
+
+      approveSalesTransactionRequest: builder.mutation({
+        query: (id) => ({
+          url: `/sales-transaction/requests/${id}/approve`,
+          method: "PUT",
+        }),
+        invalidatesTags: ["Sales Transaction"]
+      }),
+
+      rejectSalesTransactionRequest: builder.mutation({
+        query: ({ body, id }) => ({
+          url: `/sales-transaction/requests/${id}/reject`,
+          method: "PUT",
+          body
+        }),
+        invalidatesTags: ["Sales Transaction"]
+      }),
+
       // getAllSalesTransaction: builder.query({
       //   query: (params) => ({
       //     url: "/sales-transaction/page",
@@ -123,4 +150,7 @@ export const {
   useCreateSalesTransactionMutation,
   useLazyGetSalesTransactionByIdQuery,
   useGetAllMoveOrderTransactionQuery,
+  useGetSalesTransactionRequestQuery,
+  useRejectSalesTransactionRequestMutation,
+  useApproveSalesTransactionRequestMutation
 } = salesTransactionApi;

@@ -12,6 +12,7 @@ import {
     Radio,
     RadioGroup,
     Stack,
+    Switch,
     TextField,
     Typography
 } from "@mui/material";
@@ -37,6 +38,43 @@ import {
 import { useGetAllPriceModeForClientsQuery } from "../../../features/setup/api/priceModeSetupApi";
 import { useGetAllProductsQuery } from "../../../features/setup/api/productsApi";
 import useSnackbar from "../../../hooks/useSnackbar";
+
+// Shows how a Price compares to its SRP — absolute peso difference and % difference.
+// Purely presentational: derives everything from the two values it's given.
+// Shows how a Price compares to its SRP — absolute peso difference and % difference.
+// Rendered as a disabled TextField purely for visual consistency with the row;
+// it's not a real form field and nothing is submitted from it.
+const ItemPriceDifference = ({ price, srp }) => {
+    const numericPrice = price === "" || price == null ? null : Number(price);
+    const numericSrp = srp === "" || srp == null ? null : Number(srp);
+
+    const hasValues =
+        numericPrice != null &&
+        !Number.isNaN(numericPrice) &&
+        numericSrp != null &&
+        !Number.isNaN(numericSrp) &&
+        numericSrp !== 0;
+
+    let displayValue = "—";
+
+    if (hasValues) {
+        const diff = numericPrice - numericSrp;
+        const diffPercent = (diff / numericSrp) * 100;
+        const sign = diff > 0 ? "+" : diff < 0 ? "-" : "";
+
+        displayValue = `${sign}₱${Math.abs(diff).toFixed(2)} (${sign}${Math.abs(diffPercent).toFixed(1)}%)`;
+    }
+
+    return (
+        <TextField
+            label="Price Diff"
+            size="small"
+            value={displayValue}
+            disabled
+            sx={{ width: 170 }}
+        />
+    );
+};
 
 const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
     const [originalItems, setOriginalItems] = useState()
@@ -83,13 +121,13 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
     const watchItems = watch("items");
     useEffect(() => {
         const { priceModeId,
-            // isVATable, 
+            isVATable,
 
             items = [] } = priceModeStore;
 
         if (priceModeId != null) {
             setValue("priceMode", priceModeId);
-            // setValue("isVATable", isVATable);
+            setValue("isVATable", isVATable);
         }
 
         if (items.length) {
@@ -103,19 +141,19 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
 
         isRestoredRef.current = true; // always mark init as done, whether or not there was anything to restore
     }, []);
-    // useEffect(() => {
-    //     if (!products?.items?.length) return;
+    useEffect(() => {
+        if (!products?.items?.length) return;
 
-    //     const currentItems = watch("items");
+        const currentItems = watch("items");
 
-    //     currentItems.forEach((item, index) => {
-    //         const srp = products.items.find(
-    //             p => p.itemCode === item.itemCode?.itemCode
-    //         )?.latestSRP;
+        currentItems.forEach((item, index) => {
+            const srp = products.items.find(
+                p => p.itemCode === item.itemCode?.itemCode
+            )?.latestSRP;
 
-    //         setValue(`items.${index}.srp`, srp ?? 0);
-    //     });
-    // }, [products]);
+            setValue(`items.${index}.srp`, srp ?? 0);
+        });
+    }, [products]);
     // ✅ Sync form → Redux
     useEffect(() => {
         const subscription = watch((values) => {
@@ -303,11 +341,11 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                         </RadioGroup>
                     </Box>
                 )}
-                {/* <Box className="priceMode__mode">
+                <Box className="priceMode__mode">
                     <Typography className="priceMode__mode__title">
                         Tax
                     </Typography>
-                    
+
                     <Controller
                         control={control}
                         name="isVATable"
@@ -326,7 +364,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                             />
                         )}
                     />
-                </Box> */}
+                </Box>
             </Box>
 
             {/* PRODUCTS */}
@@ -388,10 +426,10 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     value?.uom || ""
                                 );
 
-                                // setValue(
-                                //     `items.${index}.srp`,
-                                //     value?.latestSRP || ""
-                                // );
+                                setValue(
+                                    `items.${index}.srp`,
+                                    value?.latestSRP || ""
+                                );
 
 
                                 return value;
@@ -425,7 +463,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                 />
                             )}
                         />
-                        {/* 
+
                         <Controller
                             control={control}
                             name={`items.${index}.srp`}
@@ -444,11 +482,11 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     disabled fixedDecimalScale
                                     prefix="₱ "
                                     sx={{ width: 170 }}
-                                    error={!!errors?.items?.[index]?.price}
-                                    helperText={errors?.items?.[index]?.price?.message || ""}
+                                    error={!!errors?.items?.[index]?.srp}
+                                    helperText={errors?.items?.[index]?.srp?.message || ""}
                                 />
                             )}
-                        /> */}
+                        />
 
                         {/* PRICE */}
                         <Controller
@@ -490,6 +528,12 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     helperText={errors?.items?.[index]?.price?.message || ""}
                                 />
                             )}
+                        />
+
+                        {/* PRICE VS SRP DIFFERENCE */}
+                        <ItemPriceDifference
+                            price={watchItems?.[index]?.price}
+                            srp={watchItems?.[index]?.srp}
                         />
 
                         {/* REMOVE */}

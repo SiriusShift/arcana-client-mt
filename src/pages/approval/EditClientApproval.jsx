@@ -16,7 +16,7 @@ import SessionExpired from "../SessionExpired";
 function EditClientApproval() {
   const userDetails = useSelector((state) => state.login.userDetails);
 
-  const [tabViewing, setTabViewing] = useState(userDetails?.roleName !== "TDO" ? 2 : 1);
+  const [tabViewing, setTabViewing] = useState(userDetails?.roleName !== "Head" ? 2 : 1);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -41,10 +41,12 @@ function EditClientApproval() {
   const { data, isFetching, error } = useGetEditClientRequestQuery({
     Search: search,
     // Status: true,
-    isApproved: tabViewing === 2 ? true : false,
-    isRejected: tabViewing === 3 ? true : false,
+    isApproved: tabViewing === 3 ? true : false,
+    isRejected: tabViewing === 4 ? true : false,
     PageNumber: page + 1,
     PageSize: rowsPerPage,
+    forRequestor: userDetails?.roleName === "Head" ? true : false
+
   }, {
     refetchOnMountOrArgChange: true
   });
@@ -83,6 +85,9 @@ function EditClientApproval() {
       },
     ],
     [notifications]
+  ).filter((value) =>
+    userDetails?.roleName === "Head" ? value.case !== 2
+      : value.case !== 1
   );
 
   const selectOptions = [

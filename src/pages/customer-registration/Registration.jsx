@@ -213,7 +213,7 @@ function DirectRegistration() {
     "Distribution Type",
     "Business Address",
     "Origin",
-    // "Vatable"
+    "Vatable"
   ];
 
   const customOrderKeys = [
@@ -223,7 +223,7 @@ function DirectRegistration() {
     "distriType",
     "businessAddress",
     "origin",
-    // "isVATable"
+    "isVATable"
   ];
 
   const nestedProperty = {

@@ -1,8 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LocalMall } from "@mui/icons-material";
-import { Box, TextField } from "@mui/material";
+import { Box, Switch, TextField, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { NumericFormat } from "react-number-format";
 import { useSelector } from "react-redux";
 import CommonDrawer from "../../components/CommonDrawer";
 import CommonTable from "../../components/CommonTable";
@@ -64,7 +65,7 @@ function Products() {
     "Product Sub Category",
     "Meat Type",
     // "Has Image",
-    // "Vatable"
+    "Vatable"
   ];
 
   const customOrderKeys = [
@@ -75,7 +76,7 @@ function Products() {
     "productSubCategoryName",
     "meatType",
     // "itemImageLink",
-    // "isVATable"
+    "isVATable"
   ];
 
   const attachKey = "itemImageLink";
@@ -125,7 +126,7 @@ function Products() {
         itemCode,
         itemDescription,
         // isVATable,
-        // srpPrice
+        srpPrice
       } = data;
 
       formData.append("itemCode", itemCode);
@@ -134,7 +135,7 @@ function Products() {
       formData.append("productSubCategoryId", productSubCategoryId);
       formData.append("meatTypeId", meatTypeId);
       // formData.append("isVATable", isVATable);
-      // formData.append("SrpPrice", srpPrice);
+      formData.append("SrpPrice", srpPrice);
 
       // data.itemImageLink &&
       //   formData.append("itemImageLink", data.itemImageLink);
@@ -222,7 +223,7 @@ function Products() {
       )
     );
     // setValue("isVATable", editData.isVATable);
-    // setValue("srpPrice", editData.latestSRP);
+    setValue("srpPrice", editData.latestSRP);
 
     // setValue("itemImageLink", editData.itemImageLink);
   };
@@ -383,7 +384,7 @@ function Products() {
               />
             )}
           />
-          {/* <Controller
+          <Controller
             control={control}
             name={"srpPrice"}
             render={({ field: { onChange, onBlur, value, ref } }) => (
@@ -433,7 +434,7 @@ function Products() {
                 />
               </div>
             )}
-          /> */}
+          />
           {/* 
           <Controller
             control={control}

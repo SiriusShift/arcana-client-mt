@@ -1435,7 +1435,7 @@ function DirectRegisterForm({
         }
         // onClose={onCancelConfirmOpen}
         onClose={isDirty ? onCancelConfirmOpen : handleDrawerClose}
-        width="1000px"
+        width="1200px"
         responsiveBreakpoint="999px"
         paddingSmall
         // noRibbon

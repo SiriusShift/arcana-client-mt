@@ -125,7 +125,7 @@ const approverApi = api
         }),
         // transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
-        invalidatesTags: ["Modules"],
+        providesTags: ["Modules"],
       }),
 
       getApproverModuleCandidates: builder.query({
@@ -135,7 +135,7 @@ const approverApi = api
         }),
         // transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
-        invalidatesTags: ["Approver"],
+        providesTags: ["Approver"],
       }),
 
       getApproversOfModule: builder.query({
@@ -145,7 +145,7 @@ const approverApi = api
         }),
         // transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
-        invalidatesTags: ["Approver"],
+        providesTags: ["Approver"],
       }),
 
       updateApproversOfModule: builder.mutation({

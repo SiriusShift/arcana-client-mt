@@ -496,6 +496,14 @@ export const navigationData = [
         icon: "Inventory",
         description: "Approval and rejection of editing of client requests",
         // notifications: "pendingSpDiscount",
+      },
+      {
+        id: 6,
+        name: "Sales Transaction Approval",
+        path: "/approval/sales-transaction-approval",
+        icon: "Inventory",
+        description: "Approval and rejection of sales transaction",
+        // notifications: "pendingSpDiscount",
       }
       // {
       //   id: 5,

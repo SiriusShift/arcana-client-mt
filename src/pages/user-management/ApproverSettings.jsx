@@ -57,6 +57,8 @@ function Approver() {
 
   const isOtherExpenses = selectedRowData?.name === "Other Expenses Approval";
 
+  const isSalesTransactionApproval =
+    selectedRowData?.name === "Transaction Approval";
   //React Hook Form
   const {
     handleSubmit,
@@ -70,6 +72,8 @@ function Approver() {
     mode: "onChange",
     defaultValues: approverSettingsSchema.defaultValues,
   });
+
+  console.log(errors)
 
   const {
     fields: approverFields,
@@ -168,7 +172,7 @@ function Approver() {
         await updateApprovers({
           moduleName: selectedRowData?.key,
           body: {
-            approvers: isClientEditApproval
+            approvers: (isClientEditApproval || isSalesTransactionApproval)
               ? values.approvers.map((item) => ({
                 userId: item.userId?.userId,
               }))
@@ -293,16 +297,19 @@ function Approver() {
 
     console.log(existing)
 
-    if (isClientEditApproval) {
+    if (isClientEditApproval || isSalesTransactionApproval) {
+      const candidateSource = isSalesTransactionApproval
+        ? headCandidates
+        : managerCandidates;
+
       const managerRows =
         existing.length > 0
           ? existing.map((m) => ({
-            userId: findIn(managerCandidates, m.userId ?? m.id),
+            userId: findIn(candidateSource, m.userId ?? m.id),
           }))
-          : [{ userId: null }]; setValue(
-            "approvers",
-            managerRows, { shouldValidate: true }
-          );
+          : [{ userId: null }];
+
+      setValue("approvers", managerRows, { shouldValidate: true });
       return;
     }
 
@@ -366,8 +373,8 @@ function Approver() {
           onClose={handleDrawerClose}
           drawerHeader="Approver Settings"
           onSubmit={handleSubmit(onSubmit)}
-          disableSubmit={!isValid}
-          isLoading={approverModuleLoading || moduleApproversLoading}
+          disableSubmit={!isValid || approversUpdating || otherExpenseApproversUpdating}
+          isLoading={approverModuleLoading || moduleApproversLoading || otherExpenseApproversUpdating || approversUpdating}
           width="1000px"
         >
           <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
@@ -394,7 +401,7 @@ function Approver() {
           />
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {!isClientEditApproval && (<>            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
+            {!(isClientEditApproval || isSalesTransactionApproval) && (<>            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
               List of Approvers With Territory
             </Typography>
 
@@ -450,7 +457,7 @@ function Approver() {
                       )}
                     />
 
-                    {!(isClientEditApproval) && <ControlledAutocomplete
+                    {!(isClientEditApproval && isSalesTransactionApproval) && <ControlledAutocomplete
                       name={`approversWithTerritory[${index}].territory`}
                       control={control}
                       options={territoryData?.territories || []}
@@ -483,7 +490,7 @@ function Approver() {
             </>)}
 
 
-            {(isOtherExpenses || isClientEditApproval) && <>            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
+            {(isOtherExpenses || isClientEditApproval || isSalesTransactionApproval) && <>            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
               List of Approvers Without Territory
             </Typography>            <Box
               sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
@@ -502,8 +509,11 @@ function Approver() {
                     <ControlledAutocomplete
                       name={`approvers[${index}].userId`}
                       control={control}
-                      options={moduleApprovers?.approvers?.managers || moduleApprovers?.approvers || []}
-                      getOptionLabel={(option) => option?.fullname || option?.fullName || ""}
+                      options={
+                        isSalesTransactionApproval
+                          ? headCandidates
+                          : moduleApprovers?.approvers?.managers || moduleApprovers?.approvers || []
+                      } getOptionLabel={(option) => option?.fullname || option?.fullName || ""}
                       // getOptionDisabled={(option) => {
                       //   const approversWithLimit = watch("approversWithLimit");
                       //   const approversWithLimitDigit = watch("approversWithLimitDigit");
