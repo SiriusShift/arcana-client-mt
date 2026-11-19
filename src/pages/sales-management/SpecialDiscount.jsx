@@ -340,6 +340,7 @@ function SpecialDiscount() {
 		onFormOpen();
 	};
 
+
 	// UseEffect
 	useEffect(() => {
 		const foundItem = spDiscountNavigation.find(
@@ -416,7 +417,6 @@ function SpecialDiscount() {
 						setPage={setPage}
 						// onEdit={tabViewing === 2 ? null : handleEditOpen}
 						onEdit={
-							approvalStatus !== "Voided" &&
 							(userDetails?.roleName === "Admin"
 								? handleEditOpen
 								: userDetails?.roleName !== "Admin"
@@ -425,7 +425,7 @@ function SpecialDiscount() {
 						}
 						onHistory={onHistoryOpen}
 						onCancel={tabViewing === 1 ? onCancel : null}
-						onVoid={tabViewing === 3 && approvalStatus !== "Voided" ? onVoid : null}
+						onVoid={tabViewing === 2 ? onVoid : null}
 						mt={"-20px"}
 						moveNoDataUp
 					/>

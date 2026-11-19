@@ -1,6 +1,3 @@
-import { IconButton, Menu, MenuItem } from "@mui/material";
-import { useRef } from "react";
-import useDisclosure from "../../hooks/useDisclosure";
 import {
   Archive,
   Attachment,
@@ -8,11 +5,15 @@ import {
   Block,
   Cancel,
   CheckCircle,
+  ContentCopy,
+  CopyAll,
   Delete,
+  Download,
   Edit,
   FileCopy,
   History,
   HowToReg,
+  Logout,
   Map,
   MonetizationOn,
   More,
@@ -24,7 +25,6 @@ import {
   Print,
   Receipt,
   RemoveCircle,
-  Logout,
   RequestPage,
   Restore,
   ShoppingCart,
@@ -32,10 +32,10 @@ import {
   Update,
   Visibility,
   ZoomIn,
-  Download,
-  ContentCopy,
-  CopyAll,
 } from "@mui/icons-material";
+import { IconButton, Menu, MenuItem } from "@mui/material";
+import { useRef } from "react";
+import useDisclosure from "../../hooks/useDisclosure";
 
 function CommonActions({
   iconColor,
@@ -80,6 +80,7 @@ function CommonActions({
   onDownload,
   onReplace,
   onNoReplace,
+  onSrpHistory,
   disableActions,
   item,
   status,
@@ -169,6 +170,8 @@ function CommonActions({
       onReplace();
     } else if (action === "noReplace") {
       onNoReplace();
+    } else if (action === "srp_history") {
+      onSrpHistory();
     }
 
     onClose();
@@ -596,6 +599,22 @@ function CommonActions({
             History
           </MenuItem>
         )}
+
+        {onSrpHistory && (
+          <MenuItem
+            className="actionsMenuItem"
+            onClick={() => {
+              handleAction("srp_history");
+            }}
+            disabled={
+              disableActions ? disableActions?.includes("srp_history") : false
+            }
+          >
+            <History />
+            SRP History
+          </MenuItem>
+        )}
+
 
         {onPrintTTA && (
           <MenuItem

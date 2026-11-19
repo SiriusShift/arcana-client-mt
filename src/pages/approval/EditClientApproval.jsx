@@ -105,14 +105,18 @@ function EditClientApproval() {
     },
   ];
 
+  const isRejectedTab = clientStatus === "Rejected";
+
   const tableHeads = [
     "Client Name",
     "Requestor",
+    ...(isRejectedTab ? ["Reason"] : []),
   ];
 
   const customOrderKeys = [
     "clientName",
     "requestor",
+    ...(isRejectedTab ? ["rejectionReason"] : []),
   ];
 
   const nestedProperty = {
@@ -163,7 +167,7 @@ function EditClientApproval() {
           <CommonTableSkeleton compact />
         ) : (
           <CommonTable
-            mapData={data.editRequests}
+            mapData={data?.editRequests}
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             nestedProperty={nestedProperty}

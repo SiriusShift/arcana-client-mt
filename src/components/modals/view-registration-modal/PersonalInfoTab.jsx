@@ -1,11 +1,43 @@
 import { Box, Typography } from "@mui/material";
-import moment from "moment";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { formatPhoneNumber } from "../../../utils/CustomFunctions";
+import ComparedField from "./ComparedField";
+
+const formatAddress = (address, suffix = "") => {
+  if (!address) return "";
+  // A null "To" value means unchanged, so fall back to the "From" value.
+  const getPart = (key) =>
+    suffix === "To"
+      ? address[`${key}To`] ?? address[`${key}From`]
+      : address[`${key}${suffix}`];
+
+  const houseNumber = getPart("houseNumber");
+  const streetName = getPart("streetName");
+  const barangay = suffix ? getPart("barangay") : address.barangayName;
+  const city = getPart("city");
+  const province = getPart("province");
+
+  return `${houseNumber ? `#${houseNumber} ` : ""}${streetName ? `${streetName} ` : ""
+    }${barangay ? `${barangay}, ` : ""}${city ? `${city}, ` : ""}${province || ""}`;
+};
 
 function PersonalInfoTab() {
+  const location = useLocation();
   const selectedRowData = useSelector((state) => state.selectedRow.value);
-  const isRepresentativeRequirements = selectedRowData?.attachments?.length > 4;
+  const { clientInformation, ...rowData } = selectedRowData ?? {};
+  const data = { ...rowData, ...clientInformation };
+
+  const isEditClient = location.pathname === "/approval/edit-client-approval";
+
+  // On edit client approval, compare the From/To values; elsewhere always show the regular value.
+  // The regular value is also shown when the request has no From/To for that field.
+  const compareProps = (from, to, regular) =>
+    isEditClient ? { from, to, isCompared: true, value: regular } : { value: regular };
+
+  // Edit requests may not carry the current value, so leave it undefined there to fall back to NO CHANGES.
+  const orNA = (value) => value || (isEditClient ? undefined : "N/A");
+  const formatContactNumber = (value) => (value ? `+63 ${formatPhoneNumber(value)}` : value);
 
   return (
     <Box className="viewRegistrationModal__personalInfo">
@@ -13,7 +45,7 @@ function PersonalInfoTab() {
         <Typography className="viewRegistrationModal__personalInfo__header__label">
           Requested by:{" "}
         </Typography>
-        <Typography>{selectedRowData?.requestor}</Typography>
+        <Typography>{data?.requestor}</Typography>
       </Box>
 
       <Box className="viewRegistrationModal__personalInfo__content">
@@ -21,138 +53,85 @@ function PersonalInfoTab() {
           Customer&apos;s Information
         </Typography>
         <Box className="viewRegistrationModal__personalInfo__content__fields">
-                    <Box className="viewRegistrationModal__personalInfo__content__fields__item">
+          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
               Customer Code:
             </Typography>
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.id}
+              {data?.id}
             </Typography>
           </Box>
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Business Name:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.businessName}
-            </Typography>
-          </Box>
+          <ComparedField
+            section="personalInfo"
+            label="Business Name"
+            {...compareProps(data?.businessNameFrom, data?.businessNameTo, data?.businessName)}
+          />
 
           {/* <Box className="viewRegistrationModal__personalInfo__content__fields__item">
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
               Birthday:
             </Typography>
             <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {moment(selectedRowData?.dateOfBirth)
+              {moment(data?.dateOfBirth)
                 .format("MMMM D, YYYY")
                 ?.toUpperCase()}
             </Typography>
           </Box> */}
 
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Contact Number:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              +63 {formatPhoneNumber(selectedRowData?.phoneNumber)}
-            </Typography>
-          </Box>
+          <ComparedField
+            section="personalInfo"
+            label="Contact Number"
+            {...compareProps(
+              formatContactNumber(data?.phoneNumberFrom),
+              formatContactNumber(data?.phoneNumberTo),
+              isEditClient
+                ? formatContactNumber(data?.phoneNumber)
+                : `+63 ${formatPhoneNumber(data?.phoneNumber) ?? ""}`
+            )}
+          />
 
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Email Address:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.emailAddress || "N/A"}
-            </Typography>
-          </Box>
+          <ComparedField
+            section="personalInfo"
+            label="Email Address"
+            {...compareProps(
+              data?.emailAddressFrom,
+              data?.emailAddressTo,
+              orNA(data?.emailAddress)
+            )}
+          />
 
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Tin Number:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.tinNumber || "N/A"}
-            </Typography>
-          </Box>
+          <ComparedField
+            section="personalInfo"
+            label="Tin Number"
+            {...compareProps(data?.tinNumberFrom, data?.tinNumberTo, orNA(data?.tinNumber))}
+          />
 
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Business Address:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {`${
-                selectedRowData?.businessAddress?.houseNumber
-                  ? `#${selectedRowData.businessAddress.houseNumber} `
-                  : ""
-              }${
-                selectedRowData?.businessAddress?.streetName
-                  ? `${selectedRowData.businessAddress.streetName} `
-                  : ""
-              }${
-                selectedRowData?.businessAddress?.barangayName
-                  ? `${selectedRowData.businessAddress.barangayName}, `
-                  : ""
-              }${
-                selectedRowData?.businessAddress?.city
-                  ? `${selectedRowData.businessAddress.city}, `
-                  : ""
-              }${
-                selectedRowData?.businessAddress?.province
-                  ? `${selectedRowData.businessAddress.province}`
-                  : ""
-              }`}
-              {/* #{selectedRowData?.businessAddress?.houseNumber}{" "}
-              {selectedRowData?.businessAddress?.streetName}{" "}
-              {selectedRowData?.businessAddress?.barangayName},{" "}
-              {selectedRowData?.businessAddress?.city},{" "}
-              {selectedRowData?.businessAddress?.province} */}
-            </Typography>
-          </Box>
+          <ComparedField
+            section="personalInfo"
+            label="Business Address"
+            {...compareProps(
+              formatAddress(data?.businessAddress, "From"),
+              formatAddress(data?.businessAddress, "To"),
+              // No current address on edit requests, so the comparison falls back to NO CHANGES
+              formatAddress(data?.businessAddress) || undefined
+            )}
+          />
+          <ComparedField
+            section="personalInfo"
+            label="Branch Name"
+            {...compareProps(data?.branchNameFrom, data?.branchNameTo, data?.branchName ?? data?.clientName)}
+          />
+          <ComparedField
+            section="personalInfo"
+            label="Delivery Address"
+            {...compareProps(
+              formatAddress(data?.deliveryAddress, "From"),
+              formatAddress(data?.deliveryAddress, "To"),
+              // No current address on edit requests, so the comparison falls back to NO CHANGES
+              formatAddress(data?.deliveryAddress) || undefined
+            )}
+          />
 
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Branch Name:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {selectedRowData?.branchName}
-            </Typography>
-          </Box>
-
-          <Box className="viewRegistrationModal__personalInfo__content__fields__item">
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__label">
-              Delivery Address:
-            </Typography>
-            <Typography className="viewRegistrationModal__personalInfo__content__fields__item__value">
-              {`${
-                selectedRowData?.deliveryAddress?.houseNumber
-                  ? `#${selectedRowData.deliveryAddress.houseNumber} `
-                  : ""
-              }${
-                selectedRowData?.deliveryAddress?.streetName
-                  ? `${selectedRowData.deliveryAddress.streetName} `
-                  : ""
-              }${
-                selectedRowData?.deliveryAddress?.barangayName
-                  ? `${selectedRowData.deliveryAddress.barangayName}, `
-                  : ""
-              }${
-                selectedRowData?.deliveryAddress?.city
-                  ? `${selectedRowData.deliveryAddress.city}, `
-                  : ""
-              }${
-                selectedRowData?.deliveryAddress?.province
-                  ? `${selectedRowData.deliveryAddress.province}`
-                  : ""
-              }`}
-              {/* #{selectedRowData?.businessAddress?.houseNumber}{" "}
-              {selectedRowData?.businessAddress?.streetName}{" "}
-              {selectedRowData?.businessAddress?.barangayName},{" "}
-              {selectedRowData?.businessAddress?.city},{" "}
-              {selectedRowData?.businessAddress?.province} */}
-            </Typography>
-          </Box>
-         
           {/* {isRepresentativeRequirements && (
             <Box className="viewRegistrationModal__personalInfo__content__fields__itemWrapped">
               <Typography className="viewRegistrationModal__personalInfo__content__fields__itemWrapped__label">
@@ -160,7 +139,7 @@ function PersonalInfoTab() {
                 Representative:
               </Typography>
               <Typography className="viewRegistrationModal__personalInfo__content__fields__itemWrapped__value">
-                {selectedRowData?.authorizedRepresentative}
+                {data?.authorizedRepresentative}
               </Typography>
             </Box>
           )} */}

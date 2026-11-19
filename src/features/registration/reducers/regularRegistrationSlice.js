@@ -32,7 +32,7 @@ export const regularRegistrationSlice = createSlice({
         isValid: false,
         changedItems: [],  // items with modified price
         removedItems: [],  // items that were removed
-        isVATable: false
+        isVATable: true
       },
       isAgree: false,
       toggleFees: false,

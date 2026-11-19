@@ -69,6 +69,14 @@ const salesTransactionApi = api
         invalidatesTags: ["Sales Transaction"]
       }),
 
+      cancelSalesTransactionRequest: builder.mutation({
+        query: (id) => ({
+          url: `/sales-transaction/requests/${id}/cancel`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["Sales Transaction"]
+      }),
+
       // getAllSalesTransaction: builder.query({
       //   query: (params) => ({
       //     url: "/sales-transaction/page",
@@ -152,5 +160,6 @@ export const {
   useGetAllMoveOrderTransactionQuery,
   useGetSalesTransactionRequestQuery,
   useRejectSalesTransactionRequestMutation,
-  useApproveSalesTransactionRequestMutation
+  useApproveSalesTransactionRequestMutation,
+  useCancelSalesTransactionRequestMutation
 } = salesTransactionApi;

@@ -103,9 +103,15 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, module, ...props
   ]
     .filter((item) => {
       if (
-        isAddItemsApproval || isEditClientApproval
+        isAddItemsApproval
       ) {
         return item.label === "Price Mode";
+      }
+
+      if (
+        isEditClientApproval
+      ) {
+        return (item.label !== "Other Expenses" && item.label !== "Listing Fee");
       }
 
       return true;
@@ -276,7 +282,7 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, module, ...props
   const handleReject = async () => {
     try {
       if ((isHead && !isRegistrationApproval) || isManager) {
-        await putRejectItemRequest(selectedRowData?.id).unwrap()
+        await putRejectItemRequest({ id: selectedRowData?.id, ...(reason && { body: { reason } }) }).unwrap()
       } else {
         await putRejectClient({
           id: selectedRowData?.requestId,
@@ -341,10 +347,10 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, module, ...props
 
   useEffect(() => {
     if (!open) return;
-    if (isAddItemsApproval || isEditClientApproval) {
+    if (isAddItemsApproval) {
       setActiveTab("Price Mode");
     }
-  }, [isAddItemsApproval, isEditClientApproval, open]);
+  }, [isAddItemsApproval, open]);
 
   return (
     <>
@@ -387,11 +393,11 @@ function ViewRegistrationDetailsModal({ approval, clientStatus, module, ...props
                 gap: "10px",
                 // justifyContent: "end",
                 justifyContent:
-                  (activeTab === "Personal Info" || isEditClientApproval || isAddItemsApproval) ? "end" : "space-between",
+                  (activeTab === "Personal Info" || isAddItemsApproval) ? "end" : "space-between",
                 flex: 1,
               }}
             >
-              {!(isEditClientApproval || isAddItemsApproval || activeTab === "Personal Info") && (
+              {!(isAddItemsApproval || activeTab === "Personal Info") && (
                 <DangerButton onClick={handleBack}>Back</DangerButton>
               )}
               {/* <Box

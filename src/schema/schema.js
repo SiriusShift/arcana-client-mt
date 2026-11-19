@@ -56,6 +56,12 @@ export const userAccountSchema = {
       then: (schema) => schema.required("Territory is required"),
       otherwise: (schema) => schema.nullable(),
     }),
+    distributionTypeId: yup.object().when("userRoleId", {
+      is: (userRoleId) =>
+        (userRoleId && userRoleId?.roleName === "Manager"),
+      then: (schema) => schema.required("Distribution is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
     charging: yup.object().when("userRoleId.roleName", {
       is: "TDO",
       then: (schema) => schema.required("Charging is required"),
@@ -131,7 +137,7 @@ export const productSchema = {
     uomId: null,
     productSubCategoryId: null,
     meatTypeId: null,
-    isVATable: false,
+    isVATable: true,
     srpPrice: null
     // itemImageLink: null,
   },
@@ -600,7 +606,7 @@ export const priceModeRegistrationSchema = {
       itemCode: null,
       price: null
     }],
-    isVATable: false
+    isVATable: true
   }
 }
 
@@ -683,7 +689,27 @@ export const approverSettingsSchema = {
           .object()
           .nullable(),
       }),
-    ),
+    )
+      .test(
+        "registration-territory-required",
+        "Territory is required",
+        function (value) {
+          if (this.parent?.moduleName?.name !== "Registration Approval") return true;
+          return (value || []).every((row) => row?.territory?.id != null);
+        },
+      )
+      .test(
+        "registration-territory-unique",
+        "Each territory can only have one approver",
+        function (value) {
+          if (this.parent?.moduleName?.name !== "Registration Approval") return true;
+          const ids = (value || [])
+            .map((row) => row?.territory?.id)
+            .filter((id) => id != null)
+            .map(String);
+          return new Set(ids).size === ids.length;
+        },
+      ),
     // approversWithLimit: yup
     //   .array()
     //   .of(

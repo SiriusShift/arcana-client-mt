@@ -9,15 +9,19 @@ import ApprovalHistoryModal from "../../components/modals/ApprovalHistoryModal";
 import TransactionApprovalModal from "../../components/modals/TransactionApprovalModal";
 import PageHeaderTabs from "../../components/PageHeaderTabs";
 import { AppContext } from "../../context/AppContext";
-import { useGetSalesTransactionRequestQuery } from "../../features/sales-management/api/salesTransactionApi";
+import { useCancelSalesTransactionRequestMutation, useGetSalesTransactionRequestQuery } from "../../features/sales-management/api/salesTransactionApi";
+import useConfirm from "../../hooks/useConfirm";
 import useDisclosure from "../../hooks/useDisclosure";
+import { handleCatchErrorMessage } from "../../utils/CustomFunctions";
 import SessionExpired from "../SessionExpired";
 // import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 
 function SalesTransactionApproval() {
-    const userDetails = useSelector((state) => state.login.userDetails);
     const navigate = useNavigate()
+    const confirm = useConfirm();
+    const userDetails = useSelector((state) => state.login.userDetails);
     const selectedRowData = useSelector((state) => state.selectedRow.value);
+
     const [tabViewing, setTabViewing] = useState(userDetails?.roleName !== "Depot" ? 2 : 1);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(0);
@@ -54,7 +58,9 @@ function SalesTransactionApproval() {
         refetchOnMountOrArgChange: true
     });
 
-    console.log(data)
+    const [cancel, { isLoading: cancelLoading }] = useCancelSalesTransactionRequestMutation()
+
+    console.log(notifications["pendingTransaction"])
 
     // const [patchReadNotification] = usePatchReadNotificationMutation();
 
@@ -65,13 +71,13 @@ function SalesTransactionApproval() {
                 case: 1,
                 name: "For Approval",
                 registrationStatus: "For Approval",
-                // badge: notifications["rejectedClient"],
+                badge: notifications["pendingTransaction"],
             },
             {
                 case: 2,
                 name: "Pending",
                 registrationStatus: "Under review",
-                badge: notifications["pendingClient"],
+                badge: notifications["pendingTransaction"],
             },
 
             {
@@ -93,21 +99,31 @@ function SalesTransactionApproval() {
             : value.case !== 1
     );
 
+    const handleCancel = async () => {
+        try {
+            await confirm({
+                children: "Are you sure you want to cancel this transactions?",
+                question: true,
+                callback: () => cancel(selectedRowData?.requestId).unwrap()
+            })
+        } catch (err) {
+            console.log(handleCatchErrorMessage(err))
+        }
+    }
+
     const tableHeads = [
         "Move Order Id",
         "Requestor",
+        "DR No.",
+        "Invoice No.",
     ];
 
     const customOrderKeys = [
-        "transaction",
+        (item) => item?.transaction?.moveOrderId,   // <- not "transaction"
         "requestor",
+        (item) => item?.transaction?.drNo,
+        (item) => item?.transaction?.invoiceNo,
     ];
-
-    const nestedProperty = {
-        key: "transaction",
-        nestedKeys: ["moveOrderId"],
-    };
-
     //Misc Functions
 
     useEffect(() => {
@@ -154,7 +170,6 @@ function SalesTransactionApproval() {
                         mapData={data.requests}
                         tableHeads={tableHeads}
                         customOrderKeys={customOrderKeys}
-                        nestedProperty={nestedProperty}
                         compact
                         moveNoDataUp
                         onView={onViewOpen}
@@ -163,6 +178,7 @@ function SalesTransactionApproval() {
                         setPage={setPage}
                         rowsPerPage={rowsPerPage}
                         setRowsPerPage={setRowsPerPage}
+                        onCancel={tabViewing === 1 && handleCancel}
                         count={count}
                     />
                 )}

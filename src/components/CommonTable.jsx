@@ -116,7 +116,9 @@ function CommonTable({
   flexNone,
   nestedProperty = {},
   border,
-  sortColumn
+  sortColumn,
+  onSrpHistory,
+  noPagination = false
 }) {
   const [order, setOrder] = React.useState("asc"); // 'asc' | 'desc'
   const [orderBy, setOrderBy] = React.useState(""); // which column is being sorted
@@ -884,6 +886,7 @@ function CommonTable({
                         onDownload={onDownload && onDownload}
                         onReplace={onReplace && onReplace}
                         onNoReplace={onNoReplace && onNoReplace}
+                        onSrpHistory={onSrpHistory && onSrpHistory}
                         item={item}
                         status={status}
                         disableActions={disableActions}
@@ -897,7 +900,7 @@ function CommonTable({
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
+      {!noPagination && <TablePagination
         component="div"
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 50, 100]}
@@ -911,7 +914,8 @@ function CommonTable({
         }}
         count={count}
         className="tableSuperContainer__tablePagination"
-      />
+      />}
+
     </Box>
   );
 }

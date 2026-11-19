@@ -1,13 +1,12 @@
 import {
   Box,
   Checkbox,
-  MenuItem,
   TextField,
   Typography,
-  debounce,
+  debounce
 } from "@mui/material";
-import CommonFilter from "../CommonFilter";
 import { useSelector } from "react-redux";
+import CommonFilter from "../CommonFilter";
 
 function SearchVoidFilterMixin({
   status,
@@ -63,7 +62,7 @@ function SearchVoidFilterMixin({
             <Typography variant="subtitle2">Voided</Typography>
           </>
         )}
-         {userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance" ? (<CommonFilter
+        {userDetails?.roleName === "Admin" || userDetails?.roleName === "Treasury" || userDetails?.roleName === "GAS" || userDetails?.roleName === "Finance" ? (<CommonFilter
           filter={onFilter}
           clusterFilter={clusterFilter && clusterFilter}
           paymentMethodFilter={paymentMethodFilter && paymentMethodFilter}
@@ -77,7 +76,7 @@ function SearchVoidFilterMixin({
           statusFilter={statusFilter && statusFilter}
         />) : ""}
 
-        <TextField
+        {/* <TextField
           sx={{ width: "150px" }}
           size="small"
           label="Origin"
@@ -90,7 +89,7 @@ function SearchVoidFilterMixin({
               {item.label}
             </MenuItem>
           ))}
-        </TextField>
+        </TextField> */}
       </Box>
     </Box>
   );

@@ -18,6 +18,7 @@ const useUserForm = ({
   clusterData,
   chargingData,
   sedarData,
+  distributionType,
   onClose,
   open,
 }) => {
@@ -46,13 +47,18 @@ const useUserForm = ({
 
   const onSubmit = async (data) => {
     const {
-      userRoleId: { id },
+      userRoleId: { id, roleName },
       territoryId,
       charging,
+      distributionTypeId,
       ...restData
     } = data;
 
-    console.log(charging)
+    // Only Managers have a distribution type
+    const distributionPayload =
+      roleName === "Manager"
+        ? { distributionTypeId: distributionTypeId?.id }
+        : {};
 
     try {
       if (!editMode) {
@@ -60,7 +66,8 @@ const useUserForm = ({
           ...restData,
           userRoleId: id,
           territoryId: territoryId?.id,
-          chargingId: charging?.id
+          chargingId: charging?.id,
+          ...distributionPayload,
           // charingCode: charging?.code,
           // chargingName: charging?.name
 
@@ -75,7 +82,8 @@ const useUserForm = ({
           ...restData,
           userRoleId: id,
           territoryId: territoryId?.id,
-          chargingId: charging?.id
+          chargingId: charging?.id,
+          ...distributionPayload,
 
         }).unwrap();
         snackbar({
@@ -120,8 +128,13 @@ const useUserForm = ({
       const selectedCluster = clusterData.territories.find(
         (item) => item.id === territoryId,
       );
-
       setValue("territoryId", selectedCluster);
+
+      const distributionId = selectedRowData.distributionTypeId
+      const selectedDistribution = distributionType.distributionTypes.find(
+        (item) => item.id === distributionId,
+      );
+      setValue("distributionTypeId", selectedDistribution);
 
       setValue("mobileNumber", selectedRowData.mobileNumber);
       const selectedCharging = chargingData.find((item) => item.code === selectedRowData.chargingCode);

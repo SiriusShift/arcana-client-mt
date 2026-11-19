@@ -3,7 +3,7 @@ import { Box, TextField, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import CommonDialog from "../../components/common/CommonDialog";
 import CommonTable from "../../components/CommonTable";
@@ -15,8 +15,6 @@ import PrintTTAModal from "../../components/modals/registration/PrintTTAModal";
 import ViewRegistrationDetailsModal from "../../components/modals/view-registration-modal/ViewRegistrationDetailsModal";
 import PageHeaderAddTabs from "../../components/PageHeaderAddTabs";
 import SecondaryButton from "../../components/SecondaryButton";
-import { AppContext } from "../../context/AppContext";
-import { usePatchReadNotificationMutation } from "../../features/notification/api/notificationApi";
 import {
   useGetAllClientsQuery,
   usePatchUpdateRegistrationStatusMutation,
@@ -68,7 +66,7 @@ function DirectRegistration() {
 
   const [tabViewing, setTabViewing] = useState(isApprovedOnly ? 2 : 1);
 
-  const { notifications, isNotificationFetching } = useContext(AppContext);
+  // const { notifications, isNotificationFetching } = useContext(AppContext);
 
   //Disclosures
   const {
@@ -128,7 +126,7 @@ function DirectRegistration() {
     usePutVoidClientRegistrationMutation();
   const [patchUpdateStatus] = usePatchUpdateRegistrationStatusMutation()
 
-  const [patchReadNotification] = usePatchReadNotificationMutation();
+  // const [patchReadNotification] = usePatchReadNotificationMutation();
 
   // const [getConsolidateClients, { isFetching: isExportLoading, data: exportData }] = useLazyGetConsolidateApprovedClientsExportQuery({
   //   DateFrom: moment(dateFrom).format("YYYY-MM-DD"),
@@ -163,7 +161,7 @@ function DirectRegistration() {
         case: 2,
         name: "Approved Clients",
         registrationStatus: "Approved",
-        badge: notifications["approvedClient"],
+        // badge: notifications["approvedClient"],
       },
       ...(userDetails?.permission?.includes("Rejected Clients")
         ? [
@@ -171,7 +169,7 @@ function DirectRegistration() {
             case: 3,
             name: "Rejected Clients",
             registrationStatus: "Rejected",
-            badge: notifications["rejectedClient"],
+            // badge: notifications["rejectedClient"],
           },
         ]
         : []),
@@ -181,12 +179,12 @@ function DirectRegistration() {
             case: 4,
             name: "Inactive Clients",
             registrationStatus: "Inactive",
-            badge: notifications["inactiveClient"],
+            // badge: notifications["inactiveClient"],
           },
         ]
         : []),
     ],
-    [notifications, userDetails?.permission]
+    [userDetails?.permission]
   );
 
   const selectOptions = [
@@ -263,7 +261,7 @@ function DirectRegistration() {
     try {
       const response = await fetch(
         `${import.meta.env.VITE_BASEURL
-        }approved-clients-export?DateFrom=${moment(dateFromTemp).format(
+        }/approved-clients-export?DateFrom=${moment(dateFromTemp).format(
           "MM-DD-YYYY"
         )}&DateTo=${moment(dateToTemp).format("MM-DD-YYYY")}`,
         {
@@ -341,15 +339,15 @@ function DirectRegistration() {
     setClientStatus(foundItem?.registrationStatus);
   }, [tabViewing, registrationNavigation]);
 
-  useEffect(() => {
-    if (notifications["rejectedClient"] > 0 && clientStatus === "Rejected") {
-      patchReadNotification({ Tab: "Rejected Clients" });
-    }
+  // useEffect(() => {
+  //   if (notifications["rejectedClient"] > 0 && clientStatus === "Rejected") {
+  //     patchReadNotification({ Tab: "Rejected Clients" });
+  //   }
 
-    if (notifications["approvedClient"] > 0 && clientStatus === "Approved") {
-      patchReadNotification({ Tab: "Approved Clients" });
-    }
-  }, [clientStatus, patchReadNotification, notifications]);
+  //   if (notifications["approvedClient"] > 0 && clientStatus === "Approved") {
+  //     patchReadNotification({ Tab: "Approved Clients" });
+  //   }
+  // }, [clientStatus, patchReadNotification, notifications]);
 
   useEffect(() => {
     setCount(data?.totalCount);
@@ -372,7 +370,7 @@ function DirectRegistration() {
             onRegisterOpen();
           }}
           addTitle="Register Direct"
-          isNotificationFetching={isNotificationFetching}
+          // isNotificationFetching={isNotificationFetching}
           removeAdd={isApprovedOnly}
         />
         <SearchVoidFilterMixin
@@ -436,7 +434,7 @@ function DirectRegistration() {
           </Box>
         </SearchVoidFilterMixin>
 
-        {isFetching || isNotificationFetching ? (
+        {isFetching ? (
           <CommonTableSkeleton lowerCompact />
         ) : (
           <CommonTable

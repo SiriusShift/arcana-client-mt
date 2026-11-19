@@ -43,6 +43,7 @@ import {
   Person,
   PersonAdd,
   PinDrop,
+  PointOfSale,
   PostAdd,
   ReceiptLong,
   Redeem,
@@ -571,6 +572,15 @@ export const getIconElement = (iconName, color, fontSize) => {
 
     LooksOne: (
       <LooksOne
+        sx={{
+          color: color && `${color} !important`,
+          fontSize: fontSize && `${fontSize} !important`,
+        }}
+      />
+    ),
+
+    PointOfSale: (
+      <PointOfSale
         sx={{
           color: color && `${color} !important`,
           fontSize: fontSize && `${fontSize} !important`,

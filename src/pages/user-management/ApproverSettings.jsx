@@ -1,10 +1,13 @@
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
+  Add,
+  RemoveCircleOutline,
   Settings
 } from "@mui/icons-material";
 import {
   Box,
+  IconButton,
   TextField,
   Typography
 } from "@mui/material";
@@ -16,6 +19,7 @@ import CommonTable from "../../components/CommonTable";
 import CommonTableSkeleton from "../../components/CommonTableSkeleton";
 import ControlledAutocomplete from "../../components/ControlledAutocomplete";
 import PageHeaderAdd from "../../components/PageHeaderAdd";
+import SecondaryButton from "../../components/SecondaryButton";
 import { useGetTerritoryQuery } from "../../features/setup/api/territoryApi";
 import { useGetApproverModulesQuery, useLazyGetApproverModuleCandidatesQuery, useLazyGetApproversOfModuleQuery, useUpdateApproversOfExpensesMutation, useUpdateApproversOfModuleMutation } from "../../features/user-management/api/approverApi";
 import useDisclosure from "../../hooks/useDisclosure";
@@ -313,6 +317,24 @@ function Approver() {
       return;
     }
 
+    if (isRegistrationApproval) {
+      const registrationRows = existing
+        .filter((a) => a?.territoryId != null)
+        .map((a) => ({
+          userId: findIn(headCandidates, a.userId ?? a.id),
+          territory: { id: a.territoryId, name: a.territoryName },
+        }));
+
+      setValue(
+        "approversWithTerritory",
+        registrationRows.length > 0
+          ? registrationRows
+          : [{ userId: null, territory: null }],
+        { shouldValidate: true }
+      );
+      return;
+    }
+
     setValue(
       "approversWithTerritory",
       buildTerritories(headCandidates).map((territory) => {
@@ -333,6 +355,7 @@ function Approver() {
     // setValue,
     isOtherExpenses,
     isClientEditApproval,
+    isRegistrationApproval,
   ]);
 
   return (
@@ -359,13 +382,14 @@ function Approver() {
             customOrderKeys={customOrderKeys}
             tableHeads={tableHeads}
             onManageApprovers={handleEditOpen}
-            page={page}
-            setPage={setPage}
-            rowsPerPage={rowsPerPage}
-            setRowsPerPage={setRowsPerPage}
+            // page={page}
+            // setPage={setPage}
+            // rowsPerPage={rowsPerPage}
+            // setRowsPerPage={setRowsPerPage}
             count={approvalItem?.sub?.length}
             isLo
             status={status}
+            noPagination={true}
           />}
 
         <CommonDrawer
@@ -401,9 +425,11 @@ function Approver() {
           />
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {!(isClientEditApproval || isSalesTransactionApproval) && (<>            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
-              List of Approvers With Territory
-            </Typography>
+            {!(isClientEditApproval || isSalesTransactionApproval) && (<>
+              {!isRegistrationApproval && <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
+                Head Approvers
+              </Typography>}
+
 
               <Box
                 sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
@@ -434,6 +460,9 @@ function Approver() {
                       sx={{ flex: 1 }}
                       disableClearable
                       getOptionDisabled={(option) => {
+                        // Registration: one approver may cover multiple territories
+                        if (isRegistrationApproval) return false;
+
                         const approversWithTerritory = watch("approversWithTerritory");
 
 
@@ -445,7 +474,9 @@ function Approver() {
                       }}
                       disabled={!watch("moduleName")}
                       loading={moduleApproversLoading}
-                      isOptionEqualToValue={() => true}
+                      isOptionEqualToValue={(option, value) =>
+                        String(option?.userId) === String(value?.userId)
+                      }
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -457,7 +488,7 @@ function Approver() {
                       )}
                     />
 
-                    {!(isClientEditApproval && isSalesTransactionApproval) && <ControlledAutocomplete
+                    {!(isClientEditApproval || isSalesTransactionApproval) && <ControlledAutocomplete
                       name={`approversWithTerritory[${index}].territory`}
                       control={control}
                       options={territoryData?.territories || []}
@@ -466,7 +497,19 @@ function Approver() {
                       disableClearable
                       disabled={!watch("moduleName")}
                       loading={isTerritoryFetching}
-                      isOptionEqualToValue={() => true}
+                      getOptionDisabled={(option) => {
+                        if (!isRegistrationApproval) return false;
+                        const rows = watch("approversWithTerritory") || [];
+                        return rows.some(
+                          (row, i) =>
+                            i !== index &&
+                            row?.territory?.id != null &&
+                            String(row.territory.id) === String(option.id)
+                        );
+                      }}
+                      isOptionEqualToValue={(option, value) =>
+                        String(option?.id) === String(value?.id)
+                      }
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -477,21 +520,48 @@ function Approver() {
                         />
                       )}
                     />}
-                    {/* 
-                  <IconButton
-                    sx={{ color: "error.main" }}
-                    onClick={() => approverWithTerritoryRemove(index)}
-                  >
-                    <RemoveCircleOutline sx={{ fontSize: "30px" }} />
-                  </IconButton> */}
+
+                    {isRegistrationApproval && (
+                      <IconButton
+                        sx={{ color: "error.main" }}
+                        onClick={() => approverWithTerritoryRemove(index)}
+                        disabled={approverWithTerritoryFields.length <= 1}
+                      >
+                        <RemoveCircleOutline sx={{ fontSize: "30px" }} />
+                      </IconButton>
+                    )}
                   </Box>
                 ))}
               </Box>
+
+              {isRegistrationApproval &&
+                (errors?.approversWithTerritory?.message ||
+                  errors?.approversWithTerritory?.root?.message) && (
+                  <Typography sx={{ color: "error.main", fontSize: "13px" }}>
+                    {errors?.approversWithTerritory?.message ||
+                      errors?.approversWithTerritory?.root?.message}
+                  </Typography>
+                )}
+
+              {isRegistrationApproval && (
+                <Box>
+                  <SecondaryButton
+                    sx={{ width: "170px" }}
+                    onClick={() =>
+                      approverWithTerritoryAppend({ userId: null, territory: null })
+                    }
+                    disabled={!watch("moduleName")}
+                    endIcon={<Add />}
+                  >
+                    Add Approver
+                  </SecondaryButton>
+                </Box>
+              )}
             </>)}
 
 
             {(isOtherExpenses || isClientEditApproval || isSalesTransactionApproval) && <>            <Typography sx={{ fontWeight: "bold", fontSize: "20px" }}>
-              List of Approvers Without Territory
+              {isSalesTransactionApproval ? "Head" : "Manager"} Approver
             </Typography>            <Box
               sx={{ display: "flex", flexDirection: "column", gap: "10px" }}
               ref={parent}

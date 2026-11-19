@@ -33,6 +33,7 @@ import {
     setPriceModeId,
     setPriceModeItemPrice,
     setPriceModeItems,
+    setTax,
     setTermsAndConditions
 } from "../../../features/registration/reducers/regularRegistrationSlice";
 import { useGetAllPriceModeForClientsQuery } from "../../../features/setup/api/priceModeSetupApi";
@@ -118,6 +119,8 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
         name: "items",
     });
 
+    console.log(watch())
+
     const watchItems = watch("items");
     useEffect(() => {
         const { priceModeId,
@@ -141,19 +144,21 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
 
         isRestoredRef.current = true; // always mark init as done, whether or not there was anything to restore
     }, []);
-    useEffect(() => {
-        if (!products?.items?.length) return;
 
-        const currentItems = watch("items");
+    console.log(watch())
+    // useEffect(() => {
+    //     if (!products?.items?.length) return;
 
-        currentItems.forEach((item, index) => {
-            const srp = products.items.find(
-                p => p.itemCode === item.itemCode?.itemCode
-            )?.latestSRP;
+    //     const currentItems = watch("items");
 
-            setValue(`items.${index}.srp`, srp ?? 0);
-        });
-    }, [products]);
+    //     currentItems.forEach((item, index) => {
+    //         const srp = products.items.find(
+    //             p => p.itemCode === item.itemCode?.itemCode
+    //         )?.latestSRP;
+
+    //         setValue(`items.${index}.srp`, srp ?? 0);
+    //     });
+    // }, [products]);
     // ✅ Sync form → Redux
     useEffect(() => {
         const subscription = watch((values) => {
@@ -168,7 +173,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                 )
             );
 
-            // dispatch(setTax(values.isVATable ?? false));
+            dispatch(setTax(values.isVATable ?? false));
         });
 
         return () => subscription.unsubscribe();
@@ -196,15 +201,23 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
         const parsedValue = value !== "" ? parseFloat(value) : value;
 
         if (
-            (parsedValue < 1 || parsedValue > 10) &&
+            (parsedValue < 1 || parsedValue > 100) &&
             parsedValue !== "" &&
             parsedValue !== null
         ) {
             snackbar({
-                message: "Value must be between 1% and 10%",
+                message: "Fixed discount must be between 1% and 100%.",
                 variant: "error",
             });
             return;
+        }
+
+        // Above 10% is allowed, just flagged.
+        if (parsedValue > 10) {
+            snackbar({
+                message: "Fixed discount is above the standard 10%.",
+                variant: "warning",
+            });
         }
 
         dispatch(
@@ -255,7 +268,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                         key={item.id}
                                         value={item.id}
                                         control={<Radio />}
-                                        disabled={editTDO || editHead}
+                                        disabled={editTDO}
                                         label={item.priceModeDescription}
                                     />
                                 ))}
@@ -288,14 +301,14 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                 value={true}
                                 control={<Radio />}
                                 label="Variable"
-                                disabled={editTDO || editHead}
+                                disabled={editTDO}
 
                             />
                             <FormControlLabel
                                 value={false}
                                 control={<Radio />}
                                 label="Fixed"
-                                disabled={editTDO || editHead}
+                                disabled={editTDO}
 
                             />
 
@@ -318,14 +331,15 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     decimalScale={2}
                                     fixedDecimalScale
                                     sx={{
-                                        width: "90px",
+                                        width: "110px",
                                         "& .MuiInputBase-root": { height: "36px" },
                                     }}
                                     disabled={editTDO}
                                     isAllowed={(values) => {
                                         const { floatValue } = values;
 
-                                        return floatValue == null || (floatValue >= 0 && floatValue <= 10);
+
+                                        return floatValue == null || (floatValue >= 0 && floatValue <= 100);
                                     }}
                                     InputProps={{
                                         endAdornment: (
@@ -349,7 +363,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                     <Controller
                         control={control}
                         name="isVATable"
-                        defaultValue={false}
+                        defaultValue={true}
                         render={({ field }) => (
                             <FormControlLabel
                                 control={
@@ -357,7 +371,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                         checked={field.value}
                                         onChange={(e) => field.onChange(e.target.checked)}
                                         inputRef={field.ref}
-                                        disabled={editTDO || editHead}
+                                        disabled={editTDO}
                                     />
                                 }
                                 label={field.value ? "Vatable" : "Non-Vatable"}
@@ -464,7 +478,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                             )}
                         />
 
-                        <Controller
+                        {/* <Controller
                             control={control}
                             name={`items.${index}.srp`}
                             render={({ field: { onChange, onBlur, value, ref } }) => (
@@ -486,7 +500,7 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                                     helperText={errors?.items?.[index]?.srp?.message || ""}
                                 />
                             )}
-                        />
+                        /> */}
 
                         {/* PRICE */}
                         <Controller
@@ -531,10 +545,10 @@ const PriceMode = ({ clientStatus, editMode, onOriginalItemsReady }) => {
                         />
 
                         {/* PRICE VS SRP DIFFERENCE */}
-                        <ItemPriceDifference
+                        {/* <ItemPriceDifference
                             price={watchItems?.[index]?.price}
                             srp={watchItems?.[index]?.srp}
-                        />
+                        /> */}
 
                         {/* REMOVE */}
                         <IconButton

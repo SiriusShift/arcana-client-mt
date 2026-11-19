@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
 import { PatternFormat } from "react-number-format";
 import { useSelector } from "react-redux";
+import { useGetAllDistributionQuery } from "../../../../features/setup/api/distributionApi";
 import { useGetTerritoryQuery } from "../../../../features/setup/api/territoryApi";
 import { useGetChargingQuery } from "../../../../features/user-management/api/oneChargingApi";
 import { useLazyGetAllEmployeesQuery } from "../../../../features/user-management/api/sedarApi";
@@ -37,6 +38,11 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
     useLazyGetAllEmployeesQuery();
   const { data: clusterData, isLoading: isClusterLoading } =
     useGetTerritoryQuery({ Status: true, PageSize: 1000 });
+  const { data: distributionType, isLoading: isDistributionLoading } = useGetAllDistributionQuery({
+    isActive: true,
+    PageNumber: 1,
+    PageSize: 10000,
+  })
 
   // Form Hook
   const {
@@ -58,6 +64,7 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
     userRoleData,
     chargingData,
     clusterData,
+    distributionType,
     onClose,
     open,
   });
@@ -289,6 +296,30 @@ const UserDrawer = ({ editMode, approveMode, ...props }) => {
                 label="Territory"
                 helperText={errors?.territoryId?.message}
                 error={errors?.territoryId}
+              />
+            )}
+          />
+        )}
+      </FieldSkeleton>
+
+      <FieldSkeleton loading={isDistributionLoading}>
+        {/* If role is CDO, require cluster selection */}
+        {(userRole?.roleName === "Manager") && (
+          <ControlledAutocompleteMultiple
+            name={"distributionTypeId"}
+            control={control}
+            options={distributionType?.distributionTypes || []}
+            getOptionLabel={(option) => option.name}
+            disableClearable
+            loading={isDistributionLoading}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                label="Distribution"
+                helperText={errors?.distributionTypeId?.message}
+                error={errors?.distributionTypeId}
               />
             )}
           />

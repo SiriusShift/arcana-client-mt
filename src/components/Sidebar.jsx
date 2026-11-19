@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { navigationData } from "../navigation/navigationData";
+import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
 import {
   Box,
   Collapse,
@@ -11,14 +9,16 @@ import {
   ListItemText,
   Tooltip,
 } from "@mui/material";
-import "../assets/styles/sidebar.styles.scss";
+import React, { useContext, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
-import { getIconElement } from "./GetIconElement";
-import SystemLogoName from "../assets/images/SystemLogoName.png";
 import SystemLogo from "../assets/images/SystemLogo.png";
-import { KeyboardDoubleArrowLeft } from "@mui/icons-material";
-import { toggleSidebarSmallScreen } from "../features/misc/reducers/disclosureSlice";
+import SystemLogoName from "../assets/images/SystemLogoName.png";
+import "../assets/styles/sidebar.styles.scss";
 import { AppContext } from "../context/AppContext";
+import { toggleSidebarSmallScreen } from "../features/misc/reducers/disclosureSlice";
+import { navigationData } from "../navigation/navigationData";
+import { getIconElement } from "./GetIconElement";
 
 function Sidebar() {
   const [activeModule, setActiveModule] = useState("");
@@ -38,6 +38,23 @@ function Sidebar() {
 
   const { notifications, isNotificationFetching } = useContext(AppContext);
 
+  const getNavItemNotificationCount = (navItem) => {
+    const permittedSub = navItem.sub?.filter(
+      (sub) => permissions?.includes(sub.name) && sub.path
+    ) || [];
+
+    const keys = [
+      ...(navItem.notifications || []),
+      ...permittedSub.flatMap((s) => s.notifications || []),
+    ];
+
+    return keys.reduce(
+      (sum, key) => sum + (parseInt(notifications[key]) || 0),
+      0
+    );
+  };
+
+  console.log(permittedSidebar)
   useEffect(() => {
     const handleResize = () => {
       setIsWideScreen(window.innerWidth > 1024);
@@ -66,8 +83,8 @@ function Sidebar() {
           width: (isWideScreen ? sidebarToggled : sidebarSmallScreenToggled)
             ? "315px"
             : isWideScreen
-            ? "80px"
-            : "0px",
+              ? "80px"
+              : "0px",
         }}
       >
         <Box className="sidebar">
@@ -125,17 +142,16 @@ function Sidebar() {
                                 ? "88px"
                                 : "315px"
                               : !sidebarSmallScreenToggled
-                              ? "0px"
-                              : "315px",
+                                ? "0px"
+                                : "315px",
                             // whiteSpace: !sidebarToggled ? "nowrap" : null
                             whiteSpace: "nowrap",
                             transition: "width 0.4s",
                           }}
                         >
                           <ListItemButton
-                            className={`sidebar__navigation__button  ${
-                              isActive ? "active" : ""
-                            }`}
+                            className={`sidebar__navigation__button  ${isActive ? "active" : ""
+                              }`}
                             onClick={() => {
                               setActiveModule(
                                 activeModule?.includes(item.path)
@@ -145,34 +161,21 @@ function Sidebar() {
                             }}
                           >
                             <ListItemIcon
-                              className={`sidebar__navigation__button__icon  ${
-                                isActive ? "active" : ""
-                              }`}
+                              className={`sidebar__navigation__button__icon  ${isActive ? "active" : ""
+                                }`}
                             >
                               {getIconElement(item.icon)}
                             </ListItemIcon>
 
                             {<ListItemText>{item.name}</ListItemText>}
 
-                            {item?.notifications?.reduce(
-                              (sum, notification) =>
-                                sum + parseInt(notifications[notification]),
-                              0
-                            ) > 0 &&
-                              !isNotificationFetching && (
-                                <Box sx={{ width: "20px", height: "20px" }}>
-                                  {item.notifications && (
-                                    <Box className="notifications">
-                                      {item?.notifications?.reduce(
-                                        (sum, notification) =>
-                                          sum +
-                                          parseInt(notifications[notification]),
-                                        0
-                                      )}
-                                    </Box>
-                                  )}
+                            {getNavItemNotificationCount(item) > 0 && !isNotificationFetching && (
+                              <Box sx={{ width: "20px", height: "20px" }}>
+                                <Box className="notifications">
+                                  {getNavItemNotificationCount(item)}
                                 </Box>
-                              )}
+                              </Box>
+                            )}
 
                             {/* {sidebarToggled && (
                         <ListItemText>{item.name}</ListItemText>
@@ -203,14 +206,12 @@ function Sidebar() {
                             {({ isActive }) => (
                               <ListItem disablePadding sx={{ px: 2 }}>
                                 <ListItemButton
-                                  className={`sidebar__navigation__subButton  ${
-                                    isActive ? "active" : ""
-                                  }`}
+                                  className={`sidebar__navigation__subButton  ${isActive ? "active" : ""
+                                    }`}
                                 >
                                   <ListItemIcon
-                                    className={`sidebar__navigation__subButton__icon  ${
-                                      isActive ? "active" : ""
-                                    }`}
+                                    className={`sidebar__navigation__subButton__icon  ${isActive ? "active" : ""
+                                      }`}
                                   >
                                     {getIconElement(subItem.icon)}
                                   </ListItemIcon>
@@ -242,35 +243,35 @@ function Sidebar() {
                                       parseInt(notifications[notification]),
                                     0
                                   ) > 0 && (
-                                    <Box sx={{ width: "20px", height: "20px" }}>
-                                      {subItem?.notifications &&
-                                        !isNotificationFetching && (
-                                          <Box
-                                            sx={{
-                                              bgcolor: "notification.main",
-                                              borderRadius: "50%",
-                                              // width: "12%",
-                                              width: "20px",
-                                              height: "20px",
-                                              // height: "20px",
-                                              display: "flex",
-                                              justifyContent: "center",
-                                              alignItems: "center",
-                                              color: "white !important",
-                                            }}
-                                          >
-                                            {subItem?.notifications?.reduce(
-                                              (sum, notification) =>
-                                                sum +
-                                                parseInt(
-                                                  notifications[notification]
-                                                ),
-                                              0
-                                            )}
-                                          </Box>
-                                        )}
-                                    </Box>
-                                  )}
+                                      <Box sx={{ width: "20px", height: "20px" }}>
+                                        {subItem?.notifications &&
+                                          !isNotificationFetching && (
+                                            <Box
+                                              sx={{
+                                                bgcolor: "notification.main",
+                                                borderRadius: "50%",
+                                                // width: "12%",
+                                                width: "20px",
+                                                height: "20px",
+                                                // height: "20px",
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                alignItems: "center",
+                                                color: "white !important",
+                                              }}
+                                            >
+                                              {subItem?.notifications?.reduce(
+                                                (sum, notification) =>
+                                                  sum +
+                                                  parseInt(
+                                                    notifications[notification]
+                                                  ),
+                                                0
+                                              )}
+                                            </Box>
+                                          )}
+                                      </Box>
+                                    )}
                                 </ListItemButton>
                               </ListItem>
                             )}

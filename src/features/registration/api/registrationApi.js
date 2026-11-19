@@ -255,7 +255,7 @@ const registrationApi = api
           url: "/EditClientRequest",
           method: "GET",
           params: params,
-        }),        transformResponse: (response) => response.value,
+        }), transformResponse: (response) => response.value,
         transformErrorResponse: (response) => response.value,
         providesTags: ["Registration"]
       }),
@@ -279,9 +279,10 @@ const registrationApi = api
       }),
 
       patchRejectEditClientRequest: builder.mutation({
-        query: (id) => ({
+        query: ({ id, body }) => ({
           url: `/EditClientRequest/reject/${id}`,
           method: "PATCH",
+          body: body
         }), invalidatesTags: ["Registration"]
 
       })

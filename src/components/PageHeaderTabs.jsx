@@ -1,4 +1,4 @@
-import { Box, Paper, Typography, Stack, Badge, Divider } from "@mui/material";
+import { Badge, Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import "../assets/styles/common.styles.scss";
 
 function PageHeaderTabs({
@@ -36,10 +36,10 @@ function PageHeaderTabs({
                   width: extraWide
                     ? "200px"
                     : wide
-                    ? "180px"
-                    : small
-                    ? "120px"
-                    : "160px",
+                      ? "180px"
+                      : small
+                        ? "120px"
+                        : "160px",
                 }}
                 key={i}
                 onClick={() => setTabViewing(item.case)}
@@ -69,10 +69,10 @@ function PageHeaderTabs({
                       width: extraWide
                         ? "200px"
                         : wide
-                        ? "180px"
-                        : small
-                        ? "120px"
-                        : "160px",
+                          ? "180px"
+                          : small
+                            ? "120px"
+                            : "160px",
                       // width: "auto",
                       height: "3px",
                       borderRadius: "10px",

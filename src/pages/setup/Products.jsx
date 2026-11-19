@@ -3,7 +3,6 @@ import { LocalMall } from "@mui/icons-material";
 import { Box, Switch, TextField, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { NumericFormat } from "react-number-format";
 import { useSelector } from "react-redux";
 import CommonDrawer from "../../components/CommonDrawer";
 import CommonTable from "../../components/CommonTable";
@@ -111,7 +110,11 @@ function Products() {
 
   const { data: uomData } = useGetAllUomsQuery({ Status: true });
   const { data: productSubcategoriesData } = useGetAllProductSubCategoriesQuery(
-    { Status: true }
+    {
+      Status: true,
+      PageNumber: 1,
+      PageSize: 10000
+    }
   );
   const { data: meatTypeData } = useGetAllMeatTypesQuery({ Status: true });
 
@@ -125,8 +128,8 @@ function Products() {
         meatTypeId: { id: meatTypeId },
         itemCode,
         itemDescription,
-        // isVATable,
-        srpPrice
+        isVATable,
+        // srpPrice
       } = data;
 
       formData.append("itemCode", itemCode);
@@ -134,8 +137,8 @@ function Products() {
       formData.append("uomId", uomId);
       formData.append("productSubCategoryId", productSubCategoryId);
       formData.append("meatTypeId", meatTypeId);
-      // formData.append("isVATable", isVATable);
-      formData.append("SrpPrice", srpPrice);
+      formData.append("isVATable", isVATable);
+      // formData.append("SrpPrice", srpPrice);
 
       // data.itemImageLink &&
       //   formData.append("itemImageLink", data.itemImageLink);
@@ -222,8 +225,8 @@ function Products() {
         (item) => item.meatTypeName === editData.meatType
       )
     );
-    // setValue("isVATable", editData.isVATable);
-    setValue("srpPrice", editData.latestSRP);
+    setValue("isVATable", editData.isVATable);
+    // setValue("srpPrice", editData.latestSRP);
 
     // setValue("itemImageLink", editData.itemImageLink);
   };
@@ -282,7 +285,7 @@ function Products() {
             tableHeads={tableHeads}
             customOrderKeys={customOrderKeys}
             attachKey={attachKey}
-            onHistory={onSrpOpen}
+          // onSrpHistory={onSrpOpen}
           // viewMoreKey={"priceChangeHistories"}
           // onViewMoreClick={onPriceOpen}
           // onAddPriceChange={onAddPriceOpen}
@@ -384,7 +387,7 @@ function Products() {
               />
             )}
           />
-          <Controller
+          {/* <Controller
             control={control}
             name={"srpPrice"}
             render={({ field: { onChange, onBlur, value, ref } }) => (
@@ -412,7 +415,7 @@ function Products() {
                 error={errors?.price}
               />
             )}
-          />
+          /> */}
 
           <Controller
             control={control}

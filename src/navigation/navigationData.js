@@ -487,7 +487,7 @@ export const navigationData = [
         path: "/approval/item-approval",
         icon: "Inventory",
         description: "Approval and rejection of additional items requests",
-        // notifications: "pendingSpDiscount",
+        notifications: ["pendingAddItem"],
       },
       {
         id: 6,
@@ -495,15 +495,15 @@ export const navigationData = [
         path: "/approval/edit-client-approval",
         icon: "Inventory",
         description: "Approval and rejection of editing of client requests",
-        // notifications: "pendingSpDiscount",
+        notifications: ["pendingEditItem"],
       },
       {
         id: 6,
         name: "Sales Transaction Approval",
         path: "/approval/sales-transaction-approval",
-        icon: "Inventory",
+        icon: "PointOfSale",
         description: "Approval and rejection of sales transaction",
-        // notifications: "pendingSpDiscount",
+        notifications: ["pendingTransaction"],
       }
       // {
       //   id: 5,

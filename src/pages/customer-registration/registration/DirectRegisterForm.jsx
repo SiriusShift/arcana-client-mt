@@ -85,12 +85,66 @@ import {
   base64ToBlob,
   convertToTitleCase,
   handleCatchErrorMessage,
+  handleUppercaseChange,
   shallowEqual,
 } from "../../../utils/CustomFunctions";
 import ListingFeeClient from "../prospecting/ListingFeeClient";
 import OtherExpensesClient from "../prospecting/OtherExpensesClient";
 import PriceMode from "../prospecting/PriceMode";
 import TermsAndConditions from "../prospecting/TermsAndConditions";
+
+const normalizeValue = (value) => {
+  if (moment.isMoment(value)) return value.isValid() ? value.format("YYYY-MM-DD") : "";
+  return value ?? "";
+};
+
+// Returns only the fields in `current` whose value differs from `original`.
+// Nested objects (addresses) are compared per key; objects with an id (dropdowns) by id.
+const getChangedFields = (current = {}, original = {}) =>
+  Object.entries(current).reduce((changes, [key, value]) => {
+    const originalValue = original?.[key];
+    const isPlainObject =
+      value && typeof value === "object" && !moment.isMoment(value) && !Array.isArray(value);
+
+    if (isPlainObject && value.id !== undefined) {
+      if (value.id !== originalValue?.id) changes[key] = value;
+    } else if (isPlainObject) {
+      const nestedChanges = getChangedFields(value, originalValue);
+      if (Object.keys(nestedChanges).length > 0) changes[key] = nestedChanges;
+    } else if (normalizeValue(value) !== normalizeValue(originalValue)) {
+      changes[key] = value;
+    }
+
+    return changes;
+  }, {});
+
+// Maps changed personal info to the edit client request's clientInformation shape.
+const toClientInformationPayload = (changes) => {
+  const toAddress = ({ barangayName, ...address }) => ({
+    ...address,
+    ...(barangayName !== undefined && { barangay: barangayName }),
+  });
+
+  return {
+    ...(changes.businessName !== undefined && { businessName: changes.businessName }),
+    ...(changes.branchName !== undefined && { branchName: changes.branchName }),
+    ...(changes.emailAddress !== undefined && { emailAddress: changes.emailAddress }),
+    ...(changes.tinNumber !== undefined && { tinNumber: changes.tinNumber }),
+    ...(changes.phoneNumber !== undefined && { phoneNumber: changes.phoneNumber }),
+    ...(changes.businessAddress && { businessAddress: toAddress(changes.businessAddress) }),
+    ...(changes.deliveryAddress && { deliveryAddress: toAddress(changes.deliveryAddress) }),
+  };
+};
+
+// Terms in the shape the edit client request expects, so loaded and edited terms can be compared.
+const toComparableTerms = (terms) => ({
+  termsId: terms?.terms ?? null,
+  termDaysId: terms?.termDaysId?.id ?? null,
+  creditType: terms?.creditTypeId?.value ?? null,
+  creditLimit: terms?.creditLimit ?? null,
+  modeOfPaymentIds:
+    terms?.modeOfPayments?.map((payment) => payment.modeOfPaymentId).sort() ?? [],
+});
 
 function DirectRegisterForm({
   open,
@@ -110,6 +164,8 @@ function DirectRegisterForm({
 
   const snackbar = useSnackbar();
   const originalItemsRef = useRef(null); // ← use ref so it doesn't cause re-renders
+  const originalClientInfoRef = useRef(null); // ← personal info as loaded, used to detect changes
+  const originalTermsRef = useRef(null); // ← terms as loaded, used to detect changes
 
   const [activeTab, setActiveTab] = useState("Personal Info");
   const [sameAsOwnersAddress, setSameAsOwnersAddress] = useState(false);
@@ -194,8 +250,7 @@ function DirectRegisterForm({
     defaultValues: directRegisterPersonalSchema.defaultValues,
   });
 
-
-
+  console.log(watch());
   // const { watch: watchItems, formState: { isValid: itemsValid }, reset: resetPriceMode, setValue: setValueItems } = itemsMethod
   const priceMode = priceModeItems.priceModeId;
 
@@ -277,7 +332,7 @@ function DirectRegisterForm({
     clientStatus === "Under review";
   const isAdminEdit =
     editMode &&
-    isAdmin &&
+    (isAdmin || isHead) &&
     (clientStatus === "Approved" || clientStatus === "Under review");
 
   const showNextButton =
@@ -305,7 +360,7 @@ function DirectRegisterForm({
 
     // TDO/Head Approved edit submits on Price Mode only (Admin excluded — handled above)
     (isApprovedEdit &&
-      !isAdmin &&
+      !(isAdmin || isHead) &&
       activeTab === "Price Mode");
   //Constants
   const navigators = [
@@ -516,6 +571,23 @@ function DirectRegisterForm({
         }));
 
 
+      const changedClientInformation = toClientInformationPayload(
+        getChangedFields(data, originalClientInfoRef.current)
+      );
+
+      const currentTerms = toComparableTerms(termsAndConditions);
+      const { modeOfPaymentIds, ...changedTerms } = Object.fromEntries(
+        Object.entries(currentTerms).filter(
+          ([key, value]) =>
+            JSON.stringify(value) !== JSON.stringify(originalTermsRef.current?.[key])
+        )
+      );
+      if (modeOfPaymentIds) {
+        changedTerms.modeOfPayments = modeOfPaymentIds.map((modeOfPaymentId) => ({
+          modeOfPaymentId,
+        }));
+      }
+
       let response;
 
       if (editMode) {
@@ -541,6 +613,18 @@ function DirectRegisterForm({
               removedItems?.length > 0 && {
               removeItems: removedItems,
             }),
+
+            ...(isHead &&
+              Object.keys(changedClientInformation).length > 0 && {
+              clientInformation: changedClientInformation,
+            }),
+
+            ...(isHead && changedTerms),
+
+            ...(isHead && {
+              priceModeId: priceModeItems.priceModeId,
+              isVATable: priceModeItems.isVATable,
+            })
           };
 
 
@@ -803,6 +887,8 @@ function DirectRegisterForm({
 
   const handleResetForms = () => {
     reset();
+    originalClientInfoRef.current = null;
+    originalTermsRef.current = null;
     setOriginalItems(null)
     dispatch(resetPriceMode());
     clearErrors();
@@ -857,14 +943,14 @@ function DirectRegisterForm({
       >
         {navigators
           .filter((item) => {
-            if (isAdmin && editMode) {
+            if ((isAdmin || isHead) && editMode) {
               return item.label !== "Costs and Fees"
             }
             if ((isTDO) && clientStatus === "Under review" && editMode) {
               return item.label !== "Costs and Fees"
             }
 
-            else if ((isTDO || isHead) && clientStatus === "Approved" && editMode) {
+            else if ((isTDO) && clientStatus === "Approved" && editMode) {
               return item.label === "Price Mode";
             }
 
@@ -1023,29 +1109,8 @@ function DirectRegisterForm({
 
   const handleSameAsOwnersAddress = () => {
     setSameAsOwnersAddress((prev) => !prev);
-    if (!sameAsOwnersAddress) {
-      setValue(
-        "deliveryAddress.houseNumber",
-        watch("businessAddress.houseNumber"),
-        { shouldValidate: true }
-      );
-      setValue(
-        "deliveryAddress.streetName",
-        watch("businessAddress.streetName"),
-        { shouldValidate: true }
-      ),
-        setValue(
-          "deliveryAddress.barangayName",
-          watch("businessAddress.barangayName"),
-          { shouldValidate: true }
-        );
-      setValue("deliveryAddress.city", watch("businessAddress.city"), {
-        shouldValidate: true,
-      }),
-        setValue("deliveryAddress.province", watch("businessAddress.province"), {
-          shouldValidate: true,
-        });
-    } else {
+    // Checking is handled by the effect below, which keeps the delivery address in sync
+    if (sameAsOwnersAddress) {
       setValue("deliveryAddress.houseNumber", "", { shouldValidate: true });
       setValue("deliveryAddress.streetName", "", { shouldValidate: true });
       setValue("deliveryAddress.barangayName", "", { shouldValidate: true });
@@ -1054,25 +1119,44 @@ function DirectRegisterForm({
     }
   };
 
+  const { houseNumber, streetName, barangayName, city, province } =
+    watch("businessAddress") ?? {};
+
+  // While "same as owner's address" is checked, copy every business address change to the delivery address
+  useEffect(() => {
+    if (!sameAsOwnersAddress) return;
+
+    const options = { shouldValidate: true };
+    setValue("deliveryAddress.houseNumber", houseNumber ?? "", options);
+    setValue("deliveryAddress.streetName", streetName ?? "", options);
+    setValue("deliveryAddress.barangayName", barangayName ?? "", options);
+    setValue("deliveryAddress.city", city ?? "", options);
+    setValue("deliveryAddress.province", province ?? "", options);
+  }, [sameAsOwnersAddress, houseNumber, streetName, barangayName, city, province, setValue]);
+
   //UseEffects
   useEffect(() => {
     if (editMode) {
       //Personal Info
-      setValue("branchName", selectedRowData?.branchName);
-      setValue("emailAddress", selectedRowData?.emailAddress);
-      setValue("tinNumber", selectedRowData?.tinNumber);
-      setValue("dateOfBirth", moment(selectedRowData?.dateOfBirth));
-      setValue("phoneNumber", selectedRowData?.phoneNumber);
-      setValue("businessAddress", selectedRowData?.businessAddress);
-      setValue("businessName", selectedRowData?.businessName)
-      setValue(
-        "distriTypeId",
-        distriTypeData?.distributionTypes?.find(
+      const clientInfo = {
+        branchName: selectedRowData?.branchName,
+        emailAddress: selectedRowData?.emailAddress,
+        tinNumber: selectedRowData?.tinNumber,
+        dateOfBirth: moment(selectedRowData?.dateOfBirth),
+        phoneNumber: selectedRowData?.phoneNumber,
+        businessAddress: selectedRowData?.businessAddress,
+        businessName: selectedRowData?.businessName,
+        distriTypeId: distriTypeData?.distributionTypes?.find(
           (item) =>
             item.name === selectedRowData?.distriType
-        )
-      );
-      setValue("deliveryAddress", selectedRowData?.deliveryAddress);
+        ),
+        deliveryAddress: selectedRowData?.deliveryAddress,
+        authorizedRepresentative: selectedRowData?.authorizedRepresentative,
+        authorizedRepresentativePosition:
+          selectedRowData?.authorizedRepresentativePosition,
+      };
+      originalClientInfoRef.current = clientInfo;
+      Object.entries(clientInfo).forEach(([key, value]) => setValue(key, value));
       dispatch(setPriceModeId(selectedRowData?.priceModeId));
       // dispatch(setTax(selectedRowData?.isVATable));
       dispatch(setPriceModeItems(selectedRowData?.clientItems?.map((item) => ({
@@ -1095,14 +1179,6 @@ function DirectRegisterForm({
       //       selectedRowData?.priceModeId === item.id
       //   )
       // );
-      setValue(
-        "authorizedRepresentative",
-        selectedRowData?.authorizedRepresentative
-      );
-      setValue(
-        "authorizedRepresentativePosition",
-        selectedRowData?.authorizedRepresentativePosition
-      );
       if (
         shallowEqual(
           selectedRowData?.businessAddress,
@@ -1131,43 +1207,43 @@ function DirectRegisterForm({
       // setPhotoProofDirect(data?.freebies?.[0]?.photoProof);
 
       // Terms & Conditions
-      dispatch(
-        setWholeTermsAndConditions({
-          // freezer: termsData?.freezer ? true : false,
-          // freezerAssetTag: termsData?.freezer ? termsData?.freezer : "",
-          // typeOfCustomer: termsData?.typeOfCustomer,
-          // directDelivery: termsData?.directDelivery,
-          // bookingCoverageId: parseInt(
-          //   termsData?.bookingCoverage.substring(1),
-          //   10
-          // ),
-          // withholdingIssuance: termsData?.withholdingIssuance,
-          // terms: termsData?.termId,
-          terms: termsData?.termId,
-          termDaysId: termDaysData?.termDays?.find(
-            (day) => day.id === termsData?.termDaysId
-          ),
-          modeOfPayments: termsData?.modeofPayments?.map((payment) => ({
-            modeOfPaymentId: payment.id,
-          })),
-          creditLimit: termsData?.creditLimit,
-          creditTypeId: (termsData?.creditLimit !== -1 && termsData?.termDays) ? creditType[0] : termsData?.termDaysId === null ? creditType[2] : creditType[1],
-          variableDiscount: !termsData?.variableDiscount
-            ? false
-            : termsData?.variableDiscount,
-          fixedDiscount:
-            termsData?.fixedDiscount === null
-              ? {
-                discountPercentage: null,
-              }
-              : {
-                discountPercentage:
-                  termsData?.fixedDiscount?.discountPercentage * 100,
-                originalPercentage: termsData?.fixedDiscount?.discountPercentage * 100,
+      const loadedTerms = {
+        // freezer: termsData?.freezer ? true : false,
+        // freezerAssetTag: termsData?.freezer ? termsData?.freezer : "",
+        // typeOfCustomer: termsData?.typeOfCustomer,
+        // directDelivery: termsData?.directDelivery,
+        // bookingCoverageId: parseInt(
+        //   termsData?.bookingCoverage.substring(1),
+        //   10
+        // ),
+        // withholdingIssuance: termsData?.withholdingIssuance,
+        // terms: termsData?.termId,
+        terms: termsData?.termId,
+        termDaysId: termDaysData?.termDays?.find(
+          (day) => day.id === termsData?.termDaysId
+        ),
+        modeOfPayments: termsData?.modeofPayments?.map((payment) => ({
+          modeOfPaymentId: payment.id,
+        })),
+        creditLimit: termsData?.creditLimit,
+        creditTypeId: (termsData?.creditLimit !== -1 && termsData?.termDays) ? creditType[0] : termsData?.termDaysId === null ? creditType[2] : creditType[1],
+        variableDiscount: !termsData?.variableDiscount
+          ? false
+          : termsData?.variableDiscount,
+        fixedDiscount:
+          termsData?.fixedDiscount === null
+            ? {
+              discountPercentage: null,
+            }
+            : {
+              discountPercentage:
+                termsData?.fixedDiscount?.discountPercentage * 100,
+              originalPercentage: termsData?.fixedDiscount?.discountPercentage * 100,
 
-              },
-        })
-      );
+            },
+      };
+      originalTermsRef.current = toComparableTerms(loadedTerms);
+      dispatch(setWholeTermsAndConditions(loadedTerms));
 
       // Attachments
       // API Version
@@ -1354,7 +1430,7 @@ function DirectRegisterForm({
 
   useEffect(() => {
     if (!open) return;
-    if ((isTDO || isHead) && clientStatus === "Approved" && editMode) {
+    if ((isTDO) && clientStatus === "Approved" && editMode) {
       setActiveTab("Price Mode");
     }
   }, [isTDO, open]);
@@ -1476,10 +1552,10 @@ function DirectRegisterForm({
                             size="small"
                             autoComplete="off"
                             required
+                            autoCapitalize=""
+                            inputProps={{ style: { textTransform: "uppercase" } }}
                             className="register__textField"
-                            onChange={(e) =>
-                              onChange(e.target.value.toUpperCase())
-                            }
+                            onChange={(e) => handleUppercaseChange(e, onChange)}
                             onBlur={onBlur}
                             value={value}
                             inputRef={ref}
@@ -1608,9 +1684,7 @@ function DirectRegisterForm({
                             autoComplete="off"
                             required
                             className="register__textField"
-                            onChange={(e) =>
-                              onChange(e.target.value.toUpperCase())
-                            }
+                            onChange={(e) => handleUppercaseChange(e, onChange)}
                             onBlur={onBlur}
                             value={value}
                             inputRef={ref}
@@ -1669,9 +1743,7 @@ function DirectRegisterForm({
                               autoComplete="off"
                               className="register__textField"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(e.target.value.toUpperCase())
-                              }
+                              onChange={(e) => handleUppercaseChange(e, field.onChange)}
                               helperText={
                                 errors?.businessAddress?.houseNumber?.message
                               }
@@ -1691,9 +1763,7 @@ function DirectRegisterForm({
                               autoComplete="off"
                               className="register__textField"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(e.target.value.toUpperCase())
-                              }
+                              onChange={(e) => handleUppercaseChange(e, field.onChange)}
                               helperText={
                                 errors?.businessAddress?.streetName?.message
                               }
@@ -1715,9 +1785,7 @@ function DirectRegisterForm({
                               required
                               className="register__textField"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(e.target.value.toUpperCase())
-                              }
+                              onChange={(e) => handleUppercaseChange(e, field.onChange)}
                               helperText={
                                 errors?.businessAddress?.barangayName?.message
                               }
@@ -1740,9 +1808,7 @@ function DirectRegisterForm({
                               required
                               className="register__textField"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(e.target.value.toUpperCase())
-                              }
+                              onChange={(e) => handleUppercaseChange(e, field.onChange)}
                               helperText={errors?.businessAddress?.city?.message}
                               error={!!errors?.businessAddress?.city}
                             />
@@ -1762,9 +1828,7 @@ function DirectRegisterForm({
                               required
                               className="register__textField"
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(e.target.value.toUpperCase())
-                              }
+                              onChange={(e) => handleUppercaseChange(e, field.onChange)}
                               helperText={
                                 errors?.businessAddress?.province?.message
                               }
@@ -1826,9 +1890,7 @@ function DirectRegisterForm({
                           autoComplete="off"
                           // required
                           className="register__textField"
-                          onChange={(e) =>
-                            onChange(e.target.value.toUpperCase())
-                          }
+                          onChange={(e) => handleUppercaseChange(e, onChange)}
                           onBlur={onBlur}
                           value={value}
                           inputRef={ref}
@@ -1854,9 +1916,7 @@ function DirectRegisterForm({
                             errors?.deliveryAddress?.streetName?.message
                           }
                           error={!!errors?.deliveryAddress?.streetName}
-                          onChange={(e) =>
-                            onChange(e.target.value.toUpperCase())
-                          }
+                          onChange={(e) => handleUppercaseChange(e, onChange)}
                           onBlur={onBlur}
                           value={value}
                           inputRef={ref}
@@ -1879,9 +1939,7 @@ function DirectRegisterForm({
                             errors?.deliveryAddress?.barangayName?.message
                           }
                           error={!!errors?.deliveryAddress?.barangayName}
-                          onChange={(e) =>
-                            onChange(e.target.value.toUpperCase())
-                          }
+                          onChange={(e) => handleUppercaseChange(e, onChange)}
                           onBlur={onBlur}
                           value={value}
                           inputRef={ref}
@@ -1904,9 +1962,7 @@ function DirectRegisterForm({
                           className="register__textField"
                           helperText={errors?.deliveryAddress?.city?.message}
                           error={!!errors?.deliveryAddress?.city}
-                          onChange={(e) =>
-                            onChange(e.target.value.toUpperCase())
-                          }
+                          onChange={(e) => handleUppercaseChange(e, onChange)}
                           onBlur={onBlur}
                           value={value}
                           inputRef={ref}
@@ -1929,9 +1985,7 @@ function DirectRegisterForm({
                             errors?.deliveryAddress?.province?.message
                           }
                           error={!!errors?.deliveryAddress?.province}
-                          onChange={(e) =>
-                            onChange(e.target.value.toUpperCase())
-                          }
+                          onChange={(e) => handleUppercaseChange(e, onChange)}
                           onBlur={onBlur}
                           value={value}
                           inputRef={ref}
@@ -1979,9 +2033,7 @@ function DirectRegisterForm({
                             required={includeAuthorizedRepresentative}
                             disabled={!includeAuthorizedRepresentative}
                             className="register__textField"
-                            onChange={(e) =>
-                              onChange(e.target.value.toUpperCase())
-                            }
+                            onChange={(e) => handleUppercaseChange(e, onChange)}
                             onBlur={onBlur}
                             value={value}
                             inputRef={ref}
@@ -2006,9 +2058,7 @@ function DirectRegisterForm({
                             required={includeAuthorizedRepresentative}
                             disabled={!includeAuthorizedRepresentative}
                             className="register__textField"
-                            onChange={(e) =>
-                              onChange(e.target.value.toUpperCase())
-                            }
+                            onChange={(e) => handleUppercaseChange(e, onChange)}
                             onBlur={onBlur}
                             value={value}
                             inputRef={ref}
@@ -2050,12 +2100,12 @@ function DirectRegisterForm({
 
             <Box
               className={
-                activeTab === "Personal Info" || ((isTDO || isHead) && clientStatus === "Approved" && editMode)
+                activeTab === "Personal Info" || ((isTDO) && clientStatus === "Approved" && editMode)
                   ? "commonDrawer__actionsNoMarginBottom"
                   : "commonDrawer__actionsSpread"
               }
             >
-              {(activeTab !== "Personal Info" && !((isTDO || isHead) && clientStatus === "Approved" && editMode)) && (
+              {(activeTab !== "Personal Info" && !((isTDO) && clientStatus === "Approved" && editMode)) && (
                 <DangerButton onClick={handleBack}>Back</DangerButton>
               )}
 
@@ -2113,9 +2163,9 @@ function DirectRegisterForm({
         <span style={{ textTransform: "uppercase", fontWeight: "bold" }}>
           {watch("businessName") || "CLIENT"}
         </span>
-        {((isTDO || isHead) && clientStatus !== "Under review")
+        {(isTDO && clientStatus !== "Under review")
           ? "'s items?"
-          : " as a regular customer?"}
+          : (isHead && clientStatus !== "Under review") ? " information?" : " as a regular customer?"}
       </CommonDialog>
 
       <CommonDialog

@@ -1,7 +1,9 @@
 import { Box, Chip, Divider, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import { useGetAllPriceModeForClientsQuery } from "../../../features/setup/api/priceModeSetupApi";
 import { useGetAllProductsQuery } from "../../../features/setup/api/productsApi";
+import ComparedField from "./ComparedField";
 
 const formatPrice = (price) =>
   price != null
@@ -87,8 +89,10 @@ const ProductTable = ({ items, columns }) => {
 };
 
 const COLS = {
-  standard: ["Item Code", "Description", "SRP", "Price", "Price Diff"],
-  changed: ["Item Code", "Description", "SRP", "Price From", "Price To", "Price Diff"],
+  // standard: ["Item Code", "Description", "SRP", "Price", "Price Diff"],
+  // changed: ["Item Code", "Description", "SRP", "Price From", "Price To", "Price Diff"],
+  standard: ["Item Code", "Description", "Price"],
+  changed: ["Item Code", "Description", "Price From", "Price To"],
   removed: ["Item Code", "Description", "Price From"],
 };
 
@@ -120,7 +124,15 @@ function PriceModeTab() {
     Status: true,
   });
 
+  const { data: priceModeData } = useGetAllPriceModeForClientsQuery();
+
+  const getPriceModeName = (id) =>
+    priceModeData?.find((item) => item.id === id)?.priceModeDescription ?? null;
+  const getVatLabel = (isVATable) =>
+    isVATable == null ? null : isVATable ? "Vatable" : "Non-Vatable";
+
   const isRegistration = location.pathname === "/approval/registration-approval" || location.pathname === "/customer-registration/registration"
+  const isEditClient = location.pathname === "/approval/edit-client-approval"
 
   // Attaches SRP from the products catalog whenever an item doesn't already carry one
   const withSrp = (list = []) =>
@@ -134,14 +146,17 @@ function PriceModeTab() {
       ? selectedRowData?.addItems
       : selectedRowData?.clientItems
   );
-  const changedItems = withSrp(selectedRowData?.changeItemPrices);
+  // const changedItems = withSrp(selectedRowData?.changeItemPrices);
+  const changedItems = selectedRowData?.changeItemPrices
+
+  console.log(selectedRowData);
   const removedItems = selectedRowData?.removeItems ?? [];
 
   return (
     <Box className="viewRegistrationModal__priceMode">
 
       {/* PRICE MODE INFO — hidden for Manager and Head */}
-      {!(isManager) && (
+      {!(isManager || isEditClient) && (
         <Box className="viewRegistrationModal__priceMode__content">
           <Typography className="viewRegistrationModal__priceMode__content__title">
             Price Mode Information
@@ -173,7 +188,33 @@ function PriceModeTab() {
         </Box>
       )}
 
-      {isManager && <Box className="viewRegistrationModal__priceMode__content">
+      {isEditClient && (
+        <Box className="viewRegistrationModal__priceMode__content">
+          <Typography className="viewRegistrationModal__priceMode__content__title">
+            Price Mode Information
+          </Typography>
+
+          <Box className="viewRegistrationModal__priceMode__content__fields">
+            <ComparedField
+              section="priceMode"
+              label="Price Mode"
+              isCompared
+              from={getPriceModeName(selectedRowData?.priceModeIdFrom)}
+              to={getPriceModeName(selectedRowData?.priceModeIdTo)}
+            />
+            <ComparedField
+              section="priceMode"
+              label="Tax"
+              isCompared
+              from={getVatLabel(selectedRowData?.isVATableFrom)}
+              to={getVatLabel(selectedRowData?.isVATableTo)}
+            />
+          </Box>
+          <Divider sx={{ my: 2 }} />
+        </Box>
+      )}
+
+      {(isManager || isEditClient) && <Box className="viewRegistrationModal__priceMode__content">
         <Typography className="viewRegistrationModal__priceMode__content__title">
           Discount
         </Typography>
@@ -190,7 +231,7 @@ function PriceModeTab() {
 
       {/* PRODUCTS SECTION */}
       <Box className="viewRegistrationModal__priceMode__content">
-        {isManager ? (
+        {(isManager && isEditClient) || (isEditClient && isHead) ? (
           <>
             <Typography className="viewRegistrationModal__priceMode__content__title">
               Changed Item Prices ({changedItems.length})
@@ -211,7 +252,7 @@ function PriceModeTab() {
         ) : (
           <>
             <Typography className="viewRegistrationModal__priceMode__content__title">
-              {isHead ? "Additional " : ""}Products ({items.length})
+              {(isHead && !isRegistration) ? "Additional " : ""}Products ({items.length})
             </Typography>
             {items.length === 0
               ? <EmptyState message="No products added." />

@@ -21,7 +21,7 @@ import { useGetAllClientsQuery } from "../../../features/registration/api/regist
 import { useCreateSalesTransactionMutation, useGetAllClientsForPOSQuery } from "../../../features/sales-management/api/salesTransactionApi";
 import { useGetAllDiscountTypesQuery } from "../../../features/setup/api/discountTypeApi";
 import { priceModeItemsApi } from "../../../features/setup/api/priceModeItemsApi";
-import useReasonConfirm from "../../../hooks/useReasonConfirm";
+import useConfirm from "../../../hooks/useConfirm";
 import useSnackbar from "../../../hooks/useSnackbar";
 import { cashoutSchema } from "../../../schema/schema";
 import {
@@ -33,7 +33,7 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
   const { onClose, open } = props;
   console.log(salesData)
   //Hooks
-  const reasonConfirm = useReasonConfirm();
+  const confirm = useConfirm();
   const snackbar = useSnackbar();
   const dispatch = useDispatch();
   const chargeInvoiceRef = useRef();
@@ -147,17 +147,16 @@ function CashoutModal({ total, totalVat, resetTransaction, orderData, data: sale
 
 
     try {
-      await reasonConfirm({
+      await confirm({
         children: <>Confirm finalization of transaction?</>,
         question: true,
         inputLabel: "Remarks (Optional)",
         requireReason: false,
-        callback: async (remarks) => {
+        callback: async () => {
           try {
             // Wait for the createSalesTransaction to complete
             const response = await createSalesTransaction({
               ...combinedData,
-              remarks,
             }).unwrap();
 
             // Once the transaction is successful, invalidate the tags

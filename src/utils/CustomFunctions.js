@@ -178,6 +178,19 @@ export const handlePhoneNumberInput = (e) => {
   e.target.value = inputValue;
 };
 
+// Uppercases an input's value without moving the cursor to the end.
+// Writing the uppercased value to the DOM first means React sees no
+// difference on re-render and leaves the input (and its cursor) alone.
+export const handleUppercaseChange = (e, onChange) => {
+  const input = e.target;
+  const { selectionStart, selectionEnd } = input;
+  input.value = input.value.toUpperCase();
+  if (selectionStart !== null) {
+    input.setSelectionRange(selectionStart, selectionEnd);
+  }
+  onChange(input.value);
+};
+
 export const dashFormat = (inputValue) => {
   // Use regex to add a dash after every three digits from the left
   const formattedValue = inputValue.replace(/\B(?=(\d{3})+(?!\d))/g, "-");
